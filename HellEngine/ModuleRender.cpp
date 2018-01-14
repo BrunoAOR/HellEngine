@@ -22,7 +22,7 @@ ModuleRender::~ModuleRender()
 /* Called before render is available */
 bool ModuleRender::Init()
 {
-	LOG("Creating Renderer context");
+	LOGGER("Creating Renderer context");
 	bool ret = true;
 	Uint32 flags = 0;
 
@@ -35,7 +35,7 @@ bool ModuleRender::Init()
 	
 	if(renderer == nullptr)
 	{
-		LOG("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
+		LOGGER("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
 		ret = false;
 	}
 
@@ -80,7 +80,7 @@ UpdateStatus ModuleRender::PostUpdate()
 /* Called before quitting */
 bool ModuleRender::CleanUp()
 {
-	LOG("Destroying renderer");
+	LOGGER("Destroying renderer");
 
 	/* Destroy window */
 	if(renderer != nullptr)
@@ -114,7 +114,7 @@ bool ModuleRender::Blit(SDL_Texture* texture, int x, int y, SDL_Rect* section, f
 
 	if(SDL_RenderCopy(renderer, texture, section, &rect) != 0)
 	{
-		LOG("Cannot blit to screen. SDL_RenderCopy error: %s", SDL_GetError());
+		LOGGER("Cannot blit to screen. SDL_RenderCopy error: %s", SDL_GetError());
 		ret = false;
 	}
 
@@ -139,7 +139,7 @@ bool ModuleRender::DrawQuad(const SDL_Rect& rect, Uint8 r, Uint8 g, Uint8 b, Uin
 
 	if (SDL_RenderFillRect(renderer, &rec) != 0)
 	{
-		LOG("Cannot draw quad to screen. SDL_RenderFillRect error: %s", SDL_GetError());
+		LOGGER("Cannot draw quad to screen. SDL_RenderFillRect error: %s", SDL_GetError());
 		ret = false;
 	}
 
