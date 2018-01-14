@@ -2,6 +2,7 @@
 #pragma comment( lib, "SDL/libx86/SDL2.lib" )
 #pragma comment( lib, "SDL/libx86/SDL2main.lib" )
 #include "Brofiler/include/Brofiler.h"
+#include "MathGeoLib/src/Math/float3x3.h"
 #include "SDL/include/SDL_main.h"
 #include "Application.h"
 #include "MainStates.h"
@@ -14,6 +15,10 @@ Application* App = nullptr;
 int main(int argc, char ** argv)
 {
 	ReportMemoryLeaks();
+
+	float3 sourceDirection = {2, 5, 21};
+	float3 targetDirection = { 15, 23, 258 };
+	float3x3 result = float3x3::RotateFromTo(sourceDirection, targetDirection);
 
 	int mainReturn = EXIT_FAILURE;
 	MainStates state = MainStates::MAIN_CREATION;
