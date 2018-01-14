@@ -1,5 +1,7 @@
+#pragma comment( lib, "Brofiler/libx86/ProfilerCore32.lib")
 #pragma comment( lib, "SDL/libx86/SDL2.lib" )
 #pragma comment( lib, "SDL/libx86/SDL2main.lib" )
+#include "Brofiler/include/Brofiler.h"
 #include "SDL/include/SDL_main.h"
 #include "Application.h"
 #include "MainStates.h"
@@ -45,6 +47,7 @@ int main(int argc, char ** argv)
 
 		case MainStates::MAIN_UPDATE:
 		{
+			BROFILER_FRAME("HellEngine Loop")
 			UpdateStatus updateReturn = App->Update();
 
 			if (updateReturn == UpdateStatus::UPDATE_ERROR)

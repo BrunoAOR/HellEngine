@@ -1,3 +1,4 @@
+#include "Brofiler/include/Brofiler.h"
 #include "SDL/include/SDL.h"
 #include "Application.h"
 #include "KeyState.h"
@@ -71,6 +72,7 @@ UpdateStatus ModuleRender::Update()
 
 UpdateStatus ModuleRender::PostUpdate()
 {
+	BROFILER_CATEGORY("ModuleRender - RenderPresent", Profiler::Color::Aqua)
 	SDL_RenderPresent(renderer);
 	return UpdateStatus::UPDATE_CONTINUE;
 }
