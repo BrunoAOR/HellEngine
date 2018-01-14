@@ -1,17 +1,93 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="Main">
+      <UniqueIdentifier>{5ca1b518-79e3-4492-abb0-c5d44f6bebea}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    <Filter Include="General">
+      <UniqueIdentifier>{5bc50842-75cc-4559-b3db-8c114956f00a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="Engine Modules">
+      <UniqueIdentifier>{d8714392-2692-4802-87b5-fadf6479b37a}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="memLeaks.h">
+      <Filter>Main</Filter>
+    </ClInclude>
+    <ClInclude Include="MainStates.h">
+      <Filter>Main</Filter>
+    </ClInclude>
+    <ClInclude Include="Application.h">
+      <Filter>Main</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleWindow.h">
+      <Filter>Engine Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Module.h">
+      <Filter>Engine Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleAudio.h">
+      <Filter>Engine Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleFadeToBlack.h">
+      <Filter>Engine Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleInput.h">
+      <Filter>Engine Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleRender.h">
+      <Filter>Engine Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleTextures.h">
+      <Filter>Engine Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="EventWindow.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="globals.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyState.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="Point.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="UpdateStatus.h">
+      <Filter>General</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+    <ClCompile Include="Application.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleAudio.cpp">
+      <Filter>Engine Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleFadeToBlack.cpp">
+      <Filter>Engine Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleInput.cpp">
+      <Filter>Engine Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleRender.cpp">
+      <Filter>Engine Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleTextures.cpp">
+      <Filter>Engine Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleWindow.cpp">
+      <Filter>Engine Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="globals.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

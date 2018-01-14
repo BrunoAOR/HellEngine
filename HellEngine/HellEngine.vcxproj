@@ -18,6 +18,35 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Animation.h" />
+    <ClInclude Include="Application.h" />
+    <ClInclude Include="EventWindow.h" />
+    <ClInclude Include="globals.h" />
+    <ClInclude Include="KeyState.h" />
+    <ClInclude Include="MainStates.h" />
+    <ClInclude Include="memLeaks.h" />
+    <ClInclude Include="Module.h" />
+    <ClInclude Include="ModuleAudio.h" />
+    <ClInclude Include="ModuleFadeToBlack.h" />
+    <ClInclude Include="ModuleInput.h" />
+    <ClInclude Include="ModuleRender.h" />
+    <ClInclude Include="ModuleTextures.h" />
+    <ClInclude Include="ModuleWindow.h" />
+    <ClInclude Include="Point.h" />
+    <ClInclude Include="UpdateStatus.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Application.cpp" />
+    <ClCompile Include="globals.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="ModuleAudio.cpp" />
+    <ClCompile Include="ModuleFadeToBlack.cpp" />
+    <ClCompile Include="ModuleInput.cpp" />
+    <ClCompile Include="ModuleRender.cpp" />
+    <ClCompile Include="ModuleTextures.cpp" />
+    <ClCompile Include="ModuleWindow.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{56D26DCB-9C48-4C2B-81EE-FDD216655D81}</ProjectGuid>

@@ -1,0 +1,146 @@
+---------------GENERAL--------------------------
+- All files should end with a single empty line.
+
+
+---------------HEADERS--------------------------
+
+- All headers should start with the following structure: A header guard that starts at the top of the file and ends at the bottom followed by an empty line.
+
+Example: For a file called ModuleAudio.h
+	#ifndef __H_MODULE_AUDIO__
+	#define __H_MODULE_AUDIO__
+	
+	...
+	
+	#endif /* __H_MODULE_AUDIO */
+	
+
+- All preprocessor define identifiers should be written in upper case. Separate words (the ones that would be split by camelCasing) should be split by an underscore (_)
+
+Example:
+	#define LIVES 5
+	#define SCREEN_WIDTH 384
+	#define SCREEN_HEIGHT 224
+
+- Preprocessor include directives order: The include directives always come after any other directive (e.g. pragma comment or define) and should be separated from those by a single empty line.
+
+1) C++ 
+	1.1) <name>
+	1.2) <name.h>
+	1.3) "libLocation/externalLib.h"
+	1.4) "ClassStructEnumClassHeader.h"
+	1.5) "nonClassStructEnumClassHeader.h"
+
+If there are two of the same category or hierarchy, they will be sorted in alphabetical order. If there is a #pragma comment of a library, it will be written first.
+	
+- Separation of methods and attributes of a class always with the public: label. Leave an empty line between public/private label and the first method or attribute.
+
+Example:
+
+public:
+
+	ModulePlayer(bool start_enabled = true);
+	~ModulePlayer();
+
+	bool Start();
+	update_status Update();
+	bool CleanUp();
+
+public:
+
+	SDL_Texture* graphics = nullptr;
+	Animation idle;
+	Animation backward;
+	iPoint position;
+
+
+-----------------KEY SEPARATORS---------------------------
+
+- Key separators after a method always under declaration
+
+Example:
+
+virtual bool Start()
+{
+	return true;
+}
+
+Example empty method:
+
+Module(bool active = true) : active(active)
+{}
+
+- Key separators after an if, else if, else, while, etc. always under key word
+
+Example:
+
+if(SDL_InitSubSystem(SDL_INIT_EVENTS) < 0)
+{
+	LOG("SDL_EVENTS could not initialize! SDL_Error: %s\n", SDL_GetError());
+	ret = false;
+}
+
+- No key separators after if or for of only one line
+
+Example:
+
+if(active == true)
+	return active = !CleanUp();
+
+
+----------------------------NAMING----------------------------------------	
+
+- Class and methods names always CamelCase
+
+Example:
+
+class ModuleRender;
+bool Init();
+
+- Attribute and variable names camelCase
+
+Example:
+
+int playerSpeed = 1;
+	
+- Enums always defined as "enum class", CamelCase, all the enum's elements in upper case, with each word separated by an underscore and with the first element's numerical value specified
+
+Example: 
+
+enum class UpdateStatus
+{
+	UPDATE_CONTINUE = 1,
+	UPDATE_STOP,
+	UPDATE_ERROR
+};
+
+
+- Boolean checks with short notation (bool and !bool)
+
+Example:
+
+if (end) 
+{
+	...
+}
+
+if (!end) 
+{
+	...
+}
+
+
+----------------------------FILENAMES---------------------------------------------
+
+- Every file that does not have a class, struct or enum class defined inside will have a camelCase name. Every file with a class defined inside will be have a CamelCase name.
+
+
+----------------------------COMMENTS----------------------------------------------
+
+- Comments always limited by /* ... */, however long they are.
+
+Example:
+
+/* __MODULERENDER_H__ */
+
+- Comments before a method or function can only explain the usage, objective, requirements, etc. of said method/function.
