@@ -60,6 +60,9 @@
     <ClInclude Include="UpdateStatus.h">
       <Filter>General</Filter>
     </ClInclude>
+    <ClInclude Include="ModuleTime.h">
+      <Filter>Engine Modules</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -88,6 +91,9 @@
     </ClCompile>
     <ClCompile Include="globals.cpp">
       <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleTime.cpp">
+      <Filter>Engine Modules</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

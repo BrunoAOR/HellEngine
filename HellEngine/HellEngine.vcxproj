@@ -32,6 +32,7 @@
     <ClInclude Include="ModuleInput.h" />
     <ClInclude Include="ModuleRender.h" />
     <ClInclude Include="ModuleTextures.h" />
+    <ClInclude Include="ModuleTime.h" />
     <ClInclude Include="ModuleWindow.h" />
     <ClInclude Include="Point.h" />
     <ClInclude Include="UpdateStatus.h" />
@@ -45,6 +46,7 @@
     <ClCompile Include="ModuleInput.cpp" />
     <ClCompile Include="ModuleRender.cpp" />
     <ClCompile Include="ModuleTextures.cpp" />
+    <ClCompile Include="ModuleTime.cpp" />
     <ClCompile Include="ModuleWindow.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

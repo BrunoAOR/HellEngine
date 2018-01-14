@@ -6,6 +6,7 @@
 #include "ModuleInput.h"
 #include "ModuleRender.h"
 #include "ModuleTextures.h"
+#include "ModuleTime.h"
 #include "ModuleWindow.h"
 #include "UpdateStatus.h"
 
@@ -13,8 +14,8 @@ Application::Application()
 {
 	/* Order matters: they will init/start/pre/update/post in this order */
 	modules.push_back(input = new ModuleInput());
+	modules.push_back(time = new ModuleTime());
 	modules.push_back(window = new ModuleWindow());
-
 	modules.push_back(renderer = new ModuleRender());
 	modules.push_back(textures = new ModuleTextures());
 	modules.push_back(audio = new ModuleAudio());

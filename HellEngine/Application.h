@@ -3,12 +3,13 @@
 
 #include <list>
 class Module;
-class ModuleRender;
-class ModuleWindow;
-class ModuleTextures;
-class ModuleInput;
 class ModuleAudio;
 class ModuleFadeToBlack;
+class ModuleInput;
+class ModuleRender;
+class ModuleTextures;
+class ModuleTime;
+class ModuleWindow;
 enum class UpdateStatus;
 
 class Application
@@ -28,6 +29,7 @@ public:
 	ModuleInput* input = nullptr;
 	ModuleAudio* audio = nullptr;
 	ModuleFadeToBlack* fade = nullptr;
+	ModuleTime* time = nullptr;
 
 private:
 	std::list<Module*> modules;
