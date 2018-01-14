@@ -80,7 +80,7 @@ inline std::string ToString(uint8x8x2_t vec)
 {
 	uint8_t *v = (uint8_t*)&vec;
 	char str[256];
-	sprintf(str, "[%02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X | %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X]",
+	sprintf_s(str, 256, "[%02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X | %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X]",
 		(int)v[15], (int)v[14], (int)v[13], (int)v[12], (int)v[11], (int)v[10], (int)v[9], (int)v[8], (int)v[7], (int)v[6], (int)v[5], (int)v[4], (int)v[3], (int)v[2], (int)v[1], (int)v[0]);
 	return str;
 }

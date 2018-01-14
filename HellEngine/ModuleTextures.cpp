@@ -19,7 +19,7 @@ ModuleTextures::~ModuleTextures()
 /* Called before render is available */
 bool ModuleTextures::Init()
 {
-	LOG("Init Image library");
+	LOGGER("Init Image library");
 	bool ret = true;
 
 	/* Load support for the PNG image format */
@@ -28,7 +28,7 @@ bool ModuleTextures::Init()
 
 	if((init & flags) != flags)
 	{
-		LOG("Could not initialize Image lib. IMG_Init: %s", IMG_GetError());
+		LOGGER("Could not initialize Image lib. IMG_Init: %s", IMG_GetError());
 		ret = false;
 	}
 
@@ -38,7 +38,7 @@ bool ModuleTextures::Init()
 /* Called before quitting */
 bool ModuleTextures::CleanUp()
 {
-	LOG("Freeing textures and Image library");
+	LOGGER("Freeing textures and Image library");
 
 	for(std::list<SDL_Texture*>::iterator it = textures.begin(); it != textures.end(); ++it)
 		SDL_DestroyTexture(*it);
@@ -55,7 +55,7 @@ SDL_Texture* const ModuleTextures::Load(const char* path)
 
 	if(surface == nullptr)
 	{
-		LOG("Could not load surface with path: %s. IMG_Load: %s", path, IMG_GetError());
+		LOGGER("Could not load surface with path: %s. IMG_Load: %s", path, IMG_GetError());
 	}
 	else
 	{
@@ -63,7 +63,7 @@ SDL_Texture* const ModuleTextures::Load(const char* path)
 
 		if(texture == nullptr)
 		{
-			LOG("Unable to create texture from surface! SDL Error: %s\n", SDL_GetError());
+			LOGGER("Unable to create texture from surface! SDL Error: %s\n", SDL_GetError());
 		}
 		else
 		{

@@ -539,13 +539,13 @@ char *SerializeFloat(float f, char *dstStr)
 		int numChars = dtoa_grisu3((double)f, dstStr);
 		return dstStr + numChars;
 #else
-		return dstStr + sprintf(dstStr, "%.17g", f);
+		return dstStr + sprintf_s(dstStr, 256, "%.17g", f);
 #endif
 	}
 	else
 	{
 		u32 u = ReinterpretAsU32(f);
-		int numChars = sprintf(dstStr, "NaN(%8X)", (unsigned int)u);
+		int numChars = sprintf_s(dstStr, 256, "NaN(%8X)", (unsigned int)u);
 		return dstStr + numChars;
 	}
 }
@@ -562,7 +562,7 @@ float DeserializeFloat(const char *str, const char **outEndStr)
 	{
 		str += strlen("NaN("); //MATH_SKIP_WORD(str, "NaN(");
 		u32 x;
-		int n = sscanf(str, "%X", (unsigned int *)&x);
+		int n = sscanf_s(str, "%X", (unsigned int *)&x);
 		if (n != 1)
 			return FLOAT_NAN;
 		while(*str != 0)

@@ -2,7 +2,6 @@
 #pragma comment( lib, "SDL/libx86/SDL2.lib" )
 #pragma comment( lib, "SDL/libx86/SDL2main.lib" )
 #include "Brofiler/include/Brofiler.h"
-#include "MathGeoLib/src/Math/float3x3.h"
 #include "SDL/include/SDL_main.h"
 #include "Application.h"
 #include "MainStates.h"
@@ -16,10 +15,6 @@ int main(int argc, char ** argv)
 {
 	ReportMemoryLeaks();
 
-	float3 sourceDirection = {2, 5, 21};
-	float3 targetDirection = { 15, 23, 258 };
-	float3x3 result = float3x3::RotateFromTo(sourceDirection, targetDirection);
-
 	int mainReturn = EXIT_FAILURE;
 	MainStates state = MainStates::MAIN_CREATION;
 
@@ -29,23 +24,23 @@ int main(int argc, char ** argv)
 		{
 		case MainStates::MAIN_CREATION:
 
-			LOG("Application Creation --------------");
+			LOGGER("Application Creation --------------");
 			App = new Application();
 			state = MainStates::MAIN_START;
 			break;
 
 		case MainStates::MAIN_START:
 
-			LOG("Application Init --------------");
+			LOGGER("Application Init --------------");
 			if (App->Init() == false)
 			{
-				LOG("Application Init exits with error -----");
+				LOGGER("Application Init exits with error -----");
 				state = MainStates::MAIN_EXIT;
 			}
 			else
 			{
 				state = MainStates::MAIN_UPDATE;
-				LOG("Application Update --------------");
+				LOGGER("Application Update --------------");
 			}
 
 			break;
@@ -57,7 +52,7 @@ int main(int argc, char ** argv)
 
 			if (updateReturn == UpdateStatus::UPDATE_ERROR)
 			{
-				LOG("Application Update exits with error -----");
+				LOGGER("Application Update exits with error -----");
 				state = MainStates::MAIN_EXIT;
 			}
 
@@ -68,10 +63,10 @@ int main(int argc, char ** argv)
 
 		case MainStates::MAIN_FINISH:
 
-			LOG("Application CleanUp --------------");
+			LOGGER("Application CleanUp --------------");
 			if (App->CleanUp() == false)
 			{
-				LOG("Application CleanUp exits with error -----");
+				LOGGER("Application CleanUp exits with error -----");
 			}
 			else
 				mainReturn = EXIT_SUCCESS;
@@ -84,6 +79,6 @@ int main(int argc, char ** argv)
 	}
 
 	RELEASE(App);
-	LOG("Bye :)\n");
+	LOGGER("Bye :)\n");
 	return mainReturn;
 }

@@ -239,7 +239,7 @@ bool IsNeutralCLocale();
 std::string float3::ToString() const
 {
 	char str[256];
-	sprintf(str, "(%.3f, %.3f, %.3f)", x, y, z);
+	sprintf_s(str, 256, "(%.3f, %.3f, %.3f)", x, y, z);
 	return std::string(str);
 }
 

@@ -35,7 +35,6 @@
 #endif
 
 #include "Clock.h"
-#include <time.h>
 #include "../Math/myassert.h"
 #include "../Math/assume.h"
 
@@ -107,10 +106,10 @@ void Clock::Sleep(int milliseconds)
 	// http://linux.die.net/man/2/nanosleep
 	timespec ts;
 	ts.tv_sec = milliseconds / 1000;
-	ts.tv_nsec = (milliseconds - ts.tv_sec * 1000) * 1000 * 1000;
-	/*int ret = nanosleep(&ts, NULL);
+	ts.tv_nsec = (long)((milliseconds - ts.tv_sec * 1000) * 1000 * 1000);
+	int ret = nanosleep(&ts, NULL);
 	if (ret == -1)
-		LOGI("nanosleep returned -1! Reason: %s(%d).", strerror(errno), (int)errno);*/
+		LOGI("nanosleep returned -1! Reason: %s(%d).", strerror(errno), (int)errno);
 #else
 #warning Clock::Sleep has not been implemented!
 #endif
@@ -297,7 +296,9 @@ tick_t Clock::TicksPerSec()
 
 unsigned long long Clock::Rdtsc()
 {
-#if defined(__x86_64__)
+#if defined(_MSC_VER) && !defined(WIN8PHONE)
+	return __rdtsc();
+#elif defined(__x86_64__)
 	unsigned hi, lo;
 	__asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
 	return ((unsigned long long)lo) | (((unsigned long long)hi) << 32);

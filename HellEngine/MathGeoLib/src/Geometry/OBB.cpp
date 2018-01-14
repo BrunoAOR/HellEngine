@@ -1254,7 +1254,7 @@ OBB OBB::OptimalEnclosingOBB(const Polyhedron &convexHull)
 		for (size_t j = 0; j < antipodalPointsForEdge[i].size(); ++j)
 		{
 			char str[256];
-			sprintf(str, "%d ", (int)antipodalPointsForEdge[i][j]);
+			sprintf_s(str, 256, "%d ", (int)antipodalPointsForEdge[i][j]);
 			s += str;
 		}
 		LOGI("Antipodal points for edge %d: %s", (int)i, s.c_str());
@@ -1401,7 +1401,7 @@ OBB OBB::OptimalEnclosingOBB(const Polyhedron &convexHull)
 		for (size_t j = 0; j < compatibleEdges[i].size(); ++j)
 		{
 			char str[256];
-			sprintf(str, "%d ", (int)compatibleEdges[i][j]);
+			sprintf_s(str, 256, "%d ", (int)compatibleEdges[i][j]);
 			s += str;
 		}
 		LOGI("Edge %d:%d->%d is compatible with: %s", (int)i, edges[i].first, edges[i].second, s.c_str());
@@ -2722,7 +2722,7 @@ bool OBB::Intersects(const Polyhedron &polyhedron) const
 std::string OBB::ToString() const
 {
 	char str[256];
-	sprintf(str, "OBB(Pos:(%.2f, %.2f, %.2f) Halfsize:(%.2f, %.2f, %.2f) X:(%.2f, %.2f, %.2f) Y:(%.2f, %.2f, %.2f) Z:(%.2f, %.2f, %.2f))",
+	sprintf_s(str, 256, "OBB(Pos:(%.2f, %.2f, %.2f) Halfsize:(%.2f, %.2f, %.2f) X:(%.2f, %.2f, %.2f) Y:(%.2f, %.2f, %.2f) Z:(%.2f, %.2f, %.2f))",
 		pos.x, pos.y, pos.z, r.x, r.y, r.z, axis[0].x, axis[0].y, axis[0].z, axis[1].x, axis[1].y, axis[1].z, axis[2].x, axis[2].y, axis[2].z);
 	return str;
 }
