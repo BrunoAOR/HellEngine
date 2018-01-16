@@ -1,9 +1,13 @@
 #ifndef __H_GLOBALS__
 #define __H_GLOBALS__
 
-#define LOGGER(format, ...) log(__FILE__, __LINE__, format, __VA_ARGS__);
+#include "Json/json.h"
+using Json = nlohmann::json;
 
-void log(const char file[], int line, const char* format, ...);
+#define LOGGER(format, ...) Log(__FILE__, __LINE__, format, __VA_ARGS__);
+void Log(const char file[], int line, const char* format, ...);
+
+Json LoadJson(const char* path);
 
 #define MIN( a, b ) ( ((a) < (b)) ? (a) : (b) )
 #define MAX( a, b ) ( ((a) > (b)) ? (a) : (b) )
