@@ -32,13 +32,13 @@ bool ModuleRender::Init()
 	}
 	else
 	{
-		if (!initGlew())
+		if (!InitGlew())
 		{
 			ret = false;
 		}
 		else
 		{
-			if (!initOpenGL())
+			if (!InitOpenGL())
 			{
 				ret = false;
 			}
@@ -57,6 +57,19 @@ UpdateStatus ModuleRender::PreUpdate()
 /* Called every draw update */
 UpdateStatus ModuleRender::Update()
 {
+	glBegin(GL_TRIANGLES);
+
+	glColor3f(255.0f, 0.0f, 0.0f);
+	glVertex3f(-0.8f, -0.5f, 0.0f); // lower left vertex
+
+	glColor3f(0.0f, 255.0f, 0.0f);
+	glVertex3f(0.8f, -0.5f, 0.0f); // lower right vertex
+
+	glColor3f(0.0f, 0.0f, 255.0f);
+	glVertex3f(0.0f, 0.5f, 0.0f); // upper vertex
+
+	glEnd();
+
 	return UpdateStatus::UPDATE_CONTINUE;
 }
 
@@ -83,7 +96,7 @@ bool ModuleRender::CleanUp()
 }
 
 /* Initializes the GLEW library */
-bool ModuleRender::initGlew() const
+bool ModuleRender::InitGlew() const
 {
 	GLenum err = glewInit();
 	if (err != GLEW_OK)
@@ -102,7 +115,7 @@ bool ModuleRender::initGlew() const
 }
 
 /* Initializes OpenGL */
-bool ModuleRender::initOpenGL() const
+bool ModuleRender::InitOpenGL() const
 {
 	/* Reset projection and modelview matrices */
 	glMatrixMode(GL_PROJECTION);

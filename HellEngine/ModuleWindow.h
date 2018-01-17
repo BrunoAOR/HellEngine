@@ -15,7 +15,7 @@ public:
 	/* Destructor */
 	virtual ~ModuleWindow();
 
-	/* Called before quitting */
+	/* Called before render is available */
 	bool Init();
 
 	/* Called before quitting */
@@ -24,7 +24,7 @@ public:
 public:
 
 	/* Sets up the OpenGL attributes required before window creation */
-	void setupOpenGLAttributes() const;
+	void SetupOpenGLAttributes() const;
 	
 	/* The window we'll be rendering to */
 	SDL_Window* window = nullptr;

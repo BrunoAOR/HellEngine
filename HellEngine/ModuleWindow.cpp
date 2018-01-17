@@ -35,7 +35,7 @@ bool ModuleWindow::Init()
 			flags |= SDL_WINDOW_FULLSCREEN;
 		}
 
-		setupOpenGLAttributes();
+		SetupOpenGLAttributes();
 		window = SDL_CreateWindow(TITLE, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, flags);
 
 		if(window == nullptr)
@@ -65,7 +65,7 @@ bool ModuleWindow::CleanUp()
 }
 
 /* Sets up the OpenGL attributes required before window creation */
-void ModuleWindow::setupOpenGLAttributes() const
+void ModuleWindow::SetupOpenGLAttributes() const
 {
 	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);

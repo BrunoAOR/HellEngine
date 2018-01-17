@@ -24,10 +24,10 @@ public:
 public:
 
 	/* Initializes the GLEW library */
-	bool initGlew() const;
+	bool InitGlew() const;
 
 	/* Initializes OpenGL */
-	bool initOpenGL() const;
+	bool InitOpenGL() const;
 
 	SDL_GLContext glContext = nullptr;
 };
