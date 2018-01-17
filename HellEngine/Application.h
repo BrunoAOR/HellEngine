@@ -7,6 +7,7 @@ class ModuleAudio;
 class ModuleInput;
 class ModuleRender;
 class ModuleTime;
+class ModuleTriangle;
 class ModuleWindow;
 enum class UpdateStatus;
 
@@ -21,11 +22,12 @@ public:
 	bool CleanUp();
 
 public:
-	ModuleRender* renderer = nullptr;
-	ModuleWindow* window = nullptr;
-	ModuleInput* input = nullptr;
-	ModuleAudio* audio = nullptr;
+	ModuleInput * input = nullptr;
 	ModuleTime* time = nullptr;
+	ModuleWindow* window = nullptr;
+	ModuleRender* renderer = nullptr;
+	ModuleAudio* audio = nullptr;
+	ModuleTriangle* triangle = nullptr;
 
 private:
 	std::list<Module*> modules;

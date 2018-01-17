@@ -5,6 +5,7 @@
 #include "KeyState.h"
 #include "ModuleInput.h"
 #include "ModuleRender.h"
+#include "ModuleTriangle.h"
 #include "ModuleWindow.h"
 #include "UpdateStatus.h"
 #include "globals.h"
@@ -59,14 +60,14 @@ UpdateStatus ModuleRender::Update()
 {
 	glBegin(GL_TRIANGLES);
 
-	glColor3f(255.0f, 0.0f, 0.0f);
-	glVertex3f(-0.8f, -0.5f, 0.0f); // lower left vertex
+	glColor3fv(App->triangle->c[0]);
+	glVertex3fv(App->triangle->v[0]); // lower left vertex
 
-	glColor3f(0.0f, 255.0f, 0.0f);
-	glVertex3f(0.8f, -0.5f, 0.0f); // lower right vertex
-
-	glColor3f(0.0f, 0.0f, 255.0f);
-	glVertex3f(0.0f, 0.5f, 0.0f); // upper vertex
+	glColor3fv(App->triangle->c[1]);
+	glVertex3fv(App->triangle->v[1]); // lower right vertex
+	
+	glColor3fv(App->triangle->c[2]);
+	glVertex3fv(App->triangle->v[2]); // upper vertex
 
 	glEnd();
 
@@ -130,7 +131,7 @@ bool ModuleRender::InitOpenGL() const
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
-	glEnable(GL_LIGHTING);
+	//glEnable(GL_LIGHTING);
 	glEnable(GL_COLOR_MATERIAL);
 	glEnable(GL_TEXTURE_2D);
 
