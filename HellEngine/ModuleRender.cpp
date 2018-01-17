@@ -1,3 +1,4 @@
+#pragma comment( lib, "Glew/libx86/glew32.lib" )
 #include "Brofiler/include/Brofiler.h"
 #include "SDL/include/SDL.h"
 #include "Application.h"
@@ -7,13 +8,10 @@
 #include "ModuleWindow.h"
 #include "UpdateStatus.h"
 #include "globals.h"
+#include "openGL.h"
 
 ModuleRender::ModuleRender()
-{
-	camera.x = camera.y = 0;
-	camera.w = SCREEN_WIDTH * SCREEN_SIZE;
-	camera.h = SCREEN_HEIGHT* SCREEN_SIZE;
-}
+{}
 
 /* Destructor */
 ModuleRender::~ModuleRender()
@@ -22,21 +20,29 @@ ModuleRender::~ModuleRender()
 /* Called before render is available */
 bool ModuleRender::Init()
 {
-	LOGGER("Creating Renderer context");
+	LOGGER("Creating OpenGL context");
 	bool ret = true;
-	Uint32 flags = 0;
-
-	if(VSYNC == true)
-	{
-		flags |= SDL_RENDERER_PRESENTVSYNC;
-	}
-
-	renderer = SDL_CreateRenderer(App->window->window, -1, flags);
 	
-	if(renderer == nullptr)
+	glContext = SDL_GL_CreateContext(App->window->window);
+	
+	if(glContext == nullptr)
 	{
-		LOGGER("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
+		LOGGER("OpenGL context could not be created! SDL_Error: %s\n", SDL_GetError());
 		ret = false;
+	}
+	else
+	{
+		if (!initGlew())
+		{
+			ret = false;
+		}
+		else
+		{
+			if (!initOpenGL())
+			{
+				ret = false;
+			}
+		}
 	}
 
 	return ret;
@@ -44,104 +50,86 @@ bool ModuleRender::Init()
 
 UpdateStatus ModuleRender::PreUpdate()
 {
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-	SDL_RenderClear(renderer);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	return UpdateStatus::UPDATE_CONTINUE;
 }
 
-// Called every draw update
+/* Called every draw update */
 UpdateStatus ModuleRender::Update()
 {
-	// debug camera
-	int speed = 1;
-
-	if(App->input->GetKey(SDL_SCANCODE_UP) == KeyState::KEY_REPEAT)
-		App->renderer->camera.y += speed;
-
-	if(App->input->GetKey(SDL_SCANCODE_DOWN) == KeyState::KEY_REPEAT)
-		App->renderer->camera.y -= speed;
-
-	if(App->input->GetKey(SDL_SCANCODE_LEFT) == KeyState::KEY_REPEAT)
-		App->renderer->camera.x += speed;
-
-	if(App->input->GetKey(SDL_SCANCODE_RIGHT) == KeyState::KEY_REPEAT)
-		App->renderer->camera.x -= speed;
-
 	return UpdateStatus::UPDATE_CONTINUE;
 }
 
 UpdateStatus ModuleRender::PostUpdate()
 {
-	BROFILER_CATEGORY("ModuleRender - RenderPresent", Profiler::Color::Aqua)
-	SDL_RenderPresent(renderer);
+	BROFILER_CATEGORY("ModuleRender - GL_SwapWindow", Profiler::Color::Aqua);
+	SDL_GL_SwapWindow(App->window->window);
 	return UpdateStatus::UPDATE_CONTINUE;
 }
 
 /* Called before quitting */
 bool ModuleRender::CleanUp()
 {
-	LOGGER("Destroying renderer");
+	LOGGER("Destroying OpenGL context");
 
 	/* Destroy window */
-	if(renderer != nullptr)
+	if(glContext != nullptr)
 	{
-		SDL_DestroyRenderer(renderer);
+		SDL_GL_DeleteContext(glContext);
+		glContext = nullptr;
 	}
 
 	return true;
 }
 
-/* Blit to screen */
-bool ModuleRender::Blit(SDL_Texture* texture, int x, int y, SDL_Rect* section, float speed)
+/* Initializes the GLEW library */
+bool ModuleRender::initGlew() const
 {
-	bool ret = true;
-	SDL_Rect rect;
-	rect.x = (int)(camera.x * speed) + x * SCREEN_SIZE;
-	rect.y = (int)(camera.y * speed) + y * SCREEN_SIZE;
-
-	if(section != NULL)
+	GLenum err = glewInit();
+	if (err != GLEW_OK)
 	{
-		rect.w = section->w;
-		rect.h = section->h;
-	}
-	else
-	{
-		SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
+		LOGGER("Error: glew could not be initialized. glewInit error: %s", glewGetErrorString(err));
+		return false;
 	}
 
-	rect.w *= SCREEN_SIZE;
-	rect.h *= SCREEN_SIZE;
+	LOGGER("GLEW: Using Glew %s", glewGetString(GLEW_VERSION));
 
-	if(SDL_RenderCopy(renderer, texture, section, &rect) != 0)
-	{
-		LOGGER("Cannot blit to screen. SDL_RenderCopy error: %s", SDL_GetError());
-		ret = false;
-	}
-
-	return ret;
+	LOGGER("Vendor: %s", glGetString(GL_VENDOR));
+	LOGGER("Renderer: %s", glGetString(GL_RENDERER));
+	LOGGER("OpenGL version supported %s", glGetString(GL_VERSION));
+	LOGGER("GLSL: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
+	return true;
 }
 
-bool ModuleRender::DrawQuad(const SDL_Rect& rect, Uint8 r, Uint8 g, Uint8 b, Uint8 a, bool useCamera)
+/* Initializes OpenGL */
+bool ModuleRender::initOpenGL() const
 {
-	bool ret = true;
+	/* Reset projection and modelview matrices */
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 
-	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-	SDL_SetRenderDrawColor(renderer, r, g, b, a);
+	/* Setup OpenGL options */
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+	glClearDepth(1.0f);
+	glClearColor(0.f, 0.f, 0.f, 1.f);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_COLOR_MATERIAL);
+	glEnable(GL_TEXTURE_2D);
 
-	SDL_Rect rec(rect);
-	if (useCamera)
+	/* Set viewport */
+	//glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+	/* Check for errors */
+	GLenum error = glGetError();
+	if (error != GL_NO_ERROR)
 	{
-		rec.x = (int)(camera.x + rect.x * SCREEN_SIZE);
-		rec.y = (int)(camera.y + rect.y * SCREEN_SIZE);
-		rec.w *= SCREEN_SIZE;
-		rec.h *= SCREEN_SIZE;
+		LOGGER("Error initializing OpenGL! %s\n", glewGetErrorString(error));
+		return false;
 	}
-
-	if (SDL_RenderFillRect(renderer, &rec) != 0)
-	{
-		LOGGER("Cannot draw quad to screen. SDL_RenderFillRect error: %s", SDL_GetError());
-		ret = false;
-	}
-
-	return ret;
+	return true;
 }

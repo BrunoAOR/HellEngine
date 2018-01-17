@@ -4,10 +4,8 @@
 #include <list>
 class Module;
 class ModuleAudio;
-class ModuleFadeToBlack;
 class ModuleInput;
 class ModuleRender;
-class ModuleTextures;
 class ModuleTime;
 class ModuleWindow;
 enum class UpdateStatus;
@@ -25,10 +23,8 @@ public:
 public:
 	ModuleRender* renderer = nullptr;
 	ModuleWindow* window = nullptr;
-	ModuleTextures* textures = nullptr;
 	ModuleInput* input = nullptr;
 	ModuleAudio* audio = nullptr;
-	ModuleFadeToBlack* fade = nullptr;
 	ModuleTime* time = nullptr;
 
 private:

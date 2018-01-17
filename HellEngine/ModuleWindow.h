@@ -23,11 +23,11 @@ public:
 
 public:
 
+	/* Sets up the OpenGL attributes required before window creation */
+	void setupOpenGLAttributes() const;
+	
 	/* The window we'll be rendering to */
 	SDL_Window* window = nullptr;
-
-	/* The surface contained by the window */
-	SDL_Surface* screenSurface = nullptr;
 };
 
 #endif /* __H_MODULEWINDOW__ */

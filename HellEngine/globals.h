@@ -2,7 +2,7 @@
 #define __H_GLOBALS__
 
 #include "Json/json.h"
-using Json = nlohmann::json;
+typedef nlohmann::json Json;
 
 #define LOGGER(format, ...) Log(__FILE__, __LINE__, format, __VA_ARGS__);
 void Log(const char file[], int line, const char* format, ...);

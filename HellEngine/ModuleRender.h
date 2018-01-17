@@ -3,10 +3,10 @@
 
 #include "SDL/include/SDL_rect.h"
 #include "Module.h"
-
-struct SDL_Texture;
-struct SDL_Renderer;
 struct SDL_Rect;
+struct SDL_Renderer;
+struct SDL_Texture;
+typedef void* SDL_GLContext;
 
 class ModuleRender : public Module
 {
@@ -21,13 +21,15 @@ public:
 	UpdateStatus PostUpdate();
 	bool CleanUp();
 
-	bool Blit(SDL_Texture* texture, int x, int y, SDL_Rect* section, float speed = 1.0f);
-	bool DrawQuad(const SDL_Rect& rect, Uint8 r, Uint8 g, Uint8 b, Uint8 a, bool useCamera = true);
-
 public:
 
-	SDL_Renderer* renderer = nullptr;
-	SDL_Rect camera;
+	/* Initializes the GLEW library */
+	bool initGlew() const;
+
+	/* Initializes OpenGL */
+	bool initOpenGL() const;
+
+	SDL_GLContext glContext = nullptr;
 };
 
 #endif /* __H_MODULERENDER__ */
