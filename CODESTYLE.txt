@@ -144,3 +144,5 @@ Example:
 /* __MODULERENDER_H__ */
 
 - Comments before a method or function can only explain the usage, objective, requirements, etc. of said method/function.
+
+- EXCEPTION: When a line of code is commented out with the intention of future reuse, a double slash (//) can be used to comment it out, since it is a faster option.

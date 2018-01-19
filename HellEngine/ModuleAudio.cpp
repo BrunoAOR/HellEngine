@@ -45,7 +45,7 @@ bool ModuleAudio::Init()
 	return ret;
 }
 
-//*Called before quitting */
+/* Called before quitting */
 bool ModuleAudio::CleanUp()
 {
 	LOGGER("Freeing sound FX, closing Mixer and Audio subsystem");

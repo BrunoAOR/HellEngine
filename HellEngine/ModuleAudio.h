@@ -23,7 +23,7 @@ public:
 	/* Play a music file */
 	bool PlayMusic(const char* path, float fadeTime = DEFAULT_MUSIC_FADE_TIME);
 
-	//*Load a WAV in memory */
+	/* Load a WAV in memory */
 	unsigned int LoadFx(const char* path);
 
 	/* Play a previously loaded WAV */

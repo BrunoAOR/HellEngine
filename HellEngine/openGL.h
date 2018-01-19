@@ -6,4 +6,4 @@
 #include <gl/GL.h>
 #include <gl/GLU.h>
 
-#endif // !__H_OPEN_G_L__
+#endif /* !__H_OPEN_G_L__ */

@@ -42,10 +42,10 @@ public:
 		return mouseButtons[id - 1];
 	}
 
-	// Check for window events last frame
+	/* Check for window events last frame */
 	bool GetWindowEvent(EventWindow code) const;
 
-	// Get mouse / axis position
+	/* Get mouse / axis position */
 	const iPoint& GetMouseMotion() const;
 	const iPoint& GetMousePosition() const;
 

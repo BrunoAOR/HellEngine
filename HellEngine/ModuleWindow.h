@@ -23,11 +23,13 @@ public:
 
 public:
 
+	/* The window we'll be rendering to */
+	SDL_Window * window = nullptr;
+
+private:
+
 	/* Sets up the OpenGL attributes required before window creation */
 	void SetupOpenGLAttributes() const;
-	
-	/* The window we'll be rendering to */
-	SDL_Window* window = nullptr;
 };
 
 #endif /* __H_MODULEWINDOW__ */
