@@ -255,9 +255,6 @@
     <ClInclude Include="openGL.h">
       <Filter>General</Filter>
     </ClInclude>
-    <ClInclude Include="ModuleTriangle.h">
-      <Filter>Engine Modules</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -391,9 +388,6 @@
     </ClCompile>
     <ClCompile Include="MathGeoLib\src\Geometry\TriangleMesh.cpp">
       <Filter>MathGeoLib</Filter>
-    </ClCompile>
-    <ClCompile Include="ModuleTriangle.cpp">
-      <Filter>Engine Modules</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

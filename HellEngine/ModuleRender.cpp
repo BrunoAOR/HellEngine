@@ -1,11 +1,12 @@
 #pragma comment( lib, "Glew/libx86/glew32.lib" )
+#define SP_ARR_3F(x) x[0], x[1], x[2]
 #include "Brofiler/include/Brofiler.h"
 #include "SDL/include/SDL.h"
 #include "Application.h"
 #include "KeyState.h"
 #include "ModuleInput.h"
 #include "ModuleRender.h"
-#include "ModuleTriangle.h"
+#include "ModuleTime.h"
 #include "ModuleWindow.h"
 #include "UpdateStatus.h"
 #include "globals.h"
@@ -46,6 +47,12 @@ bool ModuleRender::Init()
 		}
 	}
 
+
+	if (ret)
+	{
+		InitCubeInfo();
+	}
+
 	return ret;
 }
 
@@ -58,18 +65,52 @@ UpdateStatus ModuleRender::PreUpdate()
 /* Called every draw update */
 UpdateStatus ModuleRender::Update()
 {
-	glBegin(GL_TRIANGLES);
+	rotationAngle += rotationSpeed * App->time->DeltaTime();
+	/*if (rotationAngle > 360)
+	{
+		rotationAngle -= 360;
+	}*/
 
-	glColor3fv(App->triangle->c[0]);
-	glVertex3fv(App->triangle->v[0]); // lower left vertex
+	float scale = 0.4f;
+	/* Immediate Mode */
+	{
+		glPushMatrix();
+		glTranslatef(-0.5f, 0.5f, 0);
+		glScalef(scale, scale, scale);
+		glRotatef(rotationAngle, -1, -1, 1);
+		DrawCubeImmediateMode();
+		glPopMatrix();
+	}
 
-	glColor3fv(App->triangle->c[1]);
-	glVertex3fv(App->triangle->v[1]); // lower right vertex
-	
-	glColor3fv(App->triangle->c[2]);
-	glVertex3fv(App->triangle->v[2]); // upper vertex
+	/* DrawArray */
+	{
+		glPushMatrix();
+		glTranslatef(0.5f, 0.5f, 0);
+		glScalef(scale, scale, scale);
+		glRotatef(rotationAngle, -1, 1, -1);
+		DrawCubeArrays();
+		glPopMatrix();
+	}
 
-	glEnd();
+	/* DrawElements */
+	{
+		glPushMatrix();
+		glTranslatef(-0.5f, -0.5f, 0);
+		glScalef(scale, scale, scale);
+		glRotatef(rotationAngle, 1, -1, -1);
+		DrawCubeElements();
+		glPopMatrix();
+	}
+
+	/* DrawRangeElements */
+	{
+		glPushMatrix();
+		glTranslatef(0.5f, -0.5f, 0);
+		glScalef(scale, scale, scale);
+		glRotatef(rotationAngle, 1, 1, 1);
+		DrawCubeElements();
+		glPopMatrix();
+	}
 
 	return UpdateStatus::UPDATE_CONTINUE;
 }
@@ -146,4 +187,289 @@ bool ModuleRender::InitOpenGL() const
 		return false;
 	}
 	return true;
+}
+
+/* Initializes cube-rendering variables */
+void ModuleRender::InitCubeInfo()
+{
+	/* rotationSpeed is expressed in degress per second */
+	rotationSpeed = 90;
+	/*
+	CUBE drawing
+	  G-----H
+	 /|    /|
+	C-----D |
+	| |   | |
+	| E---|-F
+	|/    |/
+	A-----B
+	
+	ABDC is the front face
+	FEGH is the back face
+	
+	*/
+
+	/* Cube vertices */
+	{
+		float s = 0.5f;
+
+		vA[0] = -s;
+		vA[1] = -s;
+		vA[2] = s;
+
+		vB[0] = s;
+		vB[1] = -s;
+		vB[2] = s;
+
+		vC[0] = -s;
+		vC[1] = s;
+		vC[2] = s;
+
+		vD[0] = s;
+		vD[1] = s;
+		vD[2] = s;
+
+		vE[0] = -s;
+		vE[1] = -s;
+		vE[2] = -s;
+
+		vF[0] = s;
+		vF[1] = -s;
+		vF[2] = -s;
+
+		vG[0] = -s;
+		vG[1] = s;
+		vG[2] = -s;
+
+		vH[0] = s;
+		vH[1] = s;
+		vH[2] = -s;
+	}
+
+	/* Cube colors */
+	{
+		cRed[0] = 1.0f;
+		cRed[1] = 0;
+		cRed[2] = 0;
+
+		cGreen[0] = 0;
+		cGreen[1] = 1.0f;
+		cGreen[2] = 0;
+
+		cBlue[0] = 0;
+		cBlue[1] = 0;
+		cBlue[2] = 1.0f;
+
+		cWhite[0] = 1.0f;
+		cWhite[1] = 1.0f;
+		cWhite[2] = 1.0f;
+	}
+
+
+	const size_t vertCount = 36;
+	
+	/* For DrawArray */
+	GLfloat vertices[vertCount * 3] = { SP_ARR_3F(vA), SP_ARR_3F(vB), SP_ARR_3F(vC), SP_ARR_3F(vB), SP_ARR_3F(vD), SP_ARR_3F(vC), SP_ARR_3F(vB), SP_ARR_3F(vF), SP_ARR_3F(vD), SP_ARR_3F(vF), SP_ARR_3F(vH), SP_ARR_3F(vD), SP_ARR_3F(vF), SP_ARR_3F(vE), SP_ARR_3F(vH), SP_ARR_3F(vE), SP_ARR_3F(vG), SP_ARR_3F(vH), SP_ARR_3F(vE), SP_ARR_3F(vA), SP_ARR_3F(vG), SP_ARR_3F(vA), SP_ARR_3F(vC), SP_ARR_3F(vG), SP_ARR_3F(vC), SP_ARR_3F(vD), SP_ARR_3F(vH), SP_ARR_3F(vC), SP_ARR_3F(vH), SP_ARR_3F(vG), SP_ARR_3F(vA), SP_ARR_3F(vF), SP_ARR_3F(vB), SP_ARR_3F(vF), SP_ARR_3F(vA), SP_ARR_3F(vE) };
+	GLfloat colors[vertCount * 3] = { SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cRed), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cRed), SP_ARR_3F(cBlue), SP_ARR_3F(cGreen), SP_ARR_3F(cRed), SP_ARR_3F(cBlue), SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cRed), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cRed), SP_ARR_3F(cWhite), SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cRed), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cRed), SP_ARR_3F(cBlue) };
+
+	glGenBuffers(1, (GLuint*)&vertexBufferId);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertCount * 3, vertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
+	glGenBuffers(1, (GLuint*)&colorsBufferId);
+	glBindBuffer(GL_ARRAY_BUFFER, colorsBufferId);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertCount * 3, colors, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
+	/* For DrawElements and DrawRangeElements */
+	const size_t uniqueVertCount = 8;
+	GLfloat uniqueVertices[uniqueVertCount * 3] = { SP_ARR_3F(vA), SP_ARR_3F(vB), SP_ARR_3F(vC), SP_ARR_3F(vD), SP_ARR_3F(vE), SP_ARR_3F(vF), SP_ARR_3F(vG), SP_ARR_3F(vH) };
+	GLfloat uniqueColors[uniqueVertCount * 3] = { SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cRed) };
+	GLubyte verticesOrder[vertCount] = {0, 1, 2, 1, 3, 2,
+										1, 5, 3, 5, 7, 3,
+										5, 4, 7, 4, 6, 7,
+										4, 0, 6, 0, 2, 6,
+										2, 3, 7, 2, 7, 6,
+										0, 5, 1, 5, 0, 4};
+
+	glGenBuffers(1, (GLuint*)&uniqueVerticesBufferId);
+	glBindBuffer(GL_ARRAY_BUFFER, uniqueVerticesBufferId);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uniqueVertCount * 3, uniqueVertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
+	glGenBuffers(1, (GLuint*)&uniqueColorsBufferId);
+	glBindBuffer(GL_ARRAY_BUFFER, uniqueColorsBufferId);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uniqueVertCount * 3, uniqueColors, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
+	glGenBuffers(1, (GLuint*)&uniqueVerticesIndexBufferId);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, uniqueVerticesIndexBufferId);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLubyte) * vertCount, verticesOrder, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
+}
+
+void ModuleRender::DrawCubeImmediateMode() const
+{
+	glBegin(GL_TRIANGLES);
+
+	/* front */
+	glColor3fv(cRed);
+	glVertex3fv(vA);
+	glColor3fv(cGreen);
+	glVertex3fv(vB);
+	glColor3fv(cWhite);
+	glVertex3fv(vC);
+
+	glColor3fv(cGreen);
+	glVertex3fv(vB);
+	glColor3fv(cBlue);
+	glVertex3fv(vD);
+	glColor3fv(cWhite);
+	glVertex3fv(vC);
+
+	/* right */
+	glColor3fv(cGreen);
+	glVertex3fv(vB);
+	glColor3fv(cWhite);
+	glVertex3fv(vF);
+	glColor3fv(cBlue);
+	glVertex3fv(vD);
+
+	glColor3fv(cWhite);
+	glVertex3fv(vF);
+	glColor3fv(cRed);
+	glVertex3fv(vH);
+	glColor3fv(cBlue);
+	glVertex3fv(vD);
+
+	/* back */
+	glColor3fv(cWhite);
+	glVertex3fv(vF);
+	glColor3fv(cBlue);
+	glVertex3fv(vE);
+	glColor3fv(cRed);
+	glVertex3fv(vH);
+
+	glColor3fv(cBlue);
+	glVertex3fv(vE);
+	glColor3fv(cGreen);
+	glVertex3fv(vG);
+	glColor3fv(cRed);
+	glVertex3fv(vH);
+
+	/* left */
+	glColor3fv(cBlue);
+	glVertex3fv(vE);
+	glColor3fv(cRed);
+	glVertex3fv(vA);
+	glColor3fv(cGreen);
+	glVertex3fv(vG);
+
+	glColor3fv(cRed);
+	glVertex3fv(vA);
+	glColor3fv(cWhite);
+	glVertex3fv(vC);
+	glColor3fv(cGreen);
+	glVertex3fv(vG);
+
+	/* top */
+	glColor3fv(cWhite);
+	glVertex3fv(vC);
+	glColor3fv(cBlue);
+	glVertex3fv(vD);
+	glColor3fv(cRed);
+	glVertex3fv(vH);
+
+	glColor3fv(cWhite);
+	glVertex3fv(vC);
+	glColor3fv(cRed);
+	glVertex3fv(vH);
+	glColor3fv(cGreen);
+	glVertex3fv(vG);
+
+	/* bottom */
+	glColor3fv(cRed);
+	glVertex3fv(vA);
+	glColor3fv(cWhite);
+	glVertex3fv(vF);
+	glColor3fv(cGreen);
+	glVertex3fv(vB);
+
+	glColor3fv(cWhite);
+	glVertex3fv(vF);
+	glColor3fv(cRed);
+	glVertex3fv(vA);
+	glColor3fv(cBlue);
+	glVertex3fv(vE);
+
+	glEnd();
+}
+
+void ModuleRender::DrawCubeArrays() const
+{
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
+	glVertexPointer(3, GL_FLOAT, 0, NULL);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
+	glBindBuffer(GL_ARRAY_BUFFER, colorsBufferId);
+	glColorPointer(3, GL_FLOAT, 0, NULL);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
+	glDrawArrays(GL_TRIANGLES, 0, 36 * 3);
+
+	glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
+}
+
+void ModuleRender::DrawCubeElements() const
+{
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+
+	glBindBuffer(GL_ARRAY_BUFFER, uniqueVerticesBufferId);
+	glVertexPointer(3, GL_FLOAT, 0, GL_NONE);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
+	glBindBuffer(GL_ARRAY_BUFFER, uniqueColorsBufferId);
+	glColorPointer(3, GL_FLOAT, 0, GL_NONE);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, uniqueVerticesIndexBufferId);
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, GL_NONE);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
+
+	glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
+}
+
+void ModuleRender::DrawCubeRangeElements() const
+{
+	/*
+	NOTE:
+	Ideally, glDrawRangeElements would be called with a reduced amount of vertices' indexes (not 0 to 7 as here).
+	But, since all the array of indices has already been pushed to the VRAM (and therefore the last parameter is GL_NONE),
+	there is no real point in using glDrawRangeElements, since it is still going throught all the inidices.
+	Regardless, it has been used here as a reminder of its existence.
+	*/
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+
+	glBindBuffer(GL_ARRAY_BUFFER, uniqueVerticesBufferId);
+	glVertexPointer(3, GL_FLOAT, 0, GL_NONE);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
+	glBindBuffer(GL_ARRAY_BUFFER, uniqueColorsBufferId);
+	glColorPointer(3, GL_FLOAT, 0, GL_NONE);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, uniqueVerticesIndexBufferId);
+	glDrawRangeElements(GL_TRIANGLES, 0, 7, 36, GL_UNSIGNED_BYTE, GL_NONE);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
+
+	glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
 }

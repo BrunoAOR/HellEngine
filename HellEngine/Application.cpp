@@ -5,7 +5,6 @@
 #include "ModuleInput.h"
 #include "ModuleRender.h"
 #include "ModuleTime.h"
-#include "ModuleTriangle.h"
 #include "ModuleWindow.h"
 #include "UpdateStatus.h"
 
@@ -17,7 +16,6 @@ Application::Application()
 	modules.push_back(window = new ModuleWindow());
 	modules.push_back(renderer = new ModuleRender());
 	modules.push_back(audio = new ModuleAudio());
-	modules.push_back(triangle = new ModuleTriangle());
 }
 
 Application::~Application()

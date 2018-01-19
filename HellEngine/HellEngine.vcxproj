@@ -95,7 +95,6 @@
     <ClInclude Include="ModuleInput.h" />
     <ClInclude Include="ModuleRender.h" />
     <ClInclude Include="ModuleTime.h" />
-    <ClInclude Include="ModuleTriangle.h" />
     <ClInclude Include="ModuleWindow.h" />
     <ClInclude Include="openGL.h" />
     <ClInclude Include="Point.h" />
@@ -145,7 +144,6 @@
     <ClCompile Include="ModuleInput.cpp" />
     <ClCompile Include="ModuleRender.cpp" />
     <ClCompile Include="ModuleTime.cpp" />
-    <ClCompile Include="ModuleTriangle.cpp" />
     <ClCompile Include="ModuleWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
