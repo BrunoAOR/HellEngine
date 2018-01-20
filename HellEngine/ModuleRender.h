@@ -2,6 +2,7 @@
 #define __H_MODULERENDER__
 
 #include "SDL/include/SDL_rect.h"
+#include "globals.h"
 #include "Module.h"
 struct SDL_Rect;
 struct SDL_Renderer;
@@ -33,19 +34,31 @@ private:
 	/* Initializes cube-rendering variables */
 	void InitCubeInfo();
 
+	/* Initializes sphere-rendering variables */
+	void InitSphereInfo(unsigned int rings, unsigned int sections);
+
+	/* Renders a cube using OpenGL immediate mode */
 	void DrawCubeImmediateMode() const;
 
+	/* Renders a cube using OpenGL glDrawArray function */
 	void DrawCubeArrays() const;
 
+	/* Renders a cube using OpenGL glDrawElements function */
 	void DrawCubeElements() const;
 
+	/* Renders a cube using OpenGL glDrawRangeElements function */
 	void DrawCubeRangeElements() const;
+
+	/* Renders a sphere using OpenGL glDrawElements function */
+	void DrawSphere() const;
 
 private:
 	
 	SDL_GLContext glContext = nullptr;
+
 	float rotationAngle;
 	float rotationSpeed;
+	bool wireframe;
 
 	GLfloat vA[3];
 	GLfloat vB[3];
@@ -61,12 +74,23 @@ private:
 	GLfloat cBlue[3];
 	GLfloat cWhite[3];
 
-	unsigned int vertexBufferId;
-	unsigned int colorsBufferId;
+	uint vertexBufferId;
+	uint colorsBufferId;
 
-	unsigned int uniqueVerticesBufferId;
-	unsigned int uniqueColorsBufferId;
-	unsigned int uniqueVerticesIndexBufferId;
+	uint uniqueVerticesBufferId;
+	uint uniqueColorsBufferId;
+	uint uniqueVerticesIndexBufferId;
+
+	struct {
+		unsigned int rings;
+		unsigned int sections;
+		unsigned int verticesCount;
+		unsigned int trianglesCount;
+
+		uint verticesBufferId;
+		uint colorsBufferId;
+		uint verticesIndexBufferId;
+	}sphereInfo;
 };
 
 #endif /* __H_MODULERENDER__ */

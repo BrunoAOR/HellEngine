@@ -1,5 +1,8 @@
 #pragma comment( lib, "Glew/libx86/glew32.lib" )
 #define SP_ARR_3F(x) x[0], x[1], x[2]
+#include <assert.h>
+#include <math.h>
+#include <vector>
 #include "Brofiler/include/Brofiler.h"
 #include "SDL/include/SDL.h"
 #include "Application.h"
@@ -27,7 +30,7 @@ bool ModuleRender::Init()
 	
 	glContext = SDL_GL_CreateContext(App->window->window);
 	
-	if(glContext == nullptr)
+	if (glContext == nullptr)
 	{
 		LOGGER("OpenGL context could not be created! SDL_Error: %s\n", SDL_GetError());
 		ret = false;
@@ -35,22 +38,18 @@ bool ModuleRender::Init()
 	else
 	{
 		if (!InitGlew())
-		{
 			ret = false;
-		}
 		else
 		{
 			if (!InitOpenGL())
-			{
 				ret = false;
-			}
 		}
 	}
-
 
 	if (ret)
 	{
 		InitCubeInfo();
+		InitSphereInfo(32, 32);
 	}
 
 	return ret;
@@ -59,19 +58,26 @@ bool ModuleRender::Init()
 UpdateStatus ModuleRender::PreUpdate()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 	return UpdateStatus::UPDATE_CONTINUE;
 }
 
 /* Called every draw update */
 UpdateStatus ModuleRender::Update()
 {
+	if (App->input->GetKey(SDL_SCANCODE_W) == KeyState::KEY_DOWN)
+		wireframe = !wireframe;
+
 	rotationAngle += rotationSpeed * App->time->DeltaTime();
-	/*if (rotationAngle > 360)
-	{
+	if (rotationAngle > 360)
 		rotationAngle -= 360;
-	}*/
 
 	float scale = 0.4f;
+
+	if (wireframe)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 	/* Immediate Mode */
 	{
 		glPushMatrix();
@@ -112,6 +118,19 @@ UpdateStatus ModuleRender::Update()
 		glPopMatrix();
 	}
 
+	/* DrawSphere */
+	{
+		glPushMatrix();
+		/* No translation required */
+		glScalef(scale, scale, scale);
+		glRotatef(rotationAngle, 1, 1, 1);
+		DrawSphere();
+		glPopMatrix();
+	}
+
+	if (wireframe)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 	return UpdateStatus::UPDATE_CONTINUE;
 }
 
@@ -128,7 +147,7 @@ bool ModuleRender::CleanUp()
 	LOGGER("Destroying OpenGL context");
 
 	/* Destroy window */
-	if(glContext != nullptr)
+	if (glContext != nullptr)
 	{
 		SDL_GL_DeleteContext(glContext);
 		glContext = nullptr;
@@ -309,6 +328,150 @@ void ModuleRender::InitCubeInfo()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
 }
 
+void ModuleRender::InitSphereInfo(unsigned int rings, unsigned int sections)
+{
+	sphereInfo.rings = rings;
+	sphereInfo.sections = sections;
+
+	float radius = 1;
+	sphereInfo.verticesCount = sections * (rings - 1) + 2;
+
+	std::vector<GLfloat> vertices;
+	vertices.resize(3 * sphereInfo.verticesCount);
+	std::vector<GLfloat>::iterator v = vertices.begin();
+
+	std::vector<GLfloat> colors;
+	colors.resize(3 * sphereInfo.verticesCount);
+	std::vector<GLfloat>::iterator c = colors.begin();
+
+	float ringStep = (float)M_PI / rings;
+	float sectionStep = 2 * (float)M_PI / sections;
+	
+	float redToGreenStep = 1.0f / rings;
+	float blueStep = 2 * 1.0f / sections;
+	/* VERTICES */
+	
+	/* First vertex is on the top*/
+	*v++ = 0;
+	*v++ = radius;
+	*v++ = 0;
+
+	*c++ = 1.0f;
+	*c++ = 0;
+	*c++ = 0;
+
+	/* Now we iterate through rings, and within rings through sections */
+	/* We start on ring 1, because ring 0 would be the top (special case) which has only 1 vertex and has already been handled*/
+	for (unsigned int r = 1; r < rings; ++r)
+	{
+		float y = radius * cosf(ringStep * r);
+		float ringSinf = radius * sinf(ringStep * r);
+
+		float green = redToGreenStep * r;
+		float red = 1.0f - green;
+
+		for (unsigned int s = 0; s < sections; ++s)
+		{
+			float x = ringSinf * sinf(sectionStep * s);
+			float z = ringSinf * cosf(sectionStep * s);
+			*v++ = x;
+			*v++ = y;
+			*v++ = z;
+
+			float blue = blueStep * s;
+			if (blue > 1.0f)
+				blue = 2.0f - blue;
+
+			*c++ = red;
+			*c++ = green;
+			*c++ = blue;
+		}
+	}
+
+	/* Last vertex is on the bottom*/
+	*v++ = 0;
+	*v++ = -radius;
+	*v++ = 0;
+
+	*c++ = 0;
+	*c++ = 1.0f;
+	*c++ = 0;
+
+	assert(v == vertices.end() && c == colors.end());
+
+	/* INDEXES */
+	/* 
+	NOTE:
+	The total number of triangles is 2 * sections * (rings - 1)
+	This is due to the fact that the topmost and bottommost rings all join in the same top or bottom vertex.
+	*/
+	sphereInfo.trianglesCount = 2 * sections * (rings - 1);
+	std::vector<GLuint> indexes;
+	indexes.resize(3 * sphereInfo.trianglesCount);
+	std::vector<GLuint>::iterator i = indexes.begin();
+
+	/* Reminder: each group of 3 indexes define a triangle */
+	unsigned int vRingMax = sphereInfo.verticesCount - 1;
+	for (unsigned int vNum = 1; vNum < vRingMax + sections; ++vNum)
+	{
+		/* Triangle going up and then left from the vertex. Valid only if not on the first ring */
+		if (vNum > sections) {
+			/* Handle last ring */
+			*i = vNum;
+			if (*i > vRingMax)
+				*i = vRingMax;
+			++i;
+
+			*i++ = vNum - sections;
+
+			*i = vNum - sections - 1;
+			/* Handle section wrap-around */
+			if (*i % sections == 0)
+				*i += sections;
+			++i;
+		}
+		/* Triangle going right and then up-left from the vertex */
+		if (vNum < vRingMax)
+		{
+			*i++ = vNum;
+
+			*i = vNum + 1;
+			/* Handle section wrap-around */
+			if (vNum % sections == 0)
+				*i -= sections;
+			++i;
+
+			int idx = (int)vNum - sections;
+			/* Handle first ring */
+			if (idx < 0)
+				*i = 0;
+			else
+				*i = vNum - sections;
+			++i;
+		}
+
+	}
+
+	assert(i == indexes.end());
+
+	/* Now we send the vertices and indexes to the VRAM */
+
+	glGenBuffers(1, (GLuint*)&sphereInfo.verticesBufferId);
+	glBindBuffer(GL_ARRAY_BUFFER, sphereInfo.verticesBufferId);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * sphereInfo.verticesCount * 3, vertices.data(), GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
+	glGenBuffers(1, (GLuint*)&sphereInfo.colorsBufferId);
+	glBindBuffer(GL_ARRAY_BUFFER, sphereInfo.colorsBufferId);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * sphereInfo.verticesCount * 3, colors.data(), GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
+	glGenBuffers(1, (GLuint*)&sphereInfo.verticesIndexBufferId);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphereInfo.verticesIndexBufferId);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * sphereInfo.trianglesCount * 3, indexes.data(), GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
+}
+
 void ModuleRender::DrawCubeImmediateMode() const
 {
 	glBegin(GL_TRIANGLES);
@@ -468,6 +631,27 @@ void ModuleRender::DrawCubeRangeElements() const
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, uniqueVerticesIndexBufferId);
 	glDrawRangeElements(GL_TRIANGLES, 0, 7, 36, GL_UNSIGNED_BYTE, GL_NONE);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
+
+	glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
+}
+
+void ModuleRender::DrawSphere() const
+{
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+
+	glBindBuffer(GL_ARRAY_BUFFER, sphereInfo.verticesBufferId);
+	glVertexPointer(3, GL_FLOAT, 0, GL_NONE);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
+	glBindBuffer(GL_ARRAY_BUFFER, sphereInfo.colorsBufferId);
+	glColorPointer(3, GL_FLOAT, 0, GL_NONE);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphereInfo.verticesIndexBufferId);
+	glDrawElements(GL_TRIANGLES, 3 * sphereInfo.trianglesCount, GL_UNSIGNED_INT, GL_NONE);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
 
 	glDisableClientState(GL_COLOR_ARRAY);
