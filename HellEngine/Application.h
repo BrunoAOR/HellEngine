@@ -4,6 +4,7 @@
 #include <list>
 class Module;
 class ModuleAudio;
+class ModuleImGui;
 class ModuleInput;
 class ModuleRender;
 class ModuleTime;
@@ -25,6 +26,7 @@ public:
 	ModuleTime* time = nullptr;
 	ModuleWindow* window = nullptr;
 	ModuleRender* renderer = nullptr;
+	ModuleImGui* imgui = nullptr;
 	ModuleAudio* audio = nullptr;
 
 private:

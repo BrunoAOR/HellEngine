@@ -7,7 +7,6 @@
 #include "SDL/include/SDL.h"
 #include "Application.h"
 #include "KeyState.h"
-#include "ModuleInput.h"
 #include "ModuleRender.h"
 #include "ModuleTime.h"
 #include "ModuleWindow.h"
@@ -66,12 +65,12 @@ UpdateStatus ModuleRender::PreUpdate()
 /* Called every draw update */
 UpdateStatus ModuleRender::Update()
 {
-	if (App->input->GetKey(SDL_SCANCODE_W) == KeyState::KEY_DOWN)
-		wireframe = !wireframe;
-
-	rotationAngle += rotationSpeed * App->time->DeltaTime();
-	if (rotationAngle > 360)
-		rotationAngle -= 360;
+	if (shouldRotate)
+	{
+		rotationAngle += rotationSpeed * App->time->DeltaTime();
+		if (rotationAngle > 360)
+			rotationAngle -= 360;
+	}
 
 	float scale = 0.4f;
 

@@ -1,5 +1,6 @@
 #include "SDL/include/SDL.h"
-
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_impl_sdl_gl3.h"
 #include "Application.h"
 #include "KeyState.h"
 #include "ModuleInput.h"
@@ -80,6 +81,7 @@ UpdateStatus ModuleInput::PreUpdate()
 
 	while(SDL_PollEvent(&event) != 0)
 	{
+		ImGui_ImplSdlGL3_ProcessEvent(&event);
 		switch(event.type)
 		{
 			case SDL_QUIT:

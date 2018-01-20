@@ -52,13 +52,17 @@ private:
 	/* Renders a sphere using OpenGL glDrawElements function */
 	void DrawSphere() const;
 
+public:
+
+	bool wireframe;
+	bool shouldRotate;
+
 private:
 	
 	SDL_GLContext glContext = nullptr;
 
 	float rotationAngle;
 	float rotationSpeed;
-	bool wireframe;
 
 	GLfloat vA[3];
 	GLfloat vB[3];
@@ -90,7 +94,7 @@ private:
 		uint verticesBufferId;
 		uint colorsBufferId;
 		uint verticesIndexBufferId;
-	}sphereInfo;
+	} sphereInfo;
 };
 
 #endif /* __H_MODULERENDER__ */

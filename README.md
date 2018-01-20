@@ -12,6 +12,17 @@ Find the full project code at [https://github.com/BrunoAOR/HellEngine](https://g
 * Daniel Reyes ([Winour](https://github.com/Winour) at https://github.com/Winour)
 * Mario Rodríguez ([Mac092](https://github.com/Mac092) at https://github.com/Mac092)
 
+### 3rd party libraries used
+* [SDL 2.0.4](https://www.libsdl.org) 
+* [SDL Image 2.0.0](https://www.libsdl.org/projects/SDL_image/)
+* [SDL Mixer 2.0.0](https://www.libsdl.org/projects/SDL_mixer/)
+* [Brofiler 1.1.2](https://github.com/bombomby/brofiler)
+* [MathGeoLib 1.5](https://github.com/juj/MathGeoLib)
+* [JSON for Modern C++ 3.0.1](https://github.com/nlohmann/json)
+* [ImGui 1.53](https://github.com/ocornut/imgui)
+* [Glew 2.1.0](http://glew.sourceforge.net)
+* [OpenGL 3.1](https://www.khronos.org/opengl/)
+
 ### License
 The project is licensed under the MIT License.  
 Find the stand-alone license document at [https://github.com/BrunoAOR/HellEngine/blob/master/LICENSE](https://github.com/BrunoAOR/Space-Harrier-Clone/blob/master/LICENSE).
