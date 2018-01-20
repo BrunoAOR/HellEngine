@@ -2,7 +2,7 @@
 #include "ModuleTime.h"
 #include "UpdateStatus.h"
 
-ModuleTime::ModuleTime() : Module(), timeScale(1.0f)
+ModuleTime::ModuleTime() : Module()
 {}
 
 /* Destructor */
@@ -23,27 +23,47 @@ UpdateStatus ModuleTime::PreUpdate()
 }
 
 /* Returns the timeScale affected time */
-Uint32 ModuleTime::GetTime() const
+Uint32 ModuleTime::TimeMS() const
 {
 	return time;
 }
 
+float ModuleTime::Time() const
+{
+	return time / 1000.0f;
+}
+
 /* Returns the timeScale affected deltaTime */
-Uint32 ModuleTime::GetDeltaTime() const
+Uint32 ModuleTime::DeltaTimeMS() const
 {
 	return deltaTime;
 }
 
+float ModuleTime::DeltaTime() const
+{
+	return deltaTime / 1000.0f;
+}
+
 /* Returns the timeScale unaffected time */
-Uint32 ModuleTime::GetUnscaledTime() const
+Uint32 ModuleTime::UnscaledTimeMS() const
 {
 	return unscaledTime;
 }
 
+float ModuleTime::UnscaledTime() const
+{
+	return unscaledTime / 1000.0f;
+}
+
 /* Returns the timeScale unaffected deltaTime */
-Uint32 ModuleTime::GetUnscaledDeltaTime() const
+Uint32 ModuleTime::UnscaledDeltaTimeMS() const
 {
 	return unscaledDeltaTime;
+}
+
+float ModuleTime::UnscaledDeltaTime() const
+{
+	return unscaledDeltaTime / 1000.0f;
 }
 
 /* Returns the timeScale value */

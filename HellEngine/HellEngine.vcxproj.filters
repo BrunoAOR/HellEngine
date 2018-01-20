@@ -33,16 +33,10 @@
     <ClInclude Include="ModuleAudio.h">
       <Filter>Engine Modules</Filter>
     </ClInclude>
-    <ClInclude Include="ModuleFadeToBlack.h">
-      <Filter>Engine Modules</Filter>
-    </ClInclude>
     <ClInclude Include="ModuleInput.h">
       <Filter>Engine Modules</Filter>
     </ClInclude>
     <ClInclude Include="ModuleRender.h">
-      <Filter>Engine Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="ModuleTextures.h">
       <Filter>Engine Modules</Filter>
     </ClInclude>
     <ClInclude Include="Animation.h">
@@ -258,6 +252,9 @@
     <ClInclude Include="MathGeoLib\src\Geometry\TriangleMesh.h">
       <Filter>MathGeoLib</Filter>
     </ClInclude>
+    <ClInclude Include="openGL.h">
+      <Filter>General</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -269,16 +266,10 @@
     <ClCompile Include="ModuleAudio.cpp">
       <Filter>Engine Modules</Filter>
     </ClCompile>
-    <ClCompile Include="ModuleFadeToBlack.cpp">
-      <Filter>Engine Modules</Filter>
-    </ClCompile>
     <ClCompile Include="ModuleInput.cpp">
       <Filter>Engine Modules</Filter>
     </ClCompile>
     <ClCompile Include="ModuleRender.cpp">
-      <Filter>Engine Modules</Filter>
-    </ClCompile>
-    <ClCompile Include="ModuleTextures.cpp">
       <Filter>Engine Modules</Filter>
     </ClCompile>
     <ClCompile Include="ModuleWindow.cpp">
