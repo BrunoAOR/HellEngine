@@ -1,6 +1,7 @@
 #ifndef __H_MODULEINPUT__
 #define __H_MODULEINPUT__
 
+#include "SDL/include/SDL_scancode.h"
 #include "EventWindow.h"
 #include "KeyState.h"
 #include "Module.h"

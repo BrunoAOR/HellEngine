@@ -475,7 +475,7 @@ void ModuleRender::DrawCubeImmediateMode() const
 {
 	glBegin(GL_TRIANGLES);
 
-	/* front */
+	/* Front */
 	glColor3fv(cRed);
 	glVertex3fv(vA);
 	glColor3fv(cGreen);
@@ -490,7 +490,7 @@ void ModuleRender::DrawCubeImmediateMode() const
 	glColor3fv(cWhite);
 	glVertex3fv(vC);
 
-	/* right */
+	/* Right */
 	glColor3fv(cGreen);
 	glVertex3fv(vB);
 	glColor3fv(cWhite);
@@ -505,7 +505,7 @@ void ModuleRender::DrawCubeImmediateMode() const
 	glColor3fv(cBlue);
 	glVertex3fv(vD);
 
-	/* back */
+	/* Back */
 	glColor3fv(cWhite);
 	glVertex3fv(vF);
 	glColor3fv(cBlue);
@@ -520,7 +520,7 @@ void ModuleRender::DrawCubeImmediateMode() const
 	glColor3fv(cRed);
 	glVertex3fv(vH);
 
-	/* left */
+	/* Left */
 	glColor3fv(cBlue);
 	glVertex3fv(vE);
 	glColor3fv(cRed);
@@ -535,7 +535,7 @@ void ModuleRender::DrawCubeImmediateMode() const
 	glColor3fv(cGreen);
 	glVertex3fv(vG);
 
-	/* top */
+	/* Top */
 	glColor3fv(cWhite);
 	glVertex3fv(vC);
 	glColor3fv(cBlue);
@@ -550,7 +550,7 @@ void ModuleRender::DrawCubeImmediateMode() const
 	glColor3fv(cGreen);
 	glVertex3fv(vG);
 
-	/* bottom */
+	/* Bottom */
 	glColor3fv(cRed);
 	glVertex3fv(vA);
 	glColor3fv(cWhite);
