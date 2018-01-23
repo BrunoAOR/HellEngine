@@ -17,6 +17,7 @@ public:
 
 	void SetPosition(float x, float y, float z);
 	float* GetViewMatrix();
+	float* GetProjectionMatrix();
 	
 private:
 
