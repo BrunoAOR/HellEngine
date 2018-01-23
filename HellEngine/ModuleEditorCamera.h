@@ -13,10 +13,15 @@ public:
 	~ModuleEditorCamera();
 
 	bool Init();
+	UpdateStatus Update();
 
+	void SetPosition(float x, float y, float z);
+	float* GetViewMatrix();
+	
 private:
 
 	Frustum frustrum;
+	const float moveSpeed = 1;
 };
 
 #endif // !__H_MODULE_EDITOR_CAMERA__

@@ -7,6 +7,7 @@
 #include "SDL/include/SDL.h"
 #include "Application.h"
 #include "KeyState.h"
+#include "ModuleEditorCamera.h"
 #include "ModuleRender.h"
 #include "ModuleTime.h"
 #include "ModuleWindow.h"
@@ -58,7 +59,7 @@ UpdateStatus ModuleRender::PreUpdate()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	glLoadMatrixf(App->editorCamera->GetViewMatrix());
 	return UpdateStatus::UPDATE_CONTINUE;
 }
 
