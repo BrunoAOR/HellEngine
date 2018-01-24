@@ -674,7 +674,7 @@ void ModuleRender::DrawGroundGrid() const
 {
 	int start = -20;
 	int extent = 20;
-	int y = 1.5;
+	int y = -1.5;
 
 	glBegin(GL_LINES);
 
