@@ -21,10 +21,22 @@ public:
 	/* Called before quitting */
 	bool CleanUp();
 
+	/* Returns the window width */
+	int getWidth() const;
+
+	/* Returns the window height */
+	int getHeight() const;
+
+	/* Method to be called when the window is resized */
+	void onWindowResize();
+
 public:
 
 	/* The window we'll be rendering to */
-	SDL_Window * window = nullptr;
+	SDL_Window* window = nullptr;
+
+	/* The window surface */
+	SDL_Surface* surface = nullptr;
 
 private:
 

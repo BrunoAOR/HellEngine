@@ -23,6 +23,9 @@ public:
 	UpdateStatus PostUpdate();
 	bool CleanUp();
 
+	/* Method to be called when the window is resized */
+	void onWindowResize();
+
 private:
 
 	/* Initializes the GLEW library */
