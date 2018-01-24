@@ -21,7 +21,7 @@ public:
 	
 private:
 
-	Frustum frustrum;
+	Frustum frustum;
 	const float moveSpeed = 1;
 };
 
