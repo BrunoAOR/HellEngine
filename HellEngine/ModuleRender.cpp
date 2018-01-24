@@ -674,31 +674,31 @@ void ModuleRender::DrawGroundGrid() const
 {
 	int start = -20;
 	int extent = 20;
-	int y = -1.5;
+	float y = 0;
 
 	glBegin(GL_LINES);
 
 	for (int i = start; i <= extent; i++)
 	{
 		if (i == start) {
-			glColor3f(.6, .3, .3);
+			glColor3f(.6f, .3f, .3f);
 		}
 		else {
-			glColor3f(.25, .25, .25);
+			glColor3f(.25f, .25f, .25f);
 		}
 
-		glVertex3f(i, y, start);
-		glVertex3f(i, y, extent);
+		glVertex3f((float)i, y, (float)start);
+		glVertex3f((float)i, y, (float)extent);
 
 		if (i == start) {
-			glColor3f(.3, .3, .6);
+			glColor3f(.3f, .3f, .6f);
 		}
 		else {
-			glColor3f(.25, .25, .25);
+			glColor3f(.25f, .25f, .25f);
 		}
 
-		glVertex3f(start, y, i);
-		glVertex3f(extent, y, i);
+		glVertex3f((float)start, y, (float)i);
+		glVertex3f((float)extent, y, (float)i);
 	}
 
 	glEnd();
