@@ -3,7 +3,10 @@
 #include "ImGui/imgui_impl_sdl_gl3.h"
 #include "Application.h"
 #include "KeyState.h"
+#include "ModuleEditorCamera.h"
 #include "ModuleInput.h"
+#include "ModuleRender.h"
+#include "ModuleWindow.h"
 #include "UpdateStatus.h"
 #include "globals.h"
 
@@ -89,20 +92,26 @@ UpdateStatus ModuleInput::PreUpdate()
 			break;
 
 			case SDL_WINDOWEVENT:
-				switch(event.window.event)
+				switch (event.window.event)
 				{
+				case SDL_WINDOWEVENT_RESIZED:
+					App->window->onWindowResize();
+					App->renderer->onWindowResize();
+					App->editorCamera->onWindowResize();
+					break;
+
 					/* case SDL_WINDOWEVENT_LEAVE: */
-					case SDL_WINDOWEVENT_HIDDEN:
-					case SDL_WINDOWEVENT_MINIMIZED:
-					case SDL_WINDOWEVENT_FOCUS_LOST:
+				case SDL_WINDOWEVENT_HIDDEN:
+				case SDL_WINDOWEVENT_MINIMIZED:
+				case SDL_WINDOWEVENT_FOCUS_LOST:
 					windowEvents[(int)EventWindow::WE_HIDE] = true;
 					break;
 
 					/* case SDL_WINDOWEVENT_ENTER: */
-					case SDL_WINDOWEVENT_SHOWN:
-					case SDL_WINDOWEVENT_FOCUS_GAINED:
-					case SDL_WINDOWEVENT_MAXIMIZED:
-					case SDL_WINDOWEVENT_RESTORED:
+				case SDL_WINDOWEVENT_SHOWN:
+				case SDL_WINDOWEVENT_FOCUS_GAINED:
+				case SDL_WINDOWEVENT_MAXIMIZED:
+				case SDL_WINDOWEVENT_RESTORED:
 					windowEvents[(int)EventWindow::WE_SHOW] = true;
 					break;
 				}

@@ -163,6 +163,11 @@ bool ModuleRender::CleanUp()
 	return true;
 }
 
+void ModuleRender::onWindowResize()
+{ 
+	glViewport(0, 0, App->window->getWidth(), App->window->getHeight());
+}
+
 /* Initializes the GLEW library */
 bool ModuleRender::InitGlew() const
 {

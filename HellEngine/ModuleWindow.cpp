@@ -28,7 +28,7 @@ bool ModuleWindow::Init()
 		/* Create window */
 		int width = SCREEN_WIDTH * SCREEN_SIZE;
 		int height = SCREEN_HEIGHT * SCREEN_SIZE;
-		Uint32 flags = SDL_WINDOW_OPENGL;
+		Uint32 flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
 
 		if(FULLSCREEN == true)
 		{
@@ -42,6 +42,10 @@ bool ModuleWindow::Init()
 		{
 			LOGGER("Window could not be created! SDL_Error: %s\n", SDL_GetError());
 			ret = false;
+		}
+		else
+		{
+			surface = SDL_GetWindowSurface(window);
 		}
 	}
 
@@ -57,11 +61,29 @@ bool ModuleWindow::CleanUp()
 	if(window != nullptr)
 	{
 		SDL_DestroyWindow(window);
+		surface = nullptr;
 	}
 
 	/* Quit SDL subsystems */
 	SDL_Quit();
 	return true;
+}
+
+/* Returns the window width */
+int ModuleWindow::getWidth() const
+{
+	return surface->w;
+}
+
+/* Returns the window height */
+int ModuleWindow::getHeight() const
+{
+	return surface->h;
+}
+
+void ModuleWindow::onWindowResize()
+{
+	surface = SDL_GetWindowSurface(window);
 }
 
 /* Sets up the OpenGL attributes required before window creation */
