@@ -52,6 +52,9 @@ private:
 	/* Renders a sphere using OpenGL glDrawElements function */
 	void DrawSphere() const;
 
+	/* Draw a grid on the ground */
+	void DrawGroundGrid() const;
+
 public:
 
 	bool wireframe;

@@ -130,6 +130,11 @@ UpdateStatus ModuleRender::Update()
 		glPopMatrix();
 	}
 
+	/* DrawGroundGrid */
+	{
+		DrawGroundGrid();
+	}
+
 	if (wireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -658,4 +663,37 @@ void ModuleRender::DrawSphere() const
 
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
+}
+
+void ModuleRender::DrawGroundGrid() const
+{
+	int start = -20;
+	int extent = 20;
+
+	glBegin(GL_LINES);
+
+	for (int i = start; i <= extent; i++)
+	{
+		if (i == start) {
+			glColor3f(.6, .3, .3);
+		}
+		else {
+			glColor3f(.25, .25, .25);
+		}
+
+		glVertex3f(i, 1.5, start);
+		glVertex3f(i, 1.5, extent);
+
+		if (i == start) {
+			glColor3f(.3, .3, .6);
+		}
+		else {
+			glColor3f(.25, .25, .25);
+		}
+
+		glVertex3f(start, 1.5, i);
+		glVertex3f(extent, 1.5, i);
+	}
+
+	glEnd();
 }
