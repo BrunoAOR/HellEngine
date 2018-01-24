@@ -669,6 +669,7 @@ void ModuleRender::DrawGroundGrid() const
 {
 	int start = -20;
 	int extent = 20;
+	int y = 1.5;
 
 	glBegin(GL_LINES);
 
@@ -681,8 +682,8 @@ void ModuleRender::DrawGroundGrid() const
 			glColor3f(.25, .25, .25);
 		}
 
-		glVertex3f(i, 1.5, start);
-		glVertex3f(i, 1.5, extent);
+		glVertex3f(i, y, start);
+		glVertex3f(i, y, extent);
 
 		if (i == start) {
 			glColor3f(.3, .3, .6);
@@ -691,8 +692,8 @@ void ModuleRender::DrawGroundGrid() const
 			glColor3f(.25, .25, .25);
 		}
 
-		glVertex3f(start, 1.5, i);
-		glVertex3f(extent, 1.5, i);
+		glVertex3f(start, y, i);
+		glVertex3f(extent, y, i);
 	}
 
 	glEnd();
