@@ -35,12 +35,15 @@ public:
 
 private:
 
+	void handleCameraMotion();
+	void handleCameraRotation();
 	float getHorizontalFOV(float vertFOV) const;
 
 private:
 
 	Frustum frustum;
 	const float moveSpeed = 1;
+	const float rotationSpeed = 1;
 	float aspectRatio = 1;
 	float verticalFOVRad = 1;
 };

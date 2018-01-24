@@ -1,4 +1,5 @@
 #include <math.h>
+#include "MathGeoLib/src/Math/Quat.h"
 #include "Application.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleInput.h"
@@ -24,45 +25,8 @@ bool ModuleEditorCamera::Init()
 
 UpdateStatus ModuleEditorCamera::Update()
 {
-	vec pos = frustum.Pos();
-	/* Camera up */
-	if (App->input->GetKey(SDL_SCANCODE_Q) == KeyState::KEY_REPEAT)
-		pos.y += moveSpeed * App->time->DeltaTime();
-	/* Camera down */
-	if (App->input->GetKey(SDL_SCANCODE_E) == KeyState::KEY_REPEAT)
-		pos.y -= moveSpeed * App->time->DeltaTime();
-	
-	/* Camera forward */
-	if (App->input->GetKey(SDL_SCANCODE_W) == KeyState::KEY_REPEAT)
-	{
-		pos.x += frustum.Front().x * moveSpeed * App->time->DeltaTime();
-		pos.y += frustum.Front().y * moveSpeed * App->time->DeltaTime();
-		pos.z += frustum.Front().z * moveSpeed * App->time->DeltaTime();
-	}
-	/* Camera backwards */
-	if (App->input->GetKey(SDL_SCANCODE_S) == KeyState::KEY_REPEAT)
-	{
-		pos.x -= frustum.Front().x * moveSpeed * App->time->DeltaTime();
-		pos.y -= frustum.Front().y * moveSpeed * App->time->DeltaTime();
-		pos.z -= frustum.Front().z * moveSpeed * App->time->DeltaTime();
-	}
-
-	/* Camera left */
-	if (App->input->GetKey(SDL_SCANCODE_A) == KeyState::KEY_REPEAT)
-	{
-		pos.x -= frustum.WorldRight().x * moveSpeed * App->time->DeltaTime();
-		pos.y -= frustum.WorldRight().y * moveSpeed * App->time->DeltaTime();
-		pos.z -= frustum.WorldRight().z * moveSpeed * App->time->DeltaTime();
-	}
-	/* Camera right */
-	if (App->input->GetKey(SDL_SCANCODE_D) == KeyState::KEY_REPEAT)
-	{
-		pos.x += frustum.WorldRight().x * moveSpeed * App->time->DeltaTime();
-		pos.y += frustum.WorldRight().y * moveSpeed * App->time->DeltaTime();
-		pos.z += frustum.WorldRight().z * moveSpeed * App->time->DeltaTime();
-	}
-	
-	frustum.SetPos(pos);
+	handleCameraMotion();
+	handleCameraRotation();	
 
 	return UpdateStatus::UPDATE_CONTINUE;
 }
@@ -116,6 +80,82 @@ void ModuleEditorCamera::onWindowResize()
 	aspectRatio = (float)width / height;
 	float h = getHorizontalFOV(verticalFOVRad);
 	frustum.SetPerspective(getHorizontalFOV(verticalFOVRad), verticalFOVRad);
+}
+
+void ModuleEditorCamera::handleCameraMotion()
+{
+	vec pos = frustum.Pos();
+	/* Camera up */
+	if (App->input->GetKey(SDL_SCANCODE_Q) == KeyState::KEY_REPEAT)
+		pos.y += moveSpeed * App->time->DeltaTime();
+	/* Camera down */
+	if (App->input->GetKey(SDL_SCANCODE_E) == KeyState::KEY_REPEAT)
+		pos.y -= moveSpeed * App->time->DeltaTime();
+
+	/* Camera forward */
+	if (App->input->GetKey(SDL_SCANCODE_W) == KeyState::KEY_REPEAT)
+	{
+		pos.x += frustum.Front().x * moveSpeed * App->time->DeltaTime();
+		pos.y += frustum.Front().y * moveSpeed * App->time->DeltaTime();
+		pos.z += frustum.Front().z * moveSpeed * App->time->DeltaTime();
+	}
+	/* Camera backwards */
+	if (App->input->GetKey(SDL_SCANCODE_S) == KeyState::KEY_REPEAT)
+	{
+		pos.x -= frustum.Front().x * moveSpeed * App->time->DeltaTime();
+		pos.y -= frustum.Front().y * moveSpeed * App->time->DeltaTime();
+		pos.z -= frustum.Front().z * moveSpeed * App->time->DeltaTime();
+	}
+
+	/* Camera left */
+	if (App->input->GetKey(SDL_SCANCODE_A) == KeyState::KEY_REPEAT)
+	{
+		pos.x -= frustum.WorldRight().x * moveSpeed * App->time->DeltaTime();
+		pos.y -= frustum.WorldRight().y * moveSpeed * App->time->DeltaTime();
+		pos.z -= frustum.WorldRight().z * moveSpeed * App->time->DeltaTime();
+	}
+	/* Camera right */
+	if (App->input->GetKey(SDL_SCANCODE_D) == KeyState::KEY_REPEAT)
+	{
+		pos.x += frustum.WorldRight().x * moveSpeed * App->time->DeltaTime();
+		pos.y += frustum.WorldRight().y * moveSpeed * App->time->DeltaTime();
+		pos.z += frustum.WorldRight().z * moveSpeed * App->time->DeltaTime();
+	}
+
+	frustum.SetPos(pos);
+}
+
+void ModuleEditorCamera::handleCameraRotation()
+{
+	/* Camera rotate upwards */
+	if (App->input->GetKey(SDL_SCANCODE_UP) == KeyState::KEY_REPEAT)
+	{
+		Quat rotation = Quat::RotateAxisAngle(frustum.WorldRight(), rotationSpeed * App->time->DeltaTime());
+		frustum.SetFront(rotation.Transform(frustum.Front()));
+		frustum.SetUp(rotation.Transform(frustum.Up()));
+	}
+	/* Camera rotate downwards */
+	if (App->input->GetKey(SDL_SCANCODE_DOWN) == KeyState::KEY_REPEAT)
+	{
+		Quat rotation = Quat::RotateAxisAngle(frustum.WorldRight(), -rotationSpeed * App->time->DeltaTime());
+		frustum.SetFront(rotation.Transform(frustum.Front()));
+		frustum.SetUp(rotation.Transform(frustum.Up()));
+	}
+
+	/* Camera rotate leftwards */
+	if (App->input->GetKey(SDL_SCANCODE_LEFT) == KeyState::KEY_REPEAT)
+	{
+		Quat rotation = Quat::FromEulerXYZ(0, rotationSpeed * App->time->DeltaTime(), 0);
+		frustum.SetFront(rotation.Transform(frustum.Front()));
+		frustum.SetUp(rotation.Transform(frustum.Up()));
+	}
+	/* Camera rotate rightwards */
+	if (App->input->GetKey(SDL_SCANCODE_RIGHT) == KeyState::KEY_REPEAT)
+	{
+		Quat rotation = Quat::FromEulerXYZ(0, -rotationSpeed * App->time->DeltaTime(), 0);
+		frustum.SetFront(rotation.Transform(frustum.Front()));
+		frustum.SetUp(rotation.Transform(frustum.Up()));
+	}
 }
 
 float ModuleEditorCamera::getHorizontalFOV(float vertFOV) const
