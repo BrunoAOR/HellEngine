@@ -27,6 +27,9 @@ public:
 	/* Returns a float* to the first of 16 floats representing the projection matrix */
 	float* GetProjectionMatrix();
 
+	/* Sets the distance for the near and far clipping planes */
+	bool SetPlaneDistances(float near, float far);
+
 	/* Method to be called when the window is resized */
 	void onWindowResize();
 

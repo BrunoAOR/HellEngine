@@ -97,6 +97,16 @@ float* ModuleEditorCamera::GetProjectionMatrix()
 	return frustum.ProjectionMatrix().Transposed().v[0];
 }
 
+/* Sets the distance for the near and far clipping planes */
+bool ModuleEditorCamera::SetPlaneDistances(float near, float far)
+{
+	if (near < 0 || near > far)
+		return false;
+
+	frustum.SetViewPlaneDistances(near, far);
+	return true;
+}
+
 /* Method to be called when the window is resized */
 void ModuleEditorCamera::onWindowResize()
 {
