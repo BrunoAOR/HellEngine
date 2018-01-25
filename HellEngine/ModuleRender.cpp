@@ -6,6 +6,7 @@
 #include "Brofiler/include/Brofiler.h"
 #include "SDL/include/SDL.h"
 #include "Application.h"
+#include "Color.h"
 #include "KeyState.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleRender.h"
@@ -57,6 +58,8 @@ bool ModuleRender::Init()
 
 UpdateStatus ModuleRender::PreUpdate()
 {
+	Color c = App->editorCamera->background;
+	glClearColor(c.r, c.g, c.b, c.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_PROJECTION);
 	glLoadMatrixf(App->editorCamera->GetProjectionMatrix());

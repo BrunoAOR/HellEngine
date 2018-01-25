@@ -264,6 +264,9 @@
     <ClInclude Include="ModuleEditorCamera.h">
       <Filter>Engine Modules</Filter>
     </ClInclude>
+    <ClInclude Include="Color.h">
+      <Filter>General</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">

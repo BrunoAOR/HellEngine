@@ -38,9 +38,6 @@ private:
     /*Editor variables*/
     float fovh;
     float fovv;
-    float movSpeed;
-    float rotSpeed;
-    float zoomSpeed;
     float nearPlane;
     float farPlane;
     float aspectRatio;

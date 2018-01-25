@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="Application.h" />
+    <ClInclude Include="Color.h" />
     <ClInclude Include="EventWindow.h" />
     <ClInclude Include="globals.h" />
     <ClInclude Include="KeyState.h" />
