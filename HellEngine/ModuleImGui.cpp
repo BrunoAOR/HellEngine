@@ -49,6 +49,19 @@ bool ModuleImGui::Init()
 	//ImGui::StyleColorsClassic();
 	ImGui::StyleColorsDark();
 
+    /*Editor Variables*/
+    fovh = 0.0f;
+    fovv = 0.0f;
+    movSpeed = 0.0f;
+    rotSpeed = 0.0f;
+    zoomSpeed = 0.0f;
+    nearPlane = 0.0f;
+    farPlane = 0.0f;
+    aspectRatio = 0.0f;
+    active = false;
+    frustumCulling = false;
+    isActiveCamera = true;
+
 	return true;
 }
 
@@ -67,6 +80,7 @@ UpdateStatus ModuleImGui::Update()
 	static bool showDemoWindow = false;
 	static bool rendererWireFrame = false;
 	static bool rendererRotate = false;
+    static bool showEditor = false;
 
 	float mainMenuBarHeight;
 
@@ -113,6 +127,8 @@ UpdateStatus ModuleImGui::Update()
 			ImGui::EndMenu();
 		}
 
+        ImGui::MenuItem("Editor", nullptr, &showEditor);
+
 		ImGui::EndMainMenuBar();
 	}
 
@@ -157,6 +173,39 @@ UpdateStatus ModuleImGui::Update()
 		
 		ImGui::End();
 	}
+
+    if (showEditor) {
+        ImGui::SetNextWindowPos(ImVec2(SCREEN_WIDTH * SCREEN_SIZE - 300, mainMenuBarHeight));
+        ImGui::SetNextWindowSize(ImVec2(300, 600));
+        ImGui::Begin("Editor", &showEditor, ImGuiWindowFlags_NoCollapse);
+
+        ImGui::Checkbox("Active", &active);
+
+        static float front[3] = { 0.10f, 0.10f, 0.10f};
+        ImGui::InputFloat3("Front", front);
+        static float up[3] = { 0.20f, 0.20f, 0.20f};
+        ImGui::InputFloat3("Up", up);
+        static float position[3] = { 0.30f, 0.30f, 0.30f};
+        ImGui::InputFloat3("Position", position);
+
+        ImGui::SliderFloat("Mov Speed", &movSpeed, 2.0f, 30.0f);
+        ImGui::SliderFloat("Rot Speed", &rotSpeed, 2.0f, 30.0f);
+        ImGui::SliderFloat("Zoom Speed", &zoomSpeed, 500.0f, 3000.0f);
+
+        ImGui::Checkbox("Frustum Culling", &frustumCulling);
+        ImGui::SliderFloat("Near Plane", &nearPlane, 0.01f, 30.0f);
+        ImGui::SliderFloat("Far Plane", &farPlane, 50.0f, 2000.0f);
+        ImGui::SliderFloat("Fov H", &fovh, 0.1f, 180.0f);
+        ImGui::SliderFloat("Fov V", &fovv, 0.1f, 180.0f);
+        ImGui::SliderFloat("Aspect Ratio", &aspectRatio, 0.1f, 5.0f);
+
+        static float backgroundColor[3] = { 1.0f, 1.0f, 1.0f };
+        ImGui::ColorEdit3("color 1", backgroundColor);
+
+        ImGui::Checkbox("Is Active Camera", &isActiveCamera);
+
+        ImGui::End();
+    }
 
 	ImGui::Render();
 

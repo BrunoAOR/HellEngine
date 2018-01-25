@@ -34,6 +34,19 @@ private:
 private:
 
 	std::string licenseString;
+
+    /*Editor variables*/
+    float fovh;
+    float fovv;
+    float movSpeed;
+    float rotSpeed;
+    float zoomSpeed;
+    float nearPlane;
+    float farPlane;
+    float aspectRatio;
+    bool active;
+    bool frustumCulling;
+    bool isActiveCamera;
 };
 
 #endif // !__H_MODULE_IMGUI__
