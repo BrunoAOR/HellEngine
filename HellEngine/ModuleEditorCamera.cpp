@@ -228,15 +228,23 @@ void ModuleEditorCamera::handleCameraRotation()
 	if (App->input->GetKey(SDL_SCANCODE_UP) == KeyState::KEY_REPEAT)
 	{
 		Quat rotation = Quat::RotateAxisAngle(frustum.WorldRight(), DegToRad(rotationSpeed) * App->time->DeltaTime());
-		frustum.SetFront(rotation.Transform(frustum.Front()));
-		frustum.SetUp(rotation.Transform(frustum.Up()));
+		vec newUp = rotation.Transform(frustum.Up());
+		if (newUp.y >= 0)
+		{
+			frustum.SetFront(rotation.Transform(frustum.Front()));
+			frustum.SetUp(newUp);
+		}
 	}
 	/* Camera rotate downwards */
 	if (App->input->GetKey(SDL_SCANCODE_DOWN) == KeyState::KEY_REPEAT)
 	{
 		Quat rotation = Quat::RotateAxisAngle(frustum.WorldRight(), -DegToRad(rotationSpeed) * App->time->DeltaTime());
-		frustum.SetFront(rotation.Transform(frustum.Front()));
-		frustum.SetUp(rotation.Transform(frustum.Up()));
+		vec newUp = rotation.Transform(frustum.Up());
+		if (newUp.y >= 0)
+		{
+			frustum.SetFront(rotation.Transform(frustum.Front()));
+			frustum.SetUp(newUp);
+		}
 	}
 
 	/* Camera rotate leftwards */
