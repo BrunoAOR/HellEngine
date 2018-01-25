@@ -173,7 +173,7 @@ UpdateStatus ModuleImGui::Update()
 	}
 
     if (showEditor) {
-        ImGui::SetNextWindowPos(ImVec2(SCREEN_WIDTH * SCREEN_SIZE - 300, mainMenuBarHeight));
+        ImGui::SetNextWindowPos(ImVec2((float)App->window->getWidth() - 300, mainMenuBarHeight));
         ImGui::SetNextWindowSize(ImVec2(300, 600));
         ImGui::Begin("Editor", &showEditor, ImGuiWindowFlags_NoCollapse);
 
