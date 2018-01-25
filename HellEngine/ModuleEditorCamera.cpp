@@ -81,16 +81,18 @@ float ModuleEditorCamera::getAspectRatio() const
 }
 
 /* Returns a float* to the first of 16 floats representing the view matrix */
-float* ModuleEditorCamera::GetViewMatrix() const
+float* ModuleEditorCamera::GetViewMatrix()
 {
-	float4x4 viewMatrix = frustum.ViewMatrix();
-	return viewMatrix.Transposed().v[0];
+	viewMatrix = frustum.ViewMatrix();
+	viewMatrix.Transpose();
+	return viewMatrix.v[0];
 }
 
 /* Returns a float* to the first of 16 floats representing the projection matrix */
-float* ModuleEditorCamera::GetProjectionMatrix() const
+float* ModuleEditorCamera::GetProjectionMatrix()
 {
-	return frustum.ProjectionMatrix().Transposed().v[0];
+	projectionMatrix = frustum.ProjectionMatrix().Transposed();
+	return projectionMatrix.v[0];
 }
 
 /* Sets the distance for the near and far clipping planes */

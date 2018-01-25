@@ -30,10 +30,10 @@ public:
 	float getAspectRatio() const;
 
 	/* Returns a float* to the first of 16 floats representing the view matrix */
-	float* GetViewMatrix() const;
+	float* GetViewMatrix();
 	
 	/* Returns a float* to the first of 16 floats representing the projection matrix */
-	float* GetProjectionMatrix() const;
+	float* GetProjectionMatrix();
 
 	/* Sets the distance for the near and far clipping planes */
 	bool SetPlaneDistances(float near, float far);
@@ -73,6 +73,8 @@ private:
 private:
 
 	Frustum frustum;
+	float4x4 viewMatrix;
+	float4x4 projectionMatrix;
 	float aspectRatio;
 	float verticalFOVRad;
 	float nearClippingPlane;
