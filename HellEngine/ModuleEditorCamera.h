@@ -49,6 +49,16 @@ public:
 	/* Method to be called when the window is resized */
 	void onWindowResize();
 
+	/* Method to be called when yaw rotation is required */
+	void RotateYaw(const int direction);
+
+	/* Method to be called when pitch rotation is required */
+	void RotatePitch(const int direction);
+
+	void DragCameraHorizontalAxis(int direction, vec &frustumPos, float speed);
+
+	void DragCameraVerticalAxis(int direction, vec &frustumPos, float speed);
+
 	const float* GetFront() const;
 
 	void SetFront(float x, float y, float z);
@@ -63,6 +73,9 @@ public:
 	float moveSpeed;
 	float rotationSpeed;
 	float zoomSpeed;
+
+	bool currentlyMovingCamera = false;
+	bool currentlyZoomingCamera = false;
 
 private:
 
