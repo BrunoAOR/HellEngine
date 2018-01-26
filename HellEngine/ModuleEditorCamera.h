@@ -2,6 +2,7 @@
 #define __H_MODULE_EDITOR_CAMERA__
 
 #include "MathGeoLib/src/Geometry/Frustum.h"
+#include "SDL\include\SDL_events.h"
 #include "Color.h"
 #include "Module.h"
 
@@ -92,6 +93,8 @@ private:
 	float verticalFOVRad;
 	float nearClippingPlane;
 	float farClippingPlane;
+
+	SDL_Event mouseEvent;
 };
 
 #endif // !__H_MODULE_EDITOR_CAMERA__

@@ -323,7 +323,18 @@ void ModuleEditorCamera::handleCameraMotion()
 			DragCameraVerticalAxis(-1, pos, zoomSpeed * 20);
 		}
 	}
-
+	
+	/*Zoom with mouse wheel */
+	SDL_PollEvent(&mouseEvent);
+	if (mouseEvent.wheel.y == -SDL_MOUSEWHEEL_FLIPPED) // scroll up
+	{
+		DragCameraVerticalAxis(1, pos, zoomSpeed/10);
+	}
+	else if (mouseEvent.wheel.y == SDL_MOUSEWHEEL_FLIPPED) // scroll down
+	{
+		DragCameraVerticalAxis(-1, pos, zoomSpeed/10);
+	}
+	
 	if (App->input->GetMouseButtonDown(SDL_BUTTON_RIGHT) == KeyState::KEY_UP)
 	{
 		currentlyZoomingCamera = false;
