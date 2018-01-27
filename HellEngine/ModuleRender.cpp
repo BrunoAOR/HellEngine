@@ -1,4 +1,7 @@
 #pragma comment( lib, "Glew/libx86/glew32.lib" )
+#pragma comment( lib, "DevIL/x86/Release/DevIL.lib" )
+#pragma comment( lib, "DevIL/x86/Release/ILU.lib" )
+#pragma comment( lib, "DevIL/x86/Release/ILUT.lib" )
 #define SP_ARR_2F(x) x[0], x[1]
 #define SP_ARR_3F(x) x[0], x[1], x[2]
 #include <assert.h>
@@ -16,6 +19,9 @@
 #include "UpdateStatus.h"
 #include "globals.h"
 #include "openGL.h"
+#include "DevIL/include/IL/il.h"
+#include "DevIL/include/IL/ilu.h"
+#include "DevIL/include/IL/ilut.h"
 
 ModuleRender::ModuleRender()
 {}
@@ -53,6 +59,11 @@ bool ModuleRender::Init()
 		InitCubeInfo();
 		InitSphereInfo(32, 32);
 		checkeredTextureId = CreateCheckeredTexture();
+
+		InitDevIL();
+		lennaTextureId = LoadImageWithDevIL(lennaPath);
+		ryuTextureId = LoadImageWithDevIL(ryuPath);
+		gokuTextureId = LoadImageWithDevIL(gokuPath);
 	}
 
 	return ret;
@@ -560,7 +571,7 @@ void ModuleRender::DrawCubeImmediateMode() const
 
 	*/
 
-	glBindTexture(GL_TEXTURE_2D, checkeredTextureId);
+	glBindTexture(GL_TEXTURE_2D, ryuTextureId);
 	glBegin(GL_TRIANGLES);
 
 	/* Front */
@@ -698,7 +709,7 @@ void ModuleRender::DrawCubeArrays() const
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glBindTexture(GL_TEXTURE_2D, checkeredTextureId);
+	glBindTexture(GL_TEXTURE_2D, lennaTextureId);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
 	glVertexPointer(3, GL_FLOAT, 0, nullptr);
@@ -725,7 +736,7 @@ void ModuleRender::DrawCubeElements() const
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glBindTexture(GL_TEXTURE_2D, checkeredTextureId);
+	glBindTexture(GL_TEXTURE_2D, gokuTextureId);
 
 	glBindBuffer(GL_ARRAY_BUFFER, uniqueVerticesBufferId);
 	glVertexPointer(3, GL_FLOAT, 0, nullptr);
@@ -838,4 +849,93 @@ void ModuleRender::DrawGroundGrid() const
 	}
 
 	glEnd();
+}
+
+void ModuleRender::InitDevIL()
+{
+	//  ----- Initialise DevIL -----
+	ilutRenderer(ILUT_OPENGL);
+	ilInit();
+	iluInit();
+	ilutInit();
+	ilutRenderer(ILUT_OPENGL);
+}
+
+// Function load a image, turn it into a texture, and return the texture ID as a GLuint for use
+GLuint ModuleRender::LoadImageWithDevIL(const char* theFileName)
+{
+	ILuint imageID;				// Create a image ID as a ULuint
+
+	GLuint textureID;			// Create a texture ID as a GLuint
+
+	ILboolean success;			// Create a flag to keep track of success/failure
+
+	ILenum error;				// Create a flag to keep track of the IL error state
+
+	ilGenImages(1, &imageID); 		// Generate the image ID
+
+	ilBindImage(imageID); 			// Bind the image
+
+	success = ilLoadImage(theFileName); 	// Load the image file
+
+											// If we managed to load the image, then we can start to do things with it...
+	if (success)
+	{
+		// If the image is flipped (i.e. upside-down and mirrored, flip it the right way up!)
+		ILinfo ImageInfo;
+		iluGetImageInfo(&ImageInfo);
+		if (ImageInfo.Origin == IL_ORIGIN_UPPER_LEFT)
+		{
+			iluFlipImage();
+		}
+
+		// ... then attempt to conver it.
+		// NOTE: If your image contains alpha channel you can replace IL_RGB with IL_RGBA
+		success = ilConvertImage(IL_RGB, IL_UNSIGNED_BYTE);
+
+		// Quit out if we failed the conversion
+		if (!success)
+		{
+			error = ilGetError();
+			LOGGER("Image conversion failed - IL reports error: ");
+			exit(-1);
+		}
+
+		// Generate a new texture
+		glGenTextures(1, &textureID);
+
+		// Bind the texture to a name
+		glBindTexture(GL_TEXTURE_2D, textureID);
+
+		// Set texture clamping method
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+		// Set texture interpolation method to use linear interpolation (no MIPMAPS)
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+		// Specify the texture specification
+		glTexImage2D(GL_TEXTURE_2D, 				// Type of texture
+			0,				// Pyramid level (for mip-mapping) - 0 is the top level
+			ilGetInteger(IL_IMAGE_BPP),	// Image colour depth
+			ilGetInteger(IL_IMAGE_WIDTH),	// Image width
+			ilGetInteger(IL_IMAGE_HEIGHT),	// Image height
+			0,				// Border width in pixels (can either be 1 or 0)
+			ilGetInteger(IL_IMAGE_FORMAT),	// Image format (i.e. RGB, RGBA, BGR etc.)
+			GL_UNSIGNED_BYTE,		// Image data type
+			ilGetData());			// The actual image data itself
+	}
+	else // If we failed to open the image file in the first place...
+	{
+		error = ilGetError();
+		LOGGER("Image load failed - IL reports error: ");
+		exit(-1);
+	}
+
+	ilDeleteImages(1, &imageID); // Because we have already copied image data into texture data we can release memory used by image.
+
+	LOGGER("Texture creation successful.");
+
+	return textureID; // Return the GLuint to the texture so you can use it!
 }

@@ -62,6 +62,12 @@ private:
 	/* Draw a grid on the ground */
 	void DrawGroundGrid() const;
 
+	/* Initialize DevIL */
+	void InitDevIL();
+
+	/* Loading image with DevIL */
+	GLuint LoadImageWithDevIL(const char* theFileName);
+
 public:
 
 	bool wireframe;
@@ -116,6 +122,12 @@ private:
 	} sphereInfo;
 
 	GLuint checkeredTextureId;
+	GLuint lennaTextureId;
+	GLuint ryuTextureId;
+	GLuint gokuTextureId;
+	const char* lennaPath = "D:\\MasterUPC\\AdvancedProgramming\\HellEngine\\HellEngine\\Pictures\\Lenna.png";
+	const char* ryuPath = "D:\\MasterUPC\\AdvancedProgramming\\HellEngine\\HellEngine\\Pictures\\ryu.jpg";
+	const char* gokuPath = "D:\\MasterUPC\\AdvancedProgramming\\HellEngine\\HellEngine\\Pictures\\goku.dds";
 };
 
 #endif /* __H_MODULERENDER__ */
