@@ -1,6 +1,7 @@
 #ifndef __H_MODULEINPUT__
 #define __H_MODULEINPUT__
 
+#include "SDL/include/SDL_scancode.h"
 #include "EventWindow.h"
 #include "KeyState.h"
 #include "Module.h"
@@ -48,6 +49,7 @@ public:
 	/* Get mouse / axis position */
 	const iPoint& GetMouseMotion() const;
 	const iPoint& GetMousePosition() const;
+	const iPoint& GetMouseWheel() const;
 
 private:
 	bool		windowEvents[(int)EventWindow::WE_COUNT];
@@ -55,6 +57,7 @@ private:
 	KeyState	mouseButtons[NUM_MOUSE_BUTTONS];
 	iPoint mouseMotion;
 	iPoint mouse;
+	iPoint mouseWheel;
 };
 
 #endif /* __MODULEINPUT_H__ */

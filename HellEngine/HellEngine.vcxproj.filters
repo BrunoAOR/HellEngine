@@ -261,6 +261,12 @@
     <ClInclude Include="ModuleImGui.h">
       <Filter>Engine Modules</Filter>
     </ClInclude>
+    <ClInclude Include="ModuleEditorCamera.h">
+      <Filter>Engine Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Color.h">
+      <Filter>General</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -409,6 +415,9 @@
     </ClCompile>
     <ClCompile Include="ImGui\imgui_draw.cpp">
       <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleEditorCamera.cpp">
+      <Filter>Engine Modules</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -23,6 +23,9 @@ public:
 	UpdateStatus PostUpdate();
 	bool CleanUp();
 
+	/* Method to be called when the window is resized */
+	void onWindowResize();
+
 private:
 
 	/* Initializes the GLEW library */
@@ -51,6 +54,9 @@ private:
 
 	/* Renders a sphere using OpenGL glDrawElements function */
 	void DrawSphere() const;
+
+	/* Draw a grid on the ground */
+	void DrawGroundGrid() const;
 
 public:
 

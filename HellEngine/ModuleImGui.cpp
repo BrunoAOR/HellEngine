@@ -4,6 +4,7 @@
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_sdl_gl3.h"
 #include "Application.h"
+#include "ModuleEditorCamera.h"
 #include "ModuleImGui.h"
 #include "ModuleRender.h"
 #include "ModuleWindow.h"
@@ -49,6 +50,16 @@ bool ModuleImGui::Init()
 	//ImGui::StyleColorsClassic();
 	ImGui::StyleColorsDark();
 
+    /*Editor Variables*/
+    fovh = 0.0f;
+    fovv = 0.0f;
+	nearPlane = App->editorCamera->getNearPlaneDistance();
+    farPlane = App->editorCamera->getFarPlaneDistance();
+    aspectRatio = 0.0f;
+    active = false;
+    frustumCulling = false;
+    isActiveCamera = true;
+
 	return true;
 }
 
@@ -67,6 +78,7 @@ UpdateStatus ModuleImGui::Update()
 	static bool showDemoWindow = false;
 	static bool rendererWireFrame = false;
 	static bool rendererRotate = false;
+    static bool showEditor = false;
 
 	float mainMenuBarHeight;
 
@@ -113,6 +125,8 @@ UpdateStatus ModuleImGui::Update()
 			ImGui::EndMenu();
 		}
 
+        ImGui::MenuItem("Editor", nullptr, &showEditor);
+
 		ImGui::EndMainMenuBar();
 	}
 
@@ -157,6 +171,69 @@ UpdateStatus ModuleImGui::Update()
 		
 		ImGui::End();
 	}
+
+    if (showEditor) {
+        ImGui::SetNextWindowPos(ImVec2((float)App->window->getWidth() - 300, mainMenuBarHeight));
+        ImGui::SetNextWindowSize(ImVec2(300, 600));
+        ImGui::Begin("Editor", &showEditor, ImGuiWindowFlags_NoCollapse);
+
+        ImGui::Checkbox("Active", &active);
+
+        static float front[3] = { 0, 0, 0};
+		static const float* editorFront = nullptr;
+		editorFront = App->editorCamera->GetFront();
+		front[0] = editorFront[0];
+		front[1] = editorFront[1];
+		front[2] = editorFront[2];
+		ImGui::InputFloat3("Front", front, 2);
+
+		static float up[3] = { 0, 0, 0 };
+		static const float* editorUp = nullptr;
+		editorUp = App->editorCamera->GetUp();
+		up[0] = editorUp[0];
+		up[1] = editorUp[1];
+		up[2] = editorUp[2];
+		ImGui::InputFloat3("Up", up, 3);
+
+        static float position[3] = { 0, 0, 0};
+		static const float* editorPos = nullptr;
+		editorPos = App->editorCamera->getPosition();
+		position[0] = editorPos[0];
+		position[1] = editorPos[1];
+		position[2] = editorPos[2];
+		if (ImGui::InputFloat3("Position", position))
+			App->editorCamera->SetPosition(position[0], position[1], position[2]);
+
+        ImGui::SliderFloat("Mov Speed", &App->editorCamera->moveSpeed, 1.0f, 25.0f);
+        ImGui::SliderFloat("Rot Speed", &App->editorCamera->rotationSpeed, 1.0f, 25.0f);
+        ImGui::SliderFloat("Zoom Speed", &App->editorCamera->zoomSpeed, 10.0f, 200.0f);
+
+        ImGui::Checkbox("Frustum Culling", &frustumCulling);
+		if (ImGui::SliderFloat("Near Plane", &nearPlane, 0.01f, 30.0f))
+			App->editorCamera->SetNearPlaneDistance(nearPlane);
+		if (ImGui::SliderFloat("Far Plane", &farPlane, 50.0f, 2000.0f))
+			App->editorCamera->SetFarPlaneDistance(farPlane);
+
+		fovh = App->editorCamera->getHorizontalFOV();
+        ImGui::SliderFloat("Fov H", &fovh, 0.1f, 180.0f);
+		fovv = App->editorCamera->getVerticalFOV();
+		if (ImGui::SliderFloat("Fov V", &fovv, 0.1f, 180.0f))
+			App->editorCamera->SetFOV(fovv);
+		aspectRatio = App->editorCamera->getAspectRatio();
+        ImGui::SliderFloat("Aspect Ratio", &aspectRatio, 0.1f, 5.0f);
+
+        static float backgroundColor[3] = { 0.0f, 0.0f, 0.0f };
+		if (ImGui::ColorEdit3("color 1", backgroundColor))
+		{
+			App->editorCamera->background.r = backgroundColor[0];
+			App->editorCamera->background.g = backgroundColor[1];
+			App->editorCamera->background.b = backgroundColor[2];
+		}
+
+        ImGui::Checkbox("Is Active Camera", &isActiveCamera);
+
+        ImGui::End();
+    }
 
 	ImGui::Render();
 

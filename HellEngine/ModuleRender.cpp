@@ -6,7 +6,9 @@
 #include "Brofiler/include/Brofiler.h"
 #include "SDL/include/SDL.h"
 #include "Application.h"
+#include "Color.h"
 #include "KeyState.h"
+#include "ModuleEditorCamera.h"
 #include "ModuleRender.h"
 #include "ModuleTime.h"
 #include "ModuleWindow.h"
@@ -56,9 +58,13 @@ bool ModuleRender::Init()
 
 UpdateStatus ModuleRender::PreUpdate()
 {
+	Color c = App->editorCamera->background;
+	glClearColor(c.r, c.g, c.b, c.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glMatrixMode(GL_PROJECTION);
+	glLoadMatrixf(App->editorCamera->GetProjectionMatrix());
 	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	glLoadMatrixf(App->editorCamera->GetViewMatrix());
 	return UpdateStatus::UPDATE_CONTINUE;
 }
 
@@ -127,6 +133,11 @@ UpdateStatus ModuleRender::Update()
 		glPopMatrix();
 	}
 
+	/* DrawGroundGrid */
+	{
+		DrawGroundGrid();
+	}
+
 	if (wireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -153,6 +164,11 @@ bool ModuleRender::CleanUp()
 	}
 
 	return true;
+}
+
+void ModuleRender::onWindowResize()
+{ 
+	glViewport(0, 0, App->window->getWidth(), App->window->getHeight());
 }
 
 /* Initializes the GLEW library */
@@ -475,7 +491,7 @@ void ModuleRender::DrawCubeImmediateMode() const
 {
 	glBegin(GL_TRIANGLES);
 
-	/* front */
+	/* Front */
 	glColor3fv(cRed);
 	glVertex3fv(vA);
 	glColor3fv(cGreen);
@@ -490,7 +506,7 @@ void ModuleRender::DrawCubeImmediateMode() const
 	glColor3fv(cWhite);
 	glVertex3fv(vC);
 
-	/* right */
+	/* Right */
 	glColor3fv(cGreen);
 	glVertex3fv(vB);
 	glColor3fv(cWhite);
@@ -505,7 +521,7 @@ void ModuleRender::DrawCubeImmediateMode() const
 	glColor3fv(cBlue);
 	glVertex3fv(vD);
 
-	/* back */
+	/* Back */
 	glColor3fv(cWhite);
 	glVertex3fv(vF);
 	glColor3fv(cBlue);
@@ -520,7 +536,7 @@ void ModuleRender::DrawCubeImmediateMode() const
 	glColor3fv(cRed);
 	glVertex3fv(vH);
 
-	/* left */
+	/* Left */
 	glColor3fv(cBlue);
 	glVertex3fv(vE);
 	glColor3fv(cRed);
@@ -535,7 +551,7 @@ void ModuleRender::DrawCubeImmediateMode() const
 	glColor3fv(cGreen);
 	glVertex3fv(vG);
 
-	/* top */
+	/* Top */
 	glColor3fv(cWhite);
 	glVertex3fv(vC);
 	glColor3fv(cBlue);
@@ -550,7 +566,7 @@ void ModuleRender::DrawCubeImmediateMode() const
 	glColor3fv(cGreen);
 	glVertex3fv(vG);
 
-	/* bottom */
+	/* Bottom */
 	glColor3fv(cRed);
 	glVertex3fv(vA);
 	glColor3fv(cWhite);
@@ -655,4 +671,38 @@ void ModuleRender::DrawSphere() const
 
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
+}
+
+void ModuleRender::DrawGroundGrid() const
+{
+	int start = -20;
+	int extent = 20;
+	float y = 0;
+
+	glBegin(GL_LINES);
+
+	for (int i = start; i <= extent; i++)
+	{
+		if (i == start) {
+			glColor3f(.6f, .3f, .3f);
+		}
+		else {
+			glColor3f(.25f, .25f, .25f);
+		}
+
+		glVertex3f((float)i, y, (float)start);
+		glVertex3f((float)i, y, (float)extent);
+
+		if (i == start) {
+			glColor3f(.3f, .3f, .6f);
+		}
+		else {
+			glColor3f(.25f, .25f, .25f);
+		}
+
+		glVertex3f((float)start, y, (float)i);
+		glVertex3f((float)extent, y, (float)i);
+	}
+
+	glEnd();
 }

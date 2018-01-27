@@ -17,6 +17,9 @@
 	@brief The Frustum geometry object. */
 #pragma once
 
+#define MATH_USE_OPENGL
+#define MATH_RIGHTHANDED_CAMERA
+
 #include "../MathGeoLibFwd.h"
 #include "../Math/float2.h"
 #include "../Math/float3.h"

@@ -3,7 +3,10 @@
 #include "ImGui/imgui_impl_sdl_gl3.h"
 #include "Application.h"
 #include "KeyState.h"
+#include "ModuleEditorCamera.h"
 #include "ModuleInput.h"
+#include "ModuleRender.h"
+#include "ModuleWindow.h"
 #include "UpdateStatus.h"
 #include "globals.h"
 
@@ -47,7 +50,8 @@ UpdateStatus ModuleInput::PreUpdate()
 {
 	static SDL_Event event;
 
-	mouseMotion = {0, 0};
+	mouseMotion.SetToZero();
+	mouseWheel.SetToZero();
 	memset(windowEvents, false, (int)EventWindow::WE_COUNT * sizeof(bool));
 	
 	const Uint8* keys = SDL_GetKeyboardState(NULL);
@@ -82,45 +86,56 @@ UpdateStatus ModuleInput::PreUpdate()
 	while(SDL_PollEvent(&event) != 0)
 	{
 		ImGui_ImplSdlGL3_ProcessEvent(&event);
-		switch(event.type)
+		switch (event.type)
 		{
-			case SDL_QUIT:
-				windowEvents[(int)EventWindow::WE_QUIT] = true;
+		case SDL_QUIT:
+			windowEvents[(int)EventWindow::WE_QUIT] = true;
 			break;
 
-			case SDL_WINDOWEVENT:
-				switch(event.window.event)
-				{
-					/* case SDL_WINDOWEVENT_LEAVE: */
-					case SDL_WINDOWEVENT_HIDDEN:
-					case SDL_WINDOWEVENT_MINIMIZED:
-					case SDL_WINDOWEVENT_FOCUS_LOST:
-					windowEvents[(int)EventWindow::WE_HIDE] = true;
-					break;
+		case SDL_WINDOWEVENT:
+			switch (event.window.event)
+			{
+			case SDL_WINDOWEVENT_RESIZED:
+				App->window->onWindowResize();
+				App->renderer->onWindowResize();
+				App->editorCamera->onWindowResize();
+				break;
 
-					/* case SDL_WINDOWEVENT_ENTER: */
-					case SDL_WINDOWEVENT_SHOWN:
-					case SDL_WINDOWEVENT_FOCUS_GAINED:
-					case SDL_WINDOWEVENT_MAXIMIZED:
-					case SDL_WINDOWEVENT_RESTORED:
-					windowEvents[(int)EventWindow::WE_SHOW] = true;
-					break;
-				}
+				/* case SDL_WINDOWEVENT_LEAVE: */
+			case SDL_WINDOWEVENT_HIDDEN:
+			case SDL_WINDOWEVENT_MINIMIZED:
+			case SDL_WINDOWEVENT_FOCUS_LOST:
+				windowEvents[(int)EventWindow::WE_HIDE] = true;
+				break;
+
+				/* case SDL_WINDOWEVENT_ENTER: */
+			case SDL_WINDOWEVENT_SHOWN:
+			case SDL_WINDOWEVENT_FOCUS_GAINED:
+			case SDL_WINDOWEVENT_MAXIMIZED:
+			case SDL_WINDOWEVENT_RESTORED:
+				windowEvents[(int)EventWindow::WE_SHOW] = true;
+				break;
+			}
 			break;
 
-			case SDL_MOUSEBUTTONDOWN:
-				mouseButtons[event.button.button - 1] = KeyState::KEY_DOWN;
+		case SDL_MOUSEBUTTONDOWN:
+			mouseButtons[event.button.button - 1] = KeyState::KEY_DOWN;
 			break;
 
-			case SDL_MOUSEBUTTONUP:
-				mouseButtons[event.button.button - 1] = KeyState::KEY_UP;
+		case SDL_MOUSEBUTTONUP:
+			mouseButtons[event.button.button - 1] = KeyState::KEY_UP;
 			break;
 
-			case SDL_MOUSEMOTION:
-				mouseMotion.x = event.motion.xrel / SCREEN_SIZE;
-				mouseMotion.y = event.motion.yrel / SCREEN_SIZE;
-				mouse.x = event.motion.x / SCREEN_SIZE;
-				mouse.y = event.motion.y / SCREEN_SIZE;
+		case SDL_MOUSEMOTION:
+			mouseMotion.x += event.motion.xrel;
+			mouseMotion.y += event.motion.yrel;
+			mouse.x = event.motion.x;
+			mouse.y = event.motion.y;
+			break;
+
+		case SDL_MOUSEWHEEL:
+			mouseWheel.x = event.wheel.direction == SDL_MOUSEWHEEL_NORMAL ? event.wheel.x : -event.wheel.x;
+			mouseWheel.y = event.wheel.direction == SDL_MOUSEWHEEL_NORMAL ? event.wheel.y : -event.wheel.y;
 			break;
 		}
 	}
@@ -144,12 +159,17 @@ bool ModuleInput::GetWindowEvent(EventWindow ev) const
 	return windowEvents[(int)ev];
 }
 
+const iPoint& ModuleInput::GetMouseMotion() const
+{
+	return mouseMotion;
+}
+
 const iPoint& ModuleInput::GetMousePosition() const
 {
 	return mouse;
 }
 
-const iPoint& ModuleInput::GetMouseMotion() const
+const iPoint & ModuleInput::GetMouseWheel() const
 {
-	return mouseMotion;
+	return mouseWheel;
 }
