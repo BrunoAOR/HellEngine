@@ -107,6 +107,8 @@ private:
 		uint colorsBufferId;
 		uint verticesIndexBufferId;
 	} sphereInfo;
+
+	GLuint checkeredTextureId;
 };
 
 #endif /* __H_MODULERENDER__ */

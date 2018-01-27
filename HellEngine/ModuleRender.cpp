@@ -51,6 +51,7 @@ bool ModuleRender::Init()
 	{
 		InitCubeInfo();
 		InitSphereInfo(32, 32);
+		checkeredTextureId = CreateCheckeredTexture();
 	}
 
 	return ret;
@@ -517,99 +518,152 @@ GLuint ModuleRender::CreateCheckeredTexture()
 
 void ModuleRender::DrawCubeImmediateMode() const
 {
+	/*
+	CUBE drawing
+	  G-----H
+	 /|    /|
+	C-----D |
+	| |   | |
+	| E---|-F
+	|/    |/
+	A-----B
+
+	ABDC is the front face
+	FEGH is the back face
+
+	*/
+
+	glBindTexture(GL_TEXTURE_2D, checkeredTextureId);
 	glBegin(GL_TRIANGLES);
 
 	/* Front */
 	glColor3fv(cRed);
+	glTexCoord2f(0.0f, 0.0f);
 	glVertex3fv(vA);
 	glColor3fv(cGreen);
+	glTexCoord2f(1.0f, 0.0f);
 	glVertex3fv(vB);
 	glColor3fv(cWhite);
+	glTexCoord2f(0.0f, 1.0f);
 	glVertex3fv(vC);
 
 	glColor3fv(cGreen);
+	glTexCoord2f(1.0f, 0.0f);
 	glVertex3fv(vB);
 	glColor3fv(cBlue);
+	glTexCoord2f(1.0f, 1.0f);
 	glVertex3fv(vD);
 	glColor3fv(cWhite);
+	glTexCoord2f(0.0f, 1.0f);
 	glVertex3fv(vC);
 
 	/* Right */
 	glColor3fv(cGreen);
+	glTexCoord2f(1.0f, 0.0f);
 	glVertex3fv(vB);
 	glColor3fv(cWhite);
+	glTexCoord2f(0.0f, 0.0f);
 	glVertex3fv(vF);
 	glColor3fv(cBlue);
+	glTexCoord2f(1.0f, 1.0f);
 	glVertex3fv(vD);
 
 	glColor3fv(cWhite);
+	glTexCoord2f(0.0f, 0.0f);
 	glVertex3fv(vF);
 	glColor3fv(cRed);
+	glTexCoord2f(0.0f, 1.0f);
 	glVertex3fv(vH);
 	glColor3fv(cBlue);
+	glTexCoord2f(1.0f, 1.0f);
 	glVertex3fv(vD);
 
 	/* Back */
 	glColor3fv(cWhite);
+	glTexCoord2f(0.0f, 0.0f);
 	glVertex3fv(vF);
 	glColor3fv(cBlue);
+	glTexCoord2f(1.0f, 0.0f);
 	glVertex3fv(vE);
 	glColor3fv(cRed);
+	glTexCoord2f(0.0f, 1.0f);
 	glVertex3fv(vH);
 
 	glColor3fv(cBlue);
+	glTexCoord2f(1.0f, 0.0f);
 	glVertex3fv(vE);
 	glColor3fv(cGreen);
+	glTexCoord2f(1.0f, 1.0f);
 	glVertex3fv(vG);
 	glColor3fv(cRed);
+	glTexCoord2f(0.0f, 1.0f);
 	glVertex3fv(vH);
 
 	/* Left */
 	glColor3fv(cBlue);
+	glTexCoord2f(1.0f, 0.0f);
 	glVertex3fv(vE);
 	glColor3fv(cRed);
+	glTexCoord2f(0.0f, 0.0f);
 	glVertex3fv(vA);
 	glColor3fv(cGreen);
+	glTexCoord2f(1.0f, 1.0f);
 	glVertex3fv(vG);
 
 	glColor3fv(cRed);
+	glTexCoord2f(0.0f, 0.0f);
 	glVertex3fv(vA);
 	glColor3fv(cWhite);
+	glTexCoord2f(0.0f, 1.0f);
 	glVertex3fv(vC);
 	glColor3fv(cGreen);
+	glTexCoord2f(1.0f, 1.0f);
 	glVertex3fv(vG);
 
 	/* Top */
 	glColor3fv(cWhite);
+	glTexCoord2f(0.0f, 1.0f);
 	glVertex3fv(vC);
 	glColor3fv(cBlue);
+	glTexCoord2f(1.0f, 1.0f);
 	glVertex3fv(vD);
 	glColor3fv(cRed);
+	glTexCoord2f(1.0f, 0.0f);
 	glVertex3fv(vH);
 
 	glColor3fv(cWhite);
+	glTexCoord2f(0.0f, 1.0f);
 	glVertex3fv(vC);
 	glColor3fv(cRed);
+	glTexCoord2f(1.0f, 0.0f);
 	glVertex3fv(vH);
 	glColor3fv(cGreen);
+	glTexCoord2f(0.0f, 0.0f);
 	glVertex3fv(vG);
 
 	/* Bottom */
 	glColor3fv(cRed);
+	glTexCoord2f(0.0f, 0.0f);
 	glVertex3fv(vA);
 	glColor3fv(cWhite);
+	glTexCoord2f(1.0f, 1.0f);
 	glVertex3fv(vF);
 	glColor3fv(cGreen);
+	glTexCoord2f(1.0f, 0.0f);
 	glVertex3fv(vB);
 
 	glColor3fv(cWhite);
+	glTexCoord2f(1.0f, 1.0f);
 	glVertex3fv(vF);
 	glColor3fv(cRed);
+	glTexCoord2f(0.0f, 0.0f);
 	glVertex3fv(vA);
 	glColor3fv(cBlue);
+	glTexCoord2f(0.0f, 1.0f);
 	glVertex3fv(vE);
 
 	glEnd();
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
 }
 
 void ModuleRender::DrawCubeArrays() const
