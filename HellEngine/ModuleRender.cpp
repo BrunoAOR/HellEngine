@@ -1,7 +1,7 @@
 #pragma comment( lib, "Glew/libx86/glew32.lib" )
-#pragma comment( lib, "DevIL/x86/Release/DevIL.lib" )
-#pragma comment( lib, "DevIL/x86/Release/ILU.lib" )
-#pragma comment( lib, "DevIL/x86/Release/ILUT.lib" )
+#pragma comment( lib, "DevIL/libx86/DevIL.lib" )
+#pragma comment( lib, "DevIL/libx86/ILU.lib" )
+#pragma comment( lib, "DevIL/libx86/ILUT.lib" )
 #define SP_ARR_2F(x) x[0], x[1]
 #define SP_ARR_3F(x) x[0], x[1], x[2]
 #include <assert.h>
@@ -853,7 +853,6 @@ void ModuleRender::DrawGroundGrid() const
 
 void ModuleRender::InitDevIL()
 {
-	//  ----- Initialise DevIL -----
 	ilutRenderer(ILUT_OPENGL);
 	ilInit();
 	iluInit();
