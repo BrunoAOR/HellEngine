@@ -90,12 +90,18 @@ private:
 	GLfloat cBlue[3];
 	GLfloat cWhite[3];
 
-	uint vertexBufferId;
-	uint colorsBufferId;
+	GLfloat bottomLeft[2];
+	GLfloat bottomRight[2];
+	GLfloat topLeft[2];
+	GLfloat topRight[2];
 
-	uint uniqueVerticesBufferId;
-	uint uniqueColorsBufferId;
-	uint uniqueVerticesIndexBufferId;
+	GLuint vertexBufferId;
+	GLuint colorsBufferId;
+	GLuint uvCoordsBufferId;
+
+	GLuint uniqueVerticesBufferId;
+	GLuint uniqueColorsBufferId;
+	GLuint uniqueVerticesIndexBufferId;
 
 	struct {
 		unsigned int rings;

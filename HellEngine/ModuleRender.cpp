@@ -1,4 +1,5 @@
 #pragma comment( lib, "Glew/libx86/glew32.lib" )
+#define SP_ARR_2F(x) x[0], x[1]
 #define SP_ARR_3F(x) x[0], x[1], x[2]
 #include <assert.h>
 #include <math.h>
@@ -300,21 +301,41 @@ void ModuleRender::InitCubeInfo()
 		cWhite[2] = 1.0f;
 	}
 
+	/* UV coords */
+	{
+		bottomLeft[0] = 0.0f;
+		bottomLeft[1] = 0.0f;
+
+		bottomRight[0] = 1.0f;
+		bottomRight[1] = 0.0f;
+
+		topLeft[0] = 0.0f;
+		topLeft[1] = 1.0f;
+
+		topRight[0] = 1.0f;
+		topRight[1] = 1.0f;
+	}
 
 	const size_t vertCount = 36;
 	
 	/* For DrawArray */
 	GLfloat vertices[vertCount * 3] = { SP_ARR_3F(vA), SP_ARR_3F(vB), SP_ARR_3F(vC), SP_ARR_3F(vB), SP_ARR_3F(vD), SP_ARR_3F(vC), SP_ARR_3F(vB), SP_ARR_3F(vF), SP_ARR_3F(vD), SP_ARR_3F(vF), SP_ARR_3F(vH), SP_ARR_3F(vD), SP_ARR_3F(vF), SP_ARR_3F(vE), SP_ARR_3F(vH), SP_ARR_3F(vE), SP_ARR_3F(vG), SP_ARR_3F(vH), SP_ARR_3F(vE), SP_ARR_3F(vA), SP_ARR_3F(vG), SP_ARR_3F(vA), SP_ARR_3F(vC), SP_ARR_3F(vG), SP_ARR_3F(vC), SP_ARR_3F(vD), SP_ARR_3F(vH), SP_ARR_3F(vC), SP_ARR_3F(vH), SP_ARR_3F(vG), SP_ARR_3F(vA), SP_ARR_3F(vF), SP_ARR_3F(vB), SP_ARR_3F(vF), SP_ARR_3F(vA), SP_ARR_3F(vE) };
 	GLfloat colors[vertCount * 3] = { SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cRed), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cRed), SP_ARR_3F(cBlue), SP_ARR_3F(cGreen), SP_ARR_3F(cRed), SP_ARR_3F(cBlue), SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cRed), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cRed), SP_ARR_3F(cWhite), SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cRed), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cRed), SP_ARR_3F(cBlue) };
+	GLfloat uvCoords[vertCount * 2] = { SP_ARR_2F(bottomLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(topLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(topRight), SP_ARR_2F(topLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(topLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(topLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(topRight), SP_ARR_2F(topLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(topLeft), SP_ARR_2F(topRight), SP_ARR_2F(topLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomRight), SP_ARR_2F(topLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(bottomLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomRight), SP_ARR_2F(topRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(topLeft) };
 
-	glGenBuffers(1, (GLuint*)&vertexBufferId);
+	glGenBuffers(1, &vertexBufferId);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertCount * 3, vertices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
-	glGenBuffers(1, (GLuint*)&colorsBufferId);
+	glGenBuffers(1, &colorsBufferId);
 	glBindBuffer(GL_ARRAY_BUFFER, colorsBufferId);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertCount * 3, colors, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
+	glGenBuffers(1, &uvCoordsBufferId);
+	glBindBuffer(GL_ARRAY_BUFFER, uvCoordsBufferId);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertCount * 2, uvCoords, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
 	/* For DrawElements and DrawRangeElements */
@@ -670,6 +691,8 @@ void ModuleRender::DrawCubeArrays() const
 {
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glBindTexture(GL_TEXTURE_2D, checkeredTextureId);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
 	glVertexPointer(3, GL_FLOAT, 0, NULL);
@@ -679,8 +702,14 @@ void ModuleRender::DrawCubeArrays() const
 	glColorPointer(3, GL_FLOAT, 0, NULL);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
-	glDrawArrays(GL_TRIANGLES, 0, 36 * 3);
+	glBindBuffer(GL_ARRAY_BUFFER, uvCoordsBufferId);
+	glTexCoordPointer(2, GL_FLOAT, 0, NULL);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
