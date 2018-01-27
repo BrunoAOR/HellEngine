@@ -701,15 +701,15 @@ void ModuleRender::DrawCubeArrays() const
 	glBindTexture(GL_TEXTURE_2D, checkeredTextureId);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
-	glVertexPointer(3, GL_FLOAT, 0, NULL);
+	glVertexPointer(3, GL_FLOAT, 0, nullptr);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
 	glBindBuffer(GL_ARRAY_BUFFER, colorsBufferId);
-	glColorPointer(3, GL_FLOAT, 0, NULL);
+	glColorPointer(3, GL_FLOAT, 0, nullptr);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
 	glBindBuffer(GL_ARRAY_BUFFER, uvCoordsBufferId);
-	glTexCoordPointer(2, GL_FLOAT, 0, NULL);
+	glTexCoordPointer(2, GL_FLOAT, 0, nullptr);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
 	glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -728,19 +728,19 @@ void ModuleRender::DrawCubeElements() const
 	glBindTexture(GL_TEXTURE_2D, checkeredTextureId);
 
 	glBindBuffer(GL_ARRAY_BUFFER, uniqueVerticesBufferId);
-	glVertexPointer(3, GL_FLOAT, 0, GL_NONE);
+	glVertexPointer(3, GL_FLOAT, 0, nullptr);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
 	glBindBuffer(GL_ARRAY_BUFFER, uniqueColorsBufferId);
-	glColorPointer(3, GL_FLOAT, 0, GL_NONE);
+	glColorPointer(3, GL_FLOAT, 0, nullptr);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
 	glBindBuffer(GL_ARRAY_BUFFER, uniqueUVCoordsBufferId);
-	glTexCoordPointer(2, GL_FLOAT, 0, GL_NONE);
+	glTexCoordPointer(2, GL_FLOAT, 0, nullptr);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, uniqueVerticesIndexBufferId);
-	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, GL_NONE);
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, nullptr);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
 
 	glBindTexture(GL_TEXTURE_2D, GL_NONE);
@@ -764,19 +764,19 @@ void ModuleRender::DrawCubeRangeElements() const
 	glBindTexture(GL_TEXTURE_2D, checkeredTextureId);
 
 	glBindBuffer(GL_ARRAY_BUFFER, uniqueVerticesBufferId);
-	glVertexPointer(3, GL_FLOAT, 0, GL_NONE);
+	glVertexPointer(3, GL_FLOAT, 0, nullptr);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
 	glBindBuffer(GL_ARRAY_BUFFER, uniqueColorsBufferId);
-	glColorPointer(3, GL_FLOAT, 0, GL_NONE);
+	glColorPointer(3, GL_FLOAT, 0, nullptr);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
 	glBindBuffer(GL_ARRAY_BUFFER, uniqueUVCoordsBufferId);
-	glTexCoordPointer(2, GL_FLOAT, 0, GL_NONE);
+	glTexCoordPointer(2, GL_FLOAT, 0, nullptr);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, uniqueVerticesIndexBufferId);
-	glDrawRangeElements(GL_TRIANGLES, 0, 7, 36, GL_UNSIGNED_BYTE, GL_NONE);
+	glDrawRangeElements(GL_TRIANGLES, 0, 7, 36, GL_UNSIGNED_BYTE, nullptr);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
 
 	glBindTexture(GL_TEXTURE_2D, GL_NONE);
@@ -791,15 +791,15 @@ void ModuleRender::DrawSphere() const
 	glEnableClientState(GL_COLOR_ARRAY);
 
 	glBindBuffer(GL_ARRAY_BUFFER, sphereInfo.verticesBufferId);
-	glVertexPointer(3, GL_FLOAT, 0, GL_NONE);
+	glVertexPointer(3, GL_FLOAT, 0, nullptr);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
 	glBindBuffer(GL_ARRAY_BUFFER, sphereInfo.colorsBufferId);
-	glColorPointer(3, GL_FLOAT, 0, GL_NONE);
+	glColorPointer(3, GL_FLOAT, 0, nullptr);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphereInfo.verticesIndexBufferId);
-	glDrawElements(GL_TRIANGLES, 3 * sphereInfo.trianglesCount, GL_UNSIGNED_INT, GL_NONE);
+	glDrawElements(GL_TRIANGLES, 3 * sphereInfo.trianglesCount, GL_UNSIGNED_INT, nullptr);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
 
 	glDisableClientState(GL_COLOR_ARRAY);
