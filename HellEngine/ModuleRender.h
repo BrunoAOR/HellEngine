@@ -125,9 +125,9 @@ private:
 	GLuint lennaTextureId;
 	GLuint ryuTextureId;
 	GLuint gokuTextureId;
-	const char* lennaPath = "D:\\MasterUPC\\AdvancedProgramming\\HellEngine\\HellEngine\\Pictures\\Lenna.png";
-	const char* ryuPath = "D:\\MasterUPC\\AdvancedProgramming\\HellEngine\\HellEngine\\Pictures\\ryu.jpg";
-	const char* gokuPath = "D:\\MasterUPC\\AdvancedProgramming\\HellEngine\\HellEngine\\Pictures\\goku.dds";
+	const char* lennaPath = "..\\Pictures\\Lenna.png";
+	const char* ryuPath = "..\\Pictures\\ryu.jpg";
+	const char* gokuPath = "..\\Pictures\\goku.dds";
 };
 
 #endif /* __H_MODULERENDER__ */
