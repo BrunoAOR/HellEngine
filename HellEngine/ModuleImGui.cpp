@@ -204,9 +204,9 @@ UpdateStatus ModuleImGui::Update()
 		if (ImGui::InputFloat3("Position", position))
 			App->editorCamera->SetPosition(position[0], position[1], position[2]);
 
-        ImGui::SliderFloat("Mov Speed", &App->editorCamera->moveSpeed, 1.0f, 30.0f);
-        ImGui::SliderFloat("Rot Speed", &App->editorCamera->rotationSpeed, 1.0f, 360.0f);
-        ImGui::SliderFloat("Zoom Speed", &App->editorCamera->zoomSpeed, 1.0f, 100.0f);
+        ImGui::SliderFloat("Mov Speed", &App->editorCamera->moveSpeed, 1.0f, 25.0f);
+        ImGui::SliderFloat("Rot Speed", &App->editorCamera->rotationSpeed, 1.0f, 25.0f);
+        ImGui::SliderFloat("Zoom Speed", &App->editorCamera->zoomSpeed, 10.0f, 200.0f);
 
         ImGui::Checkbox("Frustum Culling", &frustumCulling);
 		if (ImGui::SliderFloat("Near Plane", &nearPlane, 0.01f, 30.0f))

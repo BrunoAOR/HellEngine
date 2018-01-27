@@ -1,6 +1,6 @@
 #include <math.h>
 #include "MathGeoLib/src/Math/Quat.h"
-#include "SDL\include\SDL_mouse.h"
+#include "SDL/include/SDL_mouse.h"
 #include "Application.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleInput.h"
@@ -16,9 +16,9 @@ ModuleEditorCamera::~ModuleEditorCamera()
 
 bool ModuleEditorCamera::Init()
 {
-	moveSpeed = 1;
-	rotationSpeed = 12;
-	zoomSpeed = 4;
+	moveSpeed = 10;
+	rotationSpeed = 15;
+	zoomSpeed = 100;
 
 	aspectRatio = 1;
 	verticalFOVRad = 1;
@@ -185,128 +185,103 @@ void ModuleEditorCamera::SetUp(float x, float y, float z)
 void ModuleEditorCamera::handleCameraMotion()
 {
 	vec pos = frustum.Pos();
+	int moveFactor = App->input->GetKey(SDL_SCANCODE_LSHIFT) == KeyState::KEY_REPEAT ? 3 : 1;
 
-	/* Handling Keyboard*/
+	/* Handling Keyboard (Arrows) */
+
+	/* Camera forward or backwards  */
 	/* Camera forward */
-	if (App->input->GetKey(SDL_SCANCODE_UP) == KeyState::KEY_REPEAT && !currentlyZoomingCamera)
+	if ((App->input->GetKey(SDL_SCANCODE_UP) == KeyState::KEY_REPEAT || App->input->GetKey(SDL_SCANCODE_DOWN) == KeyState::KEY_REPEAT)
+		&& !currentlyZoomingCamera)
 	{
-		if (App->input->GetKey(SDL_SCANCODE_LSHIFT) == KeyState::KEY_REPEAT)
+		/* Set up a vector that looks forward as the frustum, but that lies on the XZ-plane */
+		vec forwardInPlane = frustum.Front();
+		/* Handle looking straight down case */
+		if (forwardInPlane.y == -1)
 		{
-			DragCameraVerticalAxis(1, pos, zoomSpeed);
+			forwardInPlane = frustum.Up();
 		}
-		else {
-			DragCameraVerticalAxis(1, pos, moveSpeed);
+		/* Handle looking straight up case */
+		else if (forwardInPlane.y == 1)
+		{
+			forwardInPlane = -frustum.Up();
+		}
+		/* Handle generic case, where the y-coordinate gets turned to zero */
+		else
+		{
+			forwardInPlane.y = 0;
+			forwardInPlane.Normalize();
 		}
 		currentlyMovingCamera = true;
-	}
-	/* Camera backwards */
-	if (App->input->GetKey(SDL_SCANCODE_DOWN) == KeyState::KEY_REPEAT && !currentlyZoomingCamera)
-	{
-		if (App->input->GetKey(SDL_SCANCODE_LSHIFT) == KeyState::KEY_REPEAT)
+
+		/* Camera forwards */
+		if (App->input->GetKey(SDL_SCANCODE_UP) == KeyState::KEY_REPEAT)
 		{
-			DragCameraVerticalAxis(-1, pos, zoomSpeed);
+			pos.x += forwardInPlane.x * moveFactor * moveSpeed * App->time->DeltaTime();
+			pos.z += forwardInPlane.z * moveFactor * moveSpeed * App->time->DeltaTime();
 		}
-		else {
-			DragCameraVerticalAxis(-1, pos, moveSpeed);
+		/* Camera backwards */
+		else
+		{
+			pos.x -= forwardInPlane.x * moveFactor * moveSpeed * App->time->DeltaTime();
+			pos.z -= forwardInPlane.z * moveFactor * moveSpeed * App->time->DeltaTime();
 		}
-		currentlyMovingCamera = true;
 	}
+	
 	/* Camera left */
 	if (App->input->GetKey(SDL_SCANCODE_LEFT) == KeyState::KEY_REPEAT && !currentlyZoomingCamera)
 	{
-		if (App->input->GetKey(SDL_SCANCODE_LSHIFT) == KeyState::KEY_REPEAT)
-		{
-			DragCameraHorizontalAxis(1, pos, zoomSpeed);
-		}
-		else {
-			DragCameraHorizontalAxis(1, pos, moveSpeed);
-		}
+		DragCameraHorizontalAxis(1, pos, moveFactor *moveSpeed);
 		currentlyMovingCamera = true;
 	}
 	/* Camera right */
 	if (App->input->GetKey(SDL_SCANCODE_RIGHT) == KeyState::KEY_REPEAT && !currentlyZoomingCamera)
 	{
-		if (App->input->GetKey(SDL_SCANCODE_LSHIFT) == KeyState::KEY_REPEAT)
-		{
-			DragCameraHorizontalAxis(-1, pos, zoomSpeed);
-		}
-		else {
-			DragCameraHorizontalAxis(-1, pos, moveSpeed);
-		}
+		DragCameraHorizontalAxis(-1, pos, moveFactor * moveSpeed);
 		currentlyMovingCamera = true;
 	}
 
-	if (App->input->GetKey(SDL_SCANCODE_UP) == KeyState::KEY_UP
-		|| App->input->GetKey(SDL_SCANCODE_DOWN) == KeyState::KEY_UP
-		|| App->input->GetKey(SDL_SCANCODE_LEFT) == KeyState::KEY_UP
-		|| App->input->GetKey(SDL_SCANCODE_RIGHT) == KeyState::KEY_UP)
+
+	if (App->input->GetKey(SDL_SCANCODE_UP) != KeyState::KEY_REPEAT
+		&& App->input->GetKey(SDL_SCANCODE_DOWN) != KeyState::KEY_REPEAT
+		&& App->input->GetKey(SDL_SCANCODE_LEFT) != KeyState::KEY_REPEAT
+		&& App->input->GetKey(SDL_SCANCODE_RIGHT) != KeyState::KEY_REPEAT)
 	{
 		currentlyMovingCamera = false;
 	}
 
 	/* Handling mouse*/
-	/* Camera up */
-	if (App->input->GetKey(SDL_SCANCODE_Q) == KeyState::KEY_REPEAT
-		&& App->input->GetMouseButtonDown(SDL_BUTTON_RIGHT) == KeyState::KEY_REPEAT
-		&& !currentlyZoomingCamera)
-		pos.y += moveSpeed * App->time->DeltaTime();
-	/* Camera down */
-	if (App->input->GetKey(SDL_SCANCODE_E) == KeyState::KEY_REPEAT
-		&& App->input->GetMouseButtonDown(SDL_BUTTON_RIGHT) == KeyState::KEY_REPEAT
-		&& !currentlyZoomingCamera)
-		pos.y -= moveSpeed * App->time->DeltaTime();
 
-	/* Camera forward */
-	if (App->input->GetKey(SDL_SCANCODE_W) == KeyState::KEY_REPEAT
-		&& App->input->GetMouseButtonDown(SDL_BUTTON_RIGHT) == KeyState::KEY_REPEAT
+	if (App->input->GetMouseButtonDown(SDL_BUTTON_RIGHT) == KeyState::KEY_REPEAT
 		&& !currentlyZoomingCamera)
 	{
-		if (App->input->GetKey(SDL_SCANCODE_LSHIFT) == KeyState::KEY_REPEAT)
-		{
-			DragCameraVerticalAxis(1, pos, zoomSpeed);
-		}
-		else {
-			DragCameraVerticalAxis(1, pos, moveSpeed);
-		}
-	}
-	/* Camera backwards */
-	if (App->input->GetKey(SDL_SCANCODE_S) == KeyState::KEY_REPEAT
-		&& App->input->GetMouseButtonDown(SDL_BUTTON_RIGHT) == KeyState::KEY_REPEAT
-		&& !currentlyZoomingCamera)
-	{
-		if (App->input->GetKey(SDL_SCANCODE_LSHIFT) == KeyState::KEY_REPEAT)
-		{
-			DragCameraVerticalAxis(-1, pos, zoomSpeed);
-		}
-		else {
-			DragCameraVerticalAxis(-1, pos, moveSpeed);
-		}
-	}
+		/* Camera up */
+		if (App->input->GetKey(SDL_SCANCODE_Q) == KeyState::KEY_REPEAT)
+			pos.y += moveFactor * moveSpeed * App->time->DeltaTime();
+		/* Camera down */
+		if (App->input->GetKey(SDL_SCANCODE_E) == KeyState::KEY_REPEAT)
+			pos.y -= moveFactor * moveSpeed * App->time->DeltaTime();
 
-	/* Camera left */
-	if (App->input->GetKey(SDL_SCANCODE_A) == KeyState::KEY_REPEAT
-		&& App->input->GetMouseButtonDown(SDL_BUTTON_RIGHT) == KeyState::KEY_REPEAT
-		&& !currentlyZoomingCamera)
-	{
-		if (App->input->GetKey(SDL_SCANCODE_LSHIFT) == KeyState::KEY_REPEAT)
+		/* Camera forward */
+		if (App->input->GetKey(SDL_SCANCODE_W) == KeyState::KEY_REPEAT)
 		{
-			DragCameraHorizontalAxis(1, pos, zoomSpeed);
+			DragCameraVerticalAxis(1, pos, moveFactor * moveSpeed);
 		}
-		else {
-			DragCameraHorizontalAxis(1, pos, moveSpeed);
-		}
-	}
-	/* Camera right */
-	if (App->input->GetKey(SDL_SCANCODE_D) == KeyState::KEY_REPEAT
-		&& App->input->GetMouseButtonDown(SDL_BUTTON_RIGHT) == KeyState::KEY_REPEAT
-		&& !currentlyZoomingCamera)
-	{
-		if (App->input->GetKey(SDL_SCANCODE_LSHIFT) == KeyState::KEY_REPEAT)
+		/* Camera backwards */
+		if (App->input->GetKey(SDL_SCANCODE_S) == KeyState::KEY_REPEAT)
 		{
-			DragCameraHorizontalAxis(-1, pos, zoomSpeed);
+			DragCameraVerticalAxis(-1, pos, moveFactor * moveSpeed);
 		}
-		else {
-			DragCameraHorizontalAxis(-1, pos, moveSpeed);
+
+		/* Camera left */
+		if (App->input->GetKey(SDL_SCANCODE_A) == KeyState::KEY_REPEAT)
+		{
+			DragCameraHorizontalAxis(1, pos, moveFactor * moveSpeed);
+		}
+		/* Camera right */
+		if (App->input->GetKey(SDL_SCANCODE_D) == KeyState::KEY_REPEAT)
+		{
+			DragCameraHorizontalAxis(-1, pos, moveFactor * moveSpeed);
 		}
 	}
 
@@ -317,78 +292,65 @@ void ModuleEditorCamera::handleCameraMotion()
 	{
 		currentlyZoomingCamera = true;
 		if (App->input->GetMouseMotion().x > 0 || App->input->GetMouseMotion().y > 0) {
-			DragCameraVerticalAxis(1, pos, zoomSpeed * 20);
+			DragCameraVerticalAxis(1, pos, zoomSpeed);
 		}
 		if (App->input->GetMouseMotion().x < 0 || App->input->GetMouseMotion().y < 0) {
-			DragCameraVerticalAxis(-1, pos, zoomSpeed * 20);
+			DragCameraVerticalAxis(-1, pos, zoomSpeed);
 		}
 	}
-	
-	/*Zoom with mouse wheel */
-	SDL_PollEvent(&mouseEvent);
-	if (mouseEvent.wheel.y == -SDL_MOUSEWHEEL_FLIPPED) // scroll up
-	{
-		DragCameraVerticalAxis(1, pos, zoomSpeed/10);
-	}
-	else if (mouseEvent.wheel.y == SDL_MOUSEWHEEL_FLIPPED) // scroll down
-	{
-		DragCameraVerticalAxis(-1, pos, zoomSpeed/10);
-	}
-	
+
 	if (App->input->GetMouseButtonDown(SDL_BUTTON_RIGHT) == KeyState::KEY_UP)
 	{
 		currentlyZoomingCamera = false;
 	}
+
+	/*Zoom with mouse wheel */
+	if (App->input->GetMouseWheel().y != 0) // scroll up
+	{
+		DragCameraVerticalAxis(App->input->GetMouseWheel().y, pos, 5 * zoomSpeed);
+	}	
+
 	frustum.SetPos(pos);
 }
 
 void ModuleEditorCamera::handleCameraRotation()
 {
 	/*Handling Mouse*/
-	/* Camera rotate upwards */
-	if (App->input->GetMouseButtonDown(SDL_BUTTON_RIGHT) == KeyState::KEY_REPEAT
-		&& (App->input->GetMouseMotion().y < 0)
-		&& !currentlyMovingCamera
-		&& !currentlyZoomingCamera)
+	if (App->input->GetMouseButtonDown(SDL_BUTTON_RIGHT) == KeyState::KEY_REPEAT)
 	{
-		RotatePitch(1);
-	}
-	/* Camera rotate downwards */
-	else if (App->input->GetMouseButtonDown(SDL_BUTTON_RIGHT) == KeyState::KEY_REPEAT
-		&& (App->input->GetMouseMotion().y > 0)
-		&& !currentlyMovingCamera
-		&& !currentlyZoomingCamera)
-	{
-		RotatePitch(-1);
-	}
-	/* Camera rotate leftwards */
-	if (App->input->GetMouseButtonDown(SDL_BUTTON_RIGHT) == KeyState::KEY_REPEAT
-		&& (App->input->GetMouseMotion().x < 0)
-		&& !currentlyMovingCamera
-		&& !currentlyZoomingCamera)
-	{
-		RotateYaw(1);
-	}
-	/* Camera rotate rightwards */
-	else if (App->input->GetMouseButtonDown(SDL_BUTTON_RIGHT) == KeyState::KEY_REPEAT
-		&& (App->input->GetMouseMotion().x > 0)
-		&& !currentlyMovingCamera
-		&& !currentlyZoomingCamera)
-	{
-		RotateYaw(-1);
+		int xMotion = App->input->GetMouseMotion().x;
+		int yMotion = App->input->GetMouseMotion().y;
+
+		/* Camera rotate upwards and downwards */
+		if (yMotion != 0
+			&& !currentlyMovingCamera
+			&& !currentlyZoomingCamera)
+		{
+			RotatePitch(yMotion);
+		}
+		
+		/* Camera rotate leftwards and rightwards */
+		if (xMotion != 0
+			&& !currentlyMovingCamera
+			&& !currentlyZoomingCamera)
+		{
+			RotateYaw(xMotion);
+		}
 	}
 }
 
-void ModuleEditorCamera::RotateYaw(const int direction)
+void ModuleEditorCamera::RotateYaw(int mouseMotionX)
 {
-	Quat rotation = Quat::FromEulerXYZ(0, direction * rotationSpeed * App->time->DeltaTime() + direction * App->time->DeltaTime(), 0);
+	/* mouseMotionX is <0 when moving to the left and >0 when moving to the right */
+	Quat rotation = Quat::FromEulerXYZ(0, -DegToRad(rotationSpeed * mouseMotionX) * App->time->DeltaTime(), 0);
 	frustum.SetFront(rotation.Transform(frustum.Front()));
 	frustum.SetUp(rotation.Transform(frustum.Up()));
 }
 
-void ModuleEditorCamera::RotatePitch(const int direction)
+void ModuleEditorCamera::RotatePitch(int mouseMotionY)
 {
-	Quat rotation = Quat::RotateAxisAngle(frustum.WorldRight(), direction * DegToRad(rotationSpeed * 15) * App->time->DeltaTime());
+	/* mouseMotionY is <0 when moving up and >0 when moving down */
+	Quat rotation = Quat::RotateAxisAngle(frustum.WorldRight(), -DegToRad(rotationSpeed * mouseMotionY) * App->time->DeltaTime());
 	vec newUp = rotation.Transform(frustum.Up());
 	if (newUp.y >= 0)
 	{
@@ -397,14 +359,14 @@ void ModuleEditorCamera::RotatePitch(const int direction)
 	}
 }
 
-void ModuleEditorCamera::DragCameraHorizontalAxis(int direction, vec & frustumPos, float speed)
+void ModuleEditorCamera::DragCameraHorizontalAxis(int direction, vec& frustumPos, float speed)
 {
 	frustumPos.x -= frustum.WorldRight().x * speed * App->time->DeltaTime() * direction;
 	frustumPos.y -= frustum.WorldRight().y * speed * App->time->DeltaTime() * direction;
 	frustumPos.z -= frustum.WorldRight().z * speed * App->time->DeltaTime() * direction;
 }
 
-void ModuleEditorCamera::DragCameraVerticalAxis(int direction, vec & frustumPos, float speed)
+void ModuleEditorCamera::DragCameraVerticalAxis(int direction, vec& frustumPos, float speed)
 {
 	frustumPos.x += frustum.Front().x * speed * App->time->DeltaTime() * direction;
 	frustumPos.y += frustum.Front().y * speed * App->time->DeltaTime() * direction;
