@@ -101,6 +101,7 @@ private:
 
 	GLuint uniqueVerticesBufferId;
 	GLuint uniqueColorsBufferId;
+	GLuint uniqueUVCoordsBufferId;
 	GLuint uniqueVerticesIndexBufferId;
 
 	struct {

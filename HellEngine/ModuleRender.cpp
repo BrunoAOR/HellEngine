@@ -121,7 +121,7 @@ UpdateStatus ModuleRender::Update()
 		glTranslatef(0.5f, -0.5f, 0);
 		glScalef(scale, scale, scale);
 		glRotatef(rotationAngle, 1, 1, 1);
-		DrawCubeElements();
+		DrawCubeRangeElements();
 		glPopMatrix();
 	}
 
@@ -339,15 +339,16 @@ void ModuleRender::InitCubeInfo()
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
 	/* For DrawElements and DrawRangeElements */
-	const size_t uniqueVertCount = 8;
-	GLfloat uniqueVertices[uniqueVertCount * 3] = { SP_ARR_3F(vA), SP_ARR_3F(vB), SP_ARR_3F(vC), SP_ARR_3F(vD), SP_ARR_3F(vE), SP_ARR_3F(vF), SP_ARR_3F(vG), SP_ARR_3F(vH) };
-	GLfloat uniqueColors[uniqueVertCount * 3] = { SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cRed) };
-	GLubyte verticesOrder[vertCount] = {0, 1, 2, 1, 3, 2,
-										1, 5, 3, 5, 7, 3,
-										5, 4, 7, 4, 6, 7,
-										4, 0, 6, 0, 2, 6,
-										2, 3, 7, 2, 7, 6,
-										0, 5, 1, 5, 0, 4};
+	const size_t uniqueVertCount = 8 + 4;
+	GLfloat uniqueVertices[uniqueVertCount * 3] = { SP_ARR_3F(vA), SP_ARR_3F(vB), SP_ARR_3F(vC), SP_ARR_3F(vD), SP_ARR_3F(vE), SP_ARR_3F(vF), SP_ARR_3F(vG), SP_ARR_3F(vH), SP_ARR_3F(vE), SP_ARR_3F(vF), SP_ARR_3F(vG), SP_ARR_3F(vH) };
+	GLfloat uniqueColors[uniqueVertCount * 3] = { SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cRed), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cRed) };
+	GLfloat uniqueUVCoords[uniqueVertCount * 2] = { SP_ARR_2F(bottomLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(topLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(topRight), SP_ARR_2F(topLeft), SP_ARR_2F(topLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(bottomRight) };
+	GLubyte verticesOrder[vertCount] = {0, 1, 2, 1, 3, 2,		/* Front face */
+										1, 5, 3, 5, 7, 3,		/* Right face */
+										5, 4, 7, 4, 6, 7,		/* Back face */
+										4, 0, 6, 0, 2, 6,		/* Left face */
+										2, 3, 11, 2, 11, 10,	/* Top face */
+										0, 9, 1, 9, 0, 8};		/* Botttom face */
 
 	glGenBuffers(1, (GLuint*)&uniqueVerticesBufferId);
 	glBindBuffer(GL_ARRAY_BUFFER, uniqueVerticesBufferId);
@@ -357,6 +358,11 @@ void ModuleRender::InitCubeInfo()
 	glGenBuffers(1, (GLuint*)&uniqueColorsBufferId);
 	glBindBuffer(GL_ARRAY_BUFFER, uniqueColorsBufferId);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uniqueVertCount * 3, uniqueColors, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
+	glGenBuffers(1, (GLuint*)&uniqueUVCoordsBufferId);
+	glBindBuffer(GL_ARRAY_BUFFER, uniqueUVCoordsBufferId);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uniqueVertCount * 2, uniqueUVCoords, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
 	glGenBuffers(1, (GLuint*)&uniqueVerticesIndexBufferId);
@@ -718,6 +724,8 @@ void ModuleRender::DrawCubeElements() const
 {
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glBindTexture(GL_TEXTURE_2D, checkeredTextureId);
 
 	glBindBuffer(GL_ARRAY_BUFFER, uniqueVerticesBufferId);
 	glVertexPointer(3, GL_FLOAT, 0, GL_NONE);
@@ -727,10 +735,16 @@ void ModuleRender::DrawCubeElements() const
 	glColorPointer(3, GL_FLOAT, 0, GL_NONE);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
+	glBindBuffer(GL_ARRAY_BUFFER, uniqueUVCoordsBufferId);
+	glTexCoordPointer(2, GL_FLOAT, 0, GL_NONE);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, uniqueVerticesIndexBufferId);
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, GL_NONE);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
 
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
@@ -746,6 +760,8 @@ void ModuleRender::DrawCubeRangeElements() const
 	*/
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glBindTexture(GL_TEXTURE_2D, checkeredTextureId);
 
 	glBindBuffer(GL_ARRAY_BUFFER, uniqueVerticesBufferId);
 	glVertexPointer(3, GL_FLOAT, 0, GL_NONE);
@@ -755,10 +771,16 @@ void ModuleRender::DrawCubeRangeElements() const
 	glColorPointer(3, GL_FLOAT, 0, GL_NONE);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
+	glBindBuffer(GL_ARRAY_BUFFER, uniqueUVCoordsBufferId);
+	glTexCoordPointer(2, GL_FLOAT, 0, GL_NONE);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, uniqueVerticesIndexBufferId);
 	glDrawRangeElements(GL_TRIANGLES, 0, 7, 36, GL_UNSIGNED_BYTE, GL_NONE);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
 
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
