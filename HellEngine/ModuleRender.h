@@ -8,6 +8,7 @@ struct SDL_Rect;
 struct SDL_Renderer;
 struct SDL_Texture;
 typedef float GLfloat;
+typedef unsigned int GLuint;
 typedef void* SDL_GLContext;
 
 class ModuleRender : public Module
@@ -40,6 +41,9 @@ private:
 	/* Initializes sphere-rendering variables */
 	void InitSphereInfo(unsigned int rings, unsigned int sections);
 
+	/* Creates a raw checkered texture and returns its OpenGL id */
+	GLuint CreateCheckeredTexture();
+
 	/* Renders a cube using OpenGL immediate mode */
 	void DrawCubeImmediateMode() const;
 
@@ -65,6 +69,8 @@ public:
 
 private:
 	
+	static const int checkeredTextureSize = 64;
+
 	SDL_GLContext glContext = nullptr;
 
 	float rotationAngle;

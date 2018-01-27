@@ -487,6 +487,34 @@ void ModuleRender::InitSphereInfo(unsigned int rings, unsigned int sections)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
 }
 
+GLuint ModuleRender::CreateCheckeredTexture()
+{
+	GLubyte checkImage[checkeredTextureSize][checkeredTextureSize][4];
+	for (int i = 0; i < checkeredTextureSize; i++) {
+		for (int j = 0; j < checkeredTextureSize; j++) {
+			int c = ((((i & 0x8) == 0) ^ (((j & 0x8)) == 0))) * 255;
+			checkImage[i][j][0] = (GLubyte)c;
+			checkImage[i][j][1] = (GLubyte)c;
+			checkImage[i][j][2] = (GLubyte)c;
+			checkImage[i][j][3] = (GLubyte)255;
+		}
+	}
+
+	GLuint textureId;
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glGenTextures(1, &textureId);
+	glBindTexture(GL_TEXTURE_2D, textureId);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, checkeredTextureSize, checkeredTextureSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, checkImage);
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
+
+	return textureId;
+}
+
 void ModuleRender::DrawCubeImmediateMode() const
 {
 	glBegin(GL_TRIANGLES);
