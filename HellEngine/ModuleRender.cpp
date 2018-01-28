@@ -946,9 +946,10 @@ GLuint ModuleRender::LoadImageWithDevIL(const char* theFileName)
 	}
 
 	/* Save image width and height*/
-	ILuint width, height;
+	ILuint width, height, bytesPerPixel;
 	width = ilGetInteger(IL_IMAGE_WIDTH);
 	height = ilGetInteger(IL_IMAGE_HEIGHT);
+	bytesPerPixel = ilGetInteger(IL_IMAGE_BYTES_PER_PIXEL);
 
 	/* Generate a new texture */
 	glGenTextures(1, &textureID);
@@ -984,9 +985,39 @@ GLuint ModuleRender::LoadImageWithDevIL(const char* theFileName)
 	ilBindImage(0);
 
 	/* Save texture info */
-	textureInfo.insert(std::pair<int, Texture>(textureID, { width, height }));
+	textureInfo.insert(std::pair<int, Texture>(textureID, { width, height, bytesPerPixel }));
 
 	LOGGER("Texture creation successful.");
 
 	return textureID; /* Return the GLuint to the texture so you can use it! */
+}
+
+GLuint ModuleRender::GetTextureWidth()
+{
+	GLuint texID = cubeTextureID.at(currentSelectedCube);
+	if (textureInfo.find(texID) != textureInfo.end()) {
+		Texture tex = textureInfo.at(texID);
+		return tex.width;
+	}
+	return 0;
+}
+
+GLuint ModuleRender::GetTextureHeight()
+{
+	GLuint texID = cubeTextureID.at(currentSelectedCube);
+	if (textureInfo.find(texID) != textureInfo.end()) {
+		Texture tex = textureInfo.at(texID);
+		return tex.height;
+	}
+	return 0;
+}
+
+GLuint ModuleRender::GetBytesPerPixel()
+{
+	GLuint texID = cubeTextureID.at(currentSelectedCube);
+	if (textureInfo.find(texID) != textureInfo.end()) {
+		Texture tex = textureInfo.at(texID);
+		return tex.bytesPerPixel;
+	}
+	return 0;
 }

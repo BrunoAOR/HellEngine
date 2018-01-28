@@ -82,7 +82,7 @@ UpdateStatus ModuleImGui::Update()
 		{
 			ImGui::MenuItem("Show demo window", nullptr, &showDemoWindow);
 			ImGui::Separator();
-			
+
 			ImGui::MenuItem("Quit", nullptr, &shouldQuit);
 			ImGui::EndMenu();
 		}
@@ -136,10 +136,10 @@ UpdateStatus ModuleImGui::Update()
 		ShowAboutWindow(mainMenuBarHeight, &showAbout);
 	}
 
-    if (showCameraWindow)
+	if (showCameraWindow)
 	{
 		ShowEditorCameraWindow(mainMenuBarHeight, &showCameraWindow);
-    }
+	}
 
 	if (showTexturesWindow)
 	{
@@ -288,9 +288,52 @@ void ModuleImGui::ShowEditorCameraWindow(float mainMenuBarHeight, bool* pOpen)
 
 void ModuleImGui::ShowTexturesWindow(float mainMenuBarHeight, bool * pOpen)
 {
+	static bool mipMaps = false;
+
 	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
 	ImGui::SetNextWindowSize(ImVec2(300, 600));
 	ImGui::Begin("Textures", pOpen, ImGuiWindowFlags_NoCollapse);
+
+	GLuint w = App->renderer->GetTextureWidth();
+	GLuint h = App->renderer->GetTextureHeight();
+	GLuint bytesPerPixel = App->renderer->GetBytesPerPixel();
+	GLuint wInBytes = w * bytesPerPixel;
+	GLuint hInBytes = h * bytesPerPixel;
+
+	ImGui::Text("Image width (pixels) = "); ImGui::SameLine();
+	if (w != 0)
+		ImGui::TextColored(ImVec4(0, 0, 1, 1), std::to_string(w).c_str());
+	else
+		ImGui::TextColored(ImVec4(0, 0, 1, 1), "NA");
+
+	ImGui::Text("Image height (pixels) = "); ImGui::SameLine();
+	if (h != 0)
+		ImGui::TextColored(ImVec4(0, 0, 1, 1), std::to_string(h).c_str());
+	else
+		ImGui::TextColored(ImVec4(0, 0, 1, 1), "NA");
+
+
+	ImGui::Text("Bytes per pixel = "); ImGui::SameLine();
+	if (bytesPerPixel != 0)
+		ImGui::TextColored(ImVec4(0, 0, 1, 1), std::to_string(bytesPerPixel).c_str());
+	else
+		ImGui::TextColored(ImVec4(0, 0, 1, 1), "NA");
+
+
+	ImGui::Text("Image width (bytes) = "); ImGui::SameLine();
+	if (wInBytes != 0)
+		ImGui::TextColored(ImVec4(0, 0, 1, 1), std::to_string(wInBytes).c_str());
+	else
+		ImGui::TextColored(ImVec4(0, 0, 1, 1), "NA");
+
+
+	ImGui::Text("Image height (bytes) = "); ImGui::SameLine();
+	if (hInBytes != 0)
+		ImGui::TextColored(ImVec4(0, 0, 1, 1), std::to_string(hInBytes).c_str());
+	else
+		ImGui::TextColored(ImVec4(0, 0, 1, 1), "NA");
+	
+	ImGui::Checkbox("Mipmaps", &mipMaps);
 
 	ImGui::End();
 }

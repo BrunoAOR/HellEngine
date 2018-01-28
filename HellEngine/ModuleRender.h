@@ -29,6 +29,15 @@ public:
 	/* Method to be called when the window is resized */
 	void onWindowResize();
 
+	/* Get selected cube's texture width */
+	GLuint GetTextureWidth();
+
+	/* Get selected cube's texture height */
+	GLuint GetTextureHeight();
+
+	/* Get selected cube's texture bytes per pixel */
+	GLuint GetBytesPerPixel();
+
 private:
 
 	/* Initializes the GLEW library */
@@ -128,6 +137,7 @@ private:
 	struct Texture {
 		GLuint width;
 		GLuint height;
+		GLuint bytesPerPixel;
 	};
 
 	std::map<int, Texture> textureInfo;
