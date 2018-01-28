@@ -35,6 +35,9 @@ private:
 	/* Initializes OpenGL */
 	bool InitOpenGL() const;
 
+	/* Initialize DevIL */
+	void InitDevIL();
+
 	/* Initializes cube-rendering variables */
 	void InitCubeInfo();
 
@@ -62,10 +65,7 @@ private:
 	/* Draw a grid on the ground */
 	void DrawGroundGrid() const;
 
-	/* Initialize DevIL */
-	void InitDevIL();
-
-	/* Loading image with DevIL */
+	/* Loading image with DevIL. */
 	GLuint LoadImageWithDevIL(const char* theFileName);
 
 public:
@@ -125,9 +125,9 @@ private:
 	GLuint lennaTextureId;
 	GLuint ryuTextureId;
 	GLuint gokuTextureId;
-	const char* lennaPath = "../Pictures/Lenna.png";
-	const char* ryuPath = "../Pictures/ryu.jpg";
-	const char* gokuPath = "../Pictures/goku.dds";
+	const char* lennaPath = "assets/images/lenna.png";
+	const char* ryuPath = "assets/images/ryu.jpg";
+	const char* gokuPath = "assets/images/goku.dds";
 };
 
 #endif /* __H_MODULERENDER__ */

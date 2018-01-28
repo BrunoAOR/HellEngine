@@ -6,7 +6,7 @@
 #include "Json/json.h"
 #include "globals.h"
 
-void Log(const char file[], int line, const char* format, ...)
+void Logger(const char file[], int line, const char* format, ...)
 {
 	static char tmp_string[4096];
 	static char tmp_string2[4096];
