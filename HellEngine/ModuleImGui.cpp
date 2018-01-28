@@ -339,7 +339,10 @@ void ModuleImGui::ShowTexturesWindow(float mainMenuBarHeight, bool * pOpen)
 		App->renderer->ReloadTextures();
 	}
 
-	ImGui::Checkbox("Mipmaps", &mipMaps);
+	if (ImGui::Checkbox("Mipmaps", &mipMaps)) {
+		App->renderer->textureMipMapMode = mipMaps;
+		App->renderer->ReloadTextures();
+	}
 
 	ImGui::End();
 }

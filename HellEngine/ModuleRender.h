@@ -89,6 +89,7 @@ public:
 	
 	int currentSelectedCube = 0;
 	int textureWrapMode = 0;
+	int textureMipMapMode = 0;
 
 private:
 	

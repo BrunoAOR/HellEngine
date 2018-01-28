@@ -977,6 +977,12 @@ GLuint ModuleRender::LoadImageWithDevIL(const char* theFileName)
 		break;
 	}
 
+	/*Generate Mipmap from the current texture evaluated*/
+	if (textureMipMapMode) {
+		glGenerateMipmap(GL_TEXTURE_2D);
+		glGenerateTextureMipmap(textureID);
+	}
+
 	/* Set texture interpolation method to use linear interpolation (no MIPMAPS) */
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
