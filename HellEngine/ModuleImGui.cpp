@@ -289,6 +289,7 @@ void ModuleImGui::ShowEditorCameraWindow(float mainMenuBarHeight, bool* pOpen)
 void ModuleImGui::ShowTexturesWindow(float mainMenuBarHeight, bool * pOpen)
 {
 	static bool mipMaps = false;
+	static int wrapMode = App->renderer->textureWrapMode;
 
 	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
 	ImGui::SetNextWindowSize(ImVec2(300, 600));
@@ -333,6 +334,11 @@ void ModuleImGui::ShowTexturesWindow(float mainMenuBarHeight, bool * pOpen)
 	else
 		ImGui::TextColored(ImVec4(0, 0, 1, 1), "NA");
 	
+	if (ImGui::Combo("Wrap mode", &wrapMode, "GL_REPEAT\0GL_MIRRORED_REPEAT\0GL_CLAMP_TO_EDGE\0GL_CLAMP\0\0")) {
+		App->renderer->textureWrapMode = wrapMode;
+		App->renderer->ReloadTextures();
+	}
+
 	ImGui::Checkbox("Mipmaps", &mipMaps);
 
 	ImGui::End();

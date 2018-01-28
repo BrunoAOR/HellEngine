@@ -958,8 +958,24 @@ GLuint ModuleRender::LoadImageWithDevIL(const char* theFileName)
 	glBindTexture(GL_TEXTURE_2D, textureID);
 
 	/* Set texture clamping method */
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	switch (textureWrapMode) {
+	case 0:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		break;
+	case 1:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+		break;
+	case 2:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		break;
+	case 3:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		break;
+	}
 
 	/* Set texture interpolation method to use linear interpolation (no MIPMAPS) */
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -1020,4 +1036,37 @@ GLuint ModuleRender::GetBytesPerPixel()
 		return tex.bytesPerPixel;
 	}
 	return 0;
+}
+
+bool ModuleRender::ReloadTextures()
+{
+	bool ret = true;
+
+	textureInfo.clear();
+	cubeTextureID.clear();
+
+	InitDevIL();
+
+	GLuint checkeredTextureId;
+	GLuint lennaTextureId;
+	GLuint ryuTextureId;
+	GLuint gokuTextureId;
+
+	checkeredTextureId = CreateCheckeredTexture();
+
+	uint idSum = 0;
+	idSum += ryuTextureId = LoadImageWithDevIL(ryuPath);
+	idSum += lennaTextureId = LoadImageWithDevIL(lennaPath);
+	idSum += gokuTextureId = LoadImageWithDevIL(gokuPath);
+	if (idSum == 0)
+		ret = false;
+
+	if (ret) {
+		cubeTextureID.push_back(ryuTextureId);
+		cubeTextureID.push_back(lennaTextureId);
+		cubeTextureID.push_back(gokuTextureId);
+		cubeTextureID.push_back(checkeredTextureId);
+	}
+
+	return ret;
 }

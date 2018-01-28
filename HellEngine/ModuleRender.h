@@ -38,6 +38,9 @@ public:
 	/* Get selected cube's texture bytes per pixel */
 	GLuint GetBytesPerPixel();
 
+	/* Reloads all textures with the new specified parameters */
+	bool ReloadTextures();
+
 private:
 
 	/* Initializes the GLEW library */
@@ -85,6 +88,7 @@ public:
 	bool shouldRotate;
 	
 	int currentSelectedCube = 0;
+	int textureWrapMode = 0;
 
 private:
 	
