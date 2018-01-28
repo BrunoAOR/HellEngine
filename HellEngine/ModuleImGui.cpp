@@ -50,16 +50,6 @@ bool ModuleImGui::Init()
 	//ImGui::StyleColorsClassic();
 	ImGui::StyleColorsDark();
 
-    /*Editor Variables*/
-    fovh = 0.0f;
-    fovv = 0.0f;
-	nearPlane = App->editorCamera->getNearPlaneDistance();
-    farPlane = App->editorCamera->getFarPlaneDistance();
-    aspectRatio = 0.0f;
-    active = false;
-    frustumCulling = false;
-    isActiveCamera = true;
-
 	return true;
 }
 
@@ -74,11 +64,14 @@ UpdateStatus ModuleImGui::PreUpdate()
 UpdateStatus ModuleImGui::Update()
 {
 	static bool shouldQuit = false;
-	static bool showAbout = false;
 	static bool showDemoWindow = false;
+	static bool showAbout = false;
+	static bool showCameraWindow = false;
+	static bool showTexturesWindow = false;
+	static bool showOpenGLWindow = false;
+
 	static bool rendererWireFrame = false;
 	static bool rendererRotate = false;
-    static bool showEditor = false;
 
 	float mainMenuBarHeight;
 
@@ -108,6 +101,11 @@ UpdateStatus ModuleImGui::Update()
 				}
 				ImGui::EndMenu();
 			}
+
+			ImGui::MenuItem("Camera", nullptr, &showCameraWindow);
+			ImGui::MenuItem("Textures", nullptr, &showTexturesWindow);
+			ImGui::MenuItem("OpenGL", nullptr, &showOpenGLWindow);
+
 			ImGui::EndMenu();
 		}
 
@@ -125,8 +123,6 @@ UpdateStatus ModuleImGui::Update()
 			ImGui::EndMenu();
 		}
 
-        ImGui::MenuItem("Editor", nullptr, &showEditor);
-
 		ImGui::EndMainMenuBar();
 	}
 
@@ -137,110 +133,34 @@ UpdateStatus ModuleImGui::Update()
 
 	if (showAbout)
 	{
-		ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
-		ImGui::SetNextWindowSize(ImVec2(600, 600));
-		ImGui::Begin("About", &showAbout, ImGuiWindowFlags_NoCollapse);
-
-		LinkToWebPage("Hell Engine v0.0.1", "https://github.com/BrunoAOR/HellEngine");
-		ImGui::TextWrapped("The one and only 3D Game Engine that guarantees an increased developer suicide rate!");
-		ImGui::Text("");
-		
-		ImGui::Text("Authors:");
-		ImGui::Bullet(); LinkToWebPage("Marc Campins", "https://github.com/McCampins");
-		ImGui::Bullet(); LinkToWebPage("Bruno Ortiz", "https://github.com/BrunoAOR");
-		ImGui::Bullet(); LinkToWebPage("Sergi Ramirez", "https://github.com/Orphen5");
-		ImGui::Bullet(); LinkToWebPage("Daniel Reyes", "https://github.com/Winour");
-		ImGui::Bullet(); LinkToWebPage("Mario Rodriguez", "https://github.com/Mac092");
-		ImGui::Text("");
-		
-		ImGui::Text("3rd party libraries used:");
-		ImGui::Bullet(); LinkToWebPage("SDL 2.0.4", "https://www.libsdl.org");
-		ImGui::Bullet(); LinkToWebPage("SDL Image 2.0.0", "https://www.libsdl.org/projects/SDL_image/");
-		ImGui::Bullet(); LinkToWebPage("SDL Mixer 2.0.0", "https://www.libsdl.org/projects/SDL_mixer/");
-		ImGui::Bullet(); LinkToWebPage("Brofiler 1.1.2", "https://github.com/bombomby/brofiler");
-		ImGui::Bullet(); LinkToWebPage("MathGeoLib 1.5", "https://github.com/juj/MathGeoLib");
-		ImGui::Bullet(); LinkToWebPage("JSON for Modern C++ 3.0.1", "https://github.com/nlohmann/json");
-		ImGui::Bullet(); LinkToWebPage("ImGui 1.53", "https://github.com/ocornut/imgui");
-		ImGui::Bullet(); LinkToWebPage("Glew 2.1.0", "http://glew.sourceforge.net");
-		ImGui::Bullet(); LinkToWebPage("OpenGL 3.1", "https://www.khronos.org/opengl/");
-		ImGui::Text("");
-
-		LinkToWebPage("License:", "https://github.com/BrunoAOR/HellEngine/blob/master/LICENSE");
-		ImGui::Text("");
-		ImGui::TextWrapped(licenseString.c_str());
-		
-		ImGui::End();
+		ShowAboutWindow(mainMenuBarHeight, &showAbout);
 	}
 
-    if (showEditor) {
-        ImGui::SetNextWindowPos(ImVec2((float)App->window->getWidth() - 300, mainMenuBarHeight));
-        ImGui::SetNextWindowSize(ImVec2(300, 600));
-        ImGui::Begin("Editor", &showEditor, ImGuiWindowFlags_NoCollapse);
-
-        ImGui::Checkbox("Active", &active);
-
-        static float front[3] = { 0, 0, 0};
-		static const float* editorFront = nullptr;
-		editorFront = App->editorCamera->GetFront();
-		front[0] = editorFront[0];
-		front[1] = editorFront[1];
-		front[2] = editorFront[2];
-		ImGui::InputFloat3("Front", front, 2);
-
-		static float up[3] = { 0, 0, 0 };
-		static const float* editorUp = nullptr;
-		editorUp = App->editorCamera->GetUp();
-		up[0] = editorUp[0];
-		up[1] = editorUp[1];
-		up[2] = editorUp[2];
-		ImGui::InputFloat3("Up", up, 3);
-
-        static float position[3] = { 0, 0, 0};
-		static const float* editorPos = nullptr;
-		editorPos = App->editorCamera->getPosition();
-		position[0] = editorPos[0];
-		position[1] = editorPos[1];
-		position[2] = editorPos[2];
-		if (ImGui::InputFloat3("Position", position))
-			App->editorCamera->SetPosition(position[0], position[1], position[2]);
-
-        ImGui::SliderFloat("Mov Speed", &App->editorCamera->moveSpeed, 1.0f, 25.0f);
-        ImGui::SliderFloat("Rot Speed", &App->editorCamera->rotationSpeed, 1.0f, 25.0f);
-        ImGui::SliderFloat("Zoom Speed", &App->editorCamera->zoomSpeed, 10.0f, 200.0f);
-
-        ImGui::Checkbox("Frustum Culling", &frustumCulling);
-		if (ImGui::SliderFloat("Near Plane", &nearPlane, 0.01f, 30.0f))
-			App->editorCamera->SetNearPlaneDistance(nearPlane);
-		if (ImGui::SliderFloat("Far Plane", &farPlane, 50.0f, 2000.0f))
-			App->editorCamera->SetFarPlaneDistance(farPlane);
-
-		fovh = App->editorCamera->getHorizontalFOV();
-        ImGui::SliderFloat("Fov H", &fovh, 0.1f, 180.0f);
-		fovv = App->editorCamera->getVerticalFOV();
-		if (ImGui::SliderFloat("Fov V", &fovv, 0.1f, 180.0f))
-			App->editorCamera->SetFOV(fovv);
-		aspectRatio = App->editorCamera->getAspectRatio();
-        ImGui::SliderFloat("Aspect Ratio", &aspectRatio, 0.1f, 5.0f);
-
-        static float backgroundColor[3] = { 0.0f, 0.0f, 0.0f };
-		if (ImGui::ColorEdit3("color 1", backgroundColor))
-		{
-			App->editorCamera->background.r = backgroundColor[0];
-			App->editorCamera->background.g = backgroundColor[1];
-			App->editorCamera->background.b = backgroundColor[2];
-		}
-
-        ImGui::Checkbox("Is Active Camera", &isActiveCamera);
-
-        ImGui::End();
+    if (showCameraWindow)
+	{
+		ShowEditorCameraWindow(mainMenuBarHeight, &showCameraWindow);
     }
+
+	if (showTexturesWindow)
+	{
+		ShowTexturesWindow(mainMenuBarHeight, &showTexturesWindow);
+	}
+
+	if (showOpenGLWindow)
+	{
+		ShowOpenGLWindow(mainMenuBarHeight, &showOpenGLWindow);
+	}
 
 	ImGui::Render();
 
 	if (shouldQuit)
+	{
 		return UpdateStatus::UPDATE_STOP;
+	}
 	else
+	{
 		return UpdateStatus::UPDATE_CONTINUE;
+	}
 }
 
 /* Called before quitting */
@@ -254,4 +174,132 @@ void ModuleImGui::LinkToWebPage(const char* text, const char* url)
 {
 	if (ImGui::Selectable(text, false))
 		ShellExecute(NULL, "open", url, NULL, NULL, SW_SHOWNORMAL);
+}
+
+void ModuleImGui::ShowAboutWindow(float mainMenuBarHeight, bool* pOpen)
+{
+	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
+	ImGui::SetNextWindowSize(ImVec2(600, 600));
+	ImGui::Begin("About", pOpen, ImGuiWindowFlags_NoCollapse);
+
+	LinkToWebPage("Hell Engine v0.0.1", "https://github.com/BrunoAOR/HellEngine");
+	ImGui::TextWrapped("The one and only 3D Game Engine that guarantees an increased developer suicide rate!");
+	ImGui::Text("");
+
+	ImGui::Text("Authors:");
+	ImGui::Bullet(); LinkToWebPage("Marc Campins", "https://github.com/McCampins");
+	ImGui::Bullet(); LinkToWebPage("Bruno Ortiz", "https://github.com/BrunoAOR");
+	ImGui::Bullet(); LinkToWebPage("Sergi Ramirez", "https://github.com/Orphen5");
+	ImGui::Bullet(); LinkToWebPage("Daniel Reyes", "https://github.com/Winour");
+	ImGui::Bullet(); LinkToWebPage("Mario Rodriguez", "https://github.com/Mac092");
+	ImGui::Text("");
+
+	ImGui::Text("3rd party libraries used:");
+	ImGui::Bullet(); LinkToWebPage("SDL 2.0.4", "https://www.libsdl.org");
+	ImGui::Bullet(); LinkToWebPage("SDL Image 2.0.0", "https://www.libsdl.org/projects/SDL_image/");
+	ImGui::Bullet(); LinkToWebPage("SDL Mixer 2.0.0", "https://www.libsdl.org/projects/SDL_mixer/");
+	ImGui::Bullet(); LinkToWebPage("Brofiler 1.1.2", "https://github.com/bombomby/brofiler");
+	ImGui::Bullet(); LinkToWebPage("MathGeoLib 1.5", "https://github.com/juj/MathGeoLib");
+	ImGui::Bullet(); LinkToWebPage("JSON for Modern C++ 3.0.1", "https://github.com/nlohmann/json");
+	ImGui::Bullet(); LinkToWebPage("ImGui 1.53", "https://github.com/ocornut/imgui");
+	ImGui::Bullet(); LinkToWebPage("Glew 2.1.0", "http://glew.sourceforge.net");
+	ImGui::Bullet(); LinkToWebPage("OpenGL 3.1", "https://www.khronos.org/opengl/");
+	ImGui::Text("");
+
+	LinkToWebPage("License:", "https://github.com/BrunoAOR/HellEngine/blob/master/LICENSE");
+	ImGui::Text("");
+	ImGui::TextWrapped(licenseString.c_str());
+
+	ImGui::End();
+}
+
+void ModuleImGui::ShowEditorCameraWindow(float mainMenuBarHeight, bool* pOpen)
+{
+	static float fovh = 0.0f;
+	static float fovv = 0.0f;
+	static float nearPlane = App->editorCamera->getNearPlaneDistance();;
+	static float farPlane = App->editorCamera->getFarPlaneDistance();
+	static float aspectRatio = 0.0f;
+	static bool active = false;
+	static bool frustumCulling = false;
+	static bool isActiveCamera = true;
+
+	ImGui::SetNextWindowPos(ImVec2((float)App->window->getWidth() - 300, mainMenuBarHeight));
+	ImGui::SetNextWindowSize(ImVec2(300, 600));
+	ImGui::Begin("Camera", pOpen, ImGuiWindowFlags_NoCollapse);
+
+	ImGui::Checkbox("Active", &active);
+
+	static float front[3] = { 0, 0, 0 };
+	static const float* editorFront = nullptr;
+	editorFront = App->editorCamera->GetFront();
+	front[0] = editorFront[0];
+	front[1] = editorFront[1];
+	front[2] = editorFront[2];
+	ImGui::InputFloat3("Front", front, 2);
+
+	static float up[3] = { 0, 0, 0 };
+	static const float* editorUp = nullptr;
+	editorUp = App->editorCamera->GetUp();
+	up[0] = editorUp[0];
+	up[1] = editorUp[1];
+	up[2] = editorUp[2];
+	ImGui::InputFloat3("Up", up, 3);
+
+	static float position[3] = { 0, 0, 0 };
+	static const float* editorPos = nullptr;
+	editorPos = App->editorCamera->getPosition();
+	position[0] = editorPos[0];
+	position[1] = editorPos[1];
+	position[2] = editorPos[2];
+	if (ImGui::InputFloat3("Position", position))
+		App->editorCamera->SetPosition(position[0], position[1], position[2]);
+
+	ImGui::SliderFloat("Mov Speed", &App->editorCamera->moveSpeed, 1.0f, 25.0f);
+	ImGui::SliderFloat("Rot Speed", &App->editorCamera->rotationSpeed, 1.0f, 25.0f);
+	ImGui::SliderFloat("Zoom Speed", &App->editorCamera->zoomSpeed, 10.0f, 200.0f);
+
+	ImGui::Checkbox("Frustum Culling", &frustumCulling);
+	if (ImGui::SliderFloat("Near Plane", &nearPlane, 0.01f, 30.0f))
+		App->editorCamera->SetNearPlaneDistance(nearPlane);
+	if (ImGui::SliderFloat("Far Plane", &farPlane, 50.0f, 2000.0f))
+		App->editorCamera->SetFarPlaneDistance(farPlane);
+
+	fovh = App->editorCamera->getHorizontalFOV();
+	ImGui::SliderFloat("Fov H", &fovh, 0.1f, 180.0f);
+	fovv = App->editorCamera->getVerticalFOV();
+	if (ImGui::SliderFloat("Fov V", &fovv, 0.1f, 180.0f))
+		App->editorCamera->SetFOV(fovv);
+	aspectRatio = App->editorCamera->getAspectRatio();
+	ImGui::SliderFloat("Aspect Ratio", &aspectRatio, 0.1f, 5.0f);
+
+	static float backgroundColor[3] = { 0.0f, 0.0f, 0.0f };
+	if (ImGui::ColorEdit3("color 1", backgroundColor))
+	{
+		App->editorCamera->background.r = backgroundColor[0];
+		App->editorCamera->background.g = backgroundColor[1];
+		App->editorCamera->background.b = backgroundColor[2];
+	}
+
+	ImGui::Checkbox("Is Active Camera", &isActiveCamera);
+
+	ImGui::End();
+}
+
+void ModuleImGui::ShowTexturesWindow(float mainMenuBarHeight, bool * pOpen)
+{
+	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
+	ImGui::SetNextWindowSize(ImVec2(300, 600));
+	ImGui::Begin("Textures", pOpen, ImGuiWindowFlags_NoCollapse);
+
+	ImGui::End();
+}
+
+void ModuleImGui::ShowOpenGLWindow(float mainMenuBarHeight, bool * pOpen)
+{
+	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
+	ImGui::SetNextWindowSize(ImVec2(300, 600));
+	ImGui::Begin("OpenGL Configuration", pOpen, ImGuiWindowFlags_NoCollapse);
+
+	ImGui::End();
 }
