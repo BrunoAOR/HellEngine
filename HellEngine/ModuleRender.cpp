@@ -13,6 +13,7 @@
 #include "Color.h"
 #include "KeyState.h"
 #include "ModuleEditorCamera.h"
+#include "ModuleInput.h"
 #include "ModuleRender.h"
 #include "ModuleTime.h"
 #include "ModuleWindow.h"
@@ -35,9 +36,9 @@ bool ModuleRender::Init()
 {
 	LOGGER("Creating OpenGL context");
 	bool ret = true;
-	
+
 	glContext = SDL_GL_CreateContext(App->window->window);
-	
+
 	if (glContext == nullptr)
 	{
 		LOGGER("OpenGL context could not be created! SDL_Error: %s\n", SDL_GetError());
@@ -60,14 +61,27 @@ bool ModuleRender::Init()
 	{
 		InitCubeInfo();
 		InitSphereInfo(32, 32);
+
+		GLuint checkeredTextureId;
+		GLuint lennaTextureId;
+		GLuint ryuTextureId;
+		GLuint gokuTextureId;
+
 		checkeredTextureId = CreateCheckeredTexture();
 
 		uint idSum = 0;
-		idSum += lennaTextureId = LoadImageWithDevIL(lennaPath);
 		idSum += ryuTextureId = LoadImageWithDevIL(ryuPath);
+		idSum += lennaTextureId = LoadImageWithDevIL(lennaPath);
 		idSum += gokuTextureId = LoadImageWithDevIL(gokuPath);
 		if (idSum == 0)
 			ret = false;
+
+		if (ret) {
+			cubeTextureID.push_back(ryuTextureId);
+			cubeTextureID.push_back(lennaTextureId);
+			cubeTextureID.push_back(gokuTextureId);
+			cubeTextureID.push_back(checkeredTextureId);
+		}
 	}
 
 	return ret;
@@ -82,6 +96,16 @@ UpdateStatus ModuleRender::PreUpdate()
 	glLoadMatrixf(App->editorCamera->GetProjectionMatrix());
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixf(App->editorCamera->GetViewMatrix());
+
+	if (App->input->GetKey(SDL_SCANCODE_1) == KeyState::KEY_DOWN)
+		currentSelectedCube = 0;
+	if (App->input->GetKey(SDL_SCANCODE_2) == KeyState::KEY_DOWN)
+		currentSelectedCube = 1;
+	if (App->input->GetKey(SDL_SCANCODE_3) == KeyState::KEY_DOWN)
+		currentSelectedCube = 2;
+	if (App->input->GetKey(SDL_SCANCODE_4) == KeyState::KEY_DOWN)
+		currentSelectedCube = 3;
+
 	return UpdateStatus::UPDATE_CONTINUE;
 }
 
@@ -184,7 +208,7 @@ bool ModuleRender::CleanUp()
 }
 
 void ModuleRender::onWindowResize()
-{ 
+{
 	glViewport(0, 0, App->window->getWidth(), App->window->getHeight());
 }
 
@@ -263,10 +287,10 @@ void ModuleRender::InitCubeInfo()
 	| E---|-F
 	|/    |/
 	A-----B
-	
+
 	ABDC is the front face
 	FEGH is the back face
-	
+
 	*/
 
 	/* Cube vertices */
@@ -341,7 +365,7 @@ void ModuleRender::InitCubeInfo()
 	}
 
 	const size_t vertCount = 36;
-	
+
 	/* For DrawArray */
 	GLfloat vertices[vertCount * 3] = { SP_ARR_3F(vA), SP_ARR_3F(vB), SP_ARR_3F(vC), SP_ARR_3F(vB), SP_ARR_3F(vD), SP_ARR_3F(vC), SP_ARR_3F(vB), SP_ARR_3F(vF), SP_ARR_3F(vD), SP_ARR_3F(vF), SP_ARR_3F(vH), SP_ARR_3F(vD), SP_ARR_3F(vF), SP_ARR_3F(vE), SP_ARR_3F(vH), SP_ARR_3F(vE), SP_ARR_3F(vG), SP_ARR_3F(vH), SP_ARR_3F(vE), SP_ARR_3F(vA), SP_ARR_3F(vG), SP_ARR_3F(vA), SP_ARR_3F(vC), SP_ARR_3F(vG), SP_ARR_3F(vC), SP_ARR_3F(vD), SP_ARR_3F(vH), SP_ARR_3F(vC), SP_ARR_3F(vH), SP_ARR_3F(vG), SP_ARR_3F(vA), SP_ARR_3F(vF), SP_ARR_3F(vB), SP_ARR_3F(vF), SP_ARR_3F(vA), SP_ARR_3F(vE) };
 	GLfloat colors[vertCount * 3] = { SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cRed), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cRed), SP_ARR_3F(cBlue), SP_ARR_3F(cGreen), SP_ARR_3F(cRed), SP_ARR_3F(cBlue), SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cRed), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cRed), SP_ARR_3F(cWhite), SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cRed), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cRed), SP_ARR_3F(cBlue) };
@@ -367,12 +391,12 @@ void ModuleRender::InitCubeInfo()
 	GLfloat uniqueVertices[uniqueVertCount * 3] = { SP_ARR_3F(vA), SP_ARR_3F(vB), SP_ARR_3F(vC), SP_ARR_3F(vD), SP_ARR_3F(vE), SP_ARR_3F(vF), SP_ARR_3F(vG), SP_ARR_3F(vH), SP_ARR_3F(vE), SP_ARR_3F(vF), SP_ARR_3F(vG), SP_ARR_3F(vH) };
 	GLfloat uniqueColors[uniqueVertCount * 3] = { SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cRed), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cRed) };
 	GLfloat uniqueUVCoords[uniqueVertCount * 2] = { SP_ARR_2F(bottomLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(topLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(topRight), SP_ARR_2F(topLeft), SP_ARR_2F(topLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(bottomRight) };
-	GLubyte verticesOrder[vertCount] = {0, 1, 2, 1, 3, 2,		/* Front face */
+	GLubyte verticesOrder[vertCount] = { 0, 1, 2, 1, 3, 2,		/* Front face */
 										1, 5, 3, 5, 7, 3,		/* Right face */
 										5, 4, 7, 4, 6, 7,		/* Back face */
 										4, 0, 6, 0, 2, 6,		/* Left face */
 										2, 3, 11, 2, 11, 10,	/* Top face */
-										0, 9, 1, 9, 0, 8};		/* Botttom face */
+										0, 9, 1, 9, 0, 8 };		/* Botttom face */
 
 	glGenBuffers(1, (GLuint*)&uniqueVerticesBufferId);
 	glBindBuffer(GL_ARRAY_BUFFER, uniqueVerticesBufferId);
@@ -413,11 +437,11 @@ void ModuleRender::InitSphereInfo(unsigned int rings, unsigned int sections)
 
 	float ringStep = (float)M_PI / rings;
 	float sectionStep = 2 * (float)M_PI / sections;
-	
+
 	float redToGreenStep = 1.0f / rings;
 	float blueStep = 2 * 1.0f / sections;
 	/* VERTICES */
-	
+
 	/* First vertex is on the top*/
 	*v++ = 0;
 	*v++ = radius;
@@ -467,7 +491,7 @@ void ModuleRender::InitSphereInfo(unsigned int rings, unsigned int sections)
 	assert(v == vertices.end() && c == colors.end());
 
 	/* INDEXES */
-	/* 
+	/*
 	NOTE:
 	The total number of triangles is 2 * sections * (rings - 1)
 	This is due to the fact that the topmost and bottommost rings all join in the same top or bottom vertex.
@@ -583,8 +607,9 @@ void ModuleRender::DrawCubeImmediateMode() const
 	FEGH is the back face
 
 	*/
+	GLuint tex = cubeTextureID.at(0);
 
-	glBindTexture(GL_TEXTURE_2D, ryuTextureId);
+	glBindTexture(GL_TEXTURE_2D, tex);
 	glBegin(GL_TRIANGLES);
 
 	/* Front */
@@ -719,10 +744,12 @@ void ModuleRender::DrawCubeImmediateMode() const
 
 void ModuleRender::DrawCubeArrays() const
 {
+	GLuint tex = cubeTextureID.at(1);
+
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glBindTexture(GL_TEXTURE_2D, lennaTextureId);
+	glBindTexture(GL_TEXTURE_2D, tex);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
 	glVertexPointer(3, GL_FLOAT, 0, nullptr);
@@ -746,10 +773,12 @@ void ModuleRender::DrawCubeArrays() const
 
 void ModuleRender::DrawCubeElements() const
 {
+	GLuint tex = cubeTextureID.at(2);
+
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glBindTexture(GL_TEXTURE_2D, gokuTextureId);
+	glBindTexture(GL_TEXTURE_2D, tex);
 
 	glBindBuffer(GL_ARRAY_BUFFER, uniqueVerticesBufferId);
 	glVertexPointer(3, GL_FLOAT, 0, nullptr);
@@ -782,10 +811,12 @@ void ModuleRender::DrawCubeRangeElements() const
 	there is no real point in using glDrawRangeElements, since it is still going throught all the inidices.
 	Regardless, it has been used here as a reminder of its existence.
 	*/
+	GLuint tex = cubeTextureID.at(3);
+
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glBindTexture(GL_TEXTURE_2D, checkeredTextureId);
+	glBindTexture(GL_TEXTURE_2D, tex);
 
 	glBindBuffer(GL_ARRAY_BUFFER, uniqueVerticesBufferId);
 	glVertexPointer(3, GL_FLOAT, 0, nullptr);
@@ -864,24 +895,24 @@ void ModuleRender::DrawGroundGrid() const
 	glEnd();
 }
 
-// Function load a image, turn it into a texture, and return the texture ID as a GLuint for use
+/* Function load a image, turn it into a texture, and return the texture ID as a GLuint for use */
 GLuint ModuleRender::LoadImageWithDevIL(const char* theFileName)
 {
-	ILuint imageID;				// Create a image ID as a ULuint
+	ILuint imageID;				/* Create a image ID as a ULuint */
 
-	GLuint textureID;			// Create a texture ID as a GLuint
+	GLuint textureID;			/* Create a texture ID as a GLuint */
 
-	ILboolean success;			// Create a flag to keep track of success/failure
+	ILboolean success;			/* Create a flag to keep track of success/failure */
 
-	ILenum error;				// Create a flag to keep track of the IL error state
+	ILenum error;				/* Create a flag to keep track of the IL error state */
 
-	ilGenImages(1, &imageID); 		// Generate the image ID
+	ilGenImages(1, &imageID); 		/* Generate the image ID */
 
-	ilBindImage(imageID); 			// Bind the image
+	ilBindImage(imageID); 			/* Bind the image */
 
-	success = ilLoadImage(theFileName); 	// Load the image file
+	success = ilLoadImage(theFileName); 	/* Load the image file */
 
-	// If we failed to open the image file in the first place...
+	/* If we failed to open the image file in the first place... */
 	if (!success)
 	{
 		ilBindImage(0);
@@ -890,9 +921,9 @@ GLuint ModuleRender::LoadImageWithDevIL(const char* theFileName)
 		return 0;
 	}
 
-	// If we managed to load the image, then we can start to do things with it...
+	/* If we managed to load the image, then we can start to do things with it... */
 
-	// If the image is flipped (i.e. upside-down and mirrored, flip it the right way up!)
+	/* If the image is flipped (i.e. upside-down and mirrored, flip it the right way up!) */
 	ILinfo ImageInfo;
 	iluGetImageInfo(&ImageInfo);
 	if (ImageInfo.Origin == IL_ORIGIN_UPPER_LEFT)
@@ -900,11 +931,11 @@ GLuint ModuleRender::LoadImageWithDevIL(const char* theFileName)
 		iluFlipImage();
 	}
 
-	// ... then attempt to conver it.
-	// NOTE: If your image contains alpha channel you can replace IL_RGB with IL_RGBA
+	/* ... then attempt to conver it. */
+	/* NOTE: If your image contains alpha channel you can replace IL_RGB with IL_RGBA */
 	success = ilConvertImage(IL_RGB, IL_UNSIGNED_BYTE);
 
-	// Quit out if we failed the conversion
+	/* Quit out if we failed the conversion */
 	if (!success)
 	{
 		error = ilGetError();
@@ -914,41 +945,48 @@ GLuint ModuleRender::LoadImageWithDevIL(const char* theFileName)
 		return 0;
 	}
 
-	// Generate a new texture
+	/* Save image width and height*/
+	ILuint width, height;
+	width = ilGetInteger(IL_IMAGE_WIDTH);
+	height = ilGetInteger(IL_IMAGE_HEIGHT);
+
+	/* Generate a new texture */
 	glGenTextures(1, &textureID);
 
-	// Bind the texture to a name
+	/* Bind the texture to a name */
 	glBindTexture(GL_TEXTURE_2D, textureID);
 
-	// Set texture clamping method
+	/* Set texture clamping method */
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
-	// Set texture interpolation method to use linear interpolation (no MIPMAPS)
+	/* Set texture interpolation method to use linear interpolation (no MIPMAPS) */
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	// Specify the texture specification
-	glTexImage2D(GL_TEXTURE_2D,			// Type of texture
-		0,		// Pyramid level (for mip-mapping) - 0 is the top level
-		ilGetInteger(IL_IMAGE_BPP),		// Image colour depth
-		ilGetInteger(IL_IMAGE_WIDTH),	// Image width
-		ilGetInteger(IL_IMAGE_HEIGHT),	// Image height
-		0,		// Border width in pixels (can either be 1 or 0)
-		ilGetInteger(IL_IMAGE_FORMAT),	// Image format (i.e. RGB, RGBA, BGR etc.)
-		GL_UNSIGNED_BYTE,		// Image data type
-		ilGetData()				// The actual image data itself
+	/* Specify the texture specification */
+	glTexImage2D(GL_TEXTURE_2D,			/* Type of texture */
+		0,		/* Pyramid level (for mip-mapping) - 0 is the top level */
+		ilGetInteger(IL_IMAGE_BPP),		/* Image colour depth */
+		ilGetInteger(IL_IMAGE_WIDTH),	/* Image width */
+		ilGetInteger(IL_IMAGE_HEIGHT),	/* Image height */
+		0,		/* Border width in pixels (can either be 1 or 0) */
+		ilGetInteger(IL_IMAGE_FORMAT),	/* Image format (i.e. RGB, RGBA, BGR etc.) */
+		GL_UNSIGNED_BYTE,		/* Image data type */
+		ilGetData()				/* The actual image data itself */
 	);
 
-	// Unbind the texture to a name
+	/* Unbind the texture to a name */
 	glBindTexture(GL_TEXTURE_2D, GL_NONE);
 
-
-	// Because we have already copied image data into texture data we can release memory used by image.
+	/* Because we have already copied image data into texture data we can release memory used by image. */
 	ilDeleteImages(1, &imageID);
 	ilBindImage(0);
 
+	/* Save texture info */
+	textureInfo.insert(std::pair<int, Texture>(textureID, { width, height }));
+
 	LOGGER("Texture creation successful.");
 
-	return textureID; // Return the GLuint to the texture so you can use it!
+	return textureID; /* Return the GLuint to the texture so you can use it! */
 }

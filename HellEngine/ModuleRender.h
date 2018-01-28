@@ -1,6 +1,8 @@
 #ifndef __H_MODULERENDER__
 #define __H_MODULERENDER__
 
+#include <map>
+#include <vector>
 #include "SDL/include/SDL_rect.h"
 #include "globals.h"
 #include "Module.h"
@@ -72,6 +74,8 @@ public:
 
 	bool wireframe;
 	bool shouldRotate;
+	
+	int currentSelectedCube = 0;
 
 private:
 	
@@ -121,10 +125,14 @@ private:
 		uint verticesIndexBufferId;
 	} sphereInfo;
 
-	GLuint checkeredTextureId;
-	GLuint lennaTextureId;
-	GLuint ryuTextureId;
-	GLuint gokuTextureId;
+	struct Texture {
+		GLuint width;
+		GLuint height;
+	};
+
+	std::map<int, Texture> textureInfo;
+	std::vector<GLuint> cubeTextureID;
+
 	const char* lennaPath = "assets/images/lenna.png";
 	const char* ryuPath = "assets/images/ryu.jpg";
 	const char* gokuPath = "assets/images/goku.dds";
