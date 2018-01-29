@@ -39,6 +39,9 @@ public:
 	/* Get selected cube's texture bytes per pixel */
 	GLuint GetBytesPerPixel();
 
+	/* Erase information stored in vram's buffer related to the loaded textures*/
+	void DeleteTexturesBuffer();
+
 	/* Reloads all textures with the new specified parameters */
 	bool ReloadTextures();
 
@@ -111,6 +114,8 @@ public:
 	int currentSelectedCube = 0;
 	int textureWrapMode = 0;
 	int textureMipMapMode = 0;
+	int textureMagnificationMode = 0;
+	int textureMinificationMode = 0;
 
 	struct {
 		bool active;

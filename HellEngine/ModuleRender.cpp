@@ -993,9 +993,42 @@ GLuint ModuleRender::LoadImageWithDevIL(const char* theFileName)
 		glGenerateTextureMipmap(textureID);
 	}
 
-	/* Set texture interpolation method to use linear interpolation (no MIPMAPS) */
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	/*Apply magnification filters if requested*/
+	switch (textureMagnificationMode) {
+	case 0:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		break;
+	case 1:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		break;
+	default:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		break;
+	}
+	/*Apply minification filters if requested*/
+	switch (textureMinificationMode) {
+	case 0:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		break;
+	case 1:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		break;
+	case 2:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+		break;
+	case 3:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+		break;
+	case 4:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+		break;
+	case 5:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		break;
+	default:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		break;
+	}
 
 	/* Specify the texture specification */
 	glTexImage2D(GL_TEXTURE_2D,			/* Type of texture */
@@ -1054,12 +1087,25 @@ GLuint ModuleRender::GetBytesPerPixel()
 	return 0;
 }
 
+void ModuleRender::DeleteTexturesBuffer()
+{
+	for (std::vector<GLuint>::iterator it = cubeTextureID.begin(); it != cubeTextureID.end(); it++)
+	{
+		glDeleteTextures(1, &(*it));
+	}
+
+	cubeTextureID.clear();
+	textureInfo.clear();
+}
+
 bool ModuleRender::ReloadTextures()
 {
+
 	bool ret = true;
-	
-	textureInfo.clear();
-	cubeTextureID.clear();
+
+	if (cubeTextureID.size() != 0) {
+		DeleteTexturesBuffer();
+	}
 
 	GLuint checkeredTextureId;
 	GLuint lennaTextureId;

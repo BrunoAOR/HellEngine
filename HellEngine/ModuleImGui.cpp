@@ -287,6 +287,8 @@ void ModuleImGui::ShowTexturesWindow(float mainMenuBarHeight, bool * pOpen)
 {
 	static bool mipMaps = false;
 	static int wrapMode = App->renderer->textureWrapMode;
+	static int magnification = App->renderer->textureMagnificationMode;
+	static int minification = App->renderer->textureMinificationMode;
 
 	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
 	ImGui::SetNextWindowSize(ImVec2(300, 600));
@@ -297,6 +299,7 @@ void ModuleImGui::ShowTexturesWindow(float mainMenuBarHeight, bool * pOpen)
 	GLuint bytesPerPixel = App->renderer->GetBytesPerPixel();
 	GLuint wInBytes = w * bytesPerPixel;
 	GLuint hInBytes = h * bytesPerPixel;
+	char* minificationFiltersDependingOnMipmap = "GL_NEAREST\0GL_LINEAR\0"; //minification can use mipmap or not, if it does, more filters area available
 
 	ImGui::Text("Image width (pixels) = "); ImGui::SameLine();
 	if (w != 0)
@@ -340,6 +343,20 @@ void ModuleImGui::ShowTexturesWindow(float mainMenuBarHeight, bool * pOpen)
 		App->renderer->textureMipMapMode = mipMaps;
 		App->renderer->ReloadTextures();
 	}
+
+	if (mipMaps) {
+		minificationFiltersDependingOnMipmap = "GL_NEAREST\0GL_LINEAR\0GL_NEAREST_MIPMAP_NEAREST\0GL_LINEAR_MIPMAP_NEAREST\0GL_NEAREST_MIPMAP_LINEAR\0GL_LINEAR_MIPMAP_LINEAR\0\0";
+	}
+	if (ImGui::Combo("Minification", &minification, minificationFiltersDependingOnMipmap)) {
+		App->renderer->textureMinificationMode = minification;
+		App->renderer->ReloadTextures();
+	}
+
+	if (ImGui::Combo("Magnification", &magnification, "GL_NEAREST\0GL_LINEAR\0")) {
+		App->renderer->textureMagnificationMode = magnification;
+		App->renderer->ReloadTextures();
+	}
+
 
 	ImGui::End();
 }
