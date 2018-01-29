@@ -106,7 +106,6 @@ private:
 
 public:
 
-	bool wireframe;
 	bool shouldRotate;
 	
 	int currentSelectedCube = 0;

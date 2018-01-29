@@ -121,9 +121,6 @@ UpdateStatus ModuleRender::Update()
 
 	float scale = 0.4f;
 
-	if (wireframe)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
 	/* Immediate Mode */
 	{
 		glPushMatrix();
@@ -178,9 +175,6 @@ UpdateStatus ModuleRender::Update()
 	{
 		DrawGroundGrid();
 	}
-
-	if (wireframe)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	return UpdateStatus::UPDATE_CONTINUE;
 }

@@ -92,10 +92,6 @@ UpdateStatus ModuleImGui::Update()
 		{
 			if (ImGui::BeginMenu("Rendering"))
 			{
-				if (ImGui::MenuItem("Wireframe", nullptr, &rendererWireFrame))
-				{
-					App->renderer->wireframe = !App->renderer->wireframe;
-				}
 				if (ImGui::MenuItem("Rotate", nullptr, &rendererRotate))
 				{
 					App->renderer->shouldRotate = !App->renderer->shouldRotate;
@@ -363,6 +359,8 @@ void ModuleImGui::ShowOpenGLWindow(float mainMenuBarHeight, bool * pOpen)
 	static float fogColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	static bool ambientLight = false;
 	static float ambientLightColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	static int polygonMode = GL_FILL;
+	static int previousPolygonMode = GL_FILL;
 
 	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
 	ImGui::SetNextWindowSize(ImVec2(300, 600));
@@ -421,7 +419,7 @@ void ModuleImGui::ShowOpenGLWindow(float mainMenuBarHeight, bool * pOpen)
 		}
 		break;
 	}
-	
+
 	if (ImGui::ColorEdit3("Fog color", fogColor))
 	{
 		App->renderer->SetFogColor(fogColor);
@@ -438,6 +436,17 @@ void ModuleImGui::ShowOpenGLWindow(float mainMenuBarHeight, bool * pOpen)
 		App->renderer->SetAmbientLightColor(ambientLightColor);
 	}
 
+	ImGui::Separator();
+
+	ImGui::Text("Polygon drawing mode:");
+	ImGui::RadioButton("Fill", &polygonMode, GL_FILL); ImGui::SameLine();
+	ImGui::RadioButton("Lines", &polygonMode, GL_LINE); ImGui::SameLine();
+	ImGui::RadioButton("Point", &polygonMode, GL_POINT);
+	if (polygonMode != previousPolygonMode)
+	{
+		previousPolygonMode = polygonMode;
+		App->renderer->SetPolygonDrawMode(polygonMode);
+	}
 
 	ImGui::End();
 }
