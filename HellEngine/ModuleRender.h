@@ -56,7 +56,7 @@ public:
 	
 	/* Sets the fog color to the specified RGBA value */
 	void SetFogColor(float* color);
-	
+
 	/* Sets the ambient light color */
 	void SetAmbientLightColor(float* color);
 
@@ -99,7 +99,7 @@ private:
 	void DrawSphere() const;
 
 	/* Draw a grid on the ground */
-	void DrawGroundGrid() const;
+	void DrawGroundGrid(float xOffset = 0, float zOffet = 0, int halfSize = 20) const;
 
 	/* Loading image with DevIL. */
 	GLuint LoadImageWithDevIL(const char* theFileName);
@@ -111,6 +111,12 @@ public:
 	int currentSelectedCube = 0;
 	int textureWrapMode = 0;
 	int textureMipMapMode = 0;
+
+	struct {
+		bool active;
+		bool tracking;
+		bool continuousTracking;
+	} groundGridInfo;
 
 private:
 	

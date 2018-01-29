@@ -61,6 +61,7 @@ bool ModuleRender::Init()
 	{
 		InitCubeInfo();
 		InitSphereInfo(32, 32);
+		groundGridInfo.active = true;
 
 		GLuint checkeredTextureId;
 		GLuint lennaTextureId;
@@ -173,7 +174,10 @@ UpdateStatus ModuleRender::Update()
 
 	/* DrawGroundGrid */
 	{
-		DrawGroundGrid();
+		if (groundGridInfo.active)
+		{
+			DrawGroundGrid(App->editorCamera->getPosition()[0], App->editorCamera->getPosition()[2]);
+		}
 	}
 
 	return UpdateStatus::UPDATE_CONTINUE;
@@ -856,10 +860,21 @@ void ModuleRender::DrawSphere() const
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
 
-void ModuleRender::DrawGroundGrid() const
+void ModuleRender::DrawGroundGrid(float xOffset, float zOffset, int halfSize) const
 {
-	int start = -20;
-	int extent = 20;
+	if (!groundGridInfo.tracking)
+	{
+		xOffset = 0;
+		zOffset = 0;
+	}
+	else if (!groundGridInfo.continuousTracking)
+	{
+		xOffset = round(xOffset);
+		zOffset = round(zOffset);
+	}
+
+	int start = -halfSize;
+	int extent = halfSize;
 	float y = 0;
 
 	glBegin(GL_LINES);
@@ -873,8 +888,8 @@ void ModuleRender::DrawGroundGrid() const
 			glColor3f(.25f, .25f, .25f);
 		}
 
-		glVertex3f((float)i, y, (float)start);
-		glVertex3f((float)i, y, (float)extent);
+		glVertex3f((float)i + xOffset, y, (float)start + zOffset);
+		glVertex3f((float)i + xOffset, y, (float)extent + zOffset);
 
 		if (i == start) {
 			glColor3f(.3f, .3f, .6f);
@@ -883,8 +898,8 @@ void ModuleRender::DrawGroundGrid() const
 			glColor3f(.25f, .25f, .25f);
 		}
 
-		glVertex3f((float)start, y, (float)i);
-		glVertex3f((float)extent, y, (float)i);
+		glVertex3f((float)start + xOffset, y, (float)i + zOffset);
+		glVertex3f((float)extent + xOffset, y, (float)i + zOffset);
 	}
 
 	glEnd();
@@ -1042,11 +1057,9 @@ GLuint ModuleRender::GetBytesPerPixel()
 bool ModuleRender::ReloadTextures()
 {
 	bool ret = true;
-
+	
 	textureInfo.clear();
 	cubeTextureID.clear();
-
-	InitDevIL();
 
 	GLuint checkeredTextureId;
 	GLuint lennaTextureId;

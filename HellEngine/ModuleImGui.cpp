@@ -361,6 +361,9 @@ void ModuleImGui::ShowOpenGLWindow(float mainMenuBarHeight, bool * pOpen)
 	static float ambientLightColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	static int polygonMode = GL_FILL;
 	static int previousPolygonMode = GL_FILL;
+	static int referenceGridTrackingBehaviour = 0;
+	static int previousReferenceGridTrackingBehaviour = 0;
+
 
 	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
 	ImGui::SetNextWindowSize(ImVec2(300, 600));
@@ -419,7 +422,6 @@ void ModuleImGui::ShowOpenGLWindow(float mainMenuBarHeight, bool * pOpen)
 		}
 		break;
 	}
-
 	if (ImGui::ColorEdit3("Fog color", fogColor))
 	{
 		App->renderer->SetFogColor(fogColor);
@@ -446,6 +448,35 @@ void ModuleImGui::ShowOpenGLWindow(float mainMenuBarHeight, bool * pOpen)
 	{
 		previousPolygonMode = polygonMode;
 		App->renderer->SetPolygonDrawMode(polygonMode);
+	}
+
+	ImGui::Separator();
+
+	ImGui::Text("Reference Grid:");
+	ImGui::Checkbox("Active", &App->renderer->groundGridInfo.active);
+	ImGui::Text("Tracking:");
+	ImGui::RadioButton("Inactive", &referenceGridTrackingBehaviour, 0); ImGui::SameLine();
+	ImGui::RadioButton("Continuous", &referenceGridTrackingBehaviour, 1); ImGui::SameLine();
+	ImGui::RadioButton("Discrete", &referenceGridTrackingBehaviour, 2);
+	if (previousReferenceGridTrackingBehaviour != referenceGridTrackingBehaviour)
+	{
+		previousReferenceGridTrackingBehaviour = referenceGridTrackingBehaviour;
+		switch (referenceGridTrackingBehaviour)
+		{
+		case 0:
+			App->renderer->groundGridInfo.tracking = false;
+			break;
+		case 1:
+			App->renderer->groundGridInfo.tracking = true;
+			App->renderer->groundGridInfo.continuousTracking = true;
+			break;
+		case 2:
+			App->renderer->groundGridInfo.tracking = true;
+			App->renderer->groundGridInfo.continuousTracking = false;
+			break;
+		default:
+			break;
+		}
 	}
 
 	ImGui::End();
