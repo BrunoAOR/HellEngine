@@ -1,6 +1,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <shellapi.h> /* Has to be included AFTER Windows.h */
+#include "Glew/include/glew.h"
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_sdl_gl3.h"
 #include "Application.h"
@@ -349,9 +350,94 @@ void ModuleImGui::ShowTexturesWindow(float mainMenuBarHeight, bool * pOpen)
 
 void ModuleImGui::ShowOpenGLWindow(float mainMenuBarHeight, bool * pOpen)
 {
+	static bool depthTest = true;
+	static bool cullFace = true;
+	static bool lighting = false;
+	static bool colorMaterial = true;
+	static bool texture2D = true;
+	static bool fog = false;
+	static int fogMode = GL_EXP;
+	static int previousFogMode = GL_EXP;
+	static float fogDensity = 1.0f;
+	static float fogDistance[2] = { 0.0f, 1.0f };
+	static float fogColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	static bool ambientLight = false;
+	static float ambientLightColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+
 	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
 	ImGui::SetNextWindowSize(ImVec2(300, 600));
-	ImGui::Begin("OpenGL Configuration", pOpen, ImGuiWindowFlags_NoCollapse);
+	ImGui::Begin("OpenGL options", pOpen, ImGuiWindowFlags_NoCollapse);
+
+	if (ImGui::Checkbox("Depth Test", &depthTest))
+	{
+		App->renderer->ToggleOpenGLCapability(depthTest, GL_DEPTH_TEST);
+	}
+	if (ImGui::Checkbox("Backface culling", &cullFace))
+	{
+		App->renderer->ToggleOpenGLCapability(cullFace, GL_CULL_FACE);
+	}
+	if (ImGui::Checkbox("Lighting", &lighting))
+	{
+		App->renderer->ToggleOpenGLCapability(lighting, GL_LIGHTING);
+	}
+	if (ImGui::Checkbox("Color", &colorMaterial))
+	{
+		App->renderer->ToggleOpenGLCapability(colorMaterial, GL_COLOR_MATERIAL);
+	}
+	if (ImGui::Checkbox("Textures", &texture2D))
+	{
+		App->renderer->ToggleOpenGLCapability(texture2D, GL_TEXTURE_2D);
+	}
+
+	ImGui::Separator();
+
+	if (ImGui::Checkbox("Fog", &fog))
+	{
+		App->renderer->ToggleOpenGLCapability(fog, GL_FOG);
+	}
+	ImGui::Text("Fog mode:"); ImGui::SameLine();
+	ImGui::RadioButton("Linear", &fogMode, GL_LINEAR); ImGui::SameLine();
+	ImGui::RadioButton("Exp", &fogMode, GL_EXP); ImGui::SameLine();
+	ImGui::RadioButton("Exp sqrd", &fogMode, GL_EXP2);
+
+	if (previousFogMode != fogMode)
+	{
+		previousFogMode = fogMode;
+		App->renderer->SetFogMode(fogMode);
+	}
+	switch (fogMode)
+	{
+	case GL_LINEAR:
+		if (ImGui::DragFloat2("Fog distance", fogDistance, 0.05f, 0.0f, 100.0f, "%.2f"))
+		{
+			App->renderer->setFogStartAndEnd(fogDistance[0], fogDistance[1]);
+		}
+		break;
+	case GL_EXP:
+	case GL_EXP2:
+		if (ImGui::DragFloat("Fog density", &fogDensity, 0.01f, 0.0f, 1.0f, "%.2f"))
+		{
+			App->renderer->SetFogDensity(fogDensity);
+		}
+		break;
+	}
+	
+	if (ImGui::ColorEdit3("Fog color", fogColor))
+	{
+		App->renderer->SetFogColor(fogColor);
+	}
+
+	ImGui::Separator();
+
+	if (ImGui::Checkbox("Ambient Light", &ambientLight))
+	{
+		App->renderer->ToggleOpenGLCapability(ambientLight, GL_LIGHT0);
+	}
+	if (ImGui::ColorEdit3("Ambient Light color", ambientLightColor))
+	{
+		App->renderer->SetAmbientLightColor(ambientLightColor);
+	}
+
 
 	ImGui::End();
 }

@@ -247,9 +247,10 @@ bool ModuleRender::InitOpenGL() const
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
-	//glEnable(GL_LIGHTING);
+	glDisable(GL_LIGHTING);
 	glEnable(GL_COLOR_MATERIAL);
 	glEnable(GL_TEXTURE_2D);
+	glDisable(GL_FOG);
 
 	/* Set viewport */
 	//glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -1075,4 +1076,47 @@ bool ModuleRender::ReloadTextures()
 	}
 
 	return ret;
+}
+
+void ModuleRender::ToggleOpenGLCapability(bool state, GLenum cap)
+{
+	if (state)
+	{
+		glEnable(cap);
+	}
+	else
+	{
+		glDisable(cap);
+	}
+}
+
+void ModuleRender::SetFogMode(GLenum fogMode)
+{
+	glFogi(GL_FOG_MODE, fogMode);
+}
+
+void ModuleRender::SetFogDensity(float density)
+{
+	glFogf(GL_FOG_DENSITY, density);
+}
+
+void ModuleRender::setFogStartAndEnd(float start, float end)
+{
+	glFogf(GL_FOG_START, start);
+	glFogf(GL_FOG_END, end);
+}
+
+void ModuleRender::SetFogColor(float * color)
+{
+	glFogfv(GL_FOG_COLOR, color);
+}
+
+void ModuleRender::SetAmbientLightColor(float * color)
+{
+	glLightfv(GL_LIGHT0, GL_AMBIENT, color);
+}
+
+void ModuleRender::SetPolygonDrawMode(GLenum drawMode)
+{
+	glPolygonMode(GL_FRONT_AND_BACK, drawMode);
 }

@@ -10,6 +10,7 @@ struct SDL_Rect;
 struct SDL_Renderer;
 struct SDL_Texture;
 typedef float GLfloat;
+typedef unsigned int GLenum;
 typedef unsigned int GLuint;
 typedef void* SDL_GLContext;
 
@@ -40,6 +41,27 @@ public:
 
 	/* Reloads all textures with the new specified parameters */
 	bool ReloadTextures();
+
+	/* Enables or disables an OpenGL capability */
+	void ToggleOpenGLCapability(bool state, GLenum cap);
+
+	/* Sets the fog mode (fogMode must be GL_LINEAR, GL_EXP or GL_EXP2) */
+	void SetFogMode(GLenum fogMode);
+
+	/* Sets the fog density (value between 0 and 1 is expected) */
+	void SetFogDensity(float density);
+	
+	/* Sets the start and end distances for fog calculations */
+	void setFogStartAndEnd(float start, float end);
+	
+	/* Sets the fog color to the specified RGBA value */
+	void SetFogColor(float* color);
+	
+	/* Sets the ambient light color */
+	void SetAmbientLightColor(float* color);
+
+	/* Sets the polygon draw mode (drawMode must be GL_FILL, GL_LINE or GL_POINT */
+	void SetPolygonDrawMode(GLenum drawMode);
 
 private:
 
