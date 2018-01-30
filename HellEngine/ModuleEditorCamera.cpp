@@ -257,10 +257,10 @@ void ModuleEditorCamera::handleCameraMotion()
 	{
 		/* Camera up */
 		if (App->input->GetKey(SDL_SCANCODE_Q) == KeyState::KEY_REPEAT)
-			pos.y += moveFactor * moveSpeed * App->time->DeltaTime();
+			pos.y -= moveFactor * moveSpeed * App->time->DeltaTime();
 		/* Camera down */
 		if (App->input->GetKey(SDL_SCANCODE_E) == KeyState::KEY_REPEAT)
-			pos.y -= moveFactor * moveSpeed * App->time->DeltaTime();
+			pos.y += moveFactor * moveSpeed * App->time->DeltaTime();
 
 		/* Camera forward */
 		if (App->input->GetKey(SDL_SCANCODE_W) == KeyState::KEY_REPEAT)

@@ -31,19 +31,22 @@ private:
 	/* Opens the browser to the provided link */
 	void LinkToWebPage(const char* text, const char* url);
 
+	/* Draws the About window */
+	void ShowAboutWindow(float mainMenuBarHeight, bool* pOpen);
+
+	/* Draws the Editor Camera window */
+	void ShowEditorCameraWindow(float mainMenuBarHeight, bool* pOpen);
+
+	/* Draws the Editor Camera window */
+	void ShowTexturesWindow(float mainMenuBarHeight, bool* pOpen);
+
+	/* Draws the Editor Camera window */
+	void ShowOpenGLWindow(float mainMenuBarHeight, bool* pOpen);
+
 private:
 
 	std::string licenseString;
 
-    /*Editor variables*/
-    float fovh;
-    float fovv;
-    float nearPlane;
-    float farPlane;
-    float aspectRatio;
-    bool active;
-    bool frustumCulling;
-    bool isActiveCamera;
 };
 
 #endif // !__H_MODULE_IMGUI__

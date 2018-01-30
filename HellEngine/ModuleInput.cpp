@@ -134,8 +134,8 @@ UpdateStatus ModuleInput::PreUpdate()
 			break;
 
 		case SDL_MOUSEWHEEL:
-			mouseWheel.x = event.wheel.direction == SDL_MOUSEWHEEL_NORMAL ? event.wheel.x : -event.wheel.x;
-			mouseWheel.y = event.wheel.direction == SDL_MOUSEWHEEL_NORMAL ? event.wheel.y : -event.wheel.y;
+			mouseWheel.x = event.wheel.x;
+			mouseWheel.y = event.wheel.y;
 			break;
 		}
 	}

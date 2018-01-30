@@ -1,7 +1,7 @@
 #ifndef __H_GLOBALS__
 #define __H_GLOBALS__
 
-#define LOGGER(format, ...) Log(__FILE__, __LINE__, format, __VA_ARGS__);
+#define LOGGER(format, ...) Logger(__FILE__, __LINE__, format, __VA_ARGS__);
 #define MAX( a, b ) ( ((a) > (b)) ? (a) : (b) )
 #define MIN( a, b ) ( ((a) < (b)) ? (a) : (b) )
 
@@ -39,7 +39,7 @@
 typedef nlohmann::json Json;
 typedef unsigned int uint;
 
-void Log(const char file[], int line, const char* format, ...);
+void Logger(const char file[], int line, const char* format, ...);
 Json LoadJson(const char* path);
 
 #endif /* __H_GLOBALS__ */

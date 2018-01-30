@@ -1,4 +1,8 @@
 #pragma comment( lib, "Glew/libx86/glew32.lib" )
+#pragma comment( lib, "DevIL/libx86/DevIL.lib" )
+#pragma comment( lib, "DevIL/libx86/ILU.lib" )
+#pragma comment( lib, "DevIL/libx86/ILUT.lib" )
+#define SP_ARR_2F(x) x[0], x[1]
 #define SP_ARR_3F(x) x[0], x[1], x[2]
 #include <assert.h>
 #include <math.h>
@@ -9,12 +13,16 @@
 #include "Color.h"
 #include "KeyState.h"
 #include "ModuleEditorCamera.h"
+#include "ModuleInput.h"
 #include "ModuleRender.h"
 #include "ModuleTime.h"
 #include "ModuleWindow.h"
 #include "UpdateStatus.h"
 #include "globals.h"
 #include "openGL.h"
+#include "DevIL/include/IL/il.h"
+#include "DevIL/include/IL/ilu.h"
+#include "DevIL/include/IL/ilut.h"
 
 ModuleRender::ModuleRender()
 {}
@@ -28,9 +36,9 @@ bool ModuleRender::Init()
 {
 	LOGGER("Creating OpenGL context");
 	bool ret = true;
-	
+
 	glContext = SDL_GL_CreateContext(App->window->window);
-	
+
 	if (glContext == nullptr)
 	{
 		LOGGER("OpenGL context could not be created! SDL_Error: %s\n", SDL_GetError());
@@ -44,6 +52,8 @@ bool ModuleRender::Init()
 		{
 			if (!InitOpenGL())
 				ret = false;
+			else
+				InitDevIL();
 		}
 	}
 
@@ -51,6 +61,9 @@ bool ModuleRender::Init()
 	{
 		InitCubeInfo();
 		InitSphereInfo(32, 32);
+		ret &= InitTextures();
+
+		groundGridInfo.active = true;
 	}
 
 	return ret;
@@ -65,6 +78,16 @@ UpdateStatus ModuleRender::PreUpdate()
 	glLoadMatrixf(App->editorCamera->GetProjectionMatrix());
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixf(App->editorCamera->GetViewMatrix());
+
+	if (App->input->GetKey(SDL_SCANCODE_1) == KeyState::KEY_DOWN)
+		currentSelectedCube = 0;
+	if (App->input->GetKey(SDL_SCANCODE_2) == KeyState::KEY_DOWN)
+		currentSelectedCube = 1;
+	if (App->input->GetKey(SDL_SCANCODE_3) == KeyState::KEY_DOWN)
+		currentSelectedCube = 2;
+	if (App->input->GetKey(SDL_SCANCODE_4) == KeyState::KEY_DOWN)
+		currentSelectedCube = 3;
+
 	return UpdateStatus::UPDATE_CONTINUE;
 }
 
@@ -79,9 +102,6 @@ UpdateStatus ModuleRender::Update()
 	}
 
 	float scale = 0.4f;
-
-	if (wireframe)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	/* Immediate Mode */
 	{
@@ -119,7 +139,7 @@ UpdateStatus ModuleRender::Update()
 		glTranslatef(0.5f, -0.5f, 0);
 		glScalef(scale, scale, scale);
 		glRotatef(rotationAngle, 1, 1, 1);
-		DrawCubeElements();
+		DrawCubeRangeElements();
 		glPopMatrix();
 	}
 
@@ -135,11 +155,11 @@ UpdateStatus ModuleRender::Update()
 
 	/* DrawGroundGrid */
 	{
-		DrawGroundGrid();
+		if (groundGridInfo.active)
+		{
+			DrawGroundGrid(App->editorCamera->getPosition()[0], App->editorCamera->getPosition()[2]);
+		}
 	}
-
-	if (wireframe)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	return UpdateStatus::UPDATE_CONTINUE;
 }
@@ -167,7 +187,7 @@ bool ModuleRender::CleanUp()
 }
 
 void ModuleRender::onWindowResize()
-{ 
+{
 	glViewport(0, 0, App->window->getWidth(), App->window->getHeight());
 }
 
@@ -206,9 +226,10 @@ bool ModuleRender::InitOpenGL() const
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
-	//glEnable(GL_LIGHTING);
+	glDisable(GL_LIGHTING);
 	glEnable(GL_COLOR_MATERIAL);
 	glEnable(GL_TEXTURE_2D);
+	glDisable(GL_FOG);
 
 	/* Set viewport */
 	//glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -221,6 +242,15 @@ bool ModuleRender::InitOpenGL() const
 		return false;
 	}
 	return true;
+}
+
+void ModuleRender::InitDevIL()
+{
+	ilutRenderer(ILUT_OPENGL);
+	ilInit();
+	iluInit();
+	ilutInit();
+	ilutRenderer(ILUT_OPENGL);
 }
 
 /* Initializes cube-rendering variables */
@@ -237,11 +267,17 @@ void ModuleRender::InitCubeInfo()
 	| E---|-F
 	|/    |/
 	A-----B
-	
+
 	ABDC is the front face
 	FEGH is the back face
-	
+
 	*/
+
+	/* General */
+	cubeSelectedTextures.push_back(0);
+	cubeSelectedTextures.push_back(1);
+	cubeSelectedTextures.push_back(2);
+	cubeSelectedTextures.push_back(3);
 
 	/* Cube vertices */
 	{
@@ -299,33 +335,54 @@ void ModuleRender::InitCubeInfo()
 		cWhite[2] = 1.0f;
 	}
 
+	/* UV coords */
+	{
+		bottomLeft[0] = 0.0f;
+		bottomLeft[1] = 0.0f;
+
+		bottomRight[0] = 1.0f;
+		bottomRight[1] = 0.0f;
+
+		topLeft[0] = 0.0f;
+		topLeft[1] = 1.0f;
+
+		topRight[0] = 1.0f;
+		topRight[1] = 1.0f;
+	}
 
 	const size_t vertCount = 36;
-	
+
 	/* For DrawArray */
 	GLfloat vertices[vertCount * 3] = { SP_ARR_3F(vA), SP_ARR_3F(vB), SP_ARR_3F(vC), SP_ARR_3F(vB), SP_ARR_3F(vD), SP_ARR_3F(vC), SP_ARR_3F(vB), SP_ARR_3F(vF), SP_ARR_3F(vD), SP_ARR_3F(vF), SP_ARR_3F(vH), SP_ARR_3F(vD), SP_ARR_3F(vF), SP_ARR_3F(vE), SP_ARR_3F(vH), SP_ARR_3F(vE), SP_ARR_3F(vG), SP_ARR_3F(vH), SP_ARR_3F(vE), SP_ARR_3F(vA), SP_ARR_3F(vG), SP_ARR_3F(vA), SP_ARR_3F(vC), SP_ARR_3F(vG), SP_ARR_3F(vC), SP_ARR_3F(vD), SP_ARR_3F(vH), SP_ARR_3F(vC), SP_ARR_3F(vH), SP_ARR_3F(vG), SP_ARR_3F(vA), SP_ARR_3F(vF), SP_ARR_3F(vB), SP_ARR_3F(vF), SP_ARR_3F(vA), SP_ARR_3F(vE) };
 	GLfloat colors[vertCount * 3] = { SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cRed), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cRed), SP_ARR_3F(cBlue), SP_ARR_3F(cGreen), SP_ARR_3F(cRed), SP_ARR_3F(cBlue), SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cRed), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cRed), SP_ARR_3F(cWhite), SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cRed), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cRed), SP_ARR_3F(cBlue) };
+	GLfloat uvCoords[vertCount * 2] = { SP_ARR_2F(bottomLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(topLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(topRight), SP_ARR_2F(topLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(topLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(topLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(topRight), SP_ARR_2F(topLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(topLeft), SP_ARR_2F(topRight), SP_ARR_2F(topLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomRight), SP_ARR_2F(topLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(bottomLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomRight), SP_ARR_2F(topRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(topLeft) };
 
-	glGenBuffers(1, (GLuint*)&vertexBufferId);
+	glGenBuffers(1, &vertexBufferId);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertCount * 3, vertices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
-	glGenBuffers(1, (GLuint*)&colorsBufferId);
+	glGenBuffers(1, &colorsBufferId);
 	glBindBuffer(GL_ARRAY_BUFFER, colorsBufferId);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertCount * 3, colors, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
+	glGenBuffers(1, &uvCoordsBufferId);
+	glBindBuffer(GL_ARRAY_BUFFER, uvCoordsBufferId);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertCount * 2, uvCoords, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
 	/* For DrawElements and DrawRangeElements */
-	const size_t uniqueVertCount = 8;
-	GLfloat uniqueVertices[uniqueVertCount * 3] = { SP_ARR_3F(vA), SP_ARR_3F(vB), SP_ARR_3F(vC), SP_ARR_3F(vD), SP_ARR_3F(vE), SP_ARR_3F(vF), SP_ARR_3F(vG), SP_ARR_3F(vH) };
-	GLfloat uniqueColors[uniqueVertCount * 3] = { SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cRed) };
-	GLubyte verticesOrder[vertCount] = {0, 1, 2, 1, 3, 2,
-										1, 5, 3, 5, 7, 3,
-										5, 4, 7, 4, 6, 7,
-										4, 0, 6, 0, 2, 6,
-										2, 3, 7, 2, 7, 6,
-										0, 5, 1, 5, 0, 4};
+	const size_t uniqueVertCount = 8 + 4;
+	GLfloat uniqueVertices[uniqueVertCount * 3] = { SP_ARR_3F(vA), SP_ARR_3F(vB), SP_ARR_3F(vC), SP_ARR_3F(vD), SP_ARR_3F(vE), SP_ARR_3F(vF), SP_ARR_3F(vG), SP_ARR_3F(vH), SP_ARR_3F(vE), SP_ARR_3F(vF), SP_ARR_3F(vG), SP_ARR_3F(vH) };
+	GLfloat uniqueColors[uniqueVertCount * 3] = { SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cRed), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cRed) };
+	GLfloat uniqueUVCoords[uniqueVertCount * 2] = { SP_ARR_2F(bottomLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(topLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(topRight), SP_ARR_2F(topLeft), SP_ARR_2F(topLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(bottomRight) };
+	GLubyte verticesOrder[vertCount] = { 0, 1, 2, 1, 3, 2,		/* Front face */
+										1, 5, 3, 5, 7, 3,		/* Right face */
+										5, 4, 7, 4, 6, 7,		/* Back face */
+										4, 0, 6, 0, 2, 6,		/* Left face */
+										2, 3, 11, 2, 11, 10,	/* Top face */
+										0, 9, 1, 9, 0, 8 };		/* Botttom face */
 
 	glGenBuffers(1, (GLuint*)&uniqueVerticesBufferId);
 	glBindBuffer(GL_ARRAY_BUFFER, uniqueVerticesBufferId);
@@ -335,6 +392,11 @@ void ModuleRender::InitCubeInfo()
 	glGenBuffers(1, (GLuint*)&uniqueColorsBufferId);
 	glBindBuffer(GL_ARRAY_BUFFER, uniqueColorsBufferId);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uniqueVertCount * 3, uniqueColors, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
+	glGenBuffers(1, (GLuint*)&uniqueUVCoordsBufferId);
+	glBindBuffer(GL_ARRAY_BUFFER, uniqueUVCoordsBufferId);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uniqueVertCount * 2, uniqueUVCoords, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
 	glGenBuffers(1, (GLuint*)&uniqueVerticesIndexBufferId);
@@ -361,11 +423,11 @@ void ModuleRender::InitSphereInfo(unsigned int rings, unsigned int sections)
 
 	float ringStep = (float)M_PI / rings;
 	float sectionStep = 2 * (float)M_PI / sections;
-	
+
 	float redToGreenStep = 1.0f / rings;
 	float blueStep = 2 * 1.0f / sections;
 	/* VERTICES */
-	
+
 	/* First vertex is on the top*/
 	*v++ = 0;
 	*v++ = radius;
@@ -415,7 +477,7 @@ void ModuleRender::InitSphereInfo(unsigned int rings, unsigned int sections)
 	assert(v == vertices.end() && c == colors.end());
 
 	/* INDEXES */
-	/* 
+	/*
 	NOTE:
 	The total number of triangles is 2 * sections * (rings - 1)
 	This is due to the fact that the topmost and bottommost rings all join in the same top or bottom vertex.
@@ -487,139 +549,268 @@ void ModuleRender::InitSphereInfo(unsigned int rings, unsigned int sections)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
 }
 
+bool ModuleRender::InitTextures()
+{
+	bool ret = true;
+	GLuint checkeredTextureId;
+	GLuint lennaTextureId;
+	GLuint ryuTextureId;
+	GLuint gokuTextureId;
+
+	checkeredTextureId = CreateCheckeredTexture();
+
+	uint idSum = 0;
+	idSum += ryuTextureId = LoadImageWithDevIL(ryuPath);
+	idSum += lennaTextureId = LoadImageWithDevIL(lennaPath);
+	idSum += gokuTextureId = LoadImageWithDevIL(gokuPath);
+	if (idSum == 0)
+		ret = false;
+
+	if (ret) {
+		cubeTextureID.push_back(ryuTextureId);
+		cubeTextureID.push_back(lennaTextureId);
+		cubeTextureID.push_back(gokuTextureId);
+		cubeTextureID.push_back(checkeredTextureId);
+	}
+
+	return ret;
+}
+
+GLuint ModuleRender::CreateCheckeredTexture()
+{
+	GLubyte checkImage[checkeredTextureSize][checkeredTextureSize][4];
+	for (int i = 0; i < checkeredTextureSize; i++) {
+		for (int j = 0; j < checkeredTextureSize; j++) {
+			int c = ((((i & 0x8) == 0) ^ (((j & 0x8)) == 0))) * 255;
+			checkImage[i][j][0] = (GLubyte)c;
+			checkImage[i][j][1] = (GLubyte)c;
+			checkImage[i][j][2] = (GLubyte)c;
+			checkImage[i][j][3] = (GLubyte)255;
+		}
+	}
+
+	GLuint textureId;
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glGenTextures(1, &textureId);
+	glBindTexture(GL_TEXTURE_2D, textureId);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, checkeredTextureSize, checkeredTextureSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, checkImage);
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
+
+	return textureId;
+}
+
 void ModuleRender::DrawCubeImmediateMode() const
 {
+	/*
+	CUBE drawing
+	  G-----H
+	 /|    /|
+	C-----D |
+	| |   | |
+	| E---|-F
+	|/    |/
+	A-----B
+
+	ABDC is the front face
+	FEGH is the back face
+
+	*/
+	GLuint tex = cubeTextureID.at(cubeSelectedTextures[0]);
+
+	glBindTexture(GL_TEXTURE_2D, tex);
 	glBegin(GL_TRIANGLES);
 
 	/* Front */
 	glColor3fv(cRed);
+	glTexCoord2f(0.0f, 0.0f);
 	glVertex3fv(vA);
 	glColor3fv(cGreen);
+	glTexCoord2f(1.0f, 0.0f);
 	glVertex3fv(vB);
 	glColor3fv(cWhite);
+	glTexCoord2f(0.0f, 1.0f);
 	glVertex3fv(vC);
 
 	glColor3fv(cGreen);
+	glTexCoord2f(1.0f, 0.0f);
 	glVertex3fv(vB);
 	glColor3fv(cBlue);
+	glTexCoord2f(1.0f, 1.0f);
 	glVertex3fv(vD);
 	glColor3fv(cWhite);
+	glTexCoord2f(0.0f, 1.0f);
 	glVertex3fv(vC);
 
 	/* Right */
 	glColor3fv(cGreen);
+	glTexCoord2f(1.0f, 0.0f);
 	glVertex3fv(vB);
 	glColor3fv(cWhite);
+	glTexCoord2f(0.0f, 0.0f);
 	glVertex3fv(vF);
 	glColor3fv(cBlue);
+	glTexCoord2f(1.0f, 1.0f);
 	glVertex3fv(vD);
 
 	glColor3fv(cWhite);
+	glTexCoord2f(0.0f, 0.0f);
 	glVertex3fv(vF);
 	glColor3fv(cRed);
+	glTexCoord2f(0.0f, 1.0f);
 	glVertex3fv(vH);
 	glColor3fv(cBlue);
+	glTexCoord2f(1.0f, 1.0f);
 	glVertex3fv(vD);
 
 	/* Back */
 	glColor3fv(cWhite);
+	glTexCoord2f(0.0f, 0.0f);
 	glVertex3fv(vF);
 	glColor3fv(cBlue);
+	glTexCoord2f(1.0f, 0.0f);
 	glVertex3fv(vE);
 	glColor3fv(cRed);
+	glTexCoord2f(0.0f, 1.0f);
 	glVertex3fv(vH);
 
 	glColor3fv(cBlue);
+	glTexCoord2f(1.0f, 0.0f);
 	glVertex3fv(vE);
 	glColor3fv(cGreen);
+	glTexCoord2f(1.0f, 1.0f);
 	glVertex3fv(vG);
 	glColor3fv(cRed);
+	glTexCoord2f(0.0f, 1.0f);
 	glVertex3fv(vH);
 
 	/* Left */
 	glColor3fv(cBlue);
+	glTexCoord2f(1.0f, 0.0f);
 	glVertex3fv(vE);
 	glColor3fv(cRed);
+	glTexCoord2f(0.0f, 0.0f);
 	glVertex3fv(vA);
 	glColor3fv(cGreen);
+	glTexCoord2f(1.0f, 1.0f);
 	glVertex3fv(vG);
 
 	glColor3fv(cRed);
+	glTexCoord2f(0.0f, 0.0f);
 	glVertex3fv(vA);
 	glColor3fv(cWhite);
+	glTexCoord2f(0.0f, 1.0f);
 	glVertex3fv(vC);
 	glColor3fv(cGreen);
+	glTexCoord2f(1.0f, 1.0f);
 	glVertex3fv(vG);
 
 	/* Top */
 	glColor3fv(cWhite);
+	glTexCoord2f(0.0f, 1.0f);
 	glVertex3fv(vC);
 	glColor3fv(cBlue);
+	glTexCoord2f(1.0f, 1.0f);
 	glVertex3fv(vD);
 	glColor3fv(cRed);
+	glTexCoord2f(1.0f, 0.0f);
 	glVertex3fv(vH);
 
 	glColor3fv(cWhite);
+	glTexCoord2f(0.0f, 1.0f);
 	glVertex3fv(vC);
 	glColor3fv(cRed);
+	glTexCoord2f(1.0f, 0.0f);
 	glVertex3fv(vH);
 	glColor3fv(cGreen);
+	glTexCoord2f(0.0f, 0.0f);
 	glVertex3fv(vG);
 
 	/* Bottom */
 	glColor3fv(cRed);
+	glTexCoord2f(0.0f, 0.0f);
 	glVertex3fv(vA);
 	glColor3fv(cWhite);
+	glTexCoord2f(1.0f, 1.0f);
 	glVertex3fv(vF);
 	glColor3fv(cGreen);
+	glTexCoord2f(1.0f, 0.0f);
 	glVertex3fv(vB);
 
 	glColor3fv(cWhite);
+	glTexCoord2f(1.0f, 1.0f);
 	glVertex3fv(vF);
 	glColor3fv(cRed);
+	glTexCoord2f(0.0f, 0.0f);
 	glVertex3fv(vA);
 	glColor3fv(cBlue);
+	glTexCoord2f(0.0f, 1.0f);
 	glVertex3fv(vE);
 
 	glEnd();
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
 }
 
 void ModuleRender::DrawCubeArrays() const
 {
+	GLuint tex = cubeTextureID.at(cubeSelectedTextures[1]);
+
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glBindTexture(GL_TEXTURE_2D, tex);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
-	glVertexPointer(3, GL_FLOAT, 0, NULL);
+	glVertexPointer(3, GL_FLOAT, 0, nullptr);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
 	glBindBuffer(GL_ARRAY_BUFFER, colorsBufferId);
-	glColorPointer(3, GL_FLOAT, 0, NULL);
+	glColorPointer(3, GL_FLOAT, 0, nullptr);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
-	glDrawArrays(GL_TRIANGLES, 0, 36 * 3);
+	glBindBuffer(GL_ARRAY_BUFFER, uvCoordsBufferId);
+	glTexCoordPointer(2, GL_FLOAT, 0, nullptr);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
 
 void ModuleRender::DrawCubeElements() const
 {
+	GLuint tex = cubeTextureID.at(cubeSelectedTextures[2]);
+
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glBindTexture(GL_TEXTURE_2D, tex);
 
 	glBindBuffer(GL_ARRAY_BUFFER, uniqueVerticesBufferId);
-	glVertexPointer(3, GL_FLOAT, 0, GL_NONE);
+	glVertexPointer(3, GL_FLOAT, 0, nullptr);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
 	glBindBuffer(GL_ARRAY_BUFFER, uniqueColorsBufferId);
-	glColorPointer(3, GL_FLOAT, 0, GL_NONE);
+	glColorPointer(3, GL_FLOAT, 0, nullptr);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
+	glBindBuffer(GL_ARRAY_BUFFER, uniqueUVCoordsBufferId);
+	glTexCoordPointer(2, GL_FLOAT, 0, nullptr);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, uniqueVerticesIndexBufferId);
-	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, GL_NONE);
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, nullptr);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
 
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
@@ -633,21 +824,31 @@ void ModuleRender::DrawCubeRangeElements() const
 	there is no real point in using glDrawRangeElements, since it is still going throught all the inidices.
 	Regardless, it has been used here as a reminder of its existence.
 	*/
+	GLuint tex = cubeTextureID.at(cubeSelectedTextures[3]);
+
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glBindTexture(GL_TEXTURE_2D, tex);
 
 	glBindBuffer(GL_ARRAY_BUFFER, uniqueVerticesBufferId);
-	glVertexPointer(3, GL_FLOAT, 0, GL_NONE);
+	glVertexPointer(3, GL_FLOAT, 0, nullptr);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
 	glBindBuffer(GL_ARRAY_BUFFER, uniqueColorsBufferId);
-	glColorPointer(3, GL_FLOAT, 0, GL_NONE);
+	glColorPointer(3, GL_FLOAT, 0, nullptr);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
+	glBindBuffer(GL_ARRAY_BUFFER, uniqueUVCoordsBufferId);
+	glTexCoordPointer(2, GL_FLOAT, 0, nullptr);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, uniqueVerticesIndexBufferId);
-	glDrawRangeElements(GL_TRIANGLES, 0, 7, 36, GL_UNSIGNED_BYTE, GL_NONE);
+	glDrawRangeElements(GL_TRIANGLES, 0, 7, 36, GL_UNSIGNED_BYTE, nullptr);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
 
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
@@ -658,25 +859,36 @@ void ModuleRender::DrawSphere() const
 	glEnableClientState(GL_COLOR_ARRAY);
 
 	glBindBuffer(GL_ARRAY_BUFFER, sphereInfo.verticesBufferId);
-	glVertexPointer(3, GL_FLOAT, 0, GL_NONE);
+	glVertexPointer(3, GL_FLOAT, 0, nullptr);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
 	glBindBuffer(GL_ARRAY_BUFFER, sphereInfo.colorsBufferId);
-	glColorPointer(3, GL_FLOAT, 0, GL_NONE);
+	glColorPointer(3, GL_FLOAT, 0, nullptr);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphereInfo.verticesIndexBufferId);
-	glDrawElements(GL_TRIANGLES, 3 * sphereInfo.trianglesCount, GL_UNSIGNED_INT, GL_NONE);
+	glDrawElements(GL_TRIANGLES, 3 * sphereInfo.trianglesCount, GL_UNSIGNED_INT, nullptr);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
 
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
 
-void ModuleRender::DrawGroundGrid() const
+void ModuleRender::DrawGroundGrid(float xOffset, float zOffset, int halfSize) const
 {
-	int start = -20;
-	int extent = 20;
+	if (!groundGridInfo.tracking)
+	{
+		xOffset = 0;
+		zOffset = 0;
+	}
+	else if (!groundGridInfo.continuousTracking)
+	{
+		xOffset = round(xOffset);
+		zOffset = round(zOffset);
+	}
+
+	int start = -halfSize;
+	int extent = halfSize;
 	float y = 0;
 
 	glBegin(GL_LINES);
@@ -690,8 +902,8 @@ void ModuleRender::DrawGroundGrid() const
 			glColor3f(.25f, .25f, .25f);
 		}
 
-		glVertex3f((float)i, y, (float)start);
-		glVertex3f((float)i, y, (float)extent);
+		glVertex3f((float)i + xOffset, y, (float)start + zOffset);
+		glVertex3f((float)i + xOffset, y, (float)extent + zOffset);
 
 		if (i == start) {
 			glColor3f(.3f, .3f, .6f);
@@ -700,9 +912,283 @@ void ModuleRender::DrawGroundGrid() const
 			glColor3f(.25f, .25f, .25f);
 		}
 
-		glVertex3f((float)start, y, (float)i);
-		glVertex3f((float)extent, y, (float)i);
+		glVertex3f((float)start + xOffset, y, (float)i + zOffset);
+		glVertex3f((float)extent + xOffset, y, (float)i + zOffset);
 	}
 
 	glEnd();
+}
+
+/* Function load a image, turn it into a texture, and return the texture ID as a GLuint for use */
+GLuint ModuleRender::LoadImageWithDevIL(const char* theFileName)
+{
+	ILuint imageID;				/* Create a image ID as a ULuint */
+
+	GLuint textureID;			/* Create a texture ID as a GLuint */
+
+	ILboolean success;			/* Create a flag to keep track of success/failure */
+
+	ILenum error;				/* Create a flag to keep track of the IL error state */
+
+	ilGenImages(1, &imageID); 		/* Generate the image ID */
+
+	ilBindImage(imageID); 			/* Bind the image */
+
+	success = ilLoadImage(theFileName); 	/* Load the image file */
+
+	/* If we failed to open the image file in the first place... */
+	if (!success)
+	{
+		ilBindImage(0);
+		error = ilGetError();
+		LOGGER("Image load failed - IL error: (%i) %s!", error, iluErrorString(error));
+		return 0;
+	}
+
+	/* If we managed to load the image, then we can start to do things with it... */
+
+	/* If the image is flipped (i.e. upside-down and mirrored, flip it the right way up!) */
+	ILinfo ImageInfo;
+	iluGetImageInfo(&ImageInfo);
+	if (ImageInfo.Origin == IL_ORIGIN_UPPER_LEFT)
+	{
+		iluFlipImage();
+	}
+
+	/* ... then attempt to conver it. */
+	/* NOTE: If your image contains alpha channel you can replace IL_RGB with IL_RGBA */
+	success = ilConvertImage(IL_RGB, IL_UNSIGNED_BYTE);
+
+	/* Quit out if we failed the conversion */
+	if (!success)
+	{
+		error = ilGetError();
+		LOGGER("Image conversion failed - IL error: (%i) %s!", error, iluErrorString(error));
+		ilDeleteImages(1, &imageID);
+		ilBindImage(0);
+		return 0;
+	}
+
+	/* Save image width and height*/
+	ILuint width, height, bytesPerPixel;
+	width = ilGetInteger(IL_IMAGE_WIDTH);
+	height = ilGetInteger(IL_IMAGE_HEIGHT);
+	bytesPerPixel = ilGetInteger(IL_IMAGE_BYTES_PER_PIXEL);
+
+	/* Generate a new texture */
+	glGenTextures(1, &textureID);
+
+	/* Bind the texture to a name */
+	glBindTexture(GL_TEXTURE_2D, textureID);
+
+	/* Set texture clamping method */
+	switch (textureWrapMode) {
+	case 0:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		break;
+	case 1:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+		break;
+	case 2:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		break;
+	case 3:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		break;
+	}
+
+	/*Generate Mipmap from the current texture evaluated*/
+	if (textureMipMapMode) {
+		glGenerateMipmap(GL_TEXTURE_2D);
+		glGenerateTextureMipmap(textureID);
+	}
+
+	/*Apply magnification filters if requested*/
+	switch (textureMagnificationMode) {
+	case 0:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		break;
+	case 1:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		break;
+	default:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		break;
+	}
+	/*Apply minification filters if requested*/
+	switch (textureMinificationMode) {
+	case 0:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		break;
+	case 1:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		break;
+	case 2:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+		break;
+	case 3:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+		break;
+	case 4:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+		break;
+	case 5:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		break;
+	default:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		break;
+	}
+
+	/* Specify the texture specification */
+	glTexImage2D(GL_TEXTURE_2D,			/* Type of texture */
+		0,		/* Pyramid level (for mip-mapping) - 0 is the top level */
+		ilGetInteger(IL_IMAGE_BPP),		/* Image colour depth */
+		ilGetInteger(IL_IMAGE_WIDTH),	/* Image width */
+		ilGetInteger(IL_IMAGE_HEIGHT),	/* Image height */
+		0,		/* Border width in pixels (can either be 1 or 0) */
+		ilGetInteger(IL_IMAGE_FORMAT),	/* Image format (i.e. RGB, RGBA, BGR etc.) */
+		GL_UNSIGNED_BYTE,		/* Image data type */
+		ilGetData()				/* The actual image data itself */
+	);
+
+	/* Unbind the texture to a name */
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
+
+	/* Because we have already copied image data into texture data we can release memory used by image. */
+	ilDeleteImages(1, &imageID);
+	ilBindImage(0);
+
+	/* Save texture info */
+	textureInfo.insert(std::pair<int, Texture>(textureID, { width, height, bytesPerPixel }));
+
+	LOGGER("Texture creation successful.");
+
+	return textureID; /* Return the GLuint to the texture so you can use it! */
+}
+
+GLuint ModuleRender::GetTextureWidth()
+{
+	GLuint texID = cubeTextureID.at(cubeSelectedTextures[currentSelectedCube]);
+	if (textureInfo.find(texID) != textureInfo.end()) {
+		Texture tex = textureInfo.at(texID);
+		return tex.width;
+	}
+	return 0;
+}
+
+GLuint ModuleRender::GetTextureHeight()
+{
+	GLuint texID = cubeTextureID.at(cubeSelectedTextures[currentSelectedCube]);
+	if (textureInfo.find(texID) != textureInfo.end()) {
+		Texture tex = textureInfo.at(texID);
+		return tex.height;
+	}
+	return 0;
+}
+
+GLuint ModuleRender::GetBytesPerPixel()
+{
+	GLuint texID = cubeTextureID.at(cubeSelectedTextures[currentSelectedCube]);
+	if (textureInfo.find(texID) != textureInfo.end()) {
+		Texture tex = textureInfo.at(texID);
+		return tex.bytesPerPixel;
+	}
+	return 0;
+}
+
+void ModuleRender::DeleteTexturesBuffer()
+{
+	for (std::vector<GLuint>::iterator it = cubeTextureID.begin(); it != cubeTextureID.end(); it++)
+	{
+		glDeleteTextures(1, &(*it));
+	}
+
+	cubeTextureID.clear();
+	textureInfo.clear();
+}
+
+bool ModuleRender::ReloadTextures()
+{
+
+	bool ret = true;
+
+	if (cubeTextureID.size() != 0) {
+		DeleteTexturesBuffer();
+	}
+
+	GLuint checkeredTextureId;
+	GLuint lennaTextureId;
+	GLuint ryuTextureId;
+	GLuint gokuTextureId;
+
+	checkeredTextureId = CreateCheckeredTexture();
+
+	uint idSum = 0;
+	idSum += ryuTextureId = LoadImageWithDevIL(ryuPath);
+	idSum += lennaTextureId = LoadImageWithDevIL(lennaPath);
+	idSum += gokuTextureId = LoadImageWithDevIL(gokuPath);
+	if (idSum == 0)
+		ret = false;
+
+	if (ret) {
+		cubeTextureID.push_back(ryuTextureId);
+		cubeTextureID.push_back(lennaTextureId);
+		cubeTextureID.push_back(gokuTextureId);
+		cubeTextureID.push_back(checkeredTextureId);
+	}
+
+	return ret;
+}
+
+void ModuleRender::ToggleOpenGLCapability(bool state, GLenum cap)
+{
+	if (state)
+	{
+		glEnable(cap);
+	}
+	else
+	{
+		glDisable(cap);
+	}
+}
+
+void ModuleRender::SetFogMode(GLenum fogMode)
+{
+	glFogi(GL_FOG_MODE, fogMode);
+}
+
+void ModuleRender::SetFogDensity(float density)
+{
+	glFogf(GL_FOG_DENSITY, density);
+}
+
+void ModuleRender::setFogStartAndEnd(float start, float end)
+{
+	glFogf(GL_FOG_START, start);
+	glFogf(GL_FOG_END, end);
+}
+
+void ModuleRender::SetFogColor(float * color)
+{
+	glFogfv(GL_FOG_COLOR, color);
+}
+
+void ModuleRender::SetAmbientLightColor(float * color)
+{
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, color);
+}
+
+void ModuleRender::SetLightColor(GLenum lightSymbolicName, float * color)
+{
+	glLightfv(lightSymbolicName, GL_AMBIENT, color);
+}
+
+void ModuleRender::SetPolygonDrawMode(GLenum drawMode)
+{
+	glPolygonMode(GL_FRONT_AND_BACK, drawMode);
 }
