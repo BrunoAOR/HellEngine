@@ -126,6 +126,8 @@ public:
 		bool continuousTracking;
 	} groundGridInfo;
 
+	std::vector<int> cubeSelectedTextures;
+
 private:
 	
 	static const int checkeredTextureSize = 64;

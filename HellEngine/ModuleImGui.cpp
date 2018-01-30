@@ -301,6 +301,13 @@ void ModuleImGui::ShowTexturesWindow(float mainMenuBarHeight, bool * pOpen)
 	GLuint hInBytes = h * bytesPerPixel;
 	char* minificationFiltersDependingOnMipmap = "GL_NEAREST\0GL_LINEAR\0"; //minification can use mipmap or not, if it does, more filters area available
 
+	ImGui::Text("Texture selection");
+	ImGui::Combo("Cube", &App->renderer->currentSelectedCube, "Immediate\0Arrays\0Elements\0RangeElements\0\0");
+	ImGui::Combo("Texture", &(App->renderer->cubeSelectedTextures[App->renderer->currentSelectedCube]), "Ryu\0Lenna\0Goku\0Checkered\0\0");
+
+	ImGui::Separator();
+	
+	ImGui::Text("Selected texture info:");
 	ImGui::Text("Image width (pixels) = "); ImGui::SameLine();
 	if (w != 0)
 		ImGui::TextColored(ImVec4(0, 0, 1, 1), std::to_string(w).c_str());
@@ -333,7 +340,9 @@ void ModuleImGui::ShowTexturesWindow(float mainMenuBarHeight, bool * pOpen)
 		ImGui::TextColored(ImVec4(0, 0, 1, 1), std::to_string(hInBytes).c_str());
 	else
 		ImGui::TextColored(ImVec4(0, 0, 1, 1), "NA");
-	
+
+	ImGui::Separator();
+
 	if (ImGui::Combo("Wrap mode", &wrapMode, "GL_REPEAT\0GL_MIRRORED_REPEAT\0GL_CLAMP_TO_EDGE\0GL_CLAMP\0\0")) {
 		App->renderer->textureWrapMode = wrapMode;
 		App->renderer->ReloadTextures();

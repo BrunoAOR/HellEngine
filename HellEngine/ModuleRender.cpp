@@ -292,6 +292,12 @@ void ModuleRender::InitCubeInfo()
 
 	*/
 
+	/* General */
+	cubeSelectedTextures.push_back(0);
+	cubeSelectedTextures.push_back(1);
+	cubeSelectedTextures.push_back(2);
+	cubeSelectedTextures.push_back(3);
+
 	/* Cube vertices */
 	{
 		float s = 0.5f;
@@ -606,7 +612,7 @@ void ModuleRender::DrawCubeImmediateMode() const
 	FEGH is the back face
 
 	*/
-	GLuint tex = cubeTextureID.at(0);
+	GLuint tex = cubeTextureID.at(cubeSelectedTextures[0]);
 
 	glBindTexture(GL_TEXTURE_2D, tex);
 	glBegin(GL_TRIANGLES);
@@ -743,7 +749,7 @@ void ModuleRender::DrawCubeImmediateMode() const
 
 void ModuleRender::DrawCubeArrays() const
 {
-	GLuint tex = cubeTextureID.at(1);
+	GLuint tex = cubeTextureID.at(cubeSelectedTextures[1]);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
@@ -772,7 +778,7 @@ void ModuleRender::DrawCubeArrays() const
 
 void ModuleRender::DrawCubeElements() const
 {
-	GLuint tex = cubeTextureID.at(2);
+	GLuint tex = cubeTextureID.at(cubeSelectedTextures[2]);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
@@ -810,7 +816,7 @@ void ModuleRender::DrawCubeRangeElements() const
 	there is no real point in using glDrawRangeElements, since it is still going throught all the inidices.
 	Regardless, it has been used here as a reminder of its existence.
 	*/
-	GLuint tex = cubeTextureID.at(3);
+	GLuint tex = cubeTextureID.at(cubeSelectedTextures[3]);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
@@ -1059,7 +1065,7 @@ GLuint ModuleRender::LoadImageWithDevIL(const char* theFileName)
 
 GLuint ModuleRender::GetTextureWidth()
 {
-	GLuint texID = cubeTextureID.at(currentSelectedCube);
+	GLuint texID = cubeTextureID.at(cubeSelectedTextures[currentSelectedCube]);
 	if (textureInfo.find(texID) != textureInfo.end()) {
 		Texture tex = textureInfo.at(texID);
 		return tex.width;
@@ -1069,7 +1075,7 @@ GLuint ModuleRender::GetTextureWidth()
 
 GLuint ModuleRender::GetTextureHeight()
 {
-	GLuint texID = cubeTextureID.at(currentSelectedCube);
+	GLuint texID = cubeTextureID.at(cubeSelectedTextures[currentSelectedCube]);
 	if (textureInfo.find(texID) != textureInfo.end()) {
 		Texture tex = textureInfo.at(texID);
 		return tex.height;
@@ -1079,7 +1085,7 @@ GLuint ModuleRender::GetTextureHeight()
 
 GLuint ModuleRender::GetBytesPerPixel()
 {
-	GLuint texID = cubeTextureID.at(currentSelectedCube);
+	GLuint texID = cubeTextureID.at(cubeSelectedTextures[currentSelectedCube]);
 	if (textureInfo.find(texID) != textureInfo.end()) {
 		Texture tex = textureInfo.at(texID);
 		return tex.bytesPerPixel;
