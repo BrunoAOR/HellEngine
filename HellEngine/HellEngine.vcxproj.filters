@@ -267,6 +267,9 @@
     <ClInclude Include="Color.h">
       <Filter>General</Filter>
     </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>General</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -418,6 +421,9 @@
     </ClCompile>
     <ClCompile Include="ModuleEditorCamera.cpp">
       <Filter>Engine Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>General</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -101,6 +101,7 @@
     <ClInclude Include="ModuleWindow.h" />
     <ClInclude Include="openGL.h" />
     <ClInclude Include="Point.h" />
+    <ClInclude Include="Shader.h" />
     <ClInclude Include="UpdateStatus.h" />
   </ItemGroup>
   <ItemGroup>
@@ -154,6 +155,7 @@
     <ClCompile Include="ModuleRender.cpp" />
     <ClCompile Include="ModuleTime.cpp" />
     <ClCompile Include="ModuleWindow.cpp" />
+    <ClCompile Include="Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="MathGeoLib\src\Geometry\KDTree.inl" />
