@@ -86,6 +86,9 @@ private:
 	/* Initializes sphere-rendering variables */
 	void InitSphereInfo(unsigned int rings, unsigned int sections);
 
+	/* Loads textures */
+	bool InitTextures();
+
 	/* Creates a raw checkered texture and returns its OpenGL id */
 	GLuint CreateCheckeredTexture();
 

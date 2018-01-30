@@ -61,28 +61,9 @@ bool ModuleRender::Init()
 	{
 		InitCubeInfo();
 		InitSphereInfo(32, 32);
+		ret &= InitTextures();
+
 		groundGridInfo.active = true;
-
-		GLuint checkeredTextureId;
-		GLuint lennaTextureId;
-		GLuint ryuTextureId;
-		GLuint gokuTextureId;
-
-		checkeredTextureId = CreateCheckeredTexture();
-
-		uint idSum = 0;
-		idSum += ryuTextureId = LoadImageWithDevIL(ryuPath);
-		idSum += lennaTextureId = LoadImageWithDevIL(lennaPath);
-		idSum += gokuTextureId = LoadImageWithDevIL(gokuPath);
-		if (idSum == 0)
-			ret = false;
-
-		if (ret) {
-			cubeTextureID.push_back(ryuTextureId);
-			cubeTextureID.push_back(lennaTextureId);
-			cubeTextureID.push_back(gokuTextureId);
-			cubeTextureID.push_back(checkeredTextureId);
-		}
 	}
 
 	return ret;
@@ -566,6 +547,33 @@ void ModuleRender::InitSphereInfo(unsigned int rings, unsigned int sections)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphereInfo.verticesIndexBufferId);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * sphereInfo.trianglesCount * 3, indexes.data(), GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
+}
+
+bool ModuleRender::InitTextures()
+{
+	bool ret = true;
+	GLuint checkeredTextureId;
+	GLuint lennaTextureId;
+	GLuint ryuTextureId;
+	GLuint gokuTextureId;
+
+	checkeredTextureId = CreateCheckeredTexture();
+
+	uint idSum = 0;
+	idSum += ryuTextureId = LoadImageWithDevIL(ryuPath);
+	idSum += lennaTextureId = LoadImageWithDevIL(lennaPath);
+	idSum += gokuTextureId = LoadImageWithDevIL(gokuPath);
+	if (idSum == 0)
+		ret = false;
+
+	if (ret) {
+		cubeTextureID.push_back(ryuTextureId);
+		cubeTextureID.push_back(lennaTextureId);
+		cubeTextureID.push_back(gokuTextureId);
+		cubeTextureID.push_back(checkeredTextureId);
+	}
+
+	return ret;
 }
 
 GLuint ModuleRender::CreateCheckeredTexture()
