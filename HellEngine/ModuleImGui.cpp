@@ -374,8 +374,9 @@ void ModuleImGui::ShowOpenGLWindow(float mainMenuBarHeight, bool * pOpen)
 	static float fogDensity = 1.0f;
 	static float fogDistance[2] = { 0.0f, 1.0f };
 	static float fogColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	static bool ambientLight = false;
-	static float ambientLightColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	static float ambientLightColor[4] = { 0.2f, 0.2f, 0.2f, 1.0f };
+	static bool extraLight = false;
+	static float extraLightColor[4] = { 0.2f, 0.2f, 0.2f, 1.0f };
 	static int polygonMode = GL_FILL;
 	static int previousPolygonMode = GL_FILL;
 	static int referenceGridTrackingBehaviour = 0;
@@ -383,7 +384,7 @@ void ModuleImGui::ShowOpenGLWindow(float mainMenuBarHeight, bool * pOpen)
 
 
 	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
-	ImGui::SetNextWindowSize(ImVec2(300, 600));
+	ImGui::SetNextWindowSize(ImVec2(450, 600));
 	ImGui::Begin("OpenGL options", pOpen, ImGuiWindowFlags_NoCollapse);
 
 	if (ImGui::Checkbox("Depth Test", &depthTest))
@@ -446,13 +447,21 @@ void ModuleImGui::ShowOpenGLWindow(float mainMenuBarHeight, bool * pOpen)
 
 	ImGui::Separator();
 
-	if (ImGui::Checkbox("Ambient Light", &ambientLight))
-	{
-		App->renderer->ToggleOpenGLCapability(ambientLight, GL_LIGHT0);
-	}
+	ImGui::Text("Lights:");
 	if (ImGui::ColorEdit3("Ambient Light color", ambientLightColor))
 	{
 		App->renderer->SetAmbientLightColor(ambientLightColor);
+	}
+	if (ImGui::Checkbox("Extra ambient light", &extraLight))
+	{
+		App->renderer->ToggleOpenGLCapability(extraLight, GL_LIGHT0);
+	}
+	if (extraLight)
+	{
+		if (ImGui::ColorEdit3("Extra Light color", extraLightColor))
+		{
+			App->renderer->SetLightColor(GL_LIGHT0, extraLightColor);
+		}
 	}
 
 	ImGui::Separator();

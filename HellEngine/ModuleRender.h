@@ -63,6 +63,9 @@ public:
 	/* Sets the ambient light color */
 	void SetAmbientLightColor(float* color);
 
+	/* Sets a light's color */
+	void SetLightColor(GLenum lightSymbolicName, float* color);
+
 	/* Sets the polygon draw mode (drawMode must be GL_FILL, GL_LINE or GL_POINT */
 	void SetPolygonDrawMode(GLenum drawMode);
 

@@ -1166,7 +1166,12 @@ void ModuleRender::SetFogColor(float * color)
 
 void ModuleRender::SetAmbientLightColor(float * color)
 {
-	glLightfv(GL_LIGHT0, GL_AMBIENT, color);
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, color);
+}
+
+void ModuleRender::SetLightColor(GLenum lightSymbolicName, float * color)
+{
+	glLightfv(lightSymbolicName, GL_AMBIENT, color);
 }
 
 void ModuleRender::SetPolygonDrawMode(GLenum drawMode)
