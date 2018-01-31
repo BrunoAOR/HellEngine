@@ -33,6 +33,7 @@
 #define VSYNC true
 #define TITLE "Hell Engine"
 
+#include <string>
 #include "Json/json.h"
 
 /* Useful typedefs */
@@ -41,5 +42,7 @@ typedef unsigned int uint;
 
 void Logger(const char file[], int line, const char* format, ...);
 Json LoadJson(const char* path);
+bool LoadTextFile(const std::string& path, std::string& outputString);
+bool SaveTextFile(const std::string& path, const std::string& content);
 
 #endif /* __H_GLOBALS__ */
