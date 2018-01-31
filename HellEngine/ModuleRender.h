@@ -6,6 +6,7 @@
 #include "SDL/include/SDL_rect.h"
 #include "globals.h"
 #include "Module.h"
+class Material;
 class Shader;
 struct SDL_Rect;
 struct SDL_Renderer;
@@ -70,6 +71,9 @@ public:
 	/* Sets the polygon draw mode (drawMode must be GL_FILL, GL_LINE or GL_POINT */
 	void SetPolygonDrawMode(GLenum drawMode);
 
+	/* Loading image with DevIL. */
+	GLuint LoadImageWithDevIL(const char* theFileName);
+
 private:
 
 	/* Initializes the GLEW library */
@@ -84,7 +88,7 @@ private:
 	/* Initializes cube-rendering variables */
 	void InitCubeInfo();
 
-	/* Initializes cube information */
+	/* Initializes shader and material cube information */
 	bool InitCubeShaderInfo();
 
 	/* Initializes sphere-rendering variables */
@@ -113,11 +117,10 @@ private:
 
 	void DrawShaderCube() const;
 
+	void DrawMaterialCube() const;
+
 	/* Draw a grid on the ground */
 	void DrawGroundGrid(float xOffset = 0, float zOffet = 0, int halfSize = 20) const;
-
-	/* Loading image with DevIL. */
-	GLuint LoadImageWithDevIL(const char* theFileName);
 
 public:
 
@@ -200,6 +203,7 @@ private:
 
 	GLuint shaderDataBufferId;
 	Shader* basicShader = nullptr;
+	Material* basicMaterial = nullptr;
 };
 
 #endif /* __H_MODULERENDER__ */

@@ -71,6 +71,11 @@ void Shader::Deactivate()
 	glUseProgram(GL_NONE);
 }
 
+bool Shader::IsValid()
+{
+	return shaderProgramId != 0;
+}
+
 GLuint Shader::getProgramId()
 {
 	return shaderProgramId;

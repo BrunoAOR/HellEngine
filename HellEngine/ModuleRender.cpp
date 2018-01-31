@@ -12,6 +12,7 @@
 #include "Application.h"
 #include "Color.h"
 #include "KeyState.h"
+#include "Material.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleInput.h"
 #include "ModuleRender.h"
@@ -163,6 +164,13 @@ UpdateStatus ModuleRender::Update()
 		glPopMatrix();
 	}
 
+	/* DrawMaterialCube */
+	{
+		glPushMatrix();
+		DrawMaterialCube();
+		glPopMatrix();
+	}
+
 	/* DrawGroundGrid */
 	{
 		if (groundGridInfo.active)
@@ -193,11 +201,18 @@ bool ModuleRender::CleanUp()
 		glContext = nullptr;
 	}
 
-	/* Destroy testShader */
+	/* Destroy basicShader */
 	if (basicShader != nullptr)
 	{
 		delete basicShader;
 		basicShader = nullptr;
+	}
+
+	/* Destroy basicMaterial */
+	if (basicMaterial != nullptr)
+	{
+		delete basicMaterial;
+		basicMaterial = nullptr;
 	}
 
 	return true;
@@ -487,6 +502,15 @@ bool ModuleRender::InitCubeShaderInfo()
 			success &= basicShader->LinkShaderProgram();
 		}
 	}
+
+	// Material
+	basicMaterial = new Material();
+
+	basicMaterial->SetVertexShaderPath("assets/shaders/defaultShader.vert");
+	basicMaterial->SetFragmentShaderPath("assets/shaders/defaultShader.frag");
+	basicMaterial->SetTexturePath("assets/images/ryu.jpg");
+
+	success &= basicMaterial->Apply();
 
 	return success;
 }
@@ -1000,6 +1024,18 @@ void ModuleRender::DrawShaderCube() const
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	basicShader->Deactivate();
+}
+
+void ModuleRender::DrawMaterialCube() const
+{
+	float pos[16] = {
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, -2, 0, 1
+	};
+
+	basicMaterial->DrawArray(pos, shaderDataBufferId, 36);
 }
 
 void ModuleRender::DrawGroundGrid(float xOffset, float zOffset, int halfSize) const

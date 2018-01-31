@@ -14,6 +14,7 @@ public:
 	bool LinkShaderProgram();
 	bool Activate();
 	void Deactivate();
+	bool IsValid();
 
 	GLuint getProgramId();
 
