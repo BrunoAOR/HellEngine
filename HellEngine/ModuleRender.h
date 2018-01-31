@@ -85,7 +85,7 @@ private:
 	void InitCubeInfo();
 
 	/* Initializes cube information */
-	void InitCubeShaderInfo();
+	bool InitCubeShaderInfo();
 
 	/* Initializes sphere-rendering variables */
 	void InitSphereInfo(unsigned int rings, unsigned int sections);

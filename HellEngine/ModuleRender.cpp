@@ -62,8 +62,9 @@ bool ModuleRender::Init()
 	{
 		InitCubeInfo();
 		InitSphereInfo(32, 32);
-		InitCubeShaderInfo();
-		ret &= InitTextures();
+		ret &= InitCubeShaderInfo();
+		if (ret)
+			ret &= InitTextures();
 
 		groundGridInfo.active = true;
 	}
@@ -421,8 +422,9 @@ void ModuleRender::InitCubeInfo()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
 }
 
-void ModuleRender::InitCubeShaderInfo()
+bool ModuleRender::InitCubeShaderInfo()
 {
+	bool success = true;
 	/* 
 	For each vertex, we have:
 	- 3 floats for position (x y z),
@@ -470,36 +472,23 @@ void ModuleRender::InitCubeShaderInfo()
 	// Shader time
 	basicShader = new Shader();
 
-	const char* vertexString = "#version 330 core\n"
-		"layout(location = 0) in vec3 position;\n"
-		"layout(location = 1) in vec3 color;\n"
-		"layout(location = 2) in vec2 texCoord;\n"
-		"out vec3 ourColor;\n"
-		"out vec2 TexCoord;\n"
-		"uniform mat4 model_matrix;\n"
-		"uniform mat4 view;\n"
-		"uniform mat4 projection;\n"
-		"void main()\n"
-		"{\n"
-		"gl_Position = projection * view * model_matrix * vec4(position, 1.0f);\n"
-		"ourColor = color;\n"
-		"TexCoord = texCoord;\n"
-		"}\n\0";
+	std::string vertexString;
+	success &= LoadTextFile("assets/shaders/defaultShader.vert", vertexString);
+	
+	std::string fragmentString;
+	success &= LoadTextFile("assets/shaders/defaultShader.frag", fragmentString);
+	
+	if (success)
+	{
+		success &= basicShader->CompileVertexShader(vertexString.c_str());
+		success &= basicShader->CompileFragmentShader(fragmentString.c_str());
+		if (success)
+		{
+			success &= basicShader->LinkShaderProgram();
+		}
+	}
 
-	const char* fragmentString = "#version 330 core\n"
-		"in vec3 ourColor;\n"
-		"in vec2 TexCoord;\n"
-		"out vec4 color;\n"
-		"uniform sampler2D ourTexture;\n"
-		"void main()\n"
-		"{\n"
-		"color = texture(ourTexture, TexCoord);\n"
-		"}\n\0";
-
-	bool success = true;
-	success &= basicShader->CompileVertexShader(vertexString);
-	success &= basicShader->CompileFragmentShader(fragmentString);
-	success &= basicShader->LinkShaderProgram();
+	return success;
 }
 
 void ModuleRender::InitSphereInfo(unsigned int rings, unsigned int sections)
