@@ -70,6 +70,7 @@ UpdateStatus ModuleImGui::Update()
 	static bool showCameraWindow = false;
 	static bool showTexturesWindow = false;
 	static bool showOpenGLWindow = false;
+    static bool showTextEditorWindow = false;
 
 	static bool rendererWireFrame = false;
 	static bool rendererRotate = false;
@@ -105,6 +106,8 @@ UpdateStatus ModuleImGui::Update()
 
 			ImGui::EndMenu();
 		}
+
+        ImGui::MenuItem("Text Editor", nullptr, &showTextEditorWindow);
 
 		if (ImGui::BeginMenu("Help"))
 		{
@@ -147,6 +150,11 @@ UpdateStatus ModuleImGui::Update()
 	{
 		ShowOpenGLWindow(mainMenuBarHeight, &showOpenGLWindow);
 	}
+
+    if (showTextEditorWindow) 
+    {
+        ShowTextEditorWindow(mainMenuBarHeight, &showTextEditorWindow);
+    }
 
 	ImGui::Render();
 
@@ -515,4 +523,20 @@ void ModuleImGui::ShowOpenGLWindow(float mainMenuBarHeight, bool * pOpen)
 	}
 
 	ImGui::End();
+}
+
+void ModuleImGui::ShowTextEditorWindow(float mainMenuBarHeight, bool* pOpen) 
+{
+    ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
+    ImGui::SetNextWindowSize(ImVec2(450, 510));
+    ImGui::Begin("Visual Studio 2025", pOpen, ImGuiWindowFlags_NoCollapse);
+    static char text[1024 * 16] = "#pragma once";
+    ImGui::InputTextMultiline("", text, IM_ARRAYSIZE(text), ImVec2(430.f, ImGui::GetTextLineHeight() * 32), ImGuiInputTextFlags_AllowTabInput); 
+    static char fileName[256] = "";
+    ImGui::InputText("File Name", fileName, IM_ARRAYSIZE(fileName));
+    ImGui::Button("Save", ImVec2(125.0f, 25.0f));
+    ImGui::SameLine(0.0f, 42.0f);
+    ImGui::Button("Load", ImVec2(125.0f, 25.0f));
+
+    ImGui::End();
 }
