@@ -6,6 +6,7 @@
 #include "SDL/include/SDL_rect.h"
 #include "globals.h"
 #include "Module.h"
+class Shader;
 struct SDL_Rect;
 struct SDL_Renderer;
 struct SDL_Texture;
@@ -83,6 +84,9 @@ private:
 	/* Initializes cube-rendering variables */
 	void InitCubeInfo();
 
+	/* Initializes cube information */
+	void InitCubeShaderInfo();
+
 	/* Initializes sphere-rendering variables */
 	void InitSphereInfo(unsigned int rings, unsigned int sections);
 
@@ -106,6 +110,8 @@ private:
 
 	/* Renders a sphere using OpenGL glDrawElements function */
 	void DrawSphere() const;
+
+	void DrawShaderCube() const;
 
 	/* Draw a grid on the ground */
 	void DrawGroundGrid(float xOffset = 0, float zOffet = 0, int halfSize = 20) const;
@@ -191,6 +197,9 @@ private:
 	const char* lennaPath = "assets/images/lenna.png";
 	const char* ryuPath = "assets/images/ryu.jpg";
 	const char* gokuPath = "assets/images/goku.dds";
+
+	GLuint shaderDataBufferId;
+	Shader* basicShader = nullptr;
 };
 
 #endif /* __H_MODULERENDER__ */
