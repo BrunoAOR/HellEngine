@@ -527,16 +527,75 @@ void ModuleImGui::ShowOpenGLWindow(float mainMenuBarHeight, bool * pOpen)
 
 void ModuleImGui::ShowTextEditorWindow(float mainMenuBarHeight, bool* pOpen) 
 {
+	static char text[1024 * 16] = "";
+	static char fileName[256] = "";
+	static std::string lastLog = "";
+	static bool showExtendedSaveMenu = false;
+	static bool showExtendedLoadMenu = false;
+
     ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
-    ImGui::SetNextWindowSize(ImVec2(450, 510));
+    ImGui::SetNextWindowSize(ImVec2(450, 570));
     ImGui::Begin("Visual Studio 2025", pOpen, ImGuiWindowFlags_NoCollapse);
-    static char text[1024 * 16] = "#pragma once";
     ImGui::InputTextMultiline("", text, IM_ARRAYSIZE(text), ImVec2(430.f, ImGui::GetTextLineHeight() * 32), ImGuiInputTextFlags_AllowTabInput); 
-    static char fileName[256] = "";
+    
     ImGui::InputText("File Name", fileName, IM_ARRAYSIZE(fileName));
-    ImGui::Button("Save", ImVec2(125.0f, 25.0f));
+	if (ImGui::Button("Save", ImVec2(125.0f, 25.0f)))
+	{
+		showExtendedSaveMenu = true;
+		showExtendedLoadMenu = false;
+	}
+
     ImGui::SameLine(0.0f, 42.0f);
-    ImGui::Button("Load", ImVec2(125.0f, 25.0f));
+
+	if (ImGui::Button("Load", ImVec2(125.0f, 25.0f)))
+	{
+		showExtendedLoadMenu = true;
+		showExtendedSaveMenu = false;
+	}
+
+	if (showExtendedSaveMenu)
+	{
+		ImGui::Text("Are you sure you want to save?");
+		if (ImGui::Button("Confirm Save", ImVec2(125.0f, 25.0f)))
+		{
+			showExtendedSaveMenu = false;
+			if (SaveTextFile(fileName, text))
+				lastLog = "File saved.";
+			else
+				lastLog = "File could NOT be saved.";
+		}
+
+		ImGui::SameLine(0.0f, 42.0f);
+
+		if (ImGui::Button("Cancel Save", ImVec2(125.0f, 25.0f)))
+			showExtendedSaveMenu = false;
+	}
+
+	if (showExtendedLoadMenu)
+	{
+		ImGui::Text("Are you sure you want to load?");
+		if (ImGui::Button("Confirm Load", ImVec2(125.0f, 25.0f)))
+		{
+			showExtendedLoadMenu = false;
+			std::string fileContent;
+			if (LoadTextFile(fileName, fileContent))
+			{
+				lastLog = "File loaded.";
+				strcpy_s(text, 1024 * 16, fileContent.c_str());
+			}
+			else
+				lastLog = "File could NOT be loaded.";
+		}
+
+		ImGui::SameLine(0.0f, 42.0f);
+
+		if (ImGui::Button("Cancel Load", ImVec2(125.0f, 25.0f)))
+			showExtendedLoadMenu = false;
+	}
+
+	ImGui::Text("Last log: ");
+	ImGui::SameLine();
+	ImGui::Text(lastLog.c_str());
 
     ImGui::End();
 }
