@@ -12,11 +12,13 @@
 #include "Application.h"
 #include "Color.h"
 #include "KeyState.h"
+#include "Material.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleInput.h"
 #include "ModuleRender.h"
 #include "ModuleTime.h"
 #include "ModuleWindow.h"
+#include "Shader.h"
 #include "UpdateStatus.h"
 #include "globals.h"
 #include "openGL.h"
@@ -61,7 +63,9 @@ bool ModuleRender::Init()
 	{
 		InitCubeInfo();
 		InitSphereInfo(32, 32);
-		ret &= InitTextures();
+		ret &= InitCubeShaderInfo();
+		if (ret)
+			ret &= InitTextures();
 
 		groundGridInfo.active = true;
 	}
@@ -153,6 +157,20 @@ UpdateStatus ModuleRender::Update()
 		glPopMatrix();
 	}
 
+	/* DrawShaderCube */
+	{
+		glPushMatrix();
+		DrawShaderCube();
+		glPopMatrix();
+	}
+
+	/* DrawMaterialCube */
+	{
+		glPushMatrix();
+		DrawMaterialCube();
+		glPopMatrix();
+	}
+
 	/* DrawGroundGrid */
 	{
 		if (groundGridInfo.active)
@@ -182,6 +200,20 @@ bool ModuleRender::CleanUp()
 		SDL_GL_DeleteContext(glContext);
 		glContext = nullptr;
 	}
+
+	/* Destroy basicShader */
+	if (basicShader != nullptr)
+	{
+		delete basicShader;
+		basicShader = nullptr;
+	}
+
+	/* Destroy Materials */
+	for (Material* mat : materials)
+	{
+		delete mat;
+	}
+	materials.clear();
 
 	return true;
 }
@@ -403,6 +435,106 @@ void ModuleRender::InitCubeInfo()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, uniqueVerticesIndexBufferId);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLubyte) * vertCount, verticesOrder, GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
+}
+
+bool ModuleRender::InitCubeShaderInfo()
+{
+	bool success = true;
+	/* 
+	For each vertex, we have:
+	- 3 floats for position (x y z),
+	- 3 floats for color (r g b),
+	- 2 floats for texture coordinate (u v)
+	*/
+
+
+	const size_t vertCount = 36;
+	GLfloat vertices[vertCount * 3] = { SP_ARR_3F(vA), SP_ARR_3F(vB), SP_ARR_3F(vC), SP_ARR_3F(vB), SP_ARR_3F(vD), SP_ARR_3F(vC), SP_ARR_3F(vB), SP_ARR_3F(vF), SP_ARR_3F(vD), SP_ARR_3F(vF), SP_ARR_3F(vH), SP_ARR_3F(vD), SP_ARR_3F(vF), SP_ARR_3F(vE), SP_ARR_3F(vH), SP_ARR_3F(vE), SP_ARR_3F(vG), SP_ARR_3F(vH), SP_ARR_3F(vE), SP_ARR_3F(vA), SP_ARR_3F(vG), SP_ARR_3F(vA), SP_ARR_3F(vC), SP_ARR_3F(vG), SP_ARR_3F(vC), SP_ARR_3F(vD), SP_ARR_3F(vH), SP_ARR_3F(vC), SP_ARR_3F(vH), SP_ARR_3F(vG), SP_ARR_3F(vA), SP_ARR_3F(vF), SP_ARR_3F(vB), SP_ARR_3F(vF), SP_ARR_3F(vA), SP_ARR_3F(vE) };
+	GLfloat colors[vertCount * 3] = { SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cRed), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cRed), SP_ARR_3F(cBlue), SP_ARR_3F(cGreen), SP_ARR_3F(cRed), SP_ARR_3F(cBlue), SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cRed), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cRed), SP_ARR_3F(cWhite), SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cRed), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cRed), SP_ARR_3F(cBlue) };
+	GLfloat uvCoords[vertCount * 2] = { SP_ARR_2F(bottomLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(topLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(topRight), SP_ARR_2F(topLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(topLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(topLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(topRight), SP_ARR_2F(topLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(topLeft), SP_ARR_2F(topRight), SP_ARR_2F(topLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomRight), SP_ARR_2F(topLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(bottomLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomRight), SP_ARR_2F(topRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(topLeft) };
+
+	GLfloat allData[vertCount * 8];
+
+	for (int i = 0; i < vertCount * 8; ++i)
+	{
+		if (i % 8 == 0 || i % 8 == 1 || i % 8 == 2 )
+		{
+			allData[i] = vertices[(i / 8) * 3 + (i % 8)];
+		}
+		else if (i % 8 == 3 || i % 8 == 4 || i % 8 == 5)
+		{
+			allData[i] = colors[(i / 8) * 3 + ((i % 8) - 3)];
+		}
+		else
+		{
+			allData[i] = uvCoords[(i / 8) * 2 + ((i % 8) - 6)];
+		}
+	}
+
+
+	glGenBuffers(1, (GLuint*)&shaderDataBufferId);
+
+
+	glBindBuffer(GL_ARRAY_BUFFER, shaderDataBufferId);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertCount * 8, allData, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
+	// Shader time
+	basicShader = new Shader();
+
+	std::string vertexString;
+	success &= LoadTextFile("assets/shaders/defaultShader.vert", vertexString);
+	
+	std::string fragmentString;
+	success &= LoadTextFile("assets/shaders/defaultShader.frag", fragmentString);
+	
+	if (success)
+	{
+		success &= basicShader->CompileVertexShader(vertexString.c_str());
+		success &= basicShader->CompileFragmentShader(fragmentString.c_str());
+		if (success)
+		{
+			success &= basicShader->LinkShaderProgram();
+		}
+	}
+
+	// Materials
+	Material* mat;
+	mat = new Material("Basic Material");
+
+	mat->SetVertexShaderPath("assets/shaders/defaultShader.vert");
+	mat->SetFragmentShaderPath("assets/shaders/defaultShader.frag");
+	mat->SetTexturePath("assets/images/ryu.jpg");
+
+	success &= mat->Apply();
+	materials.push_back(mat);
+
+	mat = new Material("Tinting Material");
+
+	mat->SetVertexShaderPath("assets/shaders/defaultShader.vert");
+	mat->SetFragmentShaderPath("assets/shaders/tintingShader.frag");
+	mat->SetTexturePath("assets/images/ryu.jpg");
+	mat->SetShaderDataPath("assets/shaders/tintingShaderData.shaderdata");
+
+	success &= mat->Apply();
+	materials.push_back(mat);
+
+	mat = new Material("Vanishing Material");
+
+	mat->SetVertexShaderPath("assets/shaders/defaultShader.vert");
+	mat->SetFragmentShaderPath("assets/shaders/vanishingShader.frag");
+	mat->SetTexturePath("assets/images/ryu.jpg");
+	mat->SetShaderDataPath("assets/shaders/vanishingShader.shaderdata");
+
+	success &= mat->Apply();
+	materials.push_back(mat);
+
+	return success;
 }
 
 void ModuleRender::InitSphereInfo(unsigned int rings, unsigned int sections)
@@ -872,6 +1004,78 @@ void ModuleRender::DrawSphere() const
 
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
+}
+
+void ModuleRender::DrawShaderCube() const
+{
+	basicShader->Activate();
+
+	GLint modelLoc = glGetUniformLocation(basicShader->GetProgramId(), "model_matrix");
+
+	float pos[16] = {
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 2, 0, 1
+	};
+
+	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, pos);
+
+	GLint viewLoc = glGetUniformLocation(basicShader->GetProgramId(), "view");
+	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, App->editorCamera->GetViewMatrix());
+
+	GLint projLoc = glGetUniformLocation(basicShader->GetProgramId(), "projection");
+	glUniformMatrix4fv(projLoc, 1, GL_FALSE, App->editorCamera->GetProjectionMatrix());
+
+	GLuint tex = cubeTextureID.at(cubeSelectedTextures[1]);
+
+	glBindTexture(GL_TEXTURE_2D, tex);
+	glBindBuffer(GL_ARRAY_BUFFER, shaderDataBufferId);
+
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	
+	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(2);
+	
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	basicShader->Deactivate();
+}
+
+void ModuleRender::DrawMaterialCube() const
+{
+	float pos1[16] = {
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		-1.5f, -2, 0, 1
+	};
+
+	materials[0]->DrawArray(pos1, shaderDataBufferId, 36);
+
+	float pos2[16] = {
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, -2, 0, 1
+	};
+
+	materials[1]->DrawArray(pos2, shaderDataBufferId, 36);
+
+	float pos3[16] = {
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		1.5f, -2, 0, 1
+	};
+
+	materials[2]->DrawArray(pos3, shaderDataBufferId, 36);
 }
 
 void ModuleRender::DrawGroundGrid(float xOffset, float zOffset, int halfSize) const

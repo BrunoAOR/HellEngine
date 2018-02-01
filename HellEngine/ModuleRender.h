@@ -6,6 +6,8 @@
 #include "SDL/include/SDL_rect.h"
 #include "globals.h"
 #include "Module.h"
+class Material;
+class Shader;
 struct SDL_Rect;
 struct SDL_Renderer;
 struct SDL_Texture;
@@ -69,6 +71,9 @@ public:
 	/* Sets the polygon draw mode (drawMode must be GL_FILL, GL_LINE or GL_POINT */
 	void SetPolygonDrawMode(GLenum drawMode);
 
+	/* Loading image with DevIL. */
+	GLuint LoadImageWithDevIL(const char* theFileName);
+
 private:
 
 	/* Initializes the GLEW library */
@@ -82,6 +87,9 @@ private:
 
 	/* Initializes cube-rendering variables */
 	void InitCubeInfo();
+
+	/* Initializes shader and material cube information */
+	bool InitCubeShaderInfo();
 
 	/* Initializes sphere-rendering variables */
 	void InitSphereInfo(unsigned int rings, unsigned int sections);
@@ -107,11 +115,12 @@ private:
 	/* Renders a sphere using OpenGL glDrawElements function */
 	void DrawSphere() const;
 
+	void DrawShaderCube() const;
+
+	void DrawMaterialCube() const;
+
 	/* Draw a grid on the ground */
 	void DrawGroundGrid(float xOffset = 0, float zOffet = 0, int halfSize = 20) const;
-
-	/* Loading image with DevIL. */
-	GLuint LoadImageWithDevIL(const char* theFileName);
 
 public:
 
@@ -130,6 +139,7 @@ public:
 	} groundGridInfo;
 
 	std::vector<int> cubeSelectedTextures;
+	std::vector<Material*> materials;
 
 private:
 	
@@ -191,6 +201,9 @@ private:
 	const char* lennaPath = "assets/images/lenna.png";
 	const char* ryuPath = "assets/images/ryu.jpg";
 	const char* gokuPath = "assets/images/goku.dds";
+
+	GLuint shaderDataBufferId;
+	Shader* basicShader = nullptr;
 };
 
 #endif /* __H_MODULERENDER__ */

@@ -28,3 +28,32 @@ Json LoadJson(const char* path)
 	file >> json;
 	return json;
 }
+
+bool LoadTextFile(const std::string& path, std::string& outputString)
+{
+	outputString = "";
+	std::string line;
+	std::ifstream inFile(path);
+	if (inFile.good())
+	{
+		while (getline(inFile, line))
+		{
+			outputString += line + '\n';
+		}
+		inFile.close();
+		return true;
+	}
+	
+	return false;
+}
+
+bool SaveTextFile(const std::string& path, const std::string& content)
+{
+	std::ofstream outFile(path);
+	if (outFile.good())
+	{
+		outFile << content;
+		return true;
+	}
+	return false;
+}

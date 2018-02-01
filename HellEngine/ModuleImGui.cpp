@@ -5,6 +5,7 @@
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_sdl_gl3.h"
 #include "Application.h"
+#include "Material.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleImGui.h"
 #include "ModuleRender.h"
@@ -70,6 +71,8 @@ UpdateStatus ModuleImGui::Update()
 	static bool showCameraWindow = false;
 	static bool showTexturesWindow = false;
 	static bool showOpenGLWindow = false;
+    static bool showTextEditorWindow = false;
+	static bool showMaterialsWindow = false;
 
 	static bool rendererWireFrame = false;
 	static bool rendererRotate = false;
@@ -105,6 +108,9 @@ UpdateStatus ModuleImGui::Update()
 
 			ImGui::EndMenu();
 		}
+
+        ImGui::MenuItem("Text Editor", nullptr, &showTextEditorWindow);
+		ImGui::MenuItem("Materials Editor", nullptr, &showMaterialsWindow);
 
 		if (ImGui::BeginMenu("Help"))
 		{
@@ -146,6 +152,16 @@ UpdateStatus ModuleImGui::Update()
 	if (showOpenGLWindow)
 	{
 		ShowOpenGLWindow(mainMenuBarHeight, &showOpenGLWindow);
+	}
+
+    if (showTextEditorWindow) 
+    {
+        ShowTextEditorWindow(mainMenuBarHeight, &showTextEditorWindow);
+    }
+
+	if (showMaterialsWindow)
+	{
+		ShowMaterialsEditorWindow(mainMenuBarHeight, &showMaterialsWindow);
 	}
 
 	ImGui::Render();
@@ -372,6 +388,7 @@ void ModuleImGui::ShowTexturesWindow(float mainMenuBarHeight, bool * pOpen)
 
 void ModuleImGui::ShowOpenGLWindow(float mainMenuBarHeight, bool * pOpen)
 {
+	static bool alphaTest = false;
 	static bool depthTest = true;
 	static bool cullFace = true;
 	static bool lighting = false;
@@ -396,6 +413,10 @@ void ModuleImGui::ShowOpenGLWindow(float mainMenuBarHeight, bool * pOpen)
 	ImGui::SetNextWindowSize(ImVec2(450, 600));
 	ImGui::Begin("OpenGL options", pOpen, ImGuiWindowFlags_NoCollapse);
 
+	if (ImGui::Checkbox("Alpha Test", &alphaTest))
+	{
+		App->renderer->ToggleOpenGLCapability(alphaTest, GL_BLEND);
+	}
 	if (ImGui::Checkbox("Depth Test", &depthTest))
 	{
 		App->renderer->ToggleOpenGLCapability(depthTest, GL_DEPTH_TEST);
@@ -513,6 +534,111 @@ void ModuleImGui::ShowOpenGLWindow(float mainMenuBarHeight, bool * pOpen)
 			break;
 		}
 	}
+
+	ImGui::End();
+}
+
+void ModuleImGui::ShowTextEditorWindow(float mainMenuBarHeight, bool* pOpen) 
+{
+	static char text[1024 * 16] = "";
+	static char fileName[256] = "";
+	static std::string lastLog = "";
+	static bool showExtendedSaveMenu = false;
+	static bool showExtendedLoadMenu = false;
+
+    ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
+    ImGui::SetNextWindowSize(ImVec2(450, 570));
+    ImGui::Begin("Visual Studio 2025", pOpen, ImGuiWindowFlags_NoCollapse);
+    ImGui::InputTextMultiline("", text, IM_ARRAYSIZE(text), ImVec2(430.f, ImGui::GetTextLineHeight() * 32), ImGuiInputTextFlags_AllowTabInput); 
+    
+    ImGui::InputText("File Name", fileName, IM_ARRAYSIZE(fileName));
+	if (ImGui::Button("Save", ImVec2(125.0f, 25.0f)))
+	{
+		showExtendedSaveMenu = true;
+		showExtendedLoadMenu = false;
+	}
+
+    ImGui::SameLine(0.0f, 42.0f);
+
+	if (ImGui::Button("Load", ImVec2(125.0f, 25.0f)))
+	{
+		showExtendedLoadMenu = true;
+		showExtendedSaveMenu = false;
+	}
+
+	if (showExtendedSaveMenu)
+	{
+		ImGui::Text("Are you sure you want to save?");
+		if (ImGui::Button("Confirm Save", ImVec2(125.0f, 25.0f)))
+		{
+			showExtendedSaveMenu = false;
+			if (SaveTextFile(fileName, text))
+				lastLog = "File saved.";
+			else
+				lastLog = "File could NOT be saved.";
+		}
+
+		ImGui::SameLine(0.0f, 42.0f);
+
+		if (ImGui::Button("Cancel Save", ImVec2(125.0f, 25.0f)))
+			showExtendedSaveMenu = false;
+	}
+
+	if (showExtendedLoadMenu)
+	{
+		ImGui::Text("Are you sure you want to load?");
+		if (ImGui::Button("Confirm Load", ImVec2(125.0f, 25.0f)))
+		{
+			showExtendedLoadMenu = false;
+			std::string fileContent;
+			if (LoadTextFile(fileName, fileContent))
+			{
+				lastLog = "File loaded.";
+				strcpy_s(text, 1024 * 16, fileContent.c_str());
+			}
+			else
+				lastLog = "File could NOT be loaded.";
+		}
+
+		ImGui::SameLine(0.0f, 42.0f);
+
+		if (ImGui::Button("Cancel Load", ImVec2(125.0f, 25.0f)))
+			showExtendedLoadMenu = false;
+	}
+
+	ImGui::Text("Last log: ");
+	ImGui::SameLine();
+	ImGui::Text(lastLog.c_str());
+
+    ImGui::End();
+}
+
+void ModuleImGui::ShowMaterialsEditorWindow(float mainMenuBarHeight, bool * pOpen)
+{
+	static int selectedMaterial = -1;
+	static std::string options = "None";
+	if (selectedMaterial == -1)
+	{
+		options += '\0';
+		selectedMaterial = 0;
+		for (Material* mat : App->renderer->materials)
+		{
+			options += mat->getName() + '\0';
+		}
+		options += '\0';
+	}
+
+	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
+	ImGui::SetNextWindowSize(ImVec2(450, 570));
+	ImGui::Begin("Materials Editor", pOpen, ImGuiWindowFlags_NoCollapse);
+	
+	ImGui::Combo("Material selection", &selectedMaterial, options.c_str());
+	ImGui::Text("");
+
+	if (selectedMaterial == 0)
+		ImGui::Text("Select a material.");
+	else
+		App->renderer->materials[selectedMaterial - 1]->ShowGUIMenu();
 
 	ImGui::End();
 }
