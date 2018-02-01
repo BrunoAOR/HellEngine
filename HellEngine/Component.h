@@ -11,7 +11,7 @@ public:
 	Component();
 	~Component();
 
-	ComponentType getType();
+	ComponentType GetType();
 
 public:
 

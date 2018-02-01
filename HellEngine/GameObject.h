@@ -9,11 +9,11 @@ class GameObject
 {
 public:
 
-	GameObject();
+	GameObject(const char* name, GameObject* parent);
 	~GameObject();
 	
 	GameObject* GetParent();
-	bool setParent(GameObject* newParent);
+	bool SetParent(GameObject* newParent);
 
 	std::vector<Component*> GetComponents(ComponentType type);
 	Component* AddComponent(ComponentType type);
@@ -26,7 +26,7 @@ public:
 
 private:
 
-	GameObject * parent = nullptr;
+	GameObject* parent = nullptr;
 	std::vector<GameObject*> children;
 	std::vector<Component*> components;
 
