@@ -288,6 +288,9 @@
     <ClInclude Include="ComponentType.h">
       <Filter>Scene Management</Filter>
     </ClInclude>
+    <ClInclude Include="ComponentTransform.h">
+      <Filter>Scene Management</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -456,6 +459,9 @@
       <Filter>Scene Management</Filter>
     </ClCompile>
     <ClCompile Include="ComponentType.cpp">
+      <Filter>Scene Management</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentTransform.cpp">
       <Filter>Scene Management</Filter>
     </ClCompile>
   </ItemGroup>

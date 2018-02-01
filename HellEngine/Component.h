@@ -18,7 +18,7 @@ public:
 	bool isActive = true;
 	GameObject* gameObject;
 
-private:
+protected:
 
 	ComponentType type;
 

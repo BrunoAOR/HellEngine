@@ -6,6 +6,7 @@
 #include "SDL/include/SDL_rect.h"
 #include "globals.h"
 #include "Module.h"
+
 class Material;
 class Shader;
 struct SDL_Rect;
