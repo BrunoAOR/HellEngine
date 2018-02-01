@@ -5,6 +5,7 @@
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_sdl_gl3.h"
 #include "Application.h"
+#include "Material.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleImGui.h"
 #include "ModuleRender.h"
@@ -71,6 +72,7 @@ UpdateStatus ModuleImGui::Update()
 	static bool showTexturesWindow = false;
 	static bool showOpenGLWindow = false;
     static bool showTextEditorWindow = false;
+	static bool showMaterialsWindow = false;
 
 	static bool rendererWireFrame = false;
 	static bool rendererRotate = false;
@@ -108,6 +110,7 @@ UpdateStatus ModuleImGui::Update()
 		}
 
         ImGui::MenuItem("Text Editor", nullptr, &showTextEditorWindow);
+		ImGui::MenuItem("Materials Editor", nullptr, &showMaterialsWindow);
 
 		if (ImGui::BeginMenu("Help"))
 		{
@@ -155,6 +158,11 @@ UpdateStatus ModuleImGui::Update()
     {
         ShowTextEditorWindow(mainMenuBarHeight, &showTextEditorWindow);
     }
+
+	if (showMaterialsWindow)
+	{
+		ShowMaterialsEditorWindow(mainMenuBarHeight, &showMaterialsWindow);
+	}
 
 	ImGui::Render();
 
@@ -380,6 +388,7 @@ void ModuleImGui::ShowTexturesWindow(float mainMenuBarHeight, bool * pOpen)
 
 void ModuleImGui::ShowOpenGLWindow(float mainMenuBarHeight, bool * pOpen)
 {
+	static bool alphaTest = false;
 	static bool depthTest = true;
 	static bool cullFace = true;
 	static bool lighting = false;
@@ -404,6 +413,10 @@ void ModuleImGui::ShowOpenGLWindow(float mainMenuBarHeight, bool * pOpen)
 	ImGui::SetNextWindowSize(ImVec2(450, 600));
 	ImGui::Begin("OpenGL options", pOpen, ImGuiWindowFlags_NoCollapse);
 
+	if (ImGui::Checkbox("Alpha Test", &alphaTest))
+	{
+		App->renderer->ToggleOpenGLCapability(alphaTest, GL_BLEND);
+	}
 	if (ImGui::Checkbox("Depth Test", &depthTest))
 	{
 		App->renderer->ToggleOpenGLCapability(depthTest, GL_DEPTH_TEST);
@@ -598,4 +611,34 @@ void ModuleImGui::ShowTextEditorWindow(float mainMenuBarHeight, bool* pOpen)
 	ImGui::Text(lastLog.c_str());
 
     ImGui::End();
+}
+
+void ModuleImGui::ShowMaterialsEditorWindow(float mainMenuBarHeight, bool * pOpen)
+{
+	static int selectedMaterial = -1;
+	static std::string options = "None";
+	if (selectedMaterial == -1)
+	{
+		options += '\0';
+		selectedMaterial = 0;
+		for (Material* mat : App->renderer->materials)
+		{
+			options += mat->getName() + '\0';
+		}
+		options += '\0';
+	}
+
+	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
+	ImGui::SetNextWindowSize(ImVec2(450, 570));
+	ImGui::Begin("Materials Editor", pOpen, ImGuiWindowFlags_NoCollapse);
+	
+	ImGui::Combo("Material selection", &selectedMaterial, options.c_str());
+	ImGui::Text("");
+
+	if (selectedMaterial == 0)
+		ImGui::Text("Select a material.");
+	else
+		App->renderer->materials[selectedMaterial - 1]->ShowGUIMenu();
+
+	ImGui::End();
 }

@@ -40,6 +40,7 @@ bool Shader::LinkShaderProgram()
 	GLchar infoLog[512];
 	glGetProgramiv(programId, GL_LINK_STATUS, &success);
 	if (success == 0) {
+		glDeleteProgram(programId);
 		glGetProgramInfoLog(programId, 512, NULL, infoLog);
 		LOGGER("Shader link error: %s", infoLog);
 		return false;

@@ -1,3 +1,4 @@
+#include "ImGui/imgui.h"
 #include "Application.h"
 #include "Material.h"
 #include "ModuleEditorCamera.h"
@@ -6,8 +7,9 @@
 #include "openGL.h"
 
 
-Material::Material()
+Material::Material(const std::string& aName)
 {
+	name = aName;
 	shader = new Shader();
 }
 
@@ -19,6 +21,11 @@ Material::~Material()
 
 	glDeleteTextures(1, &textureBufferId);
 	textureBufferId = 0;
+}
+
+const std::string& Material::getName() const
+{
+	return name;
 }
 
 /* Recieves the vertex shader file path and tries to compile it */
@@ -66,6 +73,17 @@ bool Material::SetTexturePath(const std::string& sourcePath)
 	return textureBufferId != 0;
 }
 
+bool Material::SetShaderDataPath(const std::string & sourcePath)
+{
+	std::string shaderRawData;
+	if (!LoadTextFile(sourcePath, shaderRawData))
+		return false;
+
+	shaderDataPath = sourcePath;
+	shaderData = shaderRawData;
+	return true;
+}
+
 /* Returns whether the Material has a loaded texture and a linked shader */
 bool Material::IsValid()
 {
@@ -81,6 +99,9 @@ bool Material::Apply()
 	if (!shader->LinkShaderProgram())
 		return false;
 
+	if (!GenerateUniforms())
+		return false;
+
 	return true;
 }
 
@@ -90,9 +111,41 @@ bool Material::Reapply()
 	if (SetVertexShaderPath(vertexShaderPath))
 		if (SetFragmentShaderPath(fragmentShaderPath))
 			if (SetTexturePath(texturePath))
-				return Apply();
+				if (shaderDataPath == "" || SetShaderDataPath(shaderDataPath))
+					return Apply();
 	
 	return false;
+}
+
+void Material::ShowGUIMenu()
+{
+	ImGui::Text(name.c_str());
+	ImGui::SameLine();
+	ImGui::Text(" options:");
+	ImGui::Text("");
+
+	if (ImGui::Button("Reapply"))
+		Reapply();
+
+	if (uniforms.size() == 0)
+	{
+		ImGui::Text("This Material has no configuration options.");
+	}
+	
+	for (Uniform& uniform : uniforms)
+	{
+		switch (uniform.type)
+		{
+		case Uniform::UniformType::FLOAT:
+			ImGui::DragFloat(uniform.name.c_str(), uniform.values, 0.01f, 0.0f, 1.0f, "%.2f");
+			break;
+		case Uniform::UniformType::COLOR4:
+			ImGui::ColorEdit4(uniform.name.c_str(), uniform.values);
+			break;
+		default:
+			break;
+		}
+	}
 }
 
 /* Draws a certain model using the Material's shader and texture */
@@ -112,6 +165,8 @@ bool Material::DrawArray(float* modelMatrix, uint drawDataBufferId, uint vertexC
 	GLint projLoc = glGetUniformLocation(shader->GetProgramId(), "projection");
 	glUniformMatrix4fv(projLoc, 1, GL_FALSE, App->editorCamera->GetProjectionMatrix());
 
+	UpdateUniforms();
+
 	glBindTexture(GL_TEXTURE_2D, textureBufferId);
 	glBindBuffer(GL_ARRAY_BUFFER, drawDataBufferId);
 
@@ -130,4 +185,71 @@ bool Material::DrawArray(float* modelMatrix, uint drawDataBufferId, uint vertexC
 
 	shader->Deactivate();
 	return true;
+}
+
+bool Material::GenerateUniforms()
+{
+	uniforms.clear();
+	if (shaderDataPath == "")
+		return true;
+
+	std::string rest(shaderData);
+	std::string pair;
+	std::string type;
+	std::string name;
+
+	while (rest.length() > 0)
+	{
+		int cut = rest.find('\n');
+		pair = rest.substr(0, cut);
+		rest = rest.substr(cut + 1, rest.length());
+
+		int cut2 = pair.find(' ');
+		type = pair.substr(0, cut2);
+		name = pair.substr(cut2 + 1, pair.length());
+
+		Uniform uniform;
+		uniform.name = name;
+		if (type == "float")
+		{
+			uniform.type = Uniform::UniformType::FLOAT;
+			uniform.size = 1;
+		}
+		else if (type == "color4")
+		{
+			uniform.type = Uniform::UniformType::COLOR4;
+			uniform.size = 4;
+		}
+		uniform.values[0] = 0.0f;
+		uniform.values[1] = 0.0f;
+		uniform.values[2] = 0.0f;
+		uniform.values[3] = 1.0f;
+		
+		uniform.location = glGetUniformLocation(shader->GetProgramId(), uniform.name.c_str());
+		if (uniform.location == -1)
+			return false;
+
+		uniforms.push_back(uniform);
+	}
+
+
+	return true;
+}
+
+void Material::UpdateUniforms()
+{
+	for (const Uniform& uniform : uniforms)
+	{
+		switch (uniform.type)
+		{
+		case Uniform::UniformType::FLOAT:
+			glUniform1fv(uniform.location, 1, uniform.values);
+			break;
+		case Uniform::UniformType::COLOR4:
+			glUniform4fv(uniform.location, 1, uniform.values);
+			break;
+		default:
+			break;
+		}
+	}
 }

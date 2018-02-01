@@ -43,8 +43,11 @@ private:
 	/* Draws the OpenGL options window */
 	void ShowOpenGLWindow(float mainMenuBarHeight, bool* pOpen);
 
-    /*Draws the Editor Text window*/
+    /*Draws the Text Editor window*/
     void ShowTextEditorWindow(float mainMenuBarHeight, bool* pOpen);
+
+	/*Draws the Materials Editor window*/
+	void ShowMaterialsEditorWindow(float mainMenuBarHeight, bool* pOpen);
 
 private:
 

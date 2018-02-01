@@ -139,6 +139,7 @@ public:
 	} groundGridInfo;
 
 	std::vector<int> cubeSelectedTextures;
+	std::vector<Material*> materials;
 
 private:
 	
@@ -203,7 +204,6 @@ private:
 
 	GLuint shaderDataBufferId;
 	Shader* basicShader = nullptr;
-	Material* basicMaterial = nullptr;
 };
 
 #endif /* __H_MODULERENDER__ */

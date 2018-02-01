@@ -208,12 +208,12 @@ bool ModuleRender::CleanUp()
 		basicShader = nullptr;
 	}
 
-	/* Destroy basicMaterial */
-	if (basicMaterial != nullptr)
+	/* Destroy Materials */
+	for (Material* mat : materials)
 	{
-		delete basicMaterial;
-		basicMaterial = nullptr;
+		delete mat;
 	}
+	materials.clear();
 
 	return true;
 }
@@ -503,14 +503,36 @@ bool ModuleRender::InitCubeShaderInfo()
 		}
 	}
 
-	// Material
-	basicMaterial = new Material();
+	// Materials
+	Material* mat;
+	mat = new Material("Basic Material");
 
-	basicMaterial->SetVertexShaderPath("assets/shaders/defaultShader.vert");
-	basicMaterial->SetFragmentShaderPath("assets/shaders/defaultShader.frag");
-	basicMaterial->SetTexturePath("assets/images/ryu.jpg");
+	mat->SetVertexShaderPath("assets/shaders/defaultShader.vert");
+	mat->SetFragmentShaderPath("assets/shaders/defaultShader.frag");
+	mat->SetTexturePath("assets/images/ryu.jpg");
 
-	success &= basicMaterial->Apply();
+	success &= mat->Apply();
+	materials.push_back(mat);
+
+	mat = new Material("Tinting Material");
+
+	mat->SetVertexShaderPath("assets/shaders/defaultShader.vert");
+	mat->SetFragmentShaderPath("assets/shaders/tintingShader.frag");
+	mat->SetTexturePath("assets/images/ryu.jpg");
+	mat->SetShaderDataPath("assets/shaders/tintingShaderData.shaderdata");
+
+	success &= mat->Apply();
+	materials.push_back(mat);
+
+	mat = new Material("Vanishing Material");
+
+	mat->SetVertexShaderPath("assets/shaders/defaultShader.vert");
+	mat->SetFragmentShaderPath("assets/shaders/vanishingShader.frag");
+	mat->SetTexturePath("assets/images/ryu.jpg");
+	mat->SetShaderDataPath("assets/shaders/vanishingShader.shaderdata");
+
+	success &= mat->Apply();
+	materials.push_back(mat);
 
 	return success;
 }
@@ -1028,14 +1050,32 @@ void ModuleRender::DrawShaderCube() const
 
 void ModuleRender::DrawMaterialCube() const
 {
-	float pos[16] = {
+	float pos1[16] = {
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		-1.5f, -2, 0, 1
+	};
+
+	materials[0]->DrawArray(pos1, shaderDataBufferId, 36);
+
+	float pos2[16] = {
 		1, 0, 0, 0,
 		0, 1, 0, 0,
 		0, 0, 1, 0,
 		0, -2, 0, 1
 	};
 
-	basicMaterial->DrawArray(pos, shaderDataBufferId, 36);
+	materials[1]->DrawArray(pos2, shaderDataBufferId, 36);
+
+	float pos3[16] = {
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		1.5f, -2, 0, 1
+	};
+
+	materials[2]->DrawArray(pos3, shaderDataBufferId, 36);
 }
 
 void ModuleRender::DrawGroundGrid(float xOffset, float zOffset, int halfSize) const
