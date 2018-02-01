@@ -19,12 +19,12 @@ Shader::~Shader()
 
 bool Shader::CompileVertexShader(const char * sourceString)
 {
-	return compileShader(sourceString, ShaderType::VERTEX);
+	return CompileShader(sourceString, ShaderType::VERTEX);
 }
 
 bool Shader::CompileFragmentShader(const char * sourceString)
 {
-	return compileShader(sourceString, ShaderType::FRAGMENT);
+	return CompileShader(sourceString, ShaderType::FRAGMENT);
 }
 
 bool Shader::LinkShaderProgram()
@@ -76,12 +76,12 @@ bool Shader::IsValid()
 	return shaderProgramId != 0;
 }
 
-GLuint Shader::getProgramId()
+GLuint Shader::GetProgramId()
 {
 	return shaderProgramId;
 }
 
-bool Shader::compileShader(const char* sourceString, ShaderType shaderType)
+bool Shader::CompileShader(const char* sourceString, ShaderType shaderType)
 {
 	GLenum glShaderType;
 	switch (shaderType)

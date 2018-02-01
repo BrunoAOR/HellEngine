@@ -16,7 +16,7 @@ public:
 	void Deactivate();
 	bool IsValid();
 
-	GLuint getProgramId();
+	GLuint GetProgramId();
 
 private:
 	enum class ShaderType
@@ -25,7 +25,7 @@ private:
 		FRAGMENT
 	};
 
-	bool compileShader(const char* sourceString, ShaderType shaderType);
+	bool CompileShader(const char* sourceString, ShaderType shaderType);
 
 private:
 	GLuint vertexShaderId = 0;

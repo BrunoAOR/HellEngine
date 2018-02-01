@@ -103,13 +103,13 @@ bool Material::DrawArray(float* modelMatrix, uint drawDataBufferId, uint vertexC
 
 	shader->Activate();
 
-	GLint modelLoc = glGetUniformLocation(shader->getProgramId(), "model_matrix");
+	GLint modelLoc = glGetUniformLocation(shader->GetProgramId(), "model_matrix");
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, modelMatrix);
 
-	GLint viewLoc = glGetUniformLocation(shader->getProgramId(), "view");
+	GLint viewLoc = glGetUniformLocation(shader->GetProgramId(), "view");
 	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, App->editorCamera->GetViewMatrix());
 
-	GLint projLoc = glGetUniformLocation(shader->getProgramId(), "projection");
+	GLint projLoc = glGetUniformLocation(shader->GetProgramId(), "projection");
 	glUniformMatrix4fv(projLoc, 1, GL_FALSE, App->editorCamera->GetProjectionMatrix());
 
 	glBindTexture(GL_TEXTURE_2D, textureBufferId);

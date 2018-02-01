@@ -988,7 +988,7 @@ void ModuleRender::DrawShaderCube() const
 {
 	basicShader->Activate();
 
-	GLint modelLoc = glGetUniformLocation(basicShader->getProgramId(), "model_matrix");
+	GLint modelLoc = glGetUniformLocation(basicShader->GetProgramId(), "model_matrix");
 
 	float pos[16] = {
 		1, 0, 0, 0,
@@ -999,10 +999,10 @@ void ModuleRender::DrawShaderCube() const
 
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, pos);
 
-	GLint viewLoc = glGetUniformLocation(basicShader->getProgramId(), "view");
+	GLint viewLoc = glGetUniformLocation(basicShader->GetProgramId(), "view");
 	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, App->editorCamera->GetViewMatrix());
 
-	GLint projLoc = glGetUniformLocation(basicShader->getProgramId(), "projection");
+	GLint projLoc = glGetUniformLocation(basicShader->GetProgramId(), "projection");
 	glUniformMatrix4fv(projLoc, 1, GL_FALSE, App->editorCamera->GetProjectionMatrix());
 
 	GLuint tex = cubeTextureID.at(cubeSelectedTextures[1]);
