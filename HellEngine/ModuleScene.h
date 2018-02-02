@@ -13,6 +13,9 @@ public:
 	ModuleScene();
 	~ModuleScene();
 
+	bool Init();
+	bool CleanUp();
+	UpdateStatus Update();
 
 	GameObject* CreateGameObject();
 	void Destroy(GameObject* gameObject);

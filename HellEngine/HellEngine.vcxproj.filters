@@ -291,7 +291,9 @@
     <ClInclude Include="ComponentTransform.h">
       <Filter>Scene Management</Filter>
     </ClInclude>
-    <ClInclude Include="ComponentMaterial.h" />
+    <ClInclude Include="ComponentMaterial.h">
+      <Filter>Scene Management</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -462,7 +464,9 @@
     <ClCompile Include="ComponentTransform.cpp">
       <Filter>Scene Management</Filter>
     </ClCompile>
-    <ClCompile Include="ComponentMaterial.cpp" />
+    <ClCompile Include="ComponentMaterial.cpp">
+      <Filter>Scene Management</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="MathGeoLib\src\Math\float2.inl">

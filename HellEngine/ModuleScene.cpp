@@ -2,15 +2,31 @@
 #include "GameObject.h"
 
 
-
 ModuleScene::ModuleScene() 
 {
-    root = new GameObject("root", nullptr);
 }
 
 
 ModuleScene::~ModuleScene() 
 {
+}
+
+bool ModuleScene::Init()
+{
+	root = new GameObject("root", nullptr);
+	return true;
+}
+
+bool ModuleScene::CleanUp()
+{
+	Destroy(root);
+	root = nullptr;
+	return true;
+}
+
+UpdateStatus ModuleScene::Update()
+{
+	return UpdateStatus::UPDATE_CONTINUE;
 }
 
 GameObject* ModuleScene::CreateGameObject() 

@@ -8,6 +8,7 @@ class ModuleEditorCamera;
 class ModuleImGui;
 class ModuleInput;
 class ModuleRender;
+class ModuleScene;
 class ModuleTime;
 class ModuleWindow;
 enum class UpdateStatus;
@@ -29,6 +30,7 @@ public:
 	ModuleEditorCamera* editorCamera = nullptr;
 	ModuleRender* renderer = nullptr;
 	ModuleImGui* imgui = nullptr;
+	ModuleScene* scene = nullptr;
 	ModuleAudio* audio = nullptr;
 
 private:
