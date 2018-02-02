@@ -83,15 +83,6 @@ UpdateStatus ModuleRender::PreUpdate()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixf(App->editorCamera->GetViewMatrix());
 
-	if (App->input->GetKey(SDL_SCANCODE_1) == KeyState::KEY_DOWN)
-		currentSelectedCube = 0;
-	if (App->input->GetKey(SDL_SCANCODE_2) == KeyState::KEY_DOWN)
-		currentSelectedCube = 1;
-	if (App->input->GetKey(SDL_SCANCODE_3) == KeyState::KEY_DOWN)
-		currentSelectedCube = 2;
-	if (App->input->GetKey(SDL_SCANCODE_4) == KeyState::KEY_DOWN)
-		currentSelectedCube = 3;
-
 	return UpdateStatus::UPDATE_CONTINUE;
 }
 
