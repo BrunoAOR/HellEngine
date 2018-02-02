@@ -1,3 +1,5 @@
+#include <assert.h>
+#include "ComponentType.h"
 #include "ModuleScene.h"
 #include "GameObject.h"
 
@@ -6,7 +8,6 @@ ModuleScene::ModuleScene()
 {
 }
 
-
 ModuleScene::~ModuleScene() 
 {
 }
@@ -14,12 +15,13 @@ ModuleScene::~ModuleScene()
 bool ModuleScene::Init()
 {
 	root = new GameObject("root", nullptr);
+	CreateTestGameObjects();
 	return true;
 }
 
 bool ModuleScene::CleanUp()
 {
-	Destroy(root);
+	delete root;
 	root = nullptr;
 	return true;
 }
@@ -37,7 +39,14 @@ GameObject* ModuleScene::CreateGameObject()
 
 void ModuleScene::Destroy(GameObject* gameObject) 
 {
-    delete gameObject;
+	/* Protect against destruction of the root */
+	assert(gameObject != root);
+	GameObject* parent = gameObject->GetParent();
+	if (!parent)
+		parent = root;
+	
+	parent->RemoveChild(gameObject);
+	delete gameObject;
 }
 
 std::vector<GameObject*> ModuleScene::FindByName(const std::string& name, GameObject* gameObject)
@@ -61,4 +70,15 @@ std::vector<GameObject*> ModuleScene::FindByName(const std::string& name, GameOb
         ret.insert(std::end(ret), std::begin(temp), std::end(temp));
     }
     return ret;
+}
+
+void ModuleScene::CreateTestGameObjects()
+{
+	new GameObject("Child 1", root);
+	GameObject* testGameObject = new GameObject("Child 2", root);
+	new GameObject("Child 2.1", testGameObject);
+	new GameObject("Child 3", root);
+	GameObject *test2 = new GameObject("Child 4", root);
+	new GameObject("Child 4.1", test2);
+	Destroy(test2);
 }

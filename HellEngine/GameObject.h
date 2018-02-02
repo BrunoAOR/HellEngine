@@ -9,11 +9,12 @@ class GameObject
 {
 public:
 
-	GameObject(const char* name, GameObject* parent);
+	GameObject(const char* name, GameObject* parentGameObject);
 	~GameObject();
 	
 	GameObject* GetParent();
 	bool SetParent(GameObject* newParent);
+	bool RemoveChild(GameObject* childToRemove);
     std::vector<GameObject*> GetChildren();
 
 	std::vector<Component*> GetComponents(ComponentType type);
@@ -24,6 +25,10 @@ public:
 
 	bool isActive = true;
 	std::string name;
+
+private:
+
+	bool HasGameObjectInChildrenHierarchy(GameObject* testGameObject);
 
 private:
 

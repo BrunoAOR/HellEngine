@@ -21,9 +21,13 @@ public:
 	void Destroy(GameObject* gameObject);
 	std::vector<GameObject*> FindByName(const std::string& name, GameObject* gameObject = nullptr);
 
-private:
+public:
 
 	GameObject* root;
+
+private:
+
+	void CreateTestGameObjects();
 
 };
 
