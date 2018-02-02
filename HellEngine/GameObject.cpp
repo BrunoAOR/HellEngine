@@ -2,6 +2,10 @@
 #include "Application.h"
 #include "GameObject.h"
 #include "Component.h"
+#include "ComponentMaterial.h"
+#include "ComponentMesh.h"
+#include "ComponentTransform.h"
+#include "ComponentType.h"
 #include "ModuleScene.h"
 #include "globals.h"
 
@@ -106,23 +110,40 @@ std::vector<Component*> GameObject::GetComponents(ComponentType type)
 
 Component* GameObject::AddComponent(ComponentType type)
 {
-	return nullptr;
+	Component* component = nullptr;
+
+	switch (type)
+	{
+	case ComponentType::MATERIAL:
+		component = new ComponentMaterial(this);
+		break;
+	case ComponentType::MESH:
+		component = new ComponentMesh(this);
+		break;
+	case ComponentType::TRANSFORM:
+		component = new ComponentTransform(this);
+		break;
+	}
+
+	if (component != nullptr)
+		components.push_back(component);
+
+	return component;
 }
 
 bool GameObject::RemoveComponent(Component* component)
 {
-	bool success = false;
-
 	for (std::vector<Component*>::iterator it = components.begin(); it != components.end(); ++it)
 	{
 		if (component == (*it))
 		{
+			delete component;
 			components.erase(it);
-			success = true;
+			return true;
 		}
 	}
 
-	return success;
+	return false;
 }
 
 bool GameObject::HasGameObjectInChildrenHierarchy(GameObject * testGameObject)

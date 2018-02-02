@@ -79,7 +79,11 @@ void ModuleScene::CreateTestGameObjects()
 	GameObject* go2_2 = new GameObject("Child 2.1", go2);
 	go2->SetParent(go2_2);
 	GameObject* go3 = new GameObject("Child 3", root);
+	Component* mat = go3->AddComponent(ComponentType::MATERIAL);
+	go3->AddComponent(ComponentType::MESH);
+	go3->AddComponent(ComponentType::TRANSFORM);
 	go3->SetParent(go1);
+	go3->RemoveComponent(mat);
 	GameObject *go4 = new GameObject("Child 4", root);
 	new GameObject("Child 4.1", go4);
 	Destroy(go4);

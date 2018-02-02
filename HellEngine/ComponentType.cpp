@@ -2,17 +2,14 @@
 
 const char * GetEditorTitle(ComponentType componentType)
 {
-	static const char* material = "Material";
-	static const char* mesh = "Mesh";
-	static const char* transform = "Local Transformation";
 	switch (componentType)
 	{
 	case ComponentType::MATERIAL:
-		return material;
+		return "Material";
 	case ComponentType::MESH:
-		return mesh;
+		return "Mesh";
 	case ComponentType::TRANSFORM:
-		return transform;
+		return "Local Transformation";
 	default:
 		return "";
 	}

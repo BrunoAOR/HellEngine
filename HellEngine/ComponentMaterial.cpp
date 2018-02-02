@@ -5,16 +5,18 @@
 #include "ModuleEditorCamera.h"
 #include "ModuleRender.h"
 #include "Shader.h"
+#include "globals.h"
 #include "openGL.h"
 
 ComponentMaterial::ComponentMaterial(GameObject* owner) : Component(owner)
 {
 	type = ComponentType::MATERIAL;
+	LOGGER("Component of type '%s'", GetEditorTitle(type));
 }
-
 
 ComponentMaterial::~ComponentMaterial()
 {
+	LOGGER("Deleting Component of type '%s'", GetEditorTitle(type));
 }
 
 /* Recieves the vertex shader file path and tries to compile it */
