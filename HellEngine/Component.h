@@ -8,7 +8,7 @@ class Component
 {
 public:
 
-	Component();
+	Component(GameObject* owner);
 	virtual ~Component();
 
 	ComponentType GetType();
@@ -16,7 +16,7 @@ public:
 public:
 
 	bool isActive = true;
-	GameObject* gameObject;
+	GameObject* gameObject = nullptr;
 
 	virtual void OnEditor() = 0;
 

@@ -3,7 +3,7 @@
 #include "ComponentType.h"
 
 
-ComponentMesh::ComponentMesh()
+ComponentMesh::ComponentMesh(GameObject* owner) : Component(owner)
 {
 	type = ComponentType::MESH;
 }

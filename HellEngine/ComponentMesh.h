@@ -7,7 +7,7 @@ class ComponentMesh :
 	public Component
 {
 public:
-	ComponentMesh();
+	ComponentMesh(GameObject* owner);
 	virtual ~ComponentMesh() override;
 
 	virtual void OnEditor() override;

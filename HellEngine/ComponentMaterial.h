@@ -4,14 +4,14 @@
 #include <string>
 #include "Component.h"
 #include "globals.h"
-class
-	Shader;
+class Shader;
 
 class ComponentMaterial :
 	public Component
 {
 public:
-	ComponentMaterial();
+
+	ComponentMaterial(GameObject* owner);
 	virtual ~ComponentMaterial() override;
 
 	/* Recieves the vertex shader file path and tries to compile it */

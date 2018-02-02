@@ -10,7 +10,7 @@ class ComponentTransform : public Component
 {
 public:
 
-	ComponentTransform();
+	ComponentTransform(GameObject* owner);
 	virtual ~ComponentTransform() override;
 
 	float3 GetPosition();
@@ -26,6 +26,7 @@ public:
 	virtual void OnEditor() override;
 
 private:
+
 	float3 position;
 	float3 scale;
 	Quat rotation;

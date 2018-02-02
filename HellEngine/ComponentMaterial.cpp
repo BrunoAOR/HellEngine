@@ -7,7 +7,7 @@
 #include "Shader.h"
 #include "openGL.h"
 
-ComponentMaterial::ComponentMaterial()
+ComponentMaterial::ComponentMaterial(GameObject* owner) : Component(owner)
 {
 	type = ComponentType::MATERIAL;
 }

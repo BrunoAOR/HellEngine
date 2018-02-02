@@ -3,7 +3,7 @@
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 
-ComponentTransform::ComponentTransform()
+ComponentTransform::ComponentTransform(GameObject* owner) : Component(owner)
 {
 	type = ComponentType::TRANSFORM;
 	position = float3(0.0f, 0.0f, 0.0f);
