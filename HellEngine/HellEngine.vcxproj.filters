@@ -294,6 +294,9 @@
     <ClInclude Include="ComponentMaterial.h">
       <Filter>Scene Management</Filter>
     </ClInclude>
+    <ClInclude Include="ComponentMesh.h">
+      <Filter>Scene Management</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -465,6 +468,9 @@
       <Filter>Scene Management</Filter>
     </ClCompile>
     <ClCompile Include="ComponentMaterial.cpp">
+      <Filter>Scene Management</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentMesh.cpp">
       <Filter>Scene Management</Filter>
     </ClCompile>
     <ClCompile Include="ComponentType.cpp">
