@@ -1,5 +1,5 @@
-#ifndef __H_COMPONENT_MATERIAL_
-#define __H_COMPONENT_MATERIAL_
+#ifndef __H_COMPONENT_MATERIAL__
+#define __H_COMPONENT_MATERIAL__
 
 #include <string>
 #include "Component.h"
@@ -12,7 +12,7 @@ class ComponentMaterial :
 {
 public:
 	ComponentMaterial();
-	~ComponentMaterial();
+	virtual ~ComponentMaterial() override;
 
 	/* Recieves the vertex shader file path and tries to compile it */
 	bool SetVertexShaderPath(const std::string& sourcePath);
@@ -69,4 +69,4 @@ private:
 	std::vector<Uniform> uniforms;
 };
 
-#endif // !__H_COMPONENT_MATERIAL_
+#endif // !__H_COMPONENT_MATERIAL__

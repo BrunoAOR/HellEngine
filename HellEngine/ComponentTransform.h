@@ -11,7 +11,7 @@ class ComponentTransform : public Component
 public:
 
 	ComponentTransform();
-	~ComponentTransform();
+	virtual ~ComponentTransform() override;
 
 	float3 GetPosition();
 	float3 GetScale();

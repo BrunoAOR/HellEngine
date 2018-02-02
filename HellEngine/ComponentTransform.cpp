@@ -1,9 +1,11 @@
 #include "ImGui/imgui.h"
 #include "MathGeoLib/src/Math/TransformOps.h"
 #include "ComponentTransform.h"
+#include "ComponentType.h"
 
 ComponentTransform::ComponentTransform()
 {
+	type = ComponentType::TRANSFORM;
 	position = float3(0.0f, 0.0f, 0.0f);
 	scale = float3(1.0f, 1.0f, 1.0f);
 	rotation = Quat::FromEulerXYZ(0.0f, 0.0f, 0.0f);
