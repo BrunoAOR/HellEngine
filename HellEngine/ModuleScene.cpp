@@ -74,11 +74,13 @@ std::vector<GameObject*> ModuleScene::FindByName(const std::string& name, GameOb
 
 void ModuleScene::CreateTestGameObjects()
 {
-	new GameObject("Child 1", root);
-	GameObject* testGameObject = new GameObject("Child 2", root);
-	new GameObject("Child 2.1", testGameObject);
-	new GameObject("Child 3", root);
-	GameObject *test2 = new GameObject("Child 4", root);
-	new GameObject("Child 4.1", test2);
-	Destroy(test2);
+	GameObject* go1 = new GameObject("Child 1", root);
+	GameObject* go2 = new GameObject("Child 2", root);
+	GameObject* go2_2 = new GameObject("Child 2.1", go2);
+	go2->SetParent(go2_2);
+	GameObject* go3 = new GameObject("Child 3", root);
+	go3->SetParent(go1);
+	GameObject *go4 = new GameObject("Child 4", root);
+	new GameObject("Child 4.1", go4);
+	Destroy(go4);
 }

@@ -8,21 +8,21 @@
 
 GameObject::GameObject(const char* name, GameObject* parentGameObject) : name(name)
 {
-	LOGGER("Constructing GameObject: %s", name);
+	LOGGER("Constructing GameObject '%s'", name);
 	/* If the root is nullptr, then that means that we are currently creating the root and no parent should be set. */
 	if (App->scene->root != nullptr)
 	{
 		parent = App->scene->root;
 		App->scene->root->children.push_back(this);
 
-		if (parentGameObject != nullptr)
+		if (parentGameObject != nullptr && parentGameObject != App->scene->root)
 			SetParent(parentGameObject);
 	}
 }
 
 GameObject::~GameObject()
 {
-	LOGGER("Began deletion of GameObject: %s", name.c_str());
+	LOGGER("Began deletion of GameObject '%s'", name.c_str());
 	for (Component* component : components)
 	{
 		delete component;
@@ -34,7 +34,7 @@ GameObject::~GameObject()
 		delete child;
 	}
 	children.clear();
-	LOGGER("Deleted GameObject: %s", name.c_str());
+	LOGGER("Deleted GameObject '%s'", name.c_str());
 }
 
 GameObject* GameObject::GetParent()
@@ -61,6 +61,8 @@ bool GameObject::SetParent(GameObject* newParent)
 		/* Remove from current parent. */
 		parent->RemoveChild(this);
 
+		LOGGER("Changed parent of '%s' from '%s' to the root GameObject", name.c_str(), parent->name.c_str());
+
 		/* Assign new parent */
 		parent = App->scene->root;
 		App->scene->root->children.push_back(this);
@@ -70,13 +72,15 @@ bool GameObject::SetParent(GameObject* newParent)
 	/* Ensure the newParent is NOT a child of this GameObject */
 	if (HasGameObjectInChildrenHierarchy(newParent))
 	{
-		LOGGER("Warning: Attempted to set a GameObject's child as its new parent. Operation was aborted.");
+		LOGGER("Warning: Attempted to change the parent of GameObject '%s' to '%s'. Operation was aborted because '%s' is a child of '%s'", name.c_str(), newParent->name.c_str(), newParent->name.c_str(), name.c_str());
 		return false;
 	}
 	else
 	{
 		/* Remove from current parent. */
 		parent->RemoveChild(this);
+
+		LOGGER("Changed parent of '%s' from '%s' to '%s'", name.c_str(), parent->name.c_str(), newParent->name.c_str());
 
 		/* Assign new parent */
 		parent = newParent;
