@@ -14,6 +14,7 @@ public:
 	
 	GameObject* GetParent();
 	bool SetParent(GameObject* newParent);
+    std::vector<GameObject*> GetChildren();
 
 	std::vector<Component*> GetComponents(ComponentType type);
 	Component* AddComponent(ComponentType type);

@@ -16,11 +16,11 @@ public:
 
 	GameObject* CreateGameObject();
 	void Destroy(GameObject* gameObject);
-	std::vector<GameObject*> FindByName(const std::string& name);
+	std::vector<GameObject*> FindByName(const std::string& name, GameObject* gameObject = nullptr);
 
 private:
 
-	GameObject * root;
+	GameObject* root;
 
 };
 

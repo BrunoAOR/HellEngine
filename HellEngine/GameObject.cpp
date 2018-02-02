@@ -54,3 +54,8 @@ bool GameObject::RemoveComponent(Component* component)
 
 	return success;
 }
+
+std::vector<GameObject*> GameObject::GetChildren() 
+{
+    return children;
+}
