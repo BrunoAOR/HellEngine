@@ -24,6 +24,7 @@
     <ClInclude Include="Color.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="ComponentTransform.h" />
+    <ClInclude Include="ComponentMaterial.h" />
     <ClInclude Include="ComponentType.h" />
     <ClInclude Include="EventWindow.h" />
     <ClInclude Include="GameObject.h" />
@@ -114,6 +115,7 @@
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ComponentTransform.cpp" />
+    <ClCompile Include="ComponentMaterial.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="globals.cpp" />
     <ClCompile Include="ImGui\imgui.cpp" />
