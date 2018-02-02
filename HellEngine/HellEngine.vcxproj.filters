@@ -458,9 +458,6 @@
     <ClCompile Include="Component.cpp">
       <Filter>Scene Management</Filter>
     </ClCompile>
-    <ClCompile Include="ComponentType.cpp">
-      <Filter>Scene Management</Filter>
-    </ClCompile>
     <ClCompile Include="ComponentTransform.cpp">
       <Filter>Scene Management</Filter>
     </ClCompile>

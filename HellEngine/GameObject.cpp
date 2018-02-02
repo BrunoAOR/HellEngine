@@ -16,7 +16,7 @@ GameObject* GameObject::GetParent()
 
 bool GameObject::SetParent(GameObject* newParent)
 {
-
+	return false;
 }
 
 std::vector<Component*> GameObject::GetComponents(ComponentType type)
@@ -36,7 +36,7 @@ std::vector<Component*> GameObject::GetComponents(ComponentType type)
 
 Component* GameObject::AddComponent(ComponentType type)
 {
-
+	return false;
 }
 
 bool GameObject::RemoveComponent(Component* component)
