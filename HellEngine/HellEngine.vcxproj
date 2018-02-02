@@ -116,6 +116,7 @@
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ComponentTransform.cpp" />
     <ClCompile Include="ComponentMaterial.cpp" />
+    <ClCompile Include="ComponentType.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="globals.cpp" />
     <ClCompile Include="ImGui\imgui.cpp" />
