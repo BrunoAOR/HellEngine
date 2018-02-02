@@ -23,6 +23,8 @@ public:
 
 	float* GetModelMatrix();
 
+	virtual void OnEditor() override;
+
 private:
 	float3 position;
 	float3 scale;

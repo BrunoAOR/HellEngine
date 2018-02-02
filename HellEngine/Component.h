@@ -18,6 +18,8 @@ public:
 	bool isActive = true;
 	GameObject* gameObject;
 
+	virtual void OnEditor() = 0;
+
 protected:
 
 	ComponentType type;

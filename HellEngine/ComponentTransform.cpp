@@ -1,3 +1,5 @@
+#include "ImGui/imgui.h"
+#include "MathGeoLib/src/Math/TransformOps.h"
 #include "ComponentTransform.h"
 
 ComponentTransform::ComponentTransform()
@@ -52,4 +54,9 @@ float * ComponentTransform::GetModelMatrix()
 	float4x4 translationMatrix = float4x4::Translate(position.x, position.y, position.z);
 	memcpy_s(modelMatrix, sizeof(float) * 16, (translationMatrix * rotationMatrix * scaleMatrix).Transposed().ptr(), sizeof(float) * 16);
 	return modelMatrix;
+}
+
+void ComponentTransform::OnEditor()
+{
+	ImGui::Text("Transfomr GUI goes here");
 }
