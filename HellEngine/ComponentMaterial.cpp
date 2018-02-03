@@ -2,6 +2,7 @@
 #include "Application.h"
 #include "ComponentMaterial.h"
 #include "ComponentMesh.h"
+#include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "GameObject.h"
 #include "ModuleEditorCamera.h"
@@ -39,17 +40,29 @@ void ComponentMaterial::Update()
 		mesh = (ComponentMesh*)meshes[0];
 	}
 
+	if (transform == nullptr)
+	{
+		std::vector<Component*> transforms = gameObject->GetComponents(ComponentType::TRANSFORM);
+		if (transforms.size() == 0)
+		{
+			return;
+		}
+		transform = (ComponentTransform*)transforms[0];
+	}
+
 	if (!IsValid())
 	{
 		return;
 	}
 
-	float modelMatrix[16] = {
+	float* modelMatrix = transform->GetModelMatrix();
+
+	/*float modelMatrix[16] = {
 		1, 0, 0, 0,
 		0, 1, 0, 0,
 		0, 0, 1, 0,
 		0, 4, 0, 1
-	};
+	};*/
 
 	ComponentMesh::VaoInfo vaoInfo = mesh->getActiveVao();
 	if (vaoInfo.vao == 0)
@@ -119,7 +132,7 @@ bool ComponentMaterial::SetShaderDataPath(const std::string & sourcePath)
 /* Returns whether the Material has a loaded texture and a linked shader */
 bool ComponentMaterial::IsValid()
 {
-	return textureBufferId != 0 && shader->IsValid();
+	return transform && mesh && textureBufferId != 0 && shader->IsValid();
 }
 
 /* Attemps to link the shader, if a valid texture has been set */

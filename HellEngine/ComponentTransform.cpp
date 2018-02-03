@@ -48,12 +48,17 @@ void ComponentTransform::SetScale(float x, float y, float z)
 	scale.z = z;
 }
 
-void ComponentTransform::SetRotation(float x, float y, float z)
+void ComponentTransform::SetRotationRad(float x, float y, float z)
 {
 	rotation = Quat::FromEulerXYZ(x, y, z);
 }
 
-float * ComponentTransform::GetModelMatrix()
+void ComponentTransform::SetRotationDeg(float x, float y, float z)
+{
+	SetRotationRad(DegToRad(x), DegToRad(y), DegToRad(z));
+}
+
+float* ComponentTransform::GetModelMatrix()
 {
 	float4x4 scaleMatrix = float4x4::Scale(scale.x, scale.y, scale.z);
 	float4x4 rotationMatrix = float4x4::FromQuat(rotation);

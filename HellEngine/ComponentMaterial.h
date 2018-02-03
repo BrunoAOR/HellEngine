@@ -7,6 +7,7 @@
 #include "Component.h"
 #include "globals.h"
 class ComponentMesh;
+class ComponentTransform;
 class Shader;
 
 class ComponentMaterial :
@@ -57,7 +58,8 @@ private:
 private:
 
 	/* General */
-	ComponentMesh * mesh = nullptr;
+	ComponentMesh* mesh = nullptr;
+	ComponentTransform* transform = nullptr;
 
 	/* Shader related */
 	Shader* shader = nullptr;
