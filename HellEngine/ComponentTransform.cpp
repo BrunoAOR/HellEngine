@@ -125,7 +125,10 @@ void ComponentTransform::SetParent(ComponentTransform* newParent)
 
 void ComponentTransform::OnEditor()
 {
-	ImGui::Text("Transfomr GUI goes here");
+	if (ImGui::CollapsingHeader("Transform"))
+	{
+		ImGui::Text("Transfomr GUI goes here");
+	}
 }
 
 float4x4& ComponentTransform::GetModelMatrix4x4()

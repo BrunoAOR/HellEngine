@@ -1,4 +1,5 @@
 #include <assert.h>
+#include "ImGui/imgui.h"
 #include "Application.h"
 #include "GameObject.h"
 #include "Component.h"
@@ -53,6 +54,26 @@ void GameObject::Update()
 	for (GameObject* child : children)
 	{
 		child->Update();
+	}
+}
+
+void GameObject::OnEditor()
+{
+	ImGui::Checkbox("", &isActive);
+	ImGui::SameLine();
+	static char nameBuf[32] = "";
+	memcpy_s(nameBuf, 32, name.c_str(), name.length());
+	nameBuf[name.length()] = '\0';
+	ImGui::InputText(" ", nameBuf, 32);
+	name = nameBuf;
+	if (ImGui::BeginMenu("Add new Component"))
+	{
+		ImGui::MenuItem("Types go here", "");
+		ImGui::EndMenu();
+	}
+	for (Component* component : components)
+	{
+		component->OnEditor();
 	}
 }
 

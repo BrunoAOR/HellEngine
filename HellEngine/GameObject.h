@@ -14,6 +14,8 @@ public:
 	
 	void Update();
 
+	void OnEditor();
+
 	GameObject* GetParent();
 	bool SetParent(GameObject* newParent);
 	bool RemoveChild(GameObject* childToRemove);

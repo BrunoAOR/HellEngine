@@ -9,6 +9,7 @@
 #include "ModuleEditorCamera.h"
 #include "ModuleImGui.h"
 #include "ModuleRender.h"
+#include "ModuleScene.h"
 #include "ModuleWindow.h"
 
 ModuleImGui::ModuleImGui()
@@ -73,6 +74,8 @@ UpdateStatus ModuleImGui::Update()
 	static bool showOpenGLWindow = false;
     static bool showTextEditorWindow = false;
 	static bool showMaterialsWindow = false;
+	static bool showHierarchyWindow = true;
+	static bool showInspectorWindow = true;
 
 	static bool rendererWireFrame = false;
 	static bool rendererRotate = false;
@@ -109,8 +112,14 @@ UpdateStatus ModuleImGui::Update()
 			ImGui::EndMenu();
 		}
 
-        ImGui::MenuItem("Text Editor", nullptr, &showTextEditorWindow);
-		ImGui::MenuItem("Materials Editor", nullptr, &showMaterialsWindow);
+		if (ImGui::BeginMenu("View"))
+		{
+			ImGui::MenuItem("Text Editor", nullptr, &showTextEditorWindow);
+			ImGui::MenuItem("Materials Editor", nullptr, &showMaterialsWindow);
+			ImGui::MenuItem("Hierarchy", nullptr, &showHierarchyWindow);
+			ImGui::MenuItem("Inspector", nullptr, &showInspectorWindow);
+			ImGui::EndMenu();
+		}
 
 		if (ImGui::BeginMenu("Help"))
 		{
@@ -162,6 +171,16 @@ UpdateStatus ModuleImGui::Update()
 	if (showMaterialsWindow)
 	{
 		ShowMaterialsEditorWindow(mainMenuBarHeight, &showMaterialsWindow);
+	}
+
+	if (showHierarchyWindow)
+	{
+		App->scene->OnEditorHierarchy(mainMenuBarHeight, &showHierarchyWindow);
+	}
+
+	if (showInspectorWindow)
+	{
+		App->scene->OnEditorInspector(mainMenuBarHeight, &showInspectorWindow);
 	}
 
 	ImGui::Render();

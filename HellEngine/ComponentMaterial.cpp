@@ -164,32 +164,33 @@ bool ComponentMaterial::Reapply()
 
 void ComponentMaterial::OnEditor()
 {
-	ImGui::Text("Material GUI goes here");
-
-	ImGui::SameLine();
-	ImGui::Text(" options:");
-	ImGui::Text("");
-
-	if (ImGui::Button("Reapply"))
-		Reapply();
-
-	if (publicUniforms.size() == 0)
+	if (ImGui::CollapsingHeader("Material"))
 	{
-		ImGui::Text("This Material has no configuration options.");
-	}
+		ImGui::Text("Material GUI goes here");
 
-	for (Uniform& uniform : publicUniforms)
-	{
-		switch (uniform.type)
+		ImGui::Text("");
+
+		if (ImGui::Button("Reapply"))
+			Reapply();
+
+		if (publicUniforms.size() == 0)
 		{
-		case Uniform::UniformType::FLOAT:
-			ImGui::DragFloat(uniform.name.c_str(), uniform.values, 0.01f, 0.0f, 1.0f, "%.2f");
-			break;
-		case Uniform::UniformType::COLOR4:
-			ImGui::ColorEdit4(uniform.name.c_str(), uniform.values);
-			break;
-		default:
-			break;
+			ImGui::Text("This Material has no configuration options.");
+		}
+
+		for (Uniform& uniform : publicUniforms)
+		{
+			switch (uniform.type)
+			{
+			case Uniform::UniformType::FLOAT:
+				ImGui::DragFloat(uniform.name.c_str(), uniform.values, 0.01f, 0.0f, 1.0f, "%.2f");
+				break;
+			case Uniform::UniformType::COLOR4:
+				ImGui::ColorEdit4(uniform.name.c_str(), uniform.values);
+				break;
+			default:
+				break;
+			}
 		}
 	}
 }

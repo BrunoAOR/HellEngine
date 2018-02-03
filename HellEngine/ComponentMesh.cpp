@@ -5,6 +5,7 @@
 #include "ImGui/imgui.h"
 #include "ComponentMesh.h"
 #include "ComponentType.h"
+#include "GameObject.h"
 #include "globals.h"
 #include "openGL.h"
 
@@ -30,7 +31,10 @@ ComponentMesh::VaoInfo ComponentMesh::getActiveVao() const
 
 void ComponentMesh::OnEditor()
 {
-	ImGui::Text("Mesh GUI goes here");
+	if (ImGui::CollapsingHeader("Mesh"))
+	{
+		ImGui::Text("Mesh GUI goes here");
+	}
 }
 
 void ComponentMesh::CreateCubeVAO()

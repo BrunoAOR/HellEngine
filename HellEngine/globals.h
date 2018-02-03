@@ -26,9 +26,8 @@
 	}
 
 /* Configuration */
-#define SCREEN_SIZE 3
-#define SCREEN_WIDTH 250
-#define SCREEN_HEIGHT 250
+#define SCREEN_WIDTH 1024
+#define SCREEN_HEIGHT 768
 #define FULLSCREEN false
 #define VSYNC true
 #define TITLE "Hell Engine"

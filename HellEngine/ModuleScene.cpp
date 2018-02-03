@@ -1,6 +1,9 @@
 #include <assert.h>
+#include "ImGui/imgui.h"
+#include "Application.h"
 #include "ComponentType.h"
 #include "ModuleScene.h"
+#include "ModuleWindow.h"
 #include "GameObject.h"
 
 
@@ -31,6 +34,7 @@ bool ModuleScene::CleanUp()
 #include "globals.h"
 UpdateStatus ModuleScene::Update()
 {
+	/* Parenting */
 	if (App->input->GetKey(SDL_SCANCODE_0) == KeyState::KEY_DOWN)
 	{
 		go3->SetParent(nullptr);
@@ -46,11 +50,60 @@ UpdateStatus ModuleScene::Update()
 		go3->SetParent(go2);
 		LOGGER("New parent: go2 (No Transform)");
 	}
+
+	/* Simulate Hierarchy selection */
+	if (App->input->GetKey(SDL_SCANCODE_KP_0) == KeyState::KEY_DOWN)
+	{
+		editorInfo.selectedGameObject = nullptr;
+	}
+	if (App->input->GetKey(SDL_SCANCODE_KP_1) == KeyState::KEY_DOWN)
+	{
+		editorInfo.selectedGameObject = go1;
+	}
+	if (App->input->GetKey(SDL_SCANCODE_KP_2) == KeyState::KEY_DOWN)
+	{
+		editorInfo.selectedGameObject = go2;
+	}
+	if (App->input->GetKey(SDL_SCANCODE_KP_3) == KeyState::KEY_DOWN)
+	{
+		editorInfo.selectedGameObject = go3;
+	}
+
 	root->Update();
 	return UpdateStatus::UPDATE_CONTINUE;
 }
 
-GameObject* ModuleScene::CreateGameObject() 
+void ModuleScene::OnEditorHierarchy(float mainMenuBarHeight, bool* pOpen)
+{
+	float windowWidth = 300;
+	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
+	ImGui::SetNextWindowSize(ImVec2(windowWidth, App->window->getHeight() - mainMenuBarHeight));
+	ImGui::Begin("Hierarchy", pOpen, ImGuiWindowFlags_NoCollapse);
+
+	ImGui::End();
+}
+
+void ModuleScene::OnEditorInspector(float mainMenuBarHeight, bool * pOpen)
+{
+	float windowWidth = 300;
+	ImGui::SetNextWindowPos(ImVec2(App->window->getWidth() - windowWidth, mainMenuBarHeight));
+	ImGui::SetNextWindowSize(ImVec2(windowWidth, App->window->getHeight() - mainMenuBarHeight));
+	ImGui::Begin("Inspector", pOpen, ImGuiWindowFlags_NoCollapse);
+
+	if (editorInfo.selectedGameObject == nullptr)
+	{
+		ImGui::TextWrapped("No GameObject has been selected.");
+		ImGui::TextWrapped("Select a GameObject in the Hierachy window to view its properties.");
+	}
+	else
+	{
+		editorInfo.selectedGameObject->OnEditor();
+	}
+
+	ImGui::End();
+}
+
+GameObject* ModuleScene::CreateGameObject()
 {
     GameObject* gameObject = new GameObject("name", root);
     return gameObject;

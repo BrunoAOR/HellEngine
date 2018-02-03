@@ -17,6 +17,9 @@ public:
 	bool CleanUp();
 	UpdateStatus Update();
 
+	void OnEditorHierarchy(float mainMenuBarHeight, bool* pOpen);
+	void OnEditorInspector(float mainMenuBarHeight, bool* pOpen);
+
 	GameObject* CreateGameObject();
 	void Destroy(GameObject* gameObject);
 	std::vector<GameObject*> FindByName(const std::string& name, GameObject* gameObject = nullptr);
@@ -35,6 +38,11 @@ private:
 	GameObject* go2;
 	GameObject* go3;
 	GameObject* go4;
+
+	struct
+	{
+		GameObject* selectedGameObject = nullptr;
+	} editorInfo;
 
 };
 
