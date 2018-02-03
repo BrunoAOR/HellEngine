@@ -68,7 +68,13 @@ void GameObject::OnEditor()
 	name = nameBuf;
 	if (ImGui::BeginMenu("Add new Component"))
 	{
-		ImGui::MenuItem("Types go here", "");
+		for (ComponentType componentType : COMPONENT_TYPES)
+		{
+			if (ImGui::MenuItem(GetString(componentType), ""))
+			{
+				AddComponent(componentType);
+			}
+		}
 		ImGui::EndMenu();
 	}
 	for (Component* component : components)

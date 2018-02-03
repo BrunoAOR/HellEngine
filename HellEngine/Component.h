@@ -1,6 +1,7 @@
 #ifndef __H_COMPONENT__
 #define __H_COMPONENT__
 
+#include <string>
 class GameObject;
 enum class ComponentType;
 
@@ -26,7 +27,13 @@ public:
 protected:
 
 	ComponentType type;
+	struct
+	{
+		int id;
+		std::string idLabel;
+	} editorInfo;
 
+	static int nextId;
 };
 
 #endif // !__H_COMPONENT__

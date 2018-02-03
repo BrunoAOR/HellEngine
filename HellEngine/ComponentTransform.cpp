@@ -9,15 +9,16 @@
 ComponentTransform::ComponentTransform(GameObject* owner) : Component(owner)
 {
 	type = ComponentType::TRANSFORM;
+	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
 	position = float3(0.0f, 0.0f, 0.0f);
 	scale = float3(1.0f, 1.0f, 1.0f);
 	rotation = Quat::FromEulerXYZ(0.0f, 0.0f, 0.0f);
-	LOGGER("Component of type '%s'", GetEditorTitle(type));
+	LOGGER("Component of type '%s'", GetString(type));
 }
 
 ComponentTransform::~ComponentTransform()
 {
-	LOGGER("Deleting Component of type '%s'", GetEditorTitle(type));
+	LOGGER("Deleting Component of type '%s'", GetString(type));
 }
 
 float3 ComponentTransform::GetPosition()
@@ -125,7 +126,7 @@ void ComponentTransform::SetParent(ComponentTransform* newParent)
 
 void ComponentTransform::OnEditor()
 {
-	if (ImGui::CollapsingHeader("Transform"))
+	if (ImGui::CollapsingHeader(editorInfo.idLabel.c_str()))
 	{
 		ImGui::Text("Transfomr GUI goes here");
 	}

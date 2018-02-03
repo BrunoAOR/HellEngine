@@ -14,15 +14,16 @@
 ComponentMaterial::ComponentMaterial(GameObject* owner) : Component(owner)
 {
 	type = ComponentType::MATERIAL;
+	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
 	shader = new Shader();
-	LOGGER("Component of type '%s'", GetEditorTitle(type));
+	LOGGER("Component of type '%s'", GetString(type));
 }
 
 ComponentMaterial::~ComponentMaterial()
 {
 	delete shader;
 	shader = nullptr;
-	LOGGER("Deleting Component of type '%s'", GetEditorTitle(type));
+	LOGGER("Deleting Component of type '%s'", GetString(type));
 }
 
 void ComponentMaterial::Update()
@@ -164,7 +165,7 @@ bool ComponentMaterial::Reapply()
 
 void ComponentMaterial::OnEditor()
 {
-	if (ImGui::CollapsingHeader("Material"))
+	if (ImGui::CollapsingHeader(editorInfo.idLabel.c_str()))
 	{
 		ImGui::Text("Material GUI goes here");
 

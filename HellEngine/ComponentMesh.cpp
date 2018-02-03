@@ -13,15 +13,16 @@
 ComponentMesh::ComponentMesh(GameObject* owner) : Component(owner)
 {
 	type = ComponentType::MESH;
+	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
 	CreateCubeVAO();
 	CreateSphereVAO(32, 32);
 	activeVao = 0;
-	LOGGER("Component of type '%s'", GetEditorTitle(type));
+	LOGGER("Component of type '%s'", GetString(type));
 }
 
 ComponentMesh::~ComponentMesh()
 {
-	LOGGER("Deleting Component of type '%s'", GetEditorTitle(type));
+	LOGGER("Deleting Component of type '%s'", GetString(type));
 }
 
 ComponentMesh::VaoInfo ComponentMesh::getActiveVao() const
@@ -31,7 +32,7 @@ ComponentMesh::VaoInfo ComponentMesh::getActiveVao() const
 
 void ComponentMesh::OnEditor()
 {
-	if (ImGui::CollapsingHeader("Mesh"))
+	if (ImGui::CollapsingHeader(editorInfo.idLabel.c_str()))
 	{
 		ImGui::Text("Mesh GUI goes here");
 	}

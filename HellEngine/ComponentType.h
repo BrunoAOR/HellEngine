@@ -8,6 +8,7 @@ enum class ComponentType
 	TRANSFORM
 };
 
-const char* GetEditorTitle(ComponentType componentType);
+extern const ComponentType COMPONENT_TYPES[3];
+const char* GetString(ComponentType componentType);
 
 #endif // !__H_COMPONENT_TYPE__

@@ -1,6 +1,8 @@
 #include "ComponentType.h"
 
-const char * GetEditorTitle(ComponentType componentType)
+const ComponentType COMPONENT_TYPES[] = { ComponentType::MATERIAL, ComponentType::MESH, ComponentType::TRANSFORM };
+
+const char* GetString(ComponentType componentType)
 {
 	switch (componentType)
 	{
@@ -9,7 +11,7 @@ const char * GetEditorTitle(ComponentType componentType)
 	case ComponentType::MESH:
 		return "Mesh";
 	case ComponentType::TRANSFORM:
-		return "Local Transformation";
+		return "Transform";
 	default:
 		return "";
 	}
