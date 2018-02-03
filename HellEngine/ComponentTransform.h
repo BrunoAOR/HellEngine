@@ -24,11 +24,14 @@ public:
 
 	float* GetModelMatrix();
 
+	void SetParent(ComponentTransform* newParent);
+
 	virtual void OnEditor() override;
 
 private:
 
 	float4x4& GetModelMatrix4x4();
+	float4x4& UpdateLocalModelMattix();
 
 private:
 

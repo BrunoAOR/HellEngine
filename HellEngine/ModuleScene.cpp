@@ -26,8 +26,26 @@ bool ModuleScene::CleanUp()
 	return true;
 }
 
+#include "Application.h"
+#include "ModuleInput.h"
+#include "globals.h"
 UpdateStatus ModuleScene::Update()
 {
+	if (App->input->GetKey(SDL_SCANCODE_0) == KeyState::KEY_DOWN)
+	{
+		go3->SetParent(nullptr);
+		LOGGER("New parent: root");
+	}
+	if (App->input->GetKey(SDL_SCANCODE_1) == KeyState::KEY_DOWN)
+	{
+		go3->SetParent(go1);
+		LOGGER("New parent: go1 (Has Transform)");
+	}
+	if (App->input->GetKey(SDL_SCANCODE_2) == KeyState::KEY_DOWN)
+	{
+		go3->SetParent(go2);
+		LOGGER("New parent: go2 (No Transform)");
+	}
 	root->Update();
 	return UpdateStatus::UPDATE_CONTINUE;
 }
@@ -77,23 +95,34 @@ std::vector<GameObject*> ModuleScene::FindByName(const std::string& name, GameOb
 #include "ComponentTransform.h"
 void ModuleScene::CreateTestGameObjects()
 {
-	GameObject* go1 = new GameObject("Child 1", root);
+	go1 = new GameObject("Child 1", root);
 	ComponentTransform* go1transform = (ComponentTransform*)go1->AddComponent(ComponentType::TRANSFORM);
 	go1transform->SetPosition(0, 0, -2);
-	go1transform->SetRotationDeg(0, 180, 0);
+	go1transform->SetRotationDeg(0, 90, 0);
 	go1transform->SetScale(1, 2, 1);
+	{
+		go1->AddComponent(ComponentType::MESH);
 
-	GameObject* go2 = new GameObject("Child 2", root);
+		ComponentMaterial* mat = (ComponentMaterial*)go1->AddComponent(ComponentType::MATERIAL);
+		mat->SetVertexShaderPath("assets/shaders/defaultShader.vert");
+		mat->SetFragmentShaderPath("assets/shaders/tintingShader.frag");
+		mat->SetTexturePath("assets/images/lenna.png");
+		mat->SetShaderDataPath("assets/shaders/tintingShaderData.shaderdata");
+		mat->Apply();
+	}
+
+	go2 = new GameObject("Child 2", root);
 	GameObject* go2_2 = new GameObject("Child 2.1", go2);
 	go2->SetParent(go2_2);
 
 	/* go3 setup */
-	GameObject* go3 = new GameObject("Child 3", root);
-	
+	go3 = new GameObject("Child 3", root);
+
 	ComponentTransform* go3transform = (ComponentTransform*)go3->AddComponent(ComponentType::TRANSFORM);
 	go3transform->SetPosition(0, 2, -2);
 	go3transform->SetRotationDeg(0, 45, 0);
 	go3transform->SetScale(1, 1, 1);
+	//go3->SetParent(go1);
 
 	go3->AddComponent(ComponentType::MESH);
 
@@ -104,10 +133,10 @@ void ModuleScene::CreateTestGameObjects()
 	mat->SetShaderDataPath("assets/shaders/tintingShaderData.shaderdata");
 	mat->Apply();
 
-	go3->SetParent(go1);
+	//go3->SetParent(nullptr);
 	/* End of g03 setup */
 
-	GameObject *go4 = new GameObject("Child 4", root);
+	go4 = new GameObject("Child 4", root);
 	go4->AddComponent(ComponentType::MESH);
 	Component* toDelete = go4->AddComponent(ComponentType::MATERIAL);
 	go4->RemoveComponent(toDelete);

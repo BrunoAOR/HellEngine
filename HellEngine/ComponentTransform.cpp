@@ -64,6 +64,65 @@ float* ComponentTransform::GetModelMatrix()
 	return GetModelMatrix4x4().ptr();
 }
 
+void ComponentTransform::SetParent(ComponentTransform* newParent)
+{
+	/* Calculate the new local model matrix */
+	float4x4 newParentWorldMatrix;
+	if (newParent != nullptr)
+		newParentWorldMatrix = newParent->GetModelMatrix4x4();
+	else
+		newParentWorldMatrix = float4x4::identity;
+
+	float4x4 inverseNewParentWorldMatrix = newParentWorldMatrix;
+	inverseNewParentWorldMatrix.Inverse();
+
+	float4x4 currentWorldMatrix = GetModelMatrix4x4();
+	float4x4 newLocalModelMatrix = currentWorldMatrix * inverseNewParentWorldMatrix;
+
+	/* Transpose to get the matrix in a shape when the bottom line is 0 0 0 1 */
+	newLocalModelMatrix.Transpose();
+	
+	/* Extract the Translation, Scale and Rotation */
+	/*
+	Matrix shape
+	
+	a  b  c  d
+	e  f  g  h
+	i  j  k  l
+	0  0  0  1
+	*/
+
+	/* Extract translation */
+	/* x from d, y from h, z from l*/
+	position.x = newLocalModelMatrix[0][3];
+	position.y = newLocalModelMatrix[1][3];
+	position.z = newLocalModelMatrix[2][3];
+	/* Zero out extracted positions */
+	newLocalModelMatrix[0][3] = 0;
+	newLocalModelMatrix[1][3] = 0;
+	newLocalModelMatrix[2][3] = 0;
+
+	/* Extract scale */
+	/* x from aei.Length, y from bfj.Length, z from cgh.Length */
+	scale.x = (float3(newLocalModelMatrix[0][0], newLocalModelMatrix[1][0], newLocalModelMatrix[2][0])).Length();
+	scale.y = (float3(newLocalModelMatrix[0][1], newLocalModelMatrix[1][1], newLocalModelMatrix[2][1])).Length();
+	scale.z = (float3(newLocalModelMatrix[0][2], newLocalModelMatrix[1][2], newLocalModelMatrix[2][2])).Length();
+
+	/* Extract rotation */
+	/* Divide each column by the corresponding scale value */
+	newLocalModelMatrix[0][0] /= scale.x;
+	newLocalModelMatrix[1][0] /= scale.x;
+	newLocalModelMatrix[2][0] /= scale.x;
+	newLocalModelMatrix[0][1] /= scale.y;
+	newLocalModelMatrix[1][1] /= scale.y;
+	newLocalModelMatrix[2][1] /= scale.y;
+	newLocalModelMatrix[0][2] /= scale.z;
+	newLocalModelMatrix[1][2] /= scale.z;
+	newLocalModelMatrix[2][2] /= scale.z;
+	/* Then turn into a Quat */
+	rotation = Quat(newLocalModelMatrix);
+}
+
 void ComponentTransform::OnEditor()
 {
 	ImGui::Text("Transfomr GUI goes here");
@@ -71,13 +130,10 @@ void ComponentTransform::OnEditor()
 
 float4x4& ComponentTransform::GetModelMatrix4x4()
 {
-	float4x4 scaleMatrix = float4x4::Scale(scale.x, scale.y, scale.z);
-	float4x4 rotationMatrix = float4x4::FromQuat(rotation);
-	float4x4 translationMatrix = float4x4::Translate(position.x, position.y, position.z);
-	memcpy_s(localModelMatrix.ptr(), sizeof(float) * 16, (translationMatrix * rotationMatrix * scaleMatrix).Transposed().ptr(), sizeof(float) * 16);
+	UpdateLocalModelMattix();
 
 	worldModelMatrix = localModelMatrix;
-	
+
 	GameObject* parent = gameObject->GetParent();
 	while (parent)
 	{
@@ -92,4 +148,13 @@ float4x4& ComponentTransform::GetModelMatrix4x4()
 	}
 	
 	return worldModelMatrix;
+}
+
+float4x4& ComponentTransform::UpdateLocalModelMattix()
+{
+	float4x4 scaleMatrix = float4x4::Scale(scale.x, scale.y, scale.z);
+	float4x4 rotationMatrix = float4x4::FromQuat(rotation);
+	float4x4 translationMatrix = float4x4::Translate(position.x, position.y, position.z);
+	memcpy_s(localModelMatrix.ptr(), sizeof(float) * 16, (translationMatrix * rotationMatrix * scaleMatrix).Transposed().ptr(), sizeof(float) * 16);
+	return localModelMatrix;
 }

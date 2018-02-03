@@ -29,6 +29,13 @@ private:
 
 	void CreateTestGameObjects();
 
+private:
+
+	GameObject* go1;
+	GameObject* go2;
+	GameObject* go3;
+	GameObject* go4;
+
 };
 
 #endif // !__H_MODULE_SCENE__

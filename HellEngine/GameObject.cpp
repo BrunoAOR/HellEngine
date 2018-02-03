@@ -77,6 +77,14 @@ bool GameObject::SetParent(GameObject* newParent)
 	/* Verify for nullptr. Parent to Scene's root if so */
 	if (newParent == nullptr)
 	{
+		/* Inform the transform (if it exists) */
+		std::vector<Component*> transforms = GetComponents(ComponentType::TRANSFORM);
+		if (transforms.size() > 0)
+		{
+			ComponentTransform* transform = (ComponentTransform*)transforms[0];
+			transform->SetParent(nullptr);
+		}
+
 		/* Remove from current parent. */
 		parent->RemoveChild(this);
 
@@ -96,6 +104,21 @@ bool GameObject::SetParent(GameObject* newParent)
 	}
 	else
 	{
+		/* Inform the transform (if it exists) about the newParent's transform (if it exists, else nullptr) */
+		std::vector<Component*> transforms = GetComponents(ComponentType::TRANSFORM);
+		if (transforms.size() > 0)
+		{
+			ComponentTransform* transform = (ComponentTransform*)transforms[0];
+
+			std::vector<Component*> parentTransforms = newParent->GetComponents(ComponentType::TRANSFORM);
+			ComponentTransform* parentTransform = nullptr;
+			
+			if (parentTransforms.size() > 0)
+				parentTransform = (ComponentTransform*)parentTransforms[0];
+
+			transform->SetParent(parentTransform);
+		}
+
 		/* Remove from current parent. */
 		parent->RemoveChild(this);
 
