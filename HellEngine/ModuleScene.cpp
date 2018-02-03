@@ -28,6 +28,7 @@ bool ModuleScene::CleanUp()
 
 UpdateStatus ModuleScene::Update()
 {
+	root->Update();
 	return UpdateStatus::UPDATE_CONTINUE;
 }
 

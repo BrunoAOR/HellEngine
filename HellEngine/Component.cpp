@@ -16,3 +16,6 @@ ComponentType Component::GetType()
 {
 	return type;
 }
+
+void Component::Update()
+{}

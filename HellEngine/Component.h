@@ -13,12 +13,15 @@ public:
 
 	ComponentType GetType();
 
+	virtual void Update();
+
+	virtual void OnEditor() = 0;
+
+
 public:
 
 	bool isActive = true;
 	GameObject* gameObject = nullptr;
-
-	virtual void OnEditor() = 0;
 
 protected:
 

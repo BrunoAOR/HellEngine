@@ -41,6 +41,21 @@ GameObject::~GameObject()
 	LOGGER("Deleted GameObject '%s'", name.c_str());
 }
 
+void GameObject::Update()
+{
+	if (!isActive)
+		return;
+
+	for (Component* component : components)
+	{
+		component->Update();
+	}
+	for (GameObject* child : children)
+	{
+		child->Update();
+	}
+}
+
 GameObject* GameObject::GetParent()
 {
 	/* The scene root remains protected from use */
@@ -95,17 +110,17 @@ bool GameObject::SetParent(GameObject* newParent)
 
 std::vector<Component*> GameObject::GetComponents(ComponentType type)
 {
-	std::vector<Component*> components;
+	std::vector<Component*> foundComponents;
 
 	for (std::vector<Component*>::iterator it = components.begin(); it != components.end(); ++it)
 	{
 		if ((*it)->GetType() == type)
 		{
-			components.push_back(*it);
+			foundComponents.push_back(*it);
 		}
 	}
 
-	return components;
+	return foundComponents;
 }
 
 Component* GameObject::AddComponent(ComponentType type)

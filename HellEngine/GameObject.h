@@ -12,6 +12,8 @@ public:
 	GameObject(const char* name, GameObject* parentGameObject);
 	~GameObject();
 	
+	void Update();
+
 	GameObject* GetParent();
 	bool SetParent(GameObject* newParent);
 	bool RemoveChild(GameObject* childToRemove);
