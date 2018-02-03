@@ -127,12 +127,12 @@ void Material::ShowGUIMenu()
 	if (ImGui::Button("Reapply"))
 		Reapply();
 
-	if (uniforms.size() == 0)
+	if (publicUniforms.size() == 0)
 	{
 		ImGui::Text("This Material has no configuration options.");
 	}
 	
-	for (Uniform& uniform : uniforms)
+	for (Uniform& uniform : publicUniforms)
 	{
 		switch (uniform.type)
 		{
@@ -156,16 +156,10 @@ bool Material::DrawArray(float* modelMatrix, uint vao, uint vertexCount)
 
 	shader->Activate();
 
-	GLint modelLoc = glGetUniformLocation(shader->GetProgramId(), "model_matrix");
-	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, modelMatrix);
-
-	GLint viewLoc = glGetUniformLocation(shader->GetProgramId(), "view");
-	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, App->editorCamera->GetViewMatrix());
-
-	GLint projLoc = glGetUniformLocation(shader->GetProgramId(), "projection");
-	glUniformMatrix4fv(projLoc, 1, GL_FALSE, App->editorCamera->GetProjectionMatrix());
-
-	UpdateUniforms();
+	glUniformMatrix4fv(privateUniforms["model_matrix"], 1, GL_FALSE, modelMatrix);
+	glUniformMatrix4fv(privateUniforms["view"], 1, GL_FALSE, App->editorCamera->GetViewMatrix());
+	glUniformMatrix4fv(privateUniforms["projection"], 1, GL_FALSE, App->editorCamera->GetProjectionMatrix());
+	UpdatePublicUniforms();
 
 	glBindTexture(GL_TEXTURE_2D, textureBufferId);
 	
@@ -186,16 +180,10 @@ bool Material::DrawElements(float * modelMatrix, uint vao, uint vertexCount, int
 
 	shader->Activate();
 
-	GLint modelLoc = glGetUniformLocation(shader->GetProgramId(), "model_matrix");
-	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, modelMatrix);
-
-	GLint viewLoc = glGetUniformLocation(shader->GetProgramId(), "view");
-	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, App->editorCamera->GetViewMatrix());
-
-	GLint projLoc = glGetUniformLocation(shader->GetProgramId(), "projection");
-	glUniformMatrix4fv(projLoc, 1, GL_FALSE, App->editorCamera->GetProjectionMatrix());
-
-	UpdateUniforms();
+	glUniformMatrix4fv(privateUniforms["model_matrix"], 1, GL_FALSE, modelMatrix);
+	glUniformMatrix4fv(privateUniforms["view"], 1, GL_FALSE, App->editorCamera->GetViewMatrix());
+	glUniformMatrix4fv(privateUniforms["projection"], 1, GL_FALSE, App->editorCamera->GetProjectionMatrix());
+	UpdatePublicUniforms();
 
 	glBindTexture(GL_TEXTURE_2D, textureBufferId);
 
@@ -211,7 +199,13 @@ bool Material::DrawElements(float * modelMatrix, uint vao, uint vertexCount, int
 
 bool Material::GenerateUniforms()
 {
-	uniforms.clear();
+	/* Gets called AFTER successfully linking the shader program */
+	privateUniforms.clear();
+	privateUniforms["model_matrix"] = glGetUniformLocation(shader->GetProgramId(), "model_matrix");
+	privateUniforms["view"] = glGetUniformLocation(shader->GetProgramId(), "view");
+	privateUniforms["projection"] = glGetUniformLocation(shader->GetProgramId(), "projection");
+
+	publicUniforms.clear();
 	if (shaderDataPath == "")
 		return true;
 
@@ -222,13 +216,13 @@ bool Material::GenerateUniforms()
 
 	while (rest.length() > 0)
 	{
-		int cut = rest.find('\n');
-		pair = rest.substr(0, cut);
-		rest = rest.substr(cut + 1, rest.length());
+		int pairSplitIndex = rest.find('\n');
+		pair = rest.substr(0, pairSplitIndex);
+		rest = rest.substr(pairSplitIndex + 1, rest.length());
 
-		int cut2 = pair.find(' ');
-		type = pair.substr(0, cut2);
-		name = pair.substr(cut2 + 1, pair.length());
+		int wordSplitIndex = pair.find(' ');
+		type = pair.substr(0, wordSplitIndex);
+		name = pair.substr(wordSplitIndex + 1, pair.length());
 
 		Uniform uniform;
 		uniform.name = name;
@@ -242,25 +236,25 @@ bool Material::GenerateUniforms()
 			uniform.type = Uniform::UniformType::COLOR4;
 			uniform.size = 4;
 		}
+
 		uniform.values[0] = 0.0f;
 		uniform.values[1] = 0.0f;
 		uniform.values[2] = 0.0f;
 		uniform.values[3] = 1.0f;
-		
+
 		uniform.location = glGetUniformLocation(shader->GetProgramId(), uniform.name.c_str());
 		if (uniform.location == -1)
 			return false;
 
-		uniforms.push_back(uniform);
+		publicUniforms.push_back(uniform);
 	}
-
 
 	return true;
 }
 
-void Material::UpdateUniforms()
+void Material::UpdatePublicUniforms()
 {
-	for (const Uniform& uniform : uniforms)
+	for (const Uniform& uniform : publicUniforms)
 	{
 		switch (uniform.type)
 		{

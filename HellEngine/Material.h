@@ -1,6 +1,7 @@
 #ifndef __H_MATERIAL__
 #define __H_MATERIAL__
 
+#include <map>
 #include <string>
 #include <vector>
 #include "globals.h"
@@ -46,7 +47,7 @@ public:
 private:
 
 	bool GenerateUniforms();
-	void UpdateUniforms();
+	void UpdatePublicUniforms();
 
 private:
 
@@ -69,7 +70,8 @@ private:
 		uint size;
 		float values[4];
 	};
-	std::vector<Uniform> uniforms;
+	std::vector<Uniform> publicUniforms;
+	std::map<std::string, uint> privateUniforms;
 };
 
 #endif // !__H_MATERIAL__
