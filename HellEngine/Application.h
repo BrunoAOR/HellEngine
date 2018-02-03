@@ -29,8 +29,8 @@ public:
 	ModuleWindow* window = nullptr;
 	ModuleEditorCamera* editorCamera = nullptr;
 	ModuleRender* renderer = nullptr;
-	ModuleImGui* imgui = nullptr;
 	ModuleScene* scene = nullptr;
+	ModuleImGui* imgui = nullptr;
 	ModuleAudio* audio = nullptr;
 
 private:

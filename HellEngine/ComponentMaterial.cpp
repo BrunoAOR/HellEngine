@@ -1,7 +1,9 @@
 #include "ImGui/imgui.h"
 #include "Application.h"
 #include "ComponentMaterial.h"
+#include "ComponentMesh.h"
 #include "ComponentType.h"
+#include "GameObject.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleRender.h"
 #include "Shader.h"
@@ -11,12 +13,51 @@
 ComponentMaterial::ComponentMaterial(GameObject* owner) : Component(owner)
 {
 	type = ComponentType::MATERIAL;
+	shader = new Shader();
 	LOGGER("Component of type '%s'", GetEditorTitle(type));
 }
 
 ComponentMaterial::~ComponentMaterial()
 {
+	delete shader;
+	shader = nullptr;
 	LOGGER("Deleting Component of type '%s'", GetEditorTitle(type));
+}
+
+void ComponentMaterial::Update()
+{
+	if (!isActive)
+		return;
+
+	if (mesh == nullptr)
+	{
+		std::vector<Component*> meshes = gameObject->GetComponents(ComponentType::MESH);
+		if (meshes.size() == 0)
+		{
+			return;
+		}
+		mesh = (ComponentMesh*)meshes[0];
+	}
+
+	if (!IsValid())
+	{
+		return;
+	}
+
+	float modelMatrix[16] = {
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 4, 0, 1
+	};
+
+	ComponentMesh::VaoInfo vaoInfo = mesh->getActiveVao();
+	if (vaoInfo.vao == 0)
+	{
+		return;
+	}
+
+	DrawElements(modelMatrix, vaoInfo.vao, vaoInfo.elementsCount, vaoInfo.indexesType);
 }
 
 /* Recieves the vertex shader file path and tries to compile it */
@@ -110,7 +151,8 @@ bool ComponentMaterial::Reapply()
 
 void ComponentMaterial::OnEditor()
 {
-	ImGui::Text(name.c_str());
+	ImGui::Text("Material GUI goes here");
+
 	ImGui::SameLine();
 	ImGui::Text(" options:");
 	ImGui::Text("");

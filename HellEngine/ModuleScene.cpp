@@ -73,6 +73,7 @@ std::vector<GameObject*> ModuleScene::FindByName(const std::string& name, GameOb
     return ret;
 }
 
+#include "ComponentMaterial.h"
 void ModuleScene::CreateTestGameObjects()
 {
 	GameObject* go1 = new GameObject("Child 1", root);
@@ -80,11 +81,19 @@ void ModuleScene::CreateTestGameObjects()
 	GameObject* go2_2 = new GameObject("Child 2.1", go2);
 	go2->SetParent(go2_2);
 	GameObject* go3 = new GameObject("Child 3", root);
-	Component* mat = go3->AddComponent(ComponentType::MATERIAL);
+	ComponentMaterial* mat = (ComponentMaterial*)go3->AddComponent(ComponentType::MATERIAL);
+
+	mat->SetVertexShaderPath("assets/shaders/defaultShader.vert");
+	mat->SetFragmentShaderPath("assets/shaders/tintingShader.frag");
+	mat->SetTexturePath("assets/images/lenna.png");
+	mat->SetShaderDataPath("assets/shaders/tintingShaderData.shaderdata");
+
+	bool success = mat->Apply();
+
 	go3->AddComponent(ComponentType::MESH);
-	go3->AddComponent(ComponentType::TRANSFORM);
+	Component* transform = go3->AddComponent(ComponentType::TRANSFORM);
 	go3->SetParent(go1);
-	go3->RemoveComponent(mat);
+	go3->RemoveComponent(transform);
 	GameObject *go4 = new GameObject("Child 4", root);
 	new GameObject("Child 4.1", go4);
 	Destroy(go4);

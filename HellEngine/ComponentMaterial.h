@@ -6,6 +6,7 @@
 #include <vector>
 #include "Component.h"
 #include "globals.h"
+class ComponentMesh;
 class Shader;
 
 class ComponentMaterial :
@@ -15,6 +16,8 @@ public:
 
 	ComponentMaterial(GameObject* owner);
 	virtual ~ComponentMaterial() override;
+
+	virtual void Update() override;
 
 	/* Recieves the vertex shader file path and tries to compile it */
 	bool SetVertexShaderPath(const std::string& sourcePath);
@@ -53,7 +56,10 @@ private:
 
 private:
 
-	std::string name;
+	/* General */
+	ComponentMesh * mesh = nullptr;
+
+	/* Shader related */
 	Shader* shader = nullptr;
 	uint textureBufferId = 0;
 	std::string vertexShaderPath;
