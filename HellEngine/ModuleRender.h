@@ -203,7 +203,11 @@ private:
 	const char* ryuPath = "assets/images/ryu.jpg";
 	const char* gokuPath = "assets/images/goku.dds";
 
+	GLuint shaderArrayVAO;
 	GLuint shaderDataBufferId;
+	GLuint shaderElementsVAO;
+	GLuint shaderUniqueDataBufferId;
+	GLuint shaderIndexesBufferId;
 	Shader* basicShader = nullptr;
 };
 

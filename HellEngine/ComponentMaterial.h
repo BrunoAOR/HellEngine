@@ -35,10 +35,14 @@ public:
 	/* Reloads the vertex shader, fragment shader and texture, recompiles the shaders and relinks the shader program */
 	bool Reapply();
 
+	/* Draws the Inspector window section for this component */
 	virtual void OnEditor() override;
 
 	/* Draws a certain model using the Material's shader and texture */
-	bool DrawArray(float* modelMatrix, uint drawDataBufferId, uint vertexCount);
+	bool DrawArray(float* modelMatrix, uint vao, uint vertexCount);
+
+	/* Draws a certain model using the Material's shader and texture, from a Vertex Array Oject WITH indexes */
+	bool DrawElements(float* modelMatrix, uint vao, uint vertexCount, int indexesType);
 
 private:
 

@@ -37,8 +37,11 @@ public:
 
 	void ShowGUIMenu();
 
-	/* Draws a certain model using the Material's shader and texture */
-	bool DrawArray(float* modelMatrix, uint drawDataBufferId, uint vertexCount);
+	/* Draws a certain model using the Material's shader and texture, from a Vertex Array Object with NO indexes */
+	bool DrawArray(float* modelMatrix, uint vao, uint vertexCount);
+
+	/* Draws a certain model using the Material's shader and texture, from a Vertex Array Oject WITH indexes */
+	bool DrawElements(float* modelMatrix, uint vao, uint vertexCount, int indexesType);
 
 private:
 

@@ -149,7 +149,7 @@ void Material::ShowGUIMenu()
 }
 
 /* Draws a certain model using the Material's shader and texture */
-bool Material::DrawArray(float* modelMatrix, uint drawDataBufferId, uint vertexCount)
+bool Material::DrawArray(float* modelMatrix, uint vao, uint vertexCount)
 {
 	if (!IsValid())
 		return false;
@@ -168,19 +168,41 @@ bool Material::DrawArray(float* modelMatrix, uint drawDataBufferId, uint vertexC
 	UpdateUniforms();
 
 	glBindTexture(GL_TEXTURE_2D, textureBufferId);
-	glBindBuffer(GL_ARRAY_BUFFER, drawDataBufferId);
-
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
-
+	
+	glBindVertexArray(vao);
 	glDrawArrays(GL_TRIANGLES, 0, vertexCount);
+	glBindVertexArray(GL_NONE);
 
-	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(2);
+	glBindTexture(GL_TEXTURE_2D, 0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+	shader->Deactivate();
+	return true;
+}
+
+bool Material::DrawElements(float * modelMatrix, uint vao, uint vertexCount, int indexesType)
+{
+	if (!IsValid())
+		return false;
+
+	shader->Activate();
+
+	GLint modelLoc = glGetUniformLocation(shader->GetProgramId(), "model_matrix");
+	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, modelMatrix);
+
+	GLint viewLoc = glGetUniformLocation(shader->GetProgramId(), "view");
+	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, App->editorCamera->GetViewMatrix());
+
+	GLint projLoc = glGetUniformLocation(shader->GetProgramId(), "projection");
+	glUniformMatrix4fv(projLoc, 1, GL_FALSE, App->editorCamera->GetProjectionMatrix());
+
+	UpdateUniforms();
+
+	glBindTexture(GL_TEXTURE_2D, textureBufferId);
+
+	glBindVertexArray(vao);
+	glDrawElements(GL_TRIANGLES, vertexCount, indexesType, nullptr);
+	glBindVertexArray(GL_NONE);
+
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	shader->Deactivate();

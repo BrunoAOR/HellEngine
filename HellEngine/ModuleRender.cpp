@@ -438,7 +438,7 @@ bool ModuleRender::InitCubeShaderInfo()
 	- 2 floats for texture coordinate (u v)
 	*/
 
-
+	/* DrawArray style */
 	const size_t vertCount = 36;
 	GLfloat vertices[vertCount * 3] = { SP_ARR_3F(vA), SP_ARR_3F(vB), SP_ARR_3F(vC), SP_ARR_3F(vB), SP_ARR_3F(vD), SP_ARR_3F(vC), SP_ARR_3F(vB), SP_ARR_3F(vF), SP_ARR_3F(vD), SP_ARR_3F(vF), SP_ARR_3F(vH), SP_ARR_3F(vD), SP_ARR_3F(vF), SP_ARR_3F(vE), SP_ARR_3F(vH), SP_ARR_3F(vE), SP_ARR_3F(vG), SP_ARR_3F(vH), SP_ARR_3F(vE), SP_ARR_3F(vA), SP_ARR_3F(vG), SP_ARR_3F(vA), SP_ARR_3F(vC), SP_ARR_3F(vG), SP_ARR_3F(vC), SP_ARR_3F(vD), SP_ARR_3F(vH), SP_ARR_3F(vC), SP_ARR_3F(vH), SP_ARR_3F(vG), SP_ARR_3F(vA), SP_ARR_3F(vF), SP_ARR_3F(vB), SP_ARR_3F(vF), SP_ARR_3F(vA), SP_ARR_3F(vE) };
 	GLfloat colors[vertCount * 3] = { SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cRed), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cRed), SP_ARR_3F(cBlue), SP_ARR_3F(cGreen), SP_ARR_3F(cRed), SP_ARR_3F(cBlue), SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cRed), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cRed), SP_ARR_3F(cWhite), SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cRed), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cRed), SP_ARR_3F(cBlue) };
@@ -462,18 +462,74 @@ bool ModuleRender::InitCubeShaderInfo()
 		}
 	}
 
+	glGenVertexArrays(1, &shaderArrayVAO);
+	glGenBuffers(1, &shaderDataBufferId);
 
-	glGenBuffers(1, (GLuint*)&shaderDataBufferId);
-
-
+	glBindVertexArray(shaderArrayVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, shaderDataBufferId);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertCount * 8, allData, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
 
-	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE); /* Can be unbound, since the vertex information is stored in the VAO throught the VertexAttribPointers */
+	glBindVertexArray(GL_NONE);
+
+	/* DrawElements style */
+
+	const size_t uniqueVertCount = 8 + 4;
+	GLfloat uniqueVertices[uniqueVertCount * 3] = { SP_ARR_3F(vA), SP_ARR_3F(vB), SP_ARR_3F(vC), SP_ARR_3F(vD), SP_ARR_3F(vE), SP_ARR_3F(vF), SP_ARR_3F(vG), SP_ARR_3F(vH), SP_ARR_3F(vE), SP_ARR_3F(vF), SP_ARR_3F(vG), SP_ARR_3F(vH) };
+	GLfloat uniqueColors[uniqueVertCount * 3] = { SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cRed), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cRed) };
+	GLfloat uniqueUVCoords[uniqueVertCount * 2] = { SP_ARR_2F(bottomLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(topLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(topRight), SP_ARR_2F(topLeft), SP_ARR_2F(topLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(bottomRight) };
+	GLubyte verticesOrder[vertCount] = { 0, 1, 2, 1, 3, 2,		/* Front face */
+		1, 5, 3, 5, 7, 3,		/* Right face */
+		5, 4, 7, 4, 6, 7,		/* Back face */
+		4, 0, 6, 0, 2, 6,		/* Left face */
+		2, 3, 11, 2, 11, 10,	/* Top face */
+		0, 9, 1, 9, 0, 8 };		/* Botttom face */
+
+	GLfloat allUniqueData[uniqueVertCount * 8];
+
+	for (int i = 0; i < uniqueVertCount * 8; ++i)
+	{
+		if (i % 8 == 0 || i % 8 == 1 || i % 8 == 2)
+		{
+			allUniqueData[i] = uniqueVertices[(i / 8) * 3 + (i % 8)];
+		}
+		else if (i % 8 == 3 || i % 8 == 4 || i % 8 == 5)
+		{
+			allUniqueData[i] = uniqueColors[(i / 8) * 3 + ((i % 8) - 3)];
+		}
+		else
+		{
+			allUniqueData[i] = uniqueUVCoords[(i / 8) * 2 + ((i % 8) - 6)];
+		}
+	}
+
+	glGenVertexArrays(1, &shaderElementsVAO);
+	glGenBuffers(1, &shaderUniqueDataBufferId);
+	glGenBuffers(1, &shaderIndexesBufferId);
+
+	glBindVertexArray(shaderElementsVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, shaderUniqueDataBufferId);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uniqueVertCount * 8, allUniqueData, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE); /* Can be unbound, since the vertex information is stored in the VAO throught the VertexAttribPointers */
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, shaderIndexesBufferId);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLubyte) * vertCount, verticesOrder, GL_STATIC_DRAW);
+
+	glBindVertexArray(GL_NONE);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE); /* Can be unbound AFTER unbinding the VAO, since the VAO stores information about the bound EBO */
 
 	// Shader time
 	basicShader = new Shader();
@@ -1001,39 +1057,47 @@ void ModuleRender::DrawShaderCube() const
 {
 	basicShader->Activate();
 
-	GLint modelLoc = glGetUniformLocation(basicShader->GetProgramId(), "model_matrix");
-
-	float pos[16] = {
-		1, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, 1, 0,
-		0, 2, 0, 1
-	};
-
-	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, pos);
-
 	GLint viewLoc = glGetUniformLocation(basicShader->GetProgramId(), "view");
 	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, App->editorCamera->GetViewMatrix());
 
 	GLint projLoc = glGetUniformLocation(basicShader->GetProgramId(), "projection");
 	glUniformMatrix4fv(projLoc, 1, GL_FALSE, App->editorCamera->GetProjectionMatrix());
 
+	GLint modelLoc = glGetUniformLocation(basicShader->GetProgramId(), "model_matrix");
+
 	GLuint tex = cubeTextureID.at(cubeSelectedTextures[1]);
-
 	glBindTexture(GL_TEXTURE_2D, tex);
-	glBindBuffer(GL_ARRAY_BUFFER, shaderDataBufferId);
 
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
+	/* With DrawArray */
+	float posArray[16] = {
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 2, 0, 1
+	};
 
+	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, posArray);
+
+	glBindVertexArray(shaderArrayVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
-	
-	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(2);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+	glBindVertexArray(GL_NONE);
+
+	/* With DrawElements */
+	float posElements[16] = {
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		2, 2, 0, 1
+	};
+
+	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, posElements);
+
+	glBindVertexArray(shaderElementsVAO);
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, nullptr);
+	glBindVertexArray(GL_NONE);
+
+	/* End */
+
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	basicShader->Deactivate();
@@ -1048,7 +1112,7 @@ void ModuleRender::DrawMaterialCube() const
 		-1.5f, -2, 0, 1
 	};
 
-	materials[0]->DrawArray(pos1, shaderDataBufferId, 36);
+	materials[0]->DrawArray(pos1, shaderArrayVAO, 36);
 
 	float pos2[16] = {
 		1, 0, 0, 0,
@@ -1057,7 +1121,7 @@ void ModuleRender::DrawMaterialCube() const
 		0, -2, 0, 1
 	};
 
-	materials[1]->DrawArray(pos2, shaderDataBufferId, 36);
+	materials[1]->DrawElements(pos2, shaderElementsVAO, 36, GL_UNSIGNED_BYTE);
 
 	float pos3[16] = {
 		1, 0, 0, 0,
@@ -1066,7 +1130,7 @@ void ModuleRender::DrawMaterialCube() const
 		1.5f, -2, 0, 1
 	};
 
-	materials[2]->DrawArray(pos3, shaderDataBufferId, 36);
+	materials[2]->DrawArray(pos3, shaderArrayVAO, 36);
 }
 
 void ModuleRender::DrawGroundGrid(float xOffset, float zOffset, int halfSize) const
