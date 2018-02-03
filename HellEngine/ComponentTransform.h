@@ -28,11 +28,16 @@ public:
 
 private:
 
+	float4x4& GetModelMatrix4x4();
+
+private:
+
 	float3 position;
 	float3 scale;
 	Quat rotation;
 
-	float modelMatrix[16];
+	float4x4 localModelMatrix;
+	float4x4 worldModelMatrix;
 };
 
 #endif

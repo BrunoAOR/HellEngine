@@ -2,6 +2,7 @@
 #include "MathGeoLib/src/Math/TransformOps.h"
 #include "ComponentTransform.h"
 #include "ComponentType.h"
+#include "GameObject.h"
 #include "globals.h"
 
 
@@ -60,14 +61,35 @@ void ComponentTransform::SetRotationDeg(float x, float y, float z)
 
 float* ComponentTransform::GetModelMatrix()
 {
-	float4x4 scaleMatrix = float4x4::Scale(scale.x, scale.y, scale.z);
-	float4x4 rotationMatrix = float4x4::FromQuat(rotation);
-	float4x4 translationMatrix = float4x4::Translate(position.x, position.y, position.z);
-	memcpy_s(modelMatrix, sizeof(float) * 16, (translationMatrix * rotationMatrix * scaleMatrix).Transposed().ptr(), sizeof(float) * 16);
-	return modelMatrix;
+	return GetModelMatrix4x4().ptr();
 }
 
 void ComponentTransform::OnEditor()
 {
 	ImGui::Text("Transfomr GUI goes here");
+}
+
+float4x4& ComponentTransform::GetModelMatrix4x4()
+{
+	float4x4 scaleMatrix = float4x4::Scale(scale.x, scale.y, scale.z);
+	float4x4 rotationMatrix = float4x4::FromQuat(rotation);
+	float4x4 translationMatrix = float4x4::Translate(position.x, position.y, position.z);
+	memcpy_s(localModelMatrix.ptr(), sizeof(float) * 16, (translationMatrix * rotationMatrix * scaleMatrix).Transposed().ptr(), sizeof(float) * 16);
+
+	worldModelMatrix = localModelMatrix;
+	
+	GameObject* parent = gameObject->GetParent();
+	while (parent)
+	{
+		std::vector<Component*> parentTransforms = parent->GetComponents(ComponentType::TRANSFORM);
+		if (parentTransforms.size() != 0)
+		{
+			ComponentTransform* parentTransform = (ComponentTransform*)parentTransforms[0];
+			worldModelMatrix = worldModelMatrix * parentTransform->GetModelMatrix4x4();
+		}
+
+		parent = parent->GetParent();
+	}
+	
+	return worldModelMatrix;
 }
