@@ -566,7 +566,7 @@ bool ModuleRender::InitCubeShaderInfo()
 	mat->SetVertexShaderPath("assets/shaders/defaultShader.vert");
 	mat->SetFragmentShaderPath("assets/shaders/tintingShader.frag");
 	mat->SetTexturePath("assets/images/ryu.jpg");
-	mat->SetShaderDataPath("assets/shaders/tintingShaderData.shaderdata");
+	mat->SetShaderDataPath("assets/shaders/tintingShader.shaderData");
 
 	success &= mat->Apply();
 	materials.push_back(mat);
@@ -576,7 +576,7 @@ bool ModuleRender::InitCubeShaderInfo()
 	mat->SetVertexShaderPath("assets/shaders/defaultShader.vert");
 	mat->SetFragmentShaderPath("assets/shaders/vanishingShader.frag");
 	mat->SetTexturePath("assets/images/ryu.jpg");
-	mat->SetShaderDataPath("assets/shaders/vanishingShader.shaderdata");
+	mat->SetShaderDataPath("assets/shaders/vanishingShader.shaderData");
 
 	success &= mat->Apply();
 	materials.push_back(mat);

@@ -51,19 +51,12 @@ void ComponentMaterial::Update()
 		transform = (ComponentTransform*)transforms[0];
 	}
 
-	if (!IsValid())
+	if (!isValid || !mesh || !transform)
 	{
 		return;
 	}
 
 	float* modelMatrix = transform->GetModelMatrix();
-
-	/*float modelMatrix[16] = {
-		1, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, 1, 0,
-		0, 4, 0, 1
-	};*/
 
 	ComponentMesh::VaoInfo vaoInfo = mesh->getActiveVao();
 	if (vaoInfo.vao == 0)
@@ -77,14 +70,13 @@ void ComponentMaterial::Update()
 /* Recieves the vertex shader file path and tries to compile it */
 bool ComponentMaterial::SetVertexShaderPath(const std::string& sourcePath)
 {
-	std::string vertexString;
-	if (!LoadTextFile(sourcePath, vertexString))
+	if (sourcePath.length() > 255)
+	{
 		return false;
+	}
 
-	if (!shader->CompileVertexShader(vertexString.c_str()))
-		return false;
-
-	vertexShaderPath = sourcePath;
+	memcpy_s(vertexShaderPath, 256, sourcePath.c_str(), sourcePath.length());
+	vertexShaderPath[sourcePath.length() + 1] = '\0';
 
 	return true;
 }
@@ -92,14 +84,13 @@ bool ComponentMaterial::SetVertexShaderPath(const std::string& sourcePath)
 /* Recieves the fragment shader file path and tries to compile it */
 bool ComponentMaterial::SetFragmentShaderPath(const std::string& sourcePath)
 {
-	std::string fragmentString;
-	if (!LoadTextFile(sourcePath, fragmentString))
+	if (sourcePath.length() > 255)
+	{
 		return false;
+	}
 
-	if (!shader->CompileFragmentShader(fragmentString.c_str()))
-		return false;
-
-	fragmentShaderPath = sourcePath;
+	memcpy_s(fragmentShaderPath, 256, sourcePath.c_str(), sourcePath.length());
+	fragmentShaderPath[sourcePath.length() + 1] = '\0';
 
 	return true;
 }
@@ -107,90 +98,89 @@ bool ComponentMaterial::SetFragmentShaderPath(const std::string& sourcePath)
 /* Recieves the texture file path and tries to load it using Devil */
 bool ComponentMaterial::SetTexturePath(const std::string& sourcePath)
 {
-	glDeleteTextures(1, &textureBufferId);
-
-	textureBufferId = App->renderer->LoadImageWithDevIL(sourcePath.c_str());
-
-	if (textureBufferId == 0)
+	if (sourcePath.length() > 255)
+	{
 		return false;
+	}
 
-	texturePath = sourcePath;
+	memcpy_s(texturePath, 256, sourcePath.c_str(), sourcePath.length());
+	texturePath[sourcePath.length() + 1] = '\0';
 
-	return textureBufferId != 0;
-}
-
-bool ComponentMaterial::SetShaderDataPath(const std::string & sourcePath)
-{
-	std::string shaderRawData;
-	if (!LoadTextFile(sourcePath, shaderRawData))
-		return false;
-
-	shaderDataPath = sourcePath;
-	shaderData = shaderRawData;
 	return true;
 }
 
-/* Returns whether the Material has a loaded texture and a linked shader */
+bool ComponentMaterial::SetShaderDataPath(const std::string& sourcePath)
+{
+	if (sourcePath.length() > 255)
+	{
+		return false;
+	}
+
+	memcpy_s(shaderDataPath, 256, sourcePath.c_str(), sourcePath.length());
+	shaderDataPath[sourcePath.length() + 1] = '\0';
+
+	return true;
+}
+
+/* Returns whether the Material has a loaded texture and a linked shader with valid data */
 bool ComponentMaterial::IsValid()
 {
-	return transform && mesh && textureBufferId != 0 && shader->IsValid();
+	return isValid;
 }
 
-/* Attemps to link the shader, if a valid texture has been set */
+/* Attemps to apply all of the material setup */
 bool ComponentMaterial::Apply()
 {
-	if (textureBufferId == 0)
-		return false;
+	isValid = (LoadVertexShader()
+		&& LoadFragmentShader()
+		&& LoadShaderData()
+		&& LoadTexture()
+		&& shader->LinkShaderProgram()
+		&& GenerateUniforms());
 
-	if (!shader->LinkShaderProgram())
-		return false;
-
-	if (!GenerateUniforms())
-		return false;
-
-	return true;
-}
-
-/* Reloads the vertex shader, fragment shader and texture, recompiles the shaders and relinks the shader program */
-bool ComponentMaterial::Reapply()
-{
-	if (SetVertexShaderPath(vertexShaderPath))
-		if (SetFragmentShaderPath(fragmentShaderPath))
-			if (SetTexturePath(texturePath))
-				if (shaderDataPath == "" || SetShaderDataPath(shaderDataPath))
-					return Apply();
-
-	return false;
+	return isValid;
 }
 
 void ComponentMaterial::OnEditor()
 {
 	if (ImGui::CollapsingHeader(editorInfo.idLabel.c_str()))
 	{
-		ImGui::Text("Material GUI goes here");
+		ImGui::Checkbox("Active", &isActive);
+		ImGui::Text("Setup:");
+		ImGui::InputText("Vertex shader", vertexShaderPath, 256);
+		ImGui::InputText("Fragment shader", fragmentShaderPath, 256);
+		ImGui::InputText("Shader data", shaderDataPath, 256);
+		ImGui::InputText("Texture path", texturePath, 256);
+		if (ImGui::Button("Apply"))
+			Apply();
 
-		ImGui::Text("");
+		ImGui::NewLine();
 
-		if (ImGui::Button("Reapply"))
-			Reapply();
-
-		if (publicUniforms.size() == 0)
+		if (!isValid)
 		{
-			ImGui::Text("This Material has no configuration options.");
+			ImGui::Text("Invalid Material setup detected!");
 		}
-
-		for (Uniform& uniform : publicUniforms)
+		else
 		{
-			switch (uniform.type)
+			ImGui::Text("Options:");
+			if (publicUniforms.size() == 0)
 			{
-			case Uniform::UniformType::FLOAT:
-				ImGui::DragFloat(uniform.name.c_str(), uniform.values, 0.01f, 0.0f, 1.0f, "%.2f");
-				break;
-			case Uniform::UniformType::COLOR4:
-				ImGui::ColorEdit4(uniform.name.c_str(), uniform.values);
-				break;
-			default:
-				break;
+				ImGui::TextWrapped("The shadar data has no configuration options.");
+			}
+
+			for (Uniform& uniform : publicUniforms)
+			{
+				switch (uniform.type)
+				{
+				case Uniform::UniformType::FLOAT:
+					ImGui::DragFloat(uniform.name.c_str(), uniform.values, 0.01f, 0.0f, 1.0f, "%.2f");
+					break;
+				case Uniform::UniformType::COLOR4:
+					ImGui::ColorEdit4(uniform.name.c_str(), uniform.values);
+					break;
+				default:
+					break;
+				}
 			}
 		}
 	}
@@ -254,7 +244,7 @@ bool ComponentMaterial::GenerateUniforms()
 	privateUniforms["projection"] = glGetUniformLocation(shader->GetProgramId(), "projection");
 
 	publicUniforms.clear();
-	if (shaderDataPath == "")
+	if (IsEmptyString(shaderDataPath))
 		return true;
 
 	std::string rest(shaderData);
@@ -316,5 +306,52 @@ void ComponentMaterial::UpdatePublicUniforms()
 			break;
 		}
 	}
+}
+
+bool ComponentMaterial::LoadVertexShader()
+{
+	std::string vertexString;
+	if (!LoadTextFile(vertexShaderPath, vertexString))
+		return false;
+
+	if (!shader->CompileVertexShader(vertexString.c_str()))
+		return false;
+
+	return true;
+}
+
+bool ComponentMaterial::LoadFragmentShader()
+{
+	std::string fragmentString;
+	if (!LoadTextFile(fragmentShaderPath, fragmentString))
+		return false;
+
+	if (!shader->CompileFragmentShader(fragmentString.c_str()))
+		return false;
+
+	return true;
+}
+
+bool ComponentMaterial::LoadShaderData()
+{
+	shaderData == "";
+	if (IsEmptyString(shaderDataPath))
+		return true;
+
+	std::string shaderRawData;
+	if (!LoadTextFile(shaderDataPath, shaderRawData))
+		return false;
+
+	shaderData = shaderRawData;
+	return true;
+}
+
+bool ComponentMaterial::LoadTexture()
+{
+	glDeleteTextures(1, &textureBufferId);
+
+	textureBufferId = App->renderer->LoadImageWithDevIL(texturePath);
+
+	return textureBufferId != 0;
 }
 

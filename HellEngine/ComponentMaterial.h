@@ -32,17 +32,18 @@ public:
 	/* Recieves the shader data file path and checks its validity */
 	bool SetShaderDataPath(const std::string& sourcePath);
 
-	/* Returns whether the Material has a loaded texture and a linked shader */
+	/* Returns whether the Material has a loaded texture and a linked shader with valid data */
 	bool IsValid();
 
-	/* Attemps to link the shader, if a valid texture has been set */
+	/* Attemps to apply all of the material setup */
 	bool Apply();
-
-	/* Reloads the vertex shader, fragment shader and texture, recompiles the shaders and relinks the shader program */
-	bool Reapply();
-
+	
 	/* Draws the Inspector window section for this component */
 	virtual void OnEditor() override;
+
+	
+
+private:
 
 	/* Draws a certain model using the Material's shader and texture */
 	bool DrawArray(float* modelMatrix, uint vao, uint vertexCount);
@@ -50,8 +51,10 @@ public:
 	/* Draws a certain model using the Material's shader and texture, from a Vertex Array Oject WITH indexes */
 	bool DrawElements(float* modelMatrix, uint vao, uint vertexCount, int indexesType);
 
-private:
-
+	bool LoadVertexShader();
+	bool LoadFragmentShader();
+	bool LoadShaderData();
+	bool LoadTexture();
 	bool GenerateUniforms();
 	void UpdatePublicUniforms();
 
@@ -62,12 +65,13 @@ private:
 	ComponentTransform* transform = nullptr;
 
 	/* Shader related */
+	bool isValid = false;
 	Shader* shader = nullptr;
 	uint textureBufferId = 0;
-	std::string vertexShaderPath;
-	std::string fragmentShaderPath;
-	std::string texturePath;
-	std::string shaderDataPath;
+	char vertexShaderPath[256] = "";
+	char fragmentShaderPath[256] = "";
+	char texturePath[256] = "";
+	char shaderDataPath[256] = "";
 	std::string shaderData;
 
 	struct Uniform {
@@ -82,6 +86,7 @@ private:
 	};
 	std::vector<Uniform> publicUniforms;
 	std::map<std::string, uint> privateUniforms;
+
 };
 
 #endif // !__H_COMPONENT_MATERIAL__

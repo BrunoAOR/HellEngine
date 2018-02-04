@@ -75,7 +75,7 @@ UpdateStatus ModuleScene::Update()
 
 void ModuleScene::OnEditorHierarchy(float mainMenuBarHeight, bool* pOpen)
 {
-	float windowWidth = 300;
+	float windowWidth = 400;
 	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
 	ImGui::SetNextWindowSize(ImVec2(windowWidth, App->window->getHeight() - mainMenuBarHeight));
 	ImGui::Begin("Hierarchy", pOpen, ImGuiWindowFlags_NoCollapse);
@@ -85,7 +85,7 @@ void ModuleScene::OnEditorHierarchy(float mainMenuBarHeight, bool* pOpen)
 
 void ModuleScene::OnEditorInspector(float mainMenuBarHeight, bool * pOpen)
 {
-	float windowWidth = 300;
+	float windowWidth = 400;
 	ImGui::SetNextWindowPos(ImVec2(App->window->getWidth() - windowWidth, mainMenuBarHeight));
 	ImGui::SetNextWindowSize(ImVec2(windowWidth, App->window->getHeight() - mainMenuBarHeight));
 	ImGui::Begin("Inspector", pOpen, ImGuiWindowFlags_NoCollapse);
@@ -160,7 +160,7 @@ void ModuleScene::CreateTestGameObjects()
 		mat->SetVertexShaderPath("assets/shaders/defaultShader.vert");
 		mat->SetFragmentShaderPath("assets/shaders/tintingShader.frag");
 		mat->SetTexturePath("assets/images/lenna.png");
-		mat->SetShaderDataPath("assets/shaders/tintingShaderData.shaderdata");
+		mat->SetShaderDataPath("assets/shaders/tintingShader.shaderData");
 		mat->Apply();
 	}
 
@@ -183,7 +183,7 @@ void ModuleScene::CreateTestGameObjects()
 	mat->SetVertexShaderPath("assets/shaders/defaultShader.vert");
 	mat->SetFragmentShaderPath("assets/shaders/tintingShader.frag");
 	mat->SetTexturePath("assets/images/lenna.png");
-	mat->SetShaderDataPath("assets/shaders/tintingShaderData.shaderdata");
+	mat->SetShaderDataPath("assets/shaders/tintingShader.shaderData");
 	mat->Apply();
 
 	//go3->SetParent(nullptr);
