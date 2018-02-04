@@ -36,6 +36,9 @@ private:
 	bool HasGameObjectInChildrenHierarchy(GameObject* testGameObject);
 	bool IsFirstChild();
 	bool IsLastChild();
+	int GetIndexInSiblings();
+	void SwapWithPreviousSibling();
+	void SwapWithNextSibling();
 
 	void OnEditorHierarchy();
 	void OnEditorHierarchyDragAndDrop();

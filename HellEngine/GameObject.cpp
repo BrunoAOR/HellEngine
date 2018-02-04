@@ -185,12 +185,14 @@ void GameObject::OnEditorHierarchyRightClick()
 		if (IsFirstChild())
 			ImGui::TextDisabled("Move up");
 		else
-			ImGui::Selectable("Move up");
+			if (ImGui::Selectable("Move up"))
+				SwapWithPreviousSibling();
 		
 		if (IsLastChild())
 			ImGui::TextDisabled("Move down");
 		else
-			ImGui::Selectable("Move down");
+			if (ImGui::Selectable("Move down"))
+				SwapWithNextSibling();
 
 		ImGui::EndPopup();
 	}
@@ -348,6 +350,30 @@ bool GameObject::IsLastChild()
 {
 	assert(parent);
 	return parent->children[parent->children.size() - 1] == this;
+}
+
+int GameObject::GetIndexInSiblings()
+{
+	for (uint i = 0; i < parent->children.size(); ++i)
+	{
+		if (parent->children[i] == this)
+			return i;
+	}
+	return -1;
+}
+
+void GameObject::SwapWithPreviousSibling()
+{
+	assert(!IsFirstChild());
+	int idx = GetIndexInSiblings();
+	std::swap(parent->children[idx], parent->children[idx - 1]);
+}
+
+void GameObject::SwapWithNextSibling()
+{
+	assert(!IsLastChild());
+	int idx = GetIndexInSiblings();
+	std::swap(parent->children[idx], parent->children[idx + 1]);
 }
 
 bool GameObject::RemoveChild(GameObject * childToRemove)
