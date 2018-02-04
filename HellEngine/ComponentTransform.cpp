@@ -34,6 +34,7 @@ float3 ComponentTransform::GetScale()
 float3 ComponentTransform::GetRotation()
 {
 	return rotation.ToEulerXYZ();
+	
 }
 
 void ComponentTransform::SetPosition(float x, float y, float z)
@@ -128,7 +129,19 @@ void ComponentTransform::OnEditor()
 {
 	if (ImGui::CollapsingHeader(editorInfo.idLabel.c_str()))
 	{
+		float positionFP[3] = { position.x, position.y, position.z };
+		float rotationFP[3] = { RadToDeg(GetRotation()[0]), RadToDeg(GetRotation()[1]), RadToDeg(GetRotation()[2]) };
+		float scaleFP[3] = { scale.x, scale.y, scale.z };
+		
+
 		ImGui::Text("Transfomr GUI goes here");
+		if (ImGui::InputFloat3("Position", positionFP))
+			SetPosition(positionFP[0], positionFP[1], positionFP[2]);
+		if (ImGui::InputFloat3("Rotation", rotationFP))
+			SetRotationDeg(rotationFP[0], rotationFP[1], rotationFP[2]);
+		if (ImGui::InputFloat3("Scale", scaleFP))
+			if (scaleFP[0] >= 0 && scaleFP[1] >= 0 && scaleFP[2] >0)
+				SetScale(scaleFP[0], scaleFP[1], scaleFP[2]);
 	}
 }
 

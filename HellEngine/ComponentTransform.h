@@ -6,6 +6,7 @@
 #include "MathGeoLib/src/Math/Quat.h"
 #include "Component.h"
 
+
 class ComponentTransform : public Component
 {
 public:
@@ -41,6 +42,7 @@ private:
 
 	float4x4 localModelMatrix;
 	float4x4 worldModelMatrix;
+
 };
 
 #endif

@@ -34,7 +34,9 @@ void ComponentMesh::OnEditor()
 {
 	if (ImGui::CollapsingHeader(editorInfo.idLabel.c_str()))
 	{
-		ImGui::Text("Mesh GUI goes here");
+
+		ImGui::Combo("Selected Mesh", &activeVao, "CUBE\0SPHERE\0\0");
+
 	}
 }
 
