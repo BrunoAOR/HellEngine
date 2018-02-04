@@ -11,12 +11,11 @@
 #include "globals.h"
 
 
-int GameObject::nextId = 0;
+GameObject* GameObject::hierarchyActiveGameObject = nullptr;
 
 GameObject::GameObject(const char* name, GameObject* parentGameObject) : name(name)
 {
 	LOGGER("Constructing GameObject '%s'", name);
-	id = nextId++;
 	/* If the root is nullptr, then that means that we are currently creating the root and no parent should be set. */
 	if (App->scene->root != nullptr)
 	{
@@ -86,20 +85,45 @@ void GameObject::OnEditor()
 	}
 }
 
+void GameObject::OnEditorRootHierarchy()
+{
+	bool open = ImGui::TreeNodeEx(this, 0, "Scene");
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) && ImGui::IsMouseReleased(0) && hierarchyActiveGameObject)
+	{
+		hierarchyActiveGameObject->SetParent(this);
+		hierarchyActiveGameObject = nullptr;
+	}
+	if (open)
+	{
+		for (GameObject* child : children)
+		{
+			child->OnEditorHierarchy();
+		}
+		ImGui::TreePop();
+	}
+}
+
 void GameObject::OnEditorHierarchy()
 {
 	ImGuiTreeNodeFlags selectedFlag = App->scene->editorInfo.selectedGameObject == this ? ImGuiTreeNodeFlags_Selected : 0;
 	if (children.size() == 0)
 	{
 		ImGui::TreeNodeEx(this, ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | selectedFlag, name.c_str());
+		
 		if (ImGui::IsItemClicked())
 			App->scene->editorInfo.selectedGameObject = this;
+		else
+			OnEditorHierarchyDragAndDrop();
+
 	}
 	else
 	{
 		bool open = ImGui::TreeNodeEx(this, selectedFlag, name.c_str());
 		if (ImGui::IsItemClicked())
 			App->scene->editorInfo.selectedGameObject = this;
+		else
+			OnEditorHierarchyDragAndDrop();
+
 		if (open)
 		{
 			for (GameObject* child : children)
@@ -108,6 +132,26 @@ void GameObject::OnEditorHierarchy()
 			}
 			ImGui::TreePop();
 		}
+	}
+}
+
+void GameObject::OnEditorHierarchyDragAndDrop()
+{
+	static ImGuiIO& io = ImGui::GetIO();
+
+	if (ImGui::IsItemActive())
+	{
+		hierarchyActiveGameObject = this;
+		// Draw a line between the button and the mouse cursor
+		ImDrawList* draw_list = ImGui::GetWindowDrawList();
+		draw_list->PushClipRectFullScreen();
+		draw_list->AddLine(ImGui::CalcItemRectClosestPoint(io.MousePos, true, -2.0f), io.MousePos, ImColor(ImGui::GetStyle().Colors[ImGuiCol_PlotLines]), 2.0f);
+		draw_list->PopClipRect();
+	}
+	else if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) && ImGui::IsMouseReleased(0) && hierarchyActiveGameObject)
+	{
+		hierarchyActiveGameObject->SetParent(this);
+		hierarchyActiveGameObject = nullptr;
 	}
 }
 
@@ -125,9 +169,13 @@ bool GameObject::SetParent(GameObject* newParent)
 	/* Protect against manipulation of the root */
 	if (this == App->scene->root)
 		return false;
-	
+
 	/* All non-root gameObjects are guaranteed to have a parent and the root should never be directly used. But always check. */
 	assert(parent);
+
+	/* Abort if assigning to self or the current parent */
+	if (newParent == this || newParent == parent)
+		return true;
 
 	/* Verify for nullptr. Parent to Scene's root if so */
 	if (newParent == nullptr)
@@ -151,7 +199,7 @@ bool GameObject::SetParent(GameObject* newParent)
 		return true;
 	}
 
-	/* Ensure the newParent is NOT a child of this GameObject */
+	/* Ensure the newParent is NOT a child of this GameObject or this GameObject itself */
 	if (HasGameObjectInChildrenHierarchy(newParent))
 	{
 		LOGGER("Warning: Attempted to change the parent of GameObject '%s' to '%s'. Operation was aborted because '%s' is a child of '%s'", name.c_str(), newParent->name.c_str(), newParent->name.c_str(), name.c_str());

@@ -34,41 +34,6 @@ bool ModuleScene::CleanUp()
 #include "globals.h"
 UpdateStatus ModuleScene::Update()
 {
-	/* Parenting */
-	if (App->input->GetKey(SDL_SCANCODE_0) == KeyState::KEY_DOWN)
-	{
-		go3->SetParent(nullptr);
-		LOGGER("New parent: root");
-	}
-	if (App->input->GetKey(SDL_SCANCODE_1) == KeyState::KEY_DOWN)
-	{
-		go3->SetParent(go1);
-		LOGGER("New parent: go1 (Has Transform)");
-	}
-	if (App->input->GetKey(SDL_SCANCODE_2) == KeyState::KEY_DOWN)
-	{
-		go3->SetParent(go2);
-		LOGGER("New parent: go2 (No Transform)");
-	}
-
-	/* Simulate Hierarchy selection */
-	if (App->input->GetKey(SDL_SCANCODE_KP_0) == KeyState::KEY_DOWN)
-	{
-		editorInfo.selectedGameObject = nullptr;
-	}
-	if (App->input->GetKey(SDL_SCANCODE_KP_1) == KeyState::KEY_DOWN)
-	{
-		editorInfo.selectedGameObject = go1;
-	}
-	if (App->input->GetKey(SDL_SCANCODE_KP_2) == KeyState::KEY_DOWN)
-	{
-		editorInfo.selectedGameObject = go2;
-	}
-	if (App->input->GetKey(SDL_SCANCODE_KP_3) == KeyState::KEY_DOWN)
-	{
-		editorInfo.selectedGameObject = go3;
-	}
-
 	root->Update();
 	return UpdateStatus::UPDATE_CONTINUE;
 }
@@ -80,14 +45,7 @@ void ModuleScene::OnEditorHierarchy(float mainMenuBarHeight, bool* pOpen)
 	ImGui::SetNextWindowSize(ImVec2(windowWidth, App->window->getHeight() - mainMenuBarHeight));
 	ImGui::Begin("Hierarchy", pOpen, ImGuiWindowFlags_NoCollapse);
 
-	if (ImGui::TreeNodeEx(root, 0, "Scene"))
-	{
-		for (GameObject* child : root->GetChildren())
-		{
-			child->OnEditorHierarchy();
-		}
-		ImGui::TreePop();
-	}
+	root->OnEditorRootHierarchy();
 
 	ImGui::End();
 }

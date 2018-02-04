@@ -15,7 +15,9 @@ public:
 	void Update();
 
 	void OnEditor();
+	void OnEditorRootHierarchy();
 	void OnEditorHierarchy();
+	void OnEditorHierarchyDragAndDrop();
 
 	GameObject* GetParent();
 	bool SetParent(GameObject* newParent);
@@ -40,9 +42,8 @@ private:
 	GameObject* parent = nullptr;
 	std::vector<GameObject*> children;
 	std::vector<Component*> components;
-	int id;
 
-	static int nextId;
+	static GameObject* hierarchyActiveGameObject;
 };
 
 #endif // !__H_GAME_OBJECT__

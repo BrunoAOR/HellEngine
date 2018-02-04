@@ -132,9 +132,7 @@ void ComponentTransform::OnEditor()
 		float positionFP[3] = { position.x, position.y, position.z };
 		float rotationFP[3] = { RadToDeg(GetRotation()[0]), RadToDeg(GetRotation()[1]), RadToDeg(GetRotation()[2]) };
 		float scaleFP[3] = { scale.x, scale.y, scale.z };
-		
 
-		ImGui::Text("Transfomr GUI goes here");
 		if (ImGui::InputFloat3("Position", positionFP))
 			SetPosition(positionFP[0], positionFP[1], positionFP[2]);
 		if (ImGui::InputFloat3("Rotation", rotationFP))
@@ -155,12 +153,11 @@ float4x4& ComponentTransform::GetModelMatrix4x4()
 	while (parent)
 	{
 		std::vector<Component*> parentTransforms = parent->GetComponents(ComponentType::TRANSFORM);
-		if (parentTransforms.size() != 0)
-		{
-			ComponentTransform* parentTransform = (ComponentTransform*)parentTransforms[0];
-			worldModelMatrix = worldModelMatrix * parentTransform->GetModelMatrix4x4();
-		}
+		if (parentTransforms.size() == 0)
+			break;
 
+		ComponentTransform* parentTransform = (ComponentTransform*)parentTransforms[0];
+		worldModelMatrix = worldModelMatrix * parentTransform->GetModelMatrix4x4();
 		parent = parent->GetParent();
 	}
 	
