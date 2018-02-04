@@ -64,7 +64,7 @@ void ModuleScene::OnEditorInspector(float mainMenuBarHeight, bool * pOpen)
 	}
 	else
 	{
-		editorInfo.selectedGameObject->OnEditor();
+		editorInfo.selectedGameObject->OnEditorInspector();
 	}
 
 	ImGui::End();

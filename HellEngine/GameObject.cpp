@@ -59,7 +59,7 @@ void GameObject::Update()
 	}
 }
 
-void GameObject::OnEditor()
+void GameObject::OnEditorInspector()
 {
 	ImGui::Checkbox("", &isActive);
 	ImGui::SameLine();
@@ -93,6 +93,13 @@ void GameObject::OnEditorRootHierarchy()
 		hierarchyActiveGameObject->SetParent(this);
 		hierarchyActiveGameObject = nullptr;
 	}
+	if (ImGui::BeginPopupContextItem())
+	{
+		if (ImGui::Selectable("Create Empty"))
+			new GameObject("New GameObject", this);
+
+		ImGui::EndPopup();
+	}
 	if (open)
 	{
 		for (GameObject* child : children)
@@ -109,7 +116,8 @@ void GameObject::OnEditorHierarchy()
 	if (children.size() == 0)
 	{
 		ImGui::TreeNodeEx(this, ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | selectedFlag, name.c_str());
-		
+		OnEditorHierarchyRightClick();
+
 		if (ImGui::IsItemClicked())
 			App->scene->editorInfo.selectedGameObject = this;
 		else
@@ -119,6 +127,8 @@ void GameObject::OnEditorHierarchy()
 	else
 	{
 		bool open = ImGui::TreeNodeEx(this, selectedFlag, name.c_str());
+		OnEditorHierarchyRightClick();
+
 		if (ImGui::IsItemClicked())
 			App->scene->editorInfo.selectedGameObject = this;
 		else
@@ -152,6 +162,37 @@ void GameObject::OnEditorHierarchyDragAndDrop()
 	{
 		hierarchyActiveGameObject->SetParent(this);
 		hierarchyActiveGameObject = nullptr;
+	}
+}
+
+void GameObject::OnEditorHierarchyRightClick()
+{
+	if (ImGui::BeginPopupContextItem())
+	{
+		if (ImGui::Selectable("Create Empty"))
+			new GameObject("New GameObject", this);
+
+		if(ImGui::Selectable("Destroy"))
+		{
+			App->scene->Destroy(this);
+			App->scene->editorInfo.selectedGameObject = nullptr;
+			ImGui::EndPopup();
+			return;
+		}
+		
+		ImGui::Separator();
+
+		if (IsFirstChild())
+			ImGui::TextDisabled("Move up");
+		else
+			ImGui::Selectable("Move up");
+		
+		if (IsLastChild())
+			ImGui::TextDisabled("Move down");
+		else
+			ImGui::Selectable("Move down");
+
+		ImGui::EndPopup();
 	}
 }
 
@@ -295,6 +336,18 @@ bool GameObject::HasGameObjectInChildrenHierarchy(GameObject * testGameObject)
 			return true;
 	}
 	return false;
+}
+
+bool GameObject::IsFirstChild()
+{
+	assert(parent);
+	return parent->children[0] == this;
+}
+
+bool GameObject::IsLastChild()
+{
+	assert(parent);
+	return parent->children[parent->children.size() - 1] == this;
 }
 
 bool GameObject::RemoveChild(GameObject * childToRemove)

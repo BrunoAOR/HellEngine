@@ -14,11 +14,9 @@ public:
 	
 	void Update();
 
-	void OnEditor();
+	void OnEditorInspector();
 	void OnEditorRootHierarchy();
-	void OnEditorHierarchy();
-	void OnEditorHierarchyDragAndDrop();
-
+	
 	GameObject* GetParent();
 	bool SetParent(GameObject* newParent);
 	bool RemoveChild(GameObject* childToRemove);
@@ -36,6 +34,12 @@ public:
 private:
 
 	bool HasGameObjectInChildrenHierarchy(GameObject* testGameObject);
+	bool IsFirstChild();
+	bool IsLastChild();
+
+	void OnEditorHierarchy();
+	void OnEditorHierarchyDragAndDrop();
+	void OnEditorHierarchyRightClick();
 
 private:
 
