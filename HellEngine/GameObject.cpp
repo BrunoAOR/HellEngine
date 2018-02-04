@@ -11,9 +11,12 @@
 #include "globals.h"
 
 
+int GameObject::nextId = 0;
+
 GameObject::GameObject(const char* name, GameObject* parentGameObject) : name(name)
 {
 	LOGGER("Constructing GameObject '%s'", name);
+	id = nextId++;
 	/* If the root is nullptr, then that means that we are currently creating the root and no parent should be set. */
 	if (App->scene->root != nullptr)
 	{
@@ -80,6 +83,31 @@ void GameObject::OnEditor()
 	for (Component* component : components)
 	{
 		component->OnEditor();
+	}
+}
+
+void GameObject::OnEditorHierarchy()
+{
+	ImGuiTreeNodeFlags selectedFlag = App->scene->editorInfo.selectedGameObject == this ? ImGuiTreeNodeFlags_Selected : 0;
+	if (children.size() == 0)
+	{
+		ImGui::TreeNodeEx(this, ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | selectedFlag, name.c_str());
+		if (ImGui::IsItemClicked())
+			App->scene->editorInfo.selectedGameObject = this;
+	}
+	else
+	{
+		bool open = ImGui::TreeNodeEx(this, selectedFlag, name.c_str());
+		if (ImGui::IsItemClicked())
+			App->scene->editorInfo.selectedGameObject = this;
+		if (open)
+		{
+			for (GameObject* child : children)
+			{
+				child->OnEditorHierarchy();
+			}
+			ImGui::TreePop();
+		}
 	}
 }
 

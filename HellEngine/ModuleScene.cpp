@@ -80,6 +80,15 @@ void ModuleScene::OnEditorHierarchy(float mainMenuBarHeight, bool* pOpen)
 	ImGui::SetNextWindowSize(ImVec2(windowWidth, App->window->getHeight() - mainMenuBarHeight));
 	ImGui::Begin("Hierarchy", pOpen, ImGuiWindowFlags_NoCollapse);
 
+	if (ImGui::TreeNodeEx(root, 0, "Scene"))
+	{
+		for (GameObject* child : root->GetChildren())
+		{
+			child->OnEditorHierarchy();
+		}
+		ImGui::TreePop();
+	}
+
 	ImGui::End();
 }
 
@@ -195,4 +204,6 @@ void ModuleScene::CreateTestGameObjects()
 	go4->RemoveComponent(toDelete);
 	new GameObject("Child 4.1", go4);
 	Destroy(go4);
+
+	go5 = new GameObject("Child 5", go3);
 }

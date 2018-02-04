@@ -15,6 +15,7 @@ public:
 	void Update();
 
 	void OnEditor();
+	void OnEditorHierarchy();
 
 	GameObject* GetParent();
 	bool SetParent(GameObject* newParent);
@@ -39,7 +40,9 @@ private:
 	GameObject* parent = nullptr;
 	std::vector<GameObject*> children;
 	std::vector<Component*> components;
+	int id;
 
+	static int nextId;
 };
 
 #endif // !__H_GAME_OBJECT__

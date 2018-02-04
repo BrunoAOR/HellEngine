@@ -27,6 +27,10 @@ public:
 public:
 
 	GameObject* root;
+	struct
+	{
+		GameObject* selectedGameObject = nullptr;
+	} editorInfo;
 
 private:
 
@@ -38,11 +42,9 @@ private:
 	GameObject* go2;
 	GameObject* go3;
 	GameObject* go4;
+	GameObject* go5;
 
-	struct
-	{
-		GameObject* selectedGameObject = nullptr;
-	} editorInfo;
+	
 
 };
 
