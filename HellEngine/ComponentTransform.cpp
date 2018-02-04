@@ -61,6 +61,25 @@ void ComponentTransform::SetRotationDeg(float x, float y, float z)
 	SetRotationRad(DegToRad(x), DegToRad(y), DegToRad(z));
 }
 
+RotationAxisModified ComponentTransform::SetRotationDegFormGUI(float x, float y, float z)
+{
+	float3 rotationFP = GetRotation();
+	if (rotationFP[0] != x)
+	{
+		rotationMod = modX;
+	}
+	else if (rotationFP[1] != y)
+	{
+		rotationMod = modY;
+	}
+	else if (rotationFP[2] != z)
+	{
+		rotationMod = modZ;
+	}
+	SetRotationDeg(x, y, z);
+	return rotationMod;
+}
+
 float* ComponentTransform::GetModelMatrix()
 {
 	return GetModelMatrix4x4().ptr();
@@ -130,13 +149,27 @@ void ComponentTransform::OnEditor()
 	if (ImGui::CollapsingHeader(editorInfo.idLabel.c_str()))
 	{
 		float positionFP[3] = { position.x, position.y, position.z };
-		float rotationFP[3] = { RadToDeg(GetRotation()[0]), RadToDeg(GetRotation()[1]), RadToDeg(GetRotation()[2]) };
 		float scaleFP[3] = { scale.x, scale.y, scale.z };
+
+		if (rotationMod == modAll)
+		{
+			rotationDeg[0] = RadToDeg(GetRotation()[0]); //x
+			rotationDeg[1] = RadToDeg(GetRotation()[1]); //y
+			rotationDeg[2] = RadToDeg(GetRotation()[3]); //z
+		}
+		else if (rotationMod == modY)
+		{
+			rotationDeg[1] = RadToDeg(GetRotation()[1]);
+		}
+		else if (rotationMod == modZ)
+		{
+			rotationDeg[2] = RadToDeg(GetRotation()[2]);
+		}
 
 		if (ImGui::InputFloat3("Position", positionFP))
 			SetPosition(positionFP[0], positionFP[1], positionFP[2]);
-		if (ImGui::InputFloat3("Rotation", rotationFP))
-			SetRotationDeg(rotationFP[0], rotationFP[1], rotationFP[2]);
+		if (ImGui::InputFloat3("Rotation", rotationDeg))
+			SetRotationDegFormGUI(rotationDeg[0], rotationDeg[1], rotationDeg[2]);
 		if (ImGui::InputFloat3("Scale", scaleFP))
 			if (scaleFP[0] >= 0 && scaleFP[1] >= 0 && scaleFP[2] >0)
 				SetScale(scaleFP[0], scaleFP[1], scaleFP[2]);
