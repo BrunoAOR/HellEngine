@@ -25,9 +25,18 @@ ComponentMesh::~ComponentMesh()
 	LOGGER("Deleting Component of type '%s'", GetString(type));
 }
 
-ComponentMesh::VaoInfo ComponentMesh::getActiveVao() const
+ComponentMesh::VaoInfo ComponentMesh::GetActiveVao() const
 {
 	return vaoInfos[activeVao];
+}
+
+bool ComponentMesh::SetActiveVao(uint index)
+{
+	if (index >= vaoInfos.size())
+		return false;
+
+	activeVao = index;
+	return true;
 }
 
 void ComponentMesh::OnEditor()

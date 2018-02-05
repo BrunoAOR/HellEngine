@@ -87,7 +87,16 @@ void GameObject::OnEditorInspector()
 
 void GameObject::OnEditorRootHierarchy()
 {
-	bool open = ImGui::TreeNodeEx(this, 0, "Scene");
+	bool open = false;
+	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.8f, 0.8f, 1.0f));
+
+	if (children.size() > 0)
+		open = ImGui::TreeNodeEx(this, 0, "Scene");
+	else
+		ImGui::TreeNodeEx(this, ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen, "Scene");
+
+	ImGui::PopStyleColor();
+
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) && ImGui::IsMouseReleased(0) && hierarchyActiveGameObject)
 	{
 		hierarchyActiveGameObject->SetParent(this);
@@ -95,9 +104,7 @@ void GameObject::OnEditorRootHierarchy()
 	}
 	if (ImGui::BeginPopupContextItem())
 	{
-		if (ImGui::Selectable("Create Empty"))
-			new GameObject("New GameObject", this);
-
+		OnEditorHierarchyCreateMenu();
 		ImGui::EndPopup();
 	}
 	if (open)
@@ -169,8 +176,7 @@ void GameObject::OnEditorHierarchyRightClick()
 {
 	if (ImGui::BeginPopupContextItem())
 	{
-		if (ImGui::Selectable("Create Empty"))
-			new GameObject("New GameObject", this);
+		OnEditorHierarchyCreateMenu();
 
 		if(ImGui::Selectable("Destroy"))
 		{
@@ -195,6 +201,23 @@ void GameObject::OnEditorHierarchyRightClick()
 				SwapWithNextSibling();
 
 		ImGui::EndPopup();
+	}
+}
+
+void GameObject::OnEditorHierarchyCreateMenu()
+{
+	if (ImGui::BeginMenu("Create..."))
+	{
+		if (ImGui::Selectable("Create Empty"))
+			AddEmptyChild();
+
+		if (ImGui::Selectable("Create Cube"))
+			AddCubeChild();
+
+		if (ImGui::Selectable("Create Sphere"))
+			AddSphereChild();
+
+		ImGui::EndMenu();
 	}
 }
 
@@ -374,6 +397,35 @@ void GameObject::SwapWithNextSibling()
 	assert(!IsLastChild());
 	int idx = GetIndexInSiblings();
 	std::swap(parent->children[idx], parent->children[idx + 1]);
+}
+
+GameObject* GameObject::AddEmptyChild()
+{
+	return (new GameObject("Empty", this));
+}
+
+GameObject* GameObject::AddCubeChild()
+{
+	GameObject* go = new GameObject("Cube", this);
+	go->AddComponent(ComponentType::TRANSFORM);
+	ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
+	mesh->SetActiveVao(0);
+	ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
+	mat->SetDefaultMaterialConfiguration();
+	mat->Apply();
+	return go;
+}
+
+GameObject* GameObject::AddSphereChild()
+{
+	GameObject* go = new GameObject("Sphere", this);
+	go->AddComponent(ComponentType::TRANSFORM);
+	ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
+	mesh->SetActiveVao(1);
+	ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
+	mat->SetDefaultMaterialConfiguration();
+	mat->Apply();
+	return go;
 }
 
 bool GameObject::RemoveChild(GameObject * childToRemove)

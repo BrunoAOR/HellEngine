@@ -15,8 +15,8 @@ ComponentMaterial::ComponentMaterial(GameObject* owner) : Component(owner)
 {
 	type = ComponentType::MATERIAL;
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
-	checkeredPatternBufferId = CreateCheckeredTexture();
 	shader = new Shader();
+	checkeredPatternBufferId = CreateCheckeredTexture();
 	LOGGER("Component of type '%s'", GetString(type));
 }
 
@@ -65,7 +65,7 @@ void ComponentMaterial::Update()
 
 	float* modelMatrix = transform->GetModelMatrix();
 
-	ComponentMesh::VaoInfo vaoInfo = mesh->getActiveVao();
+	ComponentMesh::VaoInfo vaoInfo = mesh->GetActiveVao();
 	if (vaoInfo.vao == 0)
 	{
 		return;
@@ -148,6 +148,16 @@ bool ComponentMaterial::Apply()
 	return isValid;
 }
 
+/* Applies the default material configuration */
+void ComponentMaterial::SetDefaultMaterialConfiguration()
+{
+	memcpy_s(vertexShaderPath, 256, "assets/shaders/defaultShader.vert", 256);
+	memcpy_s(fragmentShaderPath, 256, "assets/shaders/defaultShader.frag", 256);
+	shaderDataPath[0] = '\0';
+	shaderData = "";
+	texturePath[0] = '\0';
+}
+
 void ComponentMaterial::OnEditor()
 {
 	if (ImGui::CollapsingHeader(editorInfo.idLabel.c_str()))
@@ -175,17 +185,13 @@ void ComponentMaterial::OnEditorMaterialConfiguration()
 	if (ImGui::TreeNode(label.c_str()))
 	{
 		if (ImGui::Button("Use defaults"))
-		{
-			memcpy_s(vertexShaderPath, 256, "assets/shaders/defaultShader.vert", 256);
-			memcpy_s(fragmentShaderPath, 256, "assets/shaders/defaultShader.frag", 256);
-			shaderDataPath[0] = '\0';
-			shaderData = "";
-			texturePath[0] = '\0';
-		}
+			SetDefaultMaterialConfiguration();
+		
 		ImGui::InputText("Vertex shader", vertexShaderPath, 256);
 		ImGui::InputText("Fragment shader", fragmentShaderPath, 256);
 		ImGui::InputText("Shader data", shaderDataPath, 256);
 		ImGui::InputText("Texture path", texturePath, 256);
+
 		if (ImGui::Button("Apply"))
 			Apply();
 
@@ -582,4 +588,3 @@ void ComponentMaterial::ConfigureTexture()
 
 	glBindTexture(GL_TEXTURE_2D, GL_NONE);
 }
-

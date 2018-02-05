@@ -40,9 +40,14 @@ private:
 	void SwapWithPreviousSibling();
 	void SwapWithNextSibling();
 
+	GameObject* AddEmptyChild();
+	GameObject* AddCubeChild();
+	GameObject* AddSphereChild();
+
 	void OnEditorHierarchy();
 	void OnEditorHierarchyDragAndDrop();
 	void OnEditorHierarchyRightClick();
+	void OnEditorHierarchyCreateMenu();
 
 private:
 

@@ -40,10 +40,11 @@ public:
 	/* Attemps to apply all of the material setup */
 	bool Apply();
 	
+	/* Applies the default material configuration */
+	void SetDefaultMaterialConfiguration();
+
 	/* Draws the Inspector window section for this component */
 	virtual void OnEditor() override;
-
-	
 
 private:
 
