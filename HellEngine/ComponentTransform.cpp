@@ -61,20 +61,20 @@ void ComponentTransform::SetRotationDeg(float x, float y, float z)
 	SetRotationRad(DegToRad(x), DegToRad(y), DegToRad(z));
 }
 
-RotationAxisModified ComponentTransform::SetRotationDegFormGUI(float x, float y, float z)
+ComponentTransform::RotationAxisModified ComponentTransform::SetRotationDegFormGUI(float x, float y, float z)
 {
 	float3 rotationFP = GetRotation();
 	if (rotationFP[0] != x)
 	{
-		rotationMod = modX;
+		rotationMod = RotationAxisModified::MOD_X;
 	}
 	else if (rotationFP[1] != y)
 	{
-		rotationMod = modY;
+		rotationMod = RotationAxisModified::MOD_Y;
 	}
 	else if (rotationFP[2] != z)
 	{
-		rotationMod = modZ;
+		rotationMod = RotationAxisModified::MOD_Z;
 	}
 	SetRotationDeg(x, y, z);
 	return rotationMod;
@@ -142,6 +142,7 @@ void ComponentTransform::SetParent(ComponentTransform* newParent)
 	newLocalModelMatrix[2][2] /= scale.z;
 	/* Then turn into a Quat */
 	rotation = Quat(newLocalModelMatrix);
+	rotationMod = RotationAxisModified::MOD_ALL;
 }
 
 void ComponentTransform::OnEditor()
@@ -151,17 +152,21 @@ void ComponentTransform::OnEditor()
 		float positionFP[3] = { position.x, position.y, position.z };
 		float scaleFP[3] = { scale.x, scale.y, scale.z };
 
-		if (rotationMod == modAll)
+		if (rotationMod == RotationAxisModified::MOD_ALL)
 		{
 			rotationDeg[0] = RadToDeg(GetRotation()[0]); //x
 			rotationDeg[1] = RadToDeg(GetRotation()[1]); //y
-			rotationDeg[2] = RadToDeg(GetRotation()[3]); //z
+			rotationDeg[2] = RadToDeg(GetRotation()[2]); //z
 		}
-		else if (rotationMod == modY)
+		else if (rotationMod == RotationAxisModified::MOD_X)
+		{
+			rotationDeg[1] = RadToDeg(GetRotation()[0]);
+		}
+		else if (rotationMod == RotationAxisModified::MOD_Y)
 		{
 			rotationDeg[1] = RadToDeg(GetRotation()[1]);
 		}
-		else if (rotationMod == modZ)
+		else if (rotationMod == RotationAxisModified::MOD_Z)
 		{
 			rotationDeg[2] = RadToDeg(GetRotation()[2]);
 		}
@@ -178,7 +183,7 @@ void ComponentTransform::OnEditor()
 
 float4x4& ComponentTransform::GetModelMatrix4x4()
 {
-	UpdateLocalModelMattix();
+	UpdateLocalModelMatrix();
 
 	worldModelMatrix = localModelMatrix;
 
@@ -197,7 +202,7 @@ float4x4& ComponentTransform::GetModelMatrix4x4()
 	return worldModelMatrix;
 }
 
-float4x4& ComponentTransform::UpdateLocalModelMattix()
+float4x4& ComponentTransform::UpdateLocalModelMatrix()
 {
 	float4x4 scaleMatrix = float4x4::Scale(scale.x, scale.y, scale.z);
 	float4x4 rotationMatrix = float4x4::FromQuat(rotation);

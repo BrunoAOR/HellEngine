@@ -6,8 +6,6 @@
 #include "MathGeoLib/src/Math/Quat.h"
 #include "Component.h"
 
-enum RotationAxisModified {modAll,modX,modY,modZ};
-
 class ComponentTransform : public Component
 {
 public:
@@ -24,8 +22,6 @@ public:
 	void SetRotationRad(float x, float y, float z);
 	void SetRotationDeg(float x, float y, float z);
 
-	RotationAxisModified SetRotationDegFormGUI(float x, float y, float z);
-
 	float* GetModelMatrix();
 
 	void SetParent(ComponentTransform* newParent);
@@ -34,8 +30,12 @@ public:
 
 private:
 
+	enum class RotationAxisModified { MOD_ALL, MOD_X, MOD_Y, MOD_Z };
+
 	float4x4& GetModelMatrix4x4();
-	float4x4& UpdateLocalModelMattix();
+	float4x4& UpdateLocalModelMatrix();
+
+	RotationAxisModified SetRotationDegFormGUI(float x, float y, float z);
 
 private:
 
@@ -44,7 +44,7 @@ private:
 	Quat rotation;
 	float rotationDeg[3];
 
-	RotationAxisModified rotationMod = modAll;
+	RotationAxisModified rotationMod = RotationAxisModified::MOD_ALL;
 
 	float4x4 localModelMatrix;
 	float4x4 worldModelMatrix;
