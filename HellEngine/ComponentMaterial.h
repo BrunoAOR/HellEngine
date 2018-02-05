@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 #include "Component.h"
+#include "TextureConfiguration.h"
+#include "TextureInfo.h"
 #include "globals.h"
 class ComponentMesh;
 class ComponentTransform;
@@ -57,8 +59,14 @@ private:
 	bool LoadFragmentShader();
 	bool LoadShaderData();
 	bool LoadTexture();
+	void ConfigureTexture();
 	bool GenerateUniforms();
 	void UpdatePublicUniforms();
+
+	void OnEditorMaterialConfiguration();
+	void OnEditorTextureInformation();
+	void OnEditorTextureConfiguration();
+	void OnEditorShaderOptions();
 
 private:
 
@@ -66,6 +74,9 @@ private:
 	ComponentMesh* mesh = nullptr;
 	ComponentTransform* transform = nullptr;
 	uint checkeredPatternBufferId = 0;
+
+	TextureConfigutaion textureConfiguration;
+	TextureInfo textureInfo;
 
 	/* Shader related */
 	bool isValid = false;

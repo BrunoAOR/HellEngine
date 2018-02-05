@@ -19,6 +19,7 @@
 #include "ModuleTime.h"
 #include "ModuleWindow.h"
 #include "Shader.h"
+#include "TextureInfo.h"
 #include "UpdateStatus.h"
 #include "globals.h"
 #include "openGL.h"
@@ -1179,7 +1180,7 @@ void ModuleRender::DrawGroundGrid(float xOffset, float zOffset, int halfSize) co
 }
 
 /* Function load a image, turn it into a texture, and return the texture ID as a GLuint for use */
-GLuint ModuleRender::LoadImageWithDevIL(const char* theFileName)
+GLuint ModuleRender::LoadImageWithDevIL(const char* theFileName, TextureInfo* outTextureInfo)
 {
 	ILuint imageID;				/* Create a image ID as a ULuint */
 
@@ -1263,7 +1264,7 @@ GLuint ModuleRender::LoadImageWithDevIL(const char* theFileName)
 	/*Generate Mipmap from the current texture evaluated*/
 	if (textureMipMapMode) {
 		glGenerateMipmap(GL_TEXTURE_2D);
-		glGenerateTextureMipmap(textureID);
+		//glGenerateTextureMipmap(textureID);
 	}
 
 	/*Apply magnification filters if requested*/
@@ -1323,7 +1324,14 @@ GLuint ModuleRender::LoadImageWithDevIL(const char* theFileName)
 	ilBindImage(0);
 
 	/* Save texture info */
-	textureInfo.insert(std::pair<int, Texture>(textureID, { width, height, bytesPerPixel }));
+	if (outTextureInfo)
+	{
+		outTextureInfo->width = width;
+		outTextureInfo->height = height;
+		outTextureInfo->bytesPerPixel = bytesPerPixel;
+	}
+	else
+		textureInfo.insert(std::pair<int, Texture>(textureID, { width, height, bytesPerPixel }));
 
 	LOGGER("Texture creation successful.");
 

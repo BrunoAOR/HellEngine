@@ -110,6 +110,8 @@
     <ClInclude Include="openGL.h" />
     <ClInclude Include="Point.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="TextureConfiguration.h" />
+    <ClInclude Include="TextureInfo.h" />
     <ClInclude Include="UpdateStatus.h" />
   </ItemGroup>
   <ItemGroup>

@@ -153,7 +153,27 @@ void ComponentMaterial::OnEditor()
 	if (ImGui::CollapsingHeader(editorInfo.idLabel.c_str()))
 	{
 		ImGui::Checkbox("Active", &isActive);
-		ImGui::Text("Setup:");
+		
+		OnEditorMaterialConfiguration();
+		
+		if (!isValid)
+		{
+			ImGui::Text("Invalid Material setup detected!");
+		}
+		else
+		{
+			OnEditorTextureInformation();
+			OnEditorTextureConfiguration();
+			OnEditorShaderOptions();
+		}
+	}
+}
+
+void ComponentMaterial::OnEditorMaterialConfiguration()
+{
+	static const std::string label = std::string("Material setup##MatSetup") + std::to_string(editorInfo.id);
+	if (ImGui::TreeNode(label.c_str()))
+	{
 		if (ImGui::Button("Use defaults"))
 		{
 			memcpy_s(vertexShaderPath, 256, "assets/shaders/defaultShader.vert", 256);
@@ -170,34 +190,124 @@ void ComponentMaterial::OnEditor()
 			Apply();
 
 		ImGui::NewLine();
+		ImGui::TreePop();
+	}
+}
 
-		if (!isValid)
-		{
-			ImGui::Text("Invalid Material setup detected!");
-		}
+void ComponentMaterial::OnEditorTextureInformation()
+{
+	static const std::string label = std::string("Textures information##TextureInfo") + std::to_string(editorInfo.id);
+	if (ImGui::TreeNode(label.c_str()))
+	{
+		uint w = textureInfo.width;
+		uint h = textureInfo.height;
+		uint bytesPerPixel = textureInfo.bytesPerPixel;
+		uint wInBytes = w * bytesPerPixel;
+		uint hInBytes = h * bytesPerPixel;
+
+		ImGui::Text("Image width (pixels) = "); ImGui::SameLine();
+		if (w != 0)
+			ImGui::Text(std::to_string(w).c_str());
 		else
-		{
-			ImGui::Text("Options:");
-			if (publicUniforms.size() == 0)
-			{
-				ImGui::TextWrapped("The shader data has no configuration options.");
-			}
+			ImGui::Text("NA");
 
-			for (Uniform& uniform : publicUniforms)
+		ImGui::Text("Image height (pixels) = "); ImGui::SameLine();
+		if (h != 0)
+			ImGui::Text(std::to_string(h).c_str());
+		else
+			ImGui::Text("NA");
+
+
+		ImGui::Text("Bytes per pixel = "); ImGui::SameLine();
+		if (bytesPerPixel != 0)
+			ImGui::Text(std::to_string(bytesPerPixel).c_str());
+		else
+			ImGui::Text("NA");
+
+
+		ImGui::Text("Image width (bytes) = "); ImGui::SameLine();
+		if (wInBytes != 0)
+			ImGui::Text(std::to_string(wInBytes).c_str());
+		else
+			ImGui::Text("NA");
+
+
+		ImGui::Text("Image height (bytes) = "); ImGui::SameLine();
+		if (hInBytes != 0)
+			ImGui::Text(std::to_string(hInBytes).c_str());
+		else
+			ImGui::Text("NA");
+
+		ImGui::NewLine();
+		ImGui::TreePop();
+	}
+}
+
+void ComponentMaterial::OnEditorTextureConfiguration()
+{
+	static bool changed = false;
+	static char* minificationOptions;
+
+	static const std::string label = std::string("Textures configuration##TextureConfig") + std::to_string(editorInfo.id);
+	if (ImGui::TreeNode(label.c_str()))
+	{
+		if (ImGui::Combo("Wrap mode", &textureConfiguration.wrapMode, "GL_REPEAT\0GL_MIRRORED_REPEAT\0GL_CLAMP_TO_EDGE\0GL_CLAMP\0\0"))
+			changed = true;
+
+		if (ImGui::Checkbox("Mipmaps", &textureConfiguration.mipMaps))
+			changed = true;
+
+		if (textureConfiguration.mipMaps)
+			minificationOptions = "GL_NEAREST\0GL_LINEAR\0GL_NEAREST_MIPMAP_NEAREST\0GL_LINEAR_MIPMAP_NEAREST\0GL_NEAREST_MIPMAP_LINEAR\0GL_LINEAR_MIPMAP_LINEAR\0\0";
+		else
+			minificationOptions = "GL_NEAREST\0GL_LINEAR\0\0";
+
+		if (ImGui::Combo("Minification", &textureConfiguration.minificationMode, minificationOptions)) {
+			changed = true;
+		}
+
+		if (ImGui::Combo("Magnification", &textureConfiguration.magnificationMode, "GL_NEAREST\0GL_LINEAR\0\0")) {
+			changed = true;
+		}
+
+		if (changed)
+		{
+			changed = false;
+			ConfigureTexture();
+		}
+
+		ImGui::NewLine();
+		ImGui::TreePop();
+	}
+}
+
+void ComponentMaterial::OnEditorShaderOptions()
+{
+	static const std::string label = std::string("Shader options##ShaderOptions") + std::to_string(editorInfo.id);
+	if (ImGui::TreeNode(label.c_str()))
+	{
+		if (publicUniforms.size() == 0)
+		{
+			ImGui::TextWrapped("The shader data has no configuration options.");
+		}
+
+		for (Uniform& uniform : publicUniforms)
+		{
+			switch (uniform.type)
 			{
-				switch (uniform.type)
-				{
-				case Uniform::UniformType::FLOAT:
-					ImGui::DragFloat(uniform.name.c_str(), uniform.values, 0.01f, 0.0f, 1.0f, "%.2f");
-					break;
-				case Uniform::UniformType::COLOR4:
-					ImGui::ColorEdit4(uniform.name.c_str(), uniform.values);
-					break;
-				default:
-					break;
-				}
+			case Uniform::UniformType::FLOAT:
+				ImGui::DragFloat(uniform.name.c_str(), uniform.values, 0.01f, 0.0f, 1.0f, "%.2f");
+				break;
+			case Uniform::UniformType::COLOR4:
+				ImGui::ColorEdit4(uniform.name.c_str(), uniform.values);
+				break;
+			default:
+				break;
 			}
 		}
+
+		ImGui::NewLine();
+		ImGui::TreePop();
 	}
 }
 
@@ -396,10 +506,80 @@ bool ComponentMaterial::LoadTexture()
 		glDeleteTextures(1, &textureBufferId);
 
 	if (IsEmptyString(texturePath))
+	{
 		textureBufferId = checkeredPatternBufferId;
+		textureInfo.Zero();
+	}
 	else
-		textureBufferId = App->renderer->LoadImageWithDevIL(texturePath);
+		textureBufferId = App->renderer->LoadImageWithDevIL(texturePath, &textureInfo);
+
+	if (textureBufferId != 0)
+		ConfigureTexture();
 
 	return textureBufferId != 0;
+}
+
+void ComponentMaterial::ConfigureTexture()
+{
+	glBindTexture(GL_TEXTURE_2D, textureBufferId);
+
+	/* Set texture clamping method */
+	switch (textureConfiguration.wrapMode) {
+	case 0:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		break;
+	case 1:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+		break;
+	case 2:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		break;
+	case 3:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		break;
+	}
+
+	/*Generate Mipmap from the current texture evaluated*/
+	if (textureConfiguration.mipMaps) {
+		glGenerateMipmap(GL_TEXTURE_2D);
+		//glGenerateTextureMipmap(textureBufferId);	
+	}
+
+	/*Apply magnification filters if requested*/
+	switch (textureConfiguration.magnificationMode) {
+	case 0:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		break;
+	case 1:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		break;
+	}
+	/*Apply minification filters if requested*/
+	switch (textureConfiguration.minificationMode) {
+	case 0:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		break;
+	case 1:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		break;
+	case 2:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+		break;
+	case 3:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+		break;
+	case 4:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+		break;
+	case 5:
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		break;
+	}
+
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
 }
 

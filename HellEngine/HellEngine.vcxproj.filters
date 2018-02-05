@@ -297,6 +297,12 @@
     <ClInclude Include="ComponentMesh.h">
       <Filter>Scene Management</Filter>
     </ClInclude>
+    <ClInclude Include="TextureInfo.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureConfiguration.h">
+      <Filter>General</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
