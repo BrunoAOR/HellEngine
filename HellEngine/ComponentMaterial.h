@@ -51,6 +51,8 @@ private:
 	/* Draws a certain model using the Material's shader and texture, from a Vertex Array Oject WITH indexes */
 	bool DrawElements(float* modelMatrix, uint vao, uint vertexCount, int indexesType);
 
+	uint CreateCheckeredTexture();
+
 	bool LoadVertexShader();
 	bool LoadFragmentShader();
 	bool LoadShaderData();
@@ -63,6 +65,7 @@ private:
 	/* General */
 	ComponentMesh* mesh = nullptr;
 	ComponentTransform* transform = nullptr;
+	uint checkeredPatternBufferId = 0;
 
 	/* Shader related */
 	bool isValid = false;

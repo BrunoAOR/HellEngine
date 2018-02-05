@@ -15,6 +15,7 @@ ComponentMaterial::ComponentMaterial(GameObject* owner) : Component(owner)
 {
 	type = ComponentType::MATERIAL;
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
+	checkeredPatternBufferId = CreateCheckeredTexture();
 	shader = new Shader();
 	LOGGER("Component of type '%s'", GetString(type));
 }
@@ -23,6 +24,12 @@ ComponentMaterial::~ComponentMaterial()
 {
 	delete shader;
 	shader = nullptr;
+
+	glDeleteTextures(1, &checkeredPatternBufferId);
+	checkeredPatternBufferId = 0;
+	glDeleteTextures(1, &textureBufferId);
+	textureBufferId = 0;
+
 	LOGGER("Deleting Component of type '%s'", GetString(type));
 }
 
@@ -147,6 +154,14 @@ void ComponentMaterial::OnEditor()
 	{
 		ImGui::Checkbox("Active", &isActive);
 		ImGui::Text("Setup:");
+		if (ImGui::Button("Use defaults"))
+		{
+			memcpy_s(vertexShaderPath, 256, "assets/shaders/defaultShader.vert", 256);
+			memcpy_s(fragmentShaderPath, 256, "assets/shaders/defaultShader.frag", 256);
+			shaderDataPath[0] = '\0';
+			shaderData = "";
+			texturePath[0] = '\0';
+		}
 		ImGui::InputText("Vertex shader", vertexShaderPath, 256);
 		ImGui::InputText("Fragment shader", fragmentShaderPath, 256);
 		ImGui::InputText("Shader data", shaderDataPath, 256);
@@ -165,7 +180,7 @@ void ComponentMaterial::OnEditor()
 			ImGui::Text("Options:");
 			if (publicUniforms.size() == 0)
 			{
-				ImGui::TextWrapped("The shadar data has no configuration options.");
+				ImGui::TextWrapped("The shader data has no configuration options.");
 			}
 
 			for (Uniform& uniform : publicUniforms)
@@ -233,6 +248,35 @@ bool ComponentMaterial::DrawElements(float * modelMatrix, uint vao, uint vertexC
 
 	shader->Deactivate();
 	return true;
+}
+
+uint ComponentMaterial::CreateCheckeredTexture()
+{
+	static const int checkeredTextureSize = 64;
+	GLubyte checkImage[checkeredTextureSize][checkeredTextureSize][4];
+	for (int i = 0; i < checkeredTextureSize; i++) {
+		for (int j = 0; j < checkeredTextureSize; j++) {
+			int c = ((((i & 0x8) == 0) ^ (((j & 0x8)) == 0))) * 255;
+			checkImage[i][j][0] = (GLubyte)c;
+			checkImage[i][j][1] = (GLubyte)c;
+			checkImage[i][j][2] = (GLubyte)c;
+			checkImage[i][j][3] = (GLubyte)255;
+		}
+	}
+
+	GLuint textureId;
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glGenTextures(1, &textureId);
+	glBindTexture(GL_TEXTURE_2D, textureId);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, checkeredTextureSize, checkeredTextureSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, checkImage);
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
+
+	return textureId;
 }
 
 bool ComponentMaterial::GenerateUniforms()
@@ -348,9 +392,13 @@ bool ComponentMaterial::LoadShaderData()
 
 bool ComponentMaterial::LoadTexture()
 {
-	glDeleteTextures(1, &textureBufferId);
+	if (textureBufferId != checkeredPatternBufferId)
+		glDeleteTextures(1, &textureBufferId);
 
-	textureBufferId = App->renderer->LoadImageWithDevIL(texturePath);
+	if (IsEmptyString(texturePath))
+		textureBufferId = checkeredPatternBufferId;
+	else
+		textureBufferId = App->renderer->LoadImageWithDevIL(texturePath);
 
 	return textureBufferId != 0;
 }
