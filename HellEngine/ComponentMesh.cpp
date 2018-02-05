@@ -236,9 +236,8 @@ void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 	*d++ = 0;
 	*d++ = 0;
 
-	/* UV coords will be set to 0 for now */
 	*d++ = 0;
-	*d++ = 0;
+	*d++ = 1.0f;
 
 	/* Now we iterate through rings, and within rings through sections */
 	/* We start on ring 1, because ring 0 would be the top (special case) which has only 1 vertex and has already been handled*/
@@ -249,6 +248,7 @@ void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 
 		float green = redToGreenStep * r;
 		float red = 1.0f - green;
+		float v = 1.0f - (float)r / rings;
 
 		for (unsigned int s = 0; s < sections; ++s)
 		{
@@ -266,8 +266,8 @@ void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 			*d++ = green;
 			*d++ = blue;
 
-			*d++ = 0;
-			*d++ = 0;
+			*d++ = (float)s / sections;
+			*d++ = v;
 		}
 	}
 
