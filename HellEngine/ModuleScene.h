@@ -32,20 +32,6 @@ public:
 		GameObject* selectedGameObject = nullptr;
 	} editorInfo;
 
-private:
-
-	void CreateTestGameObjects();
-
-private:
-
-	GameObject* go1;
-	GameObject* go2;
-	GameObject* go3;
-	GameObject* go4;
-	GameObject* go5;
-
-	
-
 };
 
 #endif // !__H_MODULE_SCENE__

@@ -18,7 +18,6 @@ ModuleScene::~ModuleScene()
 bool ModuleScene::Init()
 {
 	root = new GameObject("root", nullptr);
-	CreateTestGameObjects();
 	return true;
 }
 
@@ -109,59 +108,4 @@ std::vector<GameObject*> ModuleScene::FindByName(const std::string& name, GameOb
         ret.insert(std::end(ret), std::begin(temp), std::end(temp));
     }
     return ret;
-}
-
-#include "ComponentMaterial.h"
-#include "ComponentTransform.h"
-void ModuleScene::CreateTestGameObjects()
-{
-	go1 = new GameObject("Child 1", root);
-	ComponentTransform* go1transform = (ComponentTransform*)go1->AddComponent(ComponentType::TRANSFORM);
-	go1transform->SetPosition(0, 0, -2);
-	go1transform->SetRotationDeg(0, 90, 0);
-	go1transform->SetScale(1, 2, 1);
-	{
-		go1->AddComponent(ComponentType::MESH);
-
-		ComponentMaterial* mat = (ComponentMaterial*)go1->AddComponent(ComponentType::MATERIAL);
-		mat->SetVertexShaderPath("assets/shaders/defaultShader.vert");
-		mat->SetFragmentShaderPath("assets/shaders/tintingShader.frag");
-		mat->SetTexturePath("assets/images/lenna.png");
-		mat->SetShaderDataPath("assets/shaders/tintingShader.shaderData");
-		mat->Apply();
-	}
-
-	go2 = new GameObject("Child 2", root);
-	GameObject* go2_2 = new GameObject("Child 2.1", go2);
-	go2->SetParent(go2_2);
-
-	/* go3 setup */
-	go3 = new GameObject("Child 3", root);
-
-	ComponentTransform* go3transform = (ComponentTransform*)go3->AddComponent(ComponentType::TRANSFORM);
-	go3transform->SetPosition(0, 2, -2);
-	go3transform->SetRotationDeg(0, 45, 0);
-	go3transform->SetScale(1, 1, 1);
-	//go3->SetParent(go1);
-
-	go3->AddComponent(ComponentType::MESH);
-
-	ComponentMaterial* mat = (ComponentMaterial*)go3->AddComponent(ComponentType::MATERIAL);
-	mat->SetVertexShaderPath("assets/shaders/defaultShader.vert");
-	mat->SetFragmentShaderPath("assets/shaders/tintingShader.frag");
-	mat->SetTexturePath("assets/images/lenna.png");
-	mat->SetShaderDataPath("assets/shaders/tintingShader.shaderData");
-	mat->Apply();
-
-	//go3->SetParent(nullptr);
-	/* End of g03 setup */
-
-	go4 = new GameObject("Child 4", root);
-	go4->AddComponent(ComponentType::MESH);
-	Component* toDelete = go4->AddComponent(ComponentType::MATERIAL);
-	go4->RemoveComponent(toDelete);
-	new GameObject("Child 4.1", go4);
-	Destroy(go4);
-
-	go5 = new GameObject("Child 5", go3);
 }
