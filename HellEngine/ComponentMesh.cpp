@@ -32,11 +32,21 @@ ComponentMesh::VaoInfo ComponentMesh::getActiveVao() const
 
 void ComponentMesh::OnEditor()
 {
+	static bool optionsCreated = false;
+	static std::string options = "";
+	if (!optionsCreated)
+	{
+		optionsCreated = true;
+		for (const VaoInfo& vaoInfo : vaoInfos)
+		{
+			options += vaoInfo.name;
+			options += '\0';
+		}
+		options += '\0';
+	}
 	if (ImGui::CollapsingHeader(editorInfo.idLabel.c_str()))
 	{
-
-		ImGui::Combo("Selected Mesh", &activeVao, "CUBE\0SPHERE\0\0");
-
+		ImGui::Combo("Selected Mesh", &activeVao, options.c_str());
 	}
 }
 
@@ -341,9 +351,7 @@ void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 	}
 
 	assert(i == indexes.end());
-
-
-
+	
 	/* Now we send the vertices and indexes to the VRAM */
 
 	uint VBO;
