@@ -32,7 +32,6 @@
     <ClInclude Include="globals.h" />
     <ClInclude Include="KeyState.h" />
     <ClInclude Include="MainStates.h" />
-    <ClInclude Include="Material.h" />
     <ClInclude Include="MathGeoLib\src\Algorithm\GJK.h" />
     <ClInclude Include="MathGeoLib\src\Algorithm\Random\LCG.h" />
     <ClInclude Include="MathGeoLib\src\Algorithm\SAT.h" />
@@ -128,7 +127,6 @@
     <ClCompile Include="ImGui\imgui_draw.cpp" />
     <ClCompile Include="ImGui\imgui_impl_sdl_gl3.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Material.cpp" />
     <ClCompile Include="MathGeoLib\src\Algorithm\GJK.cpp" />
     <ClCompile Include="MathGeoLib\src\Algorithm\Random\LCG.cpp" />
     <ClCompile Include="MathGeoLib\src\Geometry\AABB.cpp" />

@@ -5,7 +5,6 @@
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_sdl_gl3.h"
 #include "Application.h"
-#include "Material.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleImGui.h"
 #include "ModuleRender.h"
@@ -94,15 +93,6 @@ UpdateStatus ModuleImGui::Update()
 
 		if (ImGui::BeginMenu("Configuration"))
 		{
-			if (ImGui::BeginMenu("Rendering"))
-			{
-				if (ImGui::MenuItem("Rotate", nullptr, &rendererRotate))
-				{
-					App->renderer->shouldRotate = !App->renderer->shouldRotate;
-				}
-				ImGui::EndMenu();
-			}
-
 			ImGui::MenuItem("Camera", nullptr, &showCameraWindow);
 			ImGui::MenuItem("OpenGL", nullptr, &showOpenGLWindow);
 
@@ -306,7 +296,7 @@ void ModuleImGui::ShowEditorCameraWindow(float mainMenuBarHeight, bool* pOpen)
 
 void ModuleImGui::ShowOpenGLWindow(float mainMenuBarHeight, bool * pOpen)
 {
-	static bool alphaTest = false;
+	static bool alphaTest = true;
 	static bool depthTest = true;
 	static bool cullFace = true;
 	static bool lighting = false;

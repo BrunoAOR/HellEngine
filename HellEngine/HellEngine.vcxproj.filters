@@ -273,9 +273,6 @@
     <ClInclude Include="Shader.h">
       <Filter>General</Filter>
     </ClInclude>
-    <ClInclude Include="Material.h">
-      <Filter>General</Filter>
-    </ClInclude>
     <ClInclude Include="GameObject.h">
       <Filter>Scene Management</Filter>
     </ClInclude>
@@ -456,9 +453,6 @@
       <Filter>Engine Modules</Filter>
     </ClCompile>
     <ClCompile Include="Shader.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="Material.cpp">
       <Filter>General</Filter>
     </ClCompile>
     <ClCompile Include="GameObject.cpp">
