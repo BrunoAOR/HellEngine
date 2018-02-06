@@ -21,6 +21,8 @@ public:
 	/* Returns the maximum number of times that this particular Type of Component can be added to a GameObject */
 	virtual int MaxCountInGameObject() = 0;
 
+	bool OnEditorDeleteComponent();
+
 public:
 
 	bool isActive = true;

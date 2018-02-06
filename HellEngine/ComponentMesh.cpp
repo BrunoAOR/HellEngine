@@ -43,6 +43,7 @@ void ComponentMesh::OnEditor()
 {
 	static bool optionsCreated = false;
 	static std::string options = "";
+
 	if (!optionsCreated)
 	{
 		optionsCreated = true;
@@ -52,9 +53,13 @@ void ComponentMesh::OnEditor()
 			options += '\0';
 		}
 		options += '\0';
-	}
+	}	
+
 	if (ImGui::CollapsingHeader(editorInfo.idLabel.c_str()))
 	{
+		if (OnEditorDeleteComponent())
+			return;
+
 		ImGui::Combo("Selected Mesh", &activeVao, options.c_str());
 	}
 }

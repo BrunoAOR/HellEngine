@@ -149,6 +149,9 @@ void ComponentTransform::OnEditor()
 {
 	if (ImGui::CollapsingHeader(editorInfo.idLabel.c_str()))
 	{
+		if (OnEditorDeleteComponent())
+			return;
+
 		float positionFP[3] = { position.x, position.y, position.z };
 		float scaleFP[3] = { scale.x, scale.y, scale.z };
 

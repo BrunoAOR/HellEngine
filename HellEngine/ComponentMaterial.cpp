@@ -162,6 +162,9 @@ void ComponentMaterial::OnEditor()
 {
 	if (ImGui::CollapsingHeader(editorInfo.idLabel.c_str()))
 	{
+		if (OnEditorDeleteComponent())
+			return;
+
 		ImGui::Checkbox("Active", &isActive);
 		
 		OnEditorMaterialConfiguration();
