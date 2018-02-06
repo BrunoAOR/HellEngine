@@ -59,6 +59,11 @@ void ComponentMesh::OnEditor()
 	}
 }
 
+int ComponentMesh::MaxCountInGameObject()
+{
+	return 1;
+}
+
 void ComponentMesh::CreateCubeVAO()
 {
 	/*

@@ -179,6 +179,11 @@ void ComponentMaterial::OnEditor()
 	}
 }
 
+int ComponentMaterial::MaxCountInGameObject()
+{
+	return 1;
+}
+
 void ComponentMaterial::OnEditorMaterialConfiguration()
 {
 	static const std::string label = std::string("Material setup##MatSetup") + std::to_string(editorInfo.id);

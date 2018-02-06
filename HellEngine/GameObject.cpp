@@ -319,6 +319,20 @@ Component* GameObject::AddComponent(ComponentType type)
 {
 	Component* component = nullptr;
 
+	int count = 0;
+	for (Component* component : components)
+	{
+		if (component->GetType() == type)
+		{
+			++count;
+			if (count >= component->MaxCountInGameObject())
+			{
+				LOGGER("Warning: Can't add a component of type %s because the limit in a single GameObject is %d", GetString(type), component->MaxCountInGameObject());
+				return nullptr;
+			}
+		}
+	}
+
 	switch (type)
 	{
 	case ComponentType::MATERIAL:

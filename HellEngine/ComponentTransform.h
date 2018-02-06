@@ -28,6 +28,9 @@ public:
 
 	virtual void OnEditor() override;
 
+	/* Returns the maximum number of times that this particular Type of Component can be added to a GameObject */
+	virtual int MaxCountInGameObject() override;
+
 private:
 
 	enum class RotationAxisModified { MOD_ALL, MOD_X, MOD_Y, MOD_Z };

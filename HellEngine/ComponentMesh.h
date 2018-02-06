@@ -25,6 +25,9 @@ public:
 
 	virtual void OnEditor() override;
 
+	/* Returns the maximum number of times that this particular Type of Component can be added to a GameObject */
+	virtual int MaxCountInGameObject() override;
+
 private:
 
 	void CreateCubeVAO();

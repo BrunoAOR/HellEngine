@@ -46,6 +46,9 @@ public:
 	/* Draws the Inspector window section for this component */
 	virtual void OnEditor() override;
 
+	/* Returns the maximum number of times that this particular Type of Component can be added to a GameObject */
+	virtual int MaxCountInGameObject() override;
+
 private:
 
 	/* Draws a certain model using the Material's shader and texture */

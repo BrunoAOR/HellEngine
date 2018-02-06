@@ -18,6 +18,8 @@ public:
 
 	virtual void OnEditor() = 0;
 
+	/* Returns the maximum number of times that this particular Type of Component can be added to a GameObject */
+	virtual int MaxCountInGameObject() = 0;
 
 public:
 

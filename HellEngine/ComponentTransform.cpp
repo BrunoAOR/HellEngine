@@ -181,6 +181,11 @@ void ComponentTransform::OnEditor()
 	}
 }
 
+int ComponentTransform::MaxCountInGameObject()
+{
+	return 1;
+}
+
 float4x4& ComponentTransform::GetModelMatrix4x4()
 {
 	UpdateLocalModelMatrix();
