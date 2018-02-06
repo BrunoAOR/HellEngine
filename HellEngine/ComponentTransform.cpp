@@ -160,7 +160,7 @@ void ComponentTransform::OnEditor()
 		}
 		else if (rotationMod == RotationAxisModified::MOD_X)
 		{
-			rotationDeg[1] = RadToDeg(GetRotation()[0]);
+			rotationDeg[0] = RadToDeg(GetRotation()[0]);
 		}
 		else if (rotationMod == RotationAxisModified::MOD_Y)
 		{
@@ -171,11 +171,11 @@ void ComponentTransform::OnEditor()
 			rotationDeg[2] = RadToDeg(GetRotation()[2]);
 		}
 
-		if (ImGui::InputFloat3("Position", positionFP))
+		if (ImGui::DragFloat3("Position", positionFP, 0.03f))
 			SetPosition(positionFP[0], positionFP[1], positionFP[2]);
-		if (ImGui::InputFloat3("Rotation", rotationDeg))
+		if (ImGui::DragFloat3("Rotation", rotationDeg, 0.3f))
 			SetRotationDegFormGUI(rotationDeg[0], rotationDeg[1], rotationDeg[2]);
-		if (ImGui::InputFloat3("Scale", scaleFP))
+		if (ImGui::DragFloat3("Scale", scaleFP, 0.1f, 0.1f, 1000.0f))
 			if (scaleFP[0] >= 0 && scaleFP[1] >= 0 && scaleFP[2] >0)
 				SetScale(scaleFP[0], scaleFP[1], scaleFP[2]);
 	}
