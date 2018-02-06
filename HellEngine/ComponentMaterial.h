@@ -75,8 +75,6 @@ private:
 private:
 
 	/* General */
-	ComponentMesh* mesh = nullptr;
-	ComponentTransform* transform = nullptr;
 	uint checkeredPatternBufferId = 0;
 
 	TextureConfigutaion textureConfiguration;
