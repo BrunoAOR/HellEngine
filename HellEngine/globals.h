@@ -26,9 +26,8 @@
 	}
 
 /* Configuration */
-#define SCREEN_SIZE 3
-#define SCREEN_WIDTH 250
-#define SCREEN_HEIGHT 250
+#define SCREEN_WIDTH 1366
+#define SCREEN_HEIGHT 768
 #define FULLSCREEN false
 #define VSYNC true
 #define TITLE "Hell Engine"
@@ -44,5 +43,6 @@ void Logger(const char file[], int line, const char* format, ...);
 Json LoadJson(const char* path);
 bool LoadTextFile(const std::string& path, std::string& outputString);
 bool SaveTextFile(const std::string& path, const std::string& content);
+bool IsEmptyString(const char* charString);
 
 #endif /* __H_GLOBALS__ */

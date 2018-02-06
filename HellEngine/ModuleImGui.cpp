@@ -5,10 +5,10 @@
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_sdl_gl3.h"
 #include "Application.h"
-#include "Material.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleImGui.h"
 #include "ModuleRender.h"
+#include "ModuleScene.h"
 #include "ModuleWindow.h"
 
 ModuleImGui::ModuleImGui()
@@ -69,10 +69,10 @@ UpdateStatus ModuleImGui::Update()
 	static bool showDemoWindow = false;
 	static bool showAbout = false;
 	static bool showCameraWindow = false;
-	static bool showTexturesWindow = false;
 	static bool showOpenGLWindow = false;
     static bool showTextEditorWindow = false;
-	static bool showMaterialsWindow = false;
+	static bool showHierarchyWindow = true;
+	static bool showInspectorWindow = true;
 
 	static bool rendererWireFrame = false;
 	static bool rendererRotate = false;
@@ -93,24 +93,19 @@ UpdateStatus ModuleImGui::Update()
 
 		if (ImGui::BeginMenu("Configuration"))
 		{
-			if (ImGui::BeginMenu("Rendering"))
-			{
-				if (ImGui::MenuItem("Rotate", nullptr, &rendererRotate))
-				{
-					App->renderer->shouldRotate = !App->renderer->shouldRotate;
-				}
-				ImGui::EndMenu();
-			}
-
 			ImGui::MenuItem("Camera", nullptr, &showCameraWindow);
-			ImGui::MenuItem("Textures", nullptr, &showTexturesWindow);
 			ImGui::MenuItem("OpenGL", nullptr, &showOpenGLWindow);
 
 			ImGui::EndMenu();
 		}
 
-        ImGui::MenuItem("Text Editor", nullptr, &showTextEditorWindow);
-		ImGui::MenuItem("Materials Editor", nullptr, &showMaterialsWindow);
+		if (ImGui::BeginMenu("View"))
+		{
+			ImGui::MenuItem("Text Editor", nullptr, &showTextEditorWindow);
+			ImGui::MenuItem("Hierarchy", nullptr, &showHierarchyWindow);
+			ImGui::MenuItem("Inspector", nullptr, &showInspectorWindow);
+			ImGui::EndMenu();
+		}
 
 		if (ImGui::BeginMenu("Help"))
 		{
@@ -144,11 +139,6 @@ UpdateStatus ModuleImGui::Update()
 		ShowEditorCameraWindow(mainMenuBarHeight, &showCameraWindow);
 	}
 
-	if (showTexturesWindow)
-	{
-		ShowTexturesWindow(mainMenuBarHeight, &showTexturesWindow);
-	}
-
 	if (showOpenGLWindow)
 	{
 		ShowOpenGLWindow(mainMenuBarHeight, &showOpenGLWindow);
@@ -159,9 +149,14 @@ UpdateStatus ModuleImGui::Update()
         ShowTextEditorWindow(mainMenuBarHeight, &showTextEditorWindow);
     }
 
-	if (showMaterialsWindow)
+	if (showHierarchyWindow)
 	{
-		ShowMaterialsEditorWindow(mainMenuBarHeight, &showMaterialsWindow);
+		App->scene->OnEditorHierarchy(mainMenuBarHeight, &showHierarchyWindow);
+	}
+
+	if (showInspectorWindow)
+	{
+		App->scene->OnEditorInspector(mainMenuBarHeight, &showInspectorWindow);
 	}
 
 	ImGui::Render();
@@ -299,96 +294,9 @@ void ModuleImGui::ShowEditorCameraWindow(float mainMenuBarHeight, bool* pOpen)
 	ImGui::End();
 }
 
-void ModuleImGui::ShowTexturesWindow(float mainMenuBarHeight, bool * pOpen)
-{
-	static bool mipMaps = false;
-	static int wrapMode = App->renderer->textureWrapMode;
-	static int magnification = App->renderer->textureMagnificationMode;
-	static int minification = App->renderer->textureMinificationMode;
-
-	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
-	ImGui::SetNextWindowSize(ImVec2(300, 600));
-	ImGui::Begin("Textures", pOpen, ImGuiWindowFlags_NoCollapse);
-
-	GLuint w = App->renderer->GetTextureWidth();
-	GLuint h = App->renderer->GetTextureHeight();
-	GLuint bytesPerPixel = App->renderer->GetBytesPerPixel();
-	GLuint wInBytes = w * bytesPerPixel;
-	GLuint hInBytes = h * bytesPerPixel;
-	char* minificationFiltersDependingOnMipmap = "GL_NEAREST\0GL_LINEAR\0"; //minification can use mipmap or not, if it does, more filters area available
-
-	ImGui::Text("Texture selection");
-	ImGui::Combo("Cube", &App->renderer->currentSelectedCube, "Immediate\0Arrays\0Elements\0RangeElements\0\0");
-	ImGui::Combo("Texture", &(App->renderer->cubeSelectedTextures[App->renderer->currentSelectedCube]), "Ryu\0Lenna\0Goku\0Checkered\0\0");
-
-	ImGui::Separator();
-	
-	ImGui::Text("Selected texture info:");
-	ImGui::Text("Image width (pixels) = "); ImGui::SameLine();
-	if (w != 0)
-		ImGui::TextColored(ImVec4(0, 0, 1, 1), std::to_string(w).c_str());
-	else
-		ImGui::TextColored(ImVec4(0, 0, 1, 1), "NA");
-
-	ImGui::Text("Image height (pixels) = "); ImGui::SameLine();
-	if (h != 0)
-		ImGui::TextColored(ImVec4(0, 0, 1, 1), std::to_string(h).c_str());
-	else
-		ImGui::TextColored(ImVec4(0, 0, 1, 1), "NA");
-
-
-	ImGui::Text("Bytes per pixel = "); ImGui::SameLine();
-	if (bytesPerPixel != 0)
-		ImGui::TextColored(ImVec4(0, 0, 1, 1), std::to_string(bytesPerPixel).c_str());
-	else
-		ImGui::TextColored(ImVec4(0, 0, 1, 1), "NA");
-
-
-	ImGui::Text("Image width (bytes) = "); ImGui::SameLine();
-	if (wInBytes != 0)
-		ImGui::TextColored(ImVec4(0, 0, 1, 1), std::to_string(wInBytes).c_str());
-	else
-		ImGui::TextColored(ImVec4(0, 0, 1, 1), "NA");
-
-
-	ImGui::Text("Image height (bytes) = "); ImGui::SameLine();
-	if (hInBytes != 0)
-		ImGui::TextColored(ImVec4(0, 0, 1, 1), std::to_string(hInBytes).c_str());
-	else
-		ImGui::TextColored(ImVec4(0, 0, 1, 1), "NA");
-
-	ImGui::Separator();
-
-	if (ImGui::Combo("Wrap mode", &wrapMode, "GL_REPEAT\0GL_MIRRORED_REPEAT\0GL_CLAMP_TO_EDGE\0GL_CLAMP\0\0")) {
-		App->renderer->textureWrapMode = wrapMode;
-		App->renderer->ReloadTextures();
-	}
-
-	if (ImGui::Checkbox("Mipmaps", &mipMaps)) {
-		App->renderer->textureMipMapMode = mipMaps;
-		App->renderer->ReloadTextures();
-	}
-
-	if (mipMaps) {
-		minificationFiltersDependingOnMipmap = "GL_NEAREST\0GL_LINEAR\0GL_NEAREST_MIPMAP_NEAREST\0GL_LINEAR_MIPMAP_NEAREST\0GL_NEAREST_MIPMAP_LINEAR\0GL_LINEAR_MIPMAP_LINEAR\0\0";
-	}
-	if (ImGui::Combo("Minification", &minification, minificationFiltersDependingOnMipmap)) {
-		App->renderer->textureMinificationMode = minification;
-		App->renderer->ReloadTextures();
-	}
-
-	if (ImGui::Combo("Magnification", &magnification, "GL_NEAREST\0GL_LINEAR\0")) {
-		App->renderer->textureMagnificationMode = magnification;
-		App->renderer->ReloadTextures();
-	}
-
-
-	ImGui::End();
-}
-
 void ModuleImGui::ShowOpenGLWindow(float mainMenuBarHeight, bool * pOpen)
 {
-	static bool alphaTest = false;
+	static bool alphaTest = true;
 	static bool depthTest = true;
 	static bool cullFace = true;
 	static bool lighting = false;
@@ -611,34 +519,4 @@ void ModuleImGui::ShowTextEditorWindow(float mainMenuBarHeight, bool* pOpen)
 	ImGui::Text(lastLog.c_str());
 
     ImGui::End();
-}
-
-void ModuleImGui::ShowMaterialsEditorWindow(float mainMenuBarHeight, bool * pOpen)
-{
-	static int selectedMaterial = -1;
-	static std::string options = "None";
-	if (selectedMaterial == -1)
-	{
-		options += '\0';
-		selectedMaterial = 0;
-		for (Material* mat : App->renderer->materials)
-		{
-			options += mat->getName() + '\0';
-		}
-		options += '\0';
-	}
-
-	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
-	ImGui::SetNextWindowSize(ImVec2(450, 570));
-	ImGui::Begin("Materials Editor", pOpen, ImGuiWindowFlags_NoCollapse);
-	
-	ImGui::Combo("Material selection", &selectedMaterial, options.c_str());
-	ImGui::Text("");
-
-	if (selectedMaterial == 0)
-		ImGui::Text("Select a material.");
-	else
-		App->renderer->materials[selectedMaterial - 1]->ShowGUIMenu();
-
-	ImGui::End();
 }

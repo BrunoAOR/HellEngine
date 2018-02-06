@@ -16,6 +16,9 @@
     <Filter Include="ImGui">
       <UniqueIdentifier>{3e6c3276-8ea1-489a-a859-f5dffc3dfeb3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scene Management">
+      <UniqueIdentifier>{9a7413ac-ff5b-4904-bcf3-9d4e6810df3c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="memLeaks.h">
@@ -270,7 +273,31 @@
     <ClInclude Include="Shader.h">
       <Filter>General</Filter>
     </ClInclude>
-    <ClInclude Include="Material.h">
+    <ClInclude Include="GameObject.h">
+      <Filter>Scene Management</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleScene.h">
+      <Filter>Engine Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Component.h">
+      <Filter>Scene Management</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentType.h">
+      <Filter>Scene Management</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentTransform.h">
+      <Filter>Scene Management</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentMaterial.h">
+      <Filter>Scene Management</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentMesh.h">
+      <Filter>Scene Management</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureInfo.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureConfiguration.h">
       <Filter>General</Filter>
     </ClInclude>
   </ItemGroup>
@@ -428,8 +455,26 @@
     <ClCompile Include="Shader.cpp">
       <Filter>General</Filter>
     </ClCompile>
-    <ClCompile Include="Material.cpp">
-      <Filter>General</Filter>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>Scene Management</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleScene.cpp">
+      <Filter>Engine Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Component.cpp">
+      <Filter>Scene Management</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentTransform.cpp">
+      <Filter>Scene Management</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentMaterial.cpp">
+      <Filter>Scene Management</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentMesh.cpp">
+      <Filter>Scene Management</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentType.cpp">
+      <Filter>Scene Management</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

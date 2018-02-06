@@ -31,7 +31,7 @@ bool ModuleEditorCamera::Init()
 	verticalFOVRad = DegToRad(60);
 	onWindowResize();
 	frustum.SetViewPlaneDistances(nearClippingPlane, farClippingPlane);
-	frustum.SetFrame(vec(0, 0, 3), vec(0, 0, -1), vec(0, 1, 0));
+	frustum.SetFrame(vec(0, 1, 3), vec(0, 0, -1), vec(0, 1, 0));
 	
 	return true;
 }

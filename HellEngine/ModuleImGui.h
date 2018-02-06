@@ -37,17 +37,11 @@ private:
 	/* Draws the Editor Camera window */
 	void ShowEditorCameraWindow(float mainMenuBarHeight, bool* pOpen);
 
-	/* Draws the Texture options window */
-	void ShowTexturesWindow(float mainMenuBarHeight, bool* pOpen);
-
 	/* Draws the OpenGL options window */
 	void ShowOpenGLWindow(float mainMenuBarHeight, bool* pOpen);
 
     /*Draws the Text Editor window*/
     void ShowTextEditorWindow(float mainMenuBarHeight, bool* pOpen);
-
-	/*Draws the Materials Editor window*/
-	void ShowMaterialsEditorWindow(float mainMenuBarHeight, bool* pOpen);
 
 private:
 

@@ -57,3 +57,8 @@ bool SaveTextFile(const std::string& path, const std::string& content)
 	}
 	return false;
 }
+
+bool IsEmptyString(const char * charString)
+{
+	return (charString != nullptr && charString[0] == '\0');
+}
