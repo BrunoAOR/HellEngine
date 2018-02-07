@@ -23,6 +23,7 @@ public:
     std::vector<GameObject*> GetChildren();
 
 	std::vector<Component*> GetComponents(ComponentType type);
+	Component* GetComponent(ComponentType type);
 	Component* AddComponent(ComponentType type);
 	bool RemoveComponent(Component* component);
 	void AddDependingComponent();

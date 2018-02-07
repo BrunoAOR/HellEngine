@@ -20,13 +20,10 @@ ModuleEditorCamera::~ModuleEditorCamera()
 
 bool ModuleEditorCamera::Init()
 {
-	std::vector<Component*> cameras = App->scene->root->GetComponents(ComponentType::CAMERA);
-	if (cameras.size() > 0) {
-		camera = (ComponentCamera*)cameras[0];
-		if (camera == nullptr) {
-			LOGGER("Root GameObject in scene can't be found!");
-			return false;
-		}
+	camera = (ComponentCamera*)App->scene->root->GetComponent(ComponentType::CAMERA);
+	if (camera == nullptr) {
+		LOGGER("Root GameObject in scene can't be found!");
+		return false;
 	}
 
 	OnWindowResize();

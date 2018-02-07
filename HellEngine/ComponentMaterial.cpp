@@ -38,22 +38,9 @@ void ComponentMaterial::Update()
 	if (!isActive)
 		return;
 
-	ComponentMesh* mesh = nullptr;
-	std::vector<Component*> meshes = gameObject->GetComponents(ComponentType::MESH);
-	if (meshes.size() == 0)
-	{
-		return;
-	}
-	mesh = (ComponentMesh*)meshes[0];
+	ComponentMesh* mesh = (ComponentMesh*)gameObject->GetComponent(ComponentType::MESH);
+	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);;
 	
-	ComponentTransform* transform = nullptr;
-	std::vector<Component*> transforms = gameObject->GetComponents(ComponentType::TRANSFORM);
-	if (transforms.size() == 0)
-	{
-		return;
-	}
-	transform = (ComponentTransform*)transforms[0];
-
 	if (!isValid || !mesh || !transform)
 	{
 		return;

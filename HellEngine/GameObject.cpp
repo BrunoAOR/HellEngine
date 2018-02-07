@@ -259,12 +259,9 @@ bool GameObject::SetParent(GameObject* newParent)
 	if (newParent == nullptr)
 	{
 		/* Inform the transform (if it exists) */
-		std::vector<Component*> transforms = GetComponents(ComponentType::TRANSFORM);
-		if (transforms.size() > 0)
-		{
-			ComponentTransform* transform = (ComponentTransform*)transforms[0];
+		ComponentTransform* transform = (ComponentTransform*)GetComponent(ComponentType::TRANSFORM);
+		if (transform)
 			transform->SetParent(nullptr);
-		}
 
 		/* Remove from current parent. */
 		parent->RemoveChild(this);
@@ -286,17 +283,13 @@ bool GameObject::SetParent(GameObject* newParent)
 	else
 	{
 		/* Inform the transform (if it exists) about the newParent's transform (if it exists, else nullptr) */
-		std::vector<Component*> transforms = GetComponents(ComponentType::TRANSFORM);
-		if (transforms.size() > 0)
+		ComponentTransform* transform = (ComponentTransform*)GetComponent(ComponentType::TRANSFORM);
+
+		if (transform)
 		{
-			ComponentTransform* transform = (ComponentTransform*)transforms[0];
-
-			std::vector<Component*> parentTransforms = newParent->GetComponents(ComponentType::TRANSFORM);
-			ComponentTransform* parentTransform = nullptr;
+			ComponentTransform* parentTransform = (ComponentTransform*)newParent->GetComponent(ComponentType::TRANSFORM);
 			
-			if (parentTransforms.size() > 0)
-				parentTransform = (ComponentTransform*)parentTransforms[0];
-
+			/* Note that parentTransform might be nullptr, but that is a case handled by the Transform::SetParent method */
 			transform->SetParent(parentTransform);
 		}
 
@@ -325,6 +318,18 @@ std::vector<Component*> GameObject::GetComponents(ComponentType type)
 	}
 
 	return foundComponents;
+}
+
+Component * GameObject::GetComponent(ComponentType type)
+{
+	for (std::vector<Component*>::iterator it = components.begin(); it != components.end(); ++it)
+	{
+		if ((*it)->GetType() == type)
+		{
+			return(*it);
+		}
+	}
+	return nullptr;
 }
 
 Component* GameObject::AddComponent(ComponentType type)

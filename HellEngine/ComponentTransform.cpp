@@ -64,10 +64,9 @@ void ComponentTransform::SetRotationDeg(float x, float y, float z)
 
 void ComponentTransform::InitializeCubeBoundingBox()
 {
-	std::vector<Component*> componentsMesh = this->gameObject->GetComponents(ComponentType::MESH);
+	ComponentMesh *mesh = (ComponentMesh*)gameObject->GetComponent(ComponentType::MESH);
+	if (mesh) {
 
-	if (componentsMesh.size() != 0) {
-		ComponentMesh *mesh = (ComponentMesh*)this->gameObject->GetComponents(ComponentType::MESH).at(0); // picks the first mesh if more than one are found
 		std::vector<float3> *cubeMeshVertexes;
 		float3 *pointerCubeMeshVertexes;
 		int numVertexes;
@@ -222,11 +221,10 @@ float4x4& ComponentTransform::GetModelMatrix4x4()
 	GameObject* parent = gameObject->GetParent();
 	while (parent)
 	{
-		std::vector<Component*> parentTransforms = parent->GetComponents(ComponentType::TRANSFORM);
-		if (parentTransforms.size() == 0)
+		ComponentTransform* parentTransform = (ComponentTransform*)parent->GetComponent(ComponentType::TRANSFORM);
+		if (!parentTransform)
 			break;
 
-		ComponentTransform* parentTransform = (ComponentTransform*)parentTransforms[0];
 		worldModelMatrix = worldModelMatrix * parentTransform->GetModelMatrix4x4();
 		parent = parent->GetParent();
 	}

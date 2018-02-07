@@ -31,12 +31,10 @@ bool ComponentCamera::Init()
 	verticalFOVRad = DegToRad(60);
 	frustum.SetViewPlaneDistances(nearClippingPlane, farClippingPlane);
 	float3 position = vec(0, 3, 0);
-	std::vector<Component*> transforms = gameObject->GetComponents(ComponentType::TRANSFORM);
-	if (transforms.size() > 0) {
-		ComponentTransform* transform = (ComponentTransform*)transforms[0];
-		if (transform != nullptr) {
-			position = transform->GetPosition();
-		}
+
+	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
+	if (transform != nullptr) {
+		position = transform->GetPosition();
 	}
 	frustum.SetFrame(position, vec(0, 0, 1), vec(0, 1, 0));
 	frustumCulling = true;
@@ -46,13 +44,11 @@ bool ComponentCamera::Init()
 
 void ComponentCamera::Update()
 {
-	std::vector<Component*> transforms = gameObject->GetComponents(ComponentType::TRANSFORM);
-	if (transforms.size() > 0) {
-		ComponentTransform* transform = (ComponentTransform*)transforms[0];
-		if (transform != nullptr) {
-			float3 position = transform->GetPosition();
-			SetPosition(position.x, position.y, position.z);
-		}
+	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
+	
+	if (transform != nullptr) {
+		float3 position = transform->GetPosition();
+		SetPosition(position.x, position.y, position.z);
 	}
 }
 
