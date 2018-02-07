@@ -3,6 +3,7 @@
 #include "Application.h"
 #include "GameObject.h"
 #include "Component.h"
+#include "ComponentCamera.h"
 #include "ComponentMaterial.h"
 #include "ComponentMesh.h"
 #include "ComponentTransform.h"
@@ -345,6 +346,9 @@ Component* GameObject::AddComponent(ComponentType type)
 		break;
 	case ComponentType::TRANSFORM:
 		component = new ComponentTransform(this);
+		break;
+	case ComponentType::CAMERA:
+		component = new ComponentCamera(this);
 		break;
 	}
 

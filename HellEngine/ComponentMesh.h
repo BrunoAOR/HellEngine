@@ -34,7 +34,7 @@ private:
 	void CreateSphereVAO(uint rings, uint sections);
 
 private:
-	
+
 	std::vector<VaoInfo> vaoInfos;
 	int activeVao = -1;
 

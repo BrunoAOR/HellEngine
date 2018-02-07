@@ -300,6 +300,9 @@
     <ClInclude Include="TextureConfiguration.h">
       <Filter>General</Filter>
     </ClInclude>
+    <ClInclude Include="ComponentCamera.h">
+      <Filter>Scene Management</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -474,6 +477,9 @@
       <Filter>Scene Management</Filter>
     </ClCompile>
     <ClCompile Include="ComponentType.cpp">
+      <Filter>Scene Management</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentCamera.cpp">
       <Filter>Scene Management</Filter>
     </ClCompile>
   </ItemGroup>
