@@ -18,6 +18,8 @@ public:
 
 	const float* GetPosition();
 
+	const float3 GetPosition3();
+
 	/* Sets the position of the camera */
 	void SetPosition(float x, float y, float z);
 
@@ -29,6 +31,10 @@ public:
 	float GetVerticalFOV() const;
 
 	float GetAspectRatio() const;
+
+	void SetAspectRatio(float ratio);
+
+	void SetPerspective(float fovh, float fovv);
 
 	/* Returns a float* to the first of 16 floats representing the view matrix */
 	float* GetViewMatrix();
@@ -49,11 +55,21 @@ public:
 
 	const float* GetFront() const;
 
+	const float3 GetFront3() const;
+
 	void SetFront(float x, float y, float z);
 
 	const float* GetUp() const;
 
+	const float3 GetUp3() const;
+
 	void SetUp(float x, float y, float z);
+
+	const float3 GetRight3() const;
+
+	const Color GetBackground() const;
+
+	void SetBackground(float red, float green, float blue);
 
 	virtual void OnEditor() override;
 

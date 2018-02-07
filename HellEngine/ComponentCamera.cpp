@@ -30,7 +30,7 @@ bool ComponentCamera::Init()
 	background.a = 1.0f;
 	verticalFOVRad = DegToRad(60);
 	frustum.SetViewPlaneDistances(nearClippingPlane, farClippingPlane);
-	float3 position = vec(0, 0, 0);
+	float3 position = vec(0, 3, 0);
 	std::vector<Component*> transforms = gameObject->GetComponents(ComponentType::TRANSFORM);
 	if (transforms.size() > 0) {
 		ComponentTransform* transform = (ComponentTransform*)transforms[0];
@@ -61,6 +61,11 @@ const float * ComponentCamera::GetPosition()
 	return frustum.Pos().ptr();
 }
 
+const float3 ComponentCamera::GetPosition3()
+{
+	return frustum.Pos();
+}
+
 void ComponentCamera::SetPosition(float x, float y, float z)
 {
 	frustum.SetPos(vec(x, y, z));
@@ -89,6 +94,16 @@ float ComponentCamera::GetVerticalFOV() const
 float ComponentCamera::GetAspectRatio() const
 {
 	return aspectRatio;
+}
+
+void ComponentCamera::SetAspectRatio(float ratio)
+{
+	aspectRatio = ratio;
+}
+
+void ComponentCamera::SetPerspective(float fovh, float fovv)
+{
+	frustum.SetPerspective(fovh, fovv);
 }
 
 float * ComponentCamera::GetViewMatrix()
@@ -146,6 +161,10 @@ const float * ComponentCamera::GetFront() const
 	return frustum.Front().ptr();
 }
 
+const float3 ComponentCamera::GetFront3() const {
+	return frustum.Front();
+}
+
 void ComponentCamera::SetFront(float x, float y, float z)
 {
 	if (x == 0 && y == 0 && z == 0)
@@ -165,6 +184,11 @@ const float * ComponentCamera::GetUp() const
 	return frustum.Up().ptr();
 }
 
+const float3 ComponentCamera::GetUp3() const
+{
+	return frustum.Up();
+}
+
 void ComponentCamera::SetUp(float x, float y, float z)
 {
 	if (x == 0 && y == 0 && z == 0)
@@ -177,6 +201,23 @@ void ComponentCamera::SetUp(float x, float y, float z)
 	rot.Transform(front);
 	frustum.SetUp(up);
 	frustum.SetFront(front);
+}
+
+const float3 ComponentCamera::GetRight3() const
+{
+	return frustum.WorldRight();
+}
+
+const Color ComponentCamera::GetBackground() const
+{
+	return background;
+}
+
+void ComponentCamera::SetBackground(float red, float green, float blue)
+{
+	background.r = red;
+	background.g = green;
+	background.b = blue;
 }
 
 void ComponentCamera::OnEditor()
