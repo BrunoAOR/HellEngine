@@ -98,7 +98,7 @@ UpdateStatus ModuleInput::PreUpdate()
 			case SDL_WINDOWEVENT_RESIZED:
 				App->window->onWindowResize();
 				App->renderer->onWindowResize();
-				App->editorCamera->onWindowResize();
+				App->editorCamera->OnWindowResize();
 				break;
 
 				/* case SDL_WINDOWEVENT_LEAVE: */

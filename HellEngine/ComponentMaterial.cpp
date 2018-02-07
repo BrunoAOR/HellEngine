@@ -330,8 +330,8 @@ bool ComponentMaterial::DrawArray(float* modelMatrix, uint vao, uint vertexCount
 	shader->Activate();
 
 	glUniformMatrix4fv(privateUniforms["model_matrix"], 1, GL_FALSE, modelMatrix);
-	glUniformMatrix4fv(privateUniforms["view"], 1, GL_FALSE, App->editorCamera->GetViewMatrix());
-	glUniformMatrix4fv(privateUniforms["projection"], 1, GL_FALSE, App->editorCamera->GetProjectionMatrix());
+	glUniformMatrix4fv(privateUniforms["view"], 1, GL_FALSE, App->editorCamera->camera->GetViewMatrix());
+	glUniformMatrix4fv(privateUniforms["projection"], 1, GL_FALSE, App->editorCamera->camera->GetProjectionMatrix());
 	UpdatePublicUniforms();
 
 	glBindTexture(GL_TEXTURE_2D, textureBufferId);
@@ -354,8 +354,8 @@ bool ComponentMaterial::DrawElements(float * modelMatrix, uint vao, uint vertexC
 	shader->Activate();
 	
 	glUniformMatrix4fv(privateUniforms["model_matrix"], 1, GL_FALSE, modelMatrix);
-	glUniformMatrix4fv(privateUniforms["view"], 1, GL_FALSE, App->editorCamera->GetViewMatrix());
-	glUniformMatrix4fv(privateUniforms["projection"], 1, GL_FALSE, App->editorCamera->GetProjectionMatrix());
+	glUniformMatrix4fv(privateUniforms["view"], 1, GL_FALSE, App->editorCamera->camera->GetViewMatrix());
+	glUniformMatrix4fv(privateUniforms["projection"], 1, GL_FALSE, App->editorCamera->camera->GetProjectionMatrix());
 	UpdatePublicUniforms();
 
 	glBindTexture(GL_TEXTURE_2D, textureBufferId);
