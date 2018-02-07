@@ -28,7 +28,10 @@ void ComponentTransform::Update()
 	if (activeBoundingBox) {
 		if (boundingBox.IsFinite())
 		{
+			float currentLineWidth = 0;
+			glGetFloatv(GL_LINE_WIDTH, &currentLineWidth);
 			glLineWidth(3.f);
+
 			glBegin(GL_LINES);
 			glColor3f(0.f, 1.f, 0.f);
 			vec points[8];
@@ -75,6 +78,8 @@ void ComponentTransform::Update()
 			glVertex3fv(&points[7][0]);
 
 			glEnd();
+
+			glLineWidth(currentLineWidth);
 		}
 	}
 
