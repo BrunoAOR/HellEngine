@@ -4,6 +4,7 @@
 #include "ComponentType.h"
 #include "GameObject.h"
 #include "globals.h"
+#include "openGL.h"
 
 
 ComponentTransform::ComponentTransform(GameObject* owner) : Component(owner)
@@ -20,6 +21,63 @@ ComponentTransform::ComponentTransform(GameObject* owner) : Component(owner)
 ComponentTransform::~ComponentTransform()
 {
 	LOGGER("Deleting Component of type '%s'", GetString(type));
+}
+
+void ComponentTransform::Update()
+{
+	if (activeBoundingBox) {
+		if (boundingBox.IsFinite())
+		{
+			glLineWidth(3.f);
+			glBegin(GL_LINES);
+			glColor3f(0.f, 1.f, 0.f);
+			vec points[8];
+			boundingBox.GetCornerPoints(points);
+
+			// LEFT SIDE
+			glVertex3fv(&points[0][0]);
+			glVertex3fv(&points[1][0]);
+
+			glVertex3fv(&points[0][0]);
+			glVertex3fv(&points[2][0]);
+
+			glVertex3fv(&points[2][0]);
+			glVertex3fv(&points[3][0]);
+
+			glVertex3fv(&points[3][0]);
+			glVertex3fv(&points[1][0]);
+
+			// BACK SIDE
+			glVertex3fv(&points[0][0]);
+			glVertex3fv(&points[4][0]);
+
+			glVertex3fv(&points[2][0]);
+			glVertex3fv(&points[6][0]);
+
+			glVertex3fv(&points[4][0]);
+			glVertex3fv(&points[6][0]);
+
+			// RIGHT SIDE
+			glVertex3fv(&points[6][0]);
+			glVertex3fv(&points[7][0]);
+
+			glVertex3fv(&points[4][0]);
+			glVertex3fv(&points[5][0]);
+
+			glVertex3fv(&points[7][0]);
+			glVertex3fv(&points[5][0]);
+
+			// FRONT SIDE
+			glVertex3fv(&points[1][0]);
+			glVertex3fv(&points[5][0]);
+
+			glVertex3fv(&points[3][0]);
+			glVertex3fv(&points[7][0]);
+
+			glEnd();
+		}
+	}
+
 }
 
 float3 ComponentTransform::GetPosition()
@@ -64,9 +122,11 @@ void ComponentTransform::SetRotationDeg(float x, float y, float z)
 
 void ComponentTransform::InitializeCubeBoundingBox()
 {
-	ComponentMesh *mesh = (ComponentMesh*)gameObject->GetComponent(ComponentType::MESH);
-	if (mesh) {
+	std::vector<Component*> componentsMesh = this->gameObject->GetComponents(ComponentType::MESH);
 
+	if (componentsMesh.size() != 0)
+	{
+		ComponentMesh *mesh = (ComponentMesh*)this->gameObject->GetComponents(ComponentType::MESH).at(0); // picks the first mesh if more than one are found
 		std::vector<float3> *cubeMeshVertexes;
 		float3 *pointerCubeMeshVertexes;
 		int numVertexes;

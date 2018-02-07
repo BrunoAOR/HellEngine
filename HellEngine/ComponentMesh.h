@@ -26,7 +26,7 @@ public:
 	VaoInfo GetActiveVao() const;
 	bool SetActiveVao(uint index);
 
-	void BuildVectorCubeVertexes(GLfloat arrayCubePoints[], int size);
+	void BuildVectorCubeVertexes(GLfloat arrayCubePoints[], int vertexesNumber);
 	std::vector<float3> *GetBuildVectorCubePoints();
 
 	virtual void OnEditor() override;

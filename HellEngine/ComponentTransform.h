@@ -15,6 +15,8 @@ public:
 	ComponentTransform(GameObject* owner);
 	virtual ~ComponentTransform() override;
 
+	virtual void Update();
+
 	float3 GetPosition();
 	float3 GetScale();
 	float3 GetRotation();
