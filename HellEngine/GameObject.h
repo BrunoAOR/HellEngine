@@ -26,6 +26,7 @@ public:
 	Component* AddComponent(ComponentType type);
 	bool RemoveComponent(Component* component);
 	void AddDependingComponent();
+	void RemoveDependingComponent();
 
 public:
 
@@ -57,6 +58,7 @@ private:
 	std::vector<Component*> components;
 
 	static GameObject* hierarchyActiveGameObject;
+	bool componentPendingToRemove = false;
 };
 
 #endif // !__H_GAME_OBJECT__

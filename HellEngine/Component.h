@@ -27,6 +27,7 @@ public:
 
 	bool isActive = true;
 	GameObject* gameObject = nullptr;
+	bool toRemove = false;
 
 protected:
 

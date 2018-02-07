@@ -84,6 +84,17 @@ void GameObject::OnEditorInspector()
 	{
 		component->OnEditor();
 	}
+	if (componentPendingToRemove)
+	{
+		for (Component* component : components)
+		{
+			if (component->toRemove)
+			{
+				component->gameObject->RemoveComponent(component);
+			}
+		}
+		componentPendingToRemove = false;
+	}
 }
 
 void GameObject::OnEditorRootHierarchy()
@@ -380,14 +391,30 @@ bool GameObject::RemoveComponent(Component* component)
 	{
 		if (component == (*it))
 		{
+			if ((*it)->GetType() == ComponentType::TRANSFORM)
+			{
+				RemoveDependingComponent();
+			}
+
 			delete component;
 			components.erase(it);
 			return true;
 		}
-		
 	}
 
 	return false;
+}
+
+void GameObject::RemoveDependingComponent()
+{
+	for (std::vector<Component*>::iterator it = components.begin(); it != components.end(); ++it)
+	{
+		if ((*it)->GetType() == ComponentType::MESH)
+		{
+			(*it)->toRemove = true;
+			componentPendingToRemove = true;
+		}
+	}
 }
 
 bool GameObject::HasGameObjectInChildrenHierarchy(GameObject * testGameObject)
