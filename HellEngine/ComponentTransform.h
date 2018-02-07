@@ -29,6 +29,7 @@ public:
 	void InitializeCubeBoundingBox();
 
 	float* GetModelMatrix();
+	float4x4& GetModelMatrix4x4();
 
 	void SetParent(ComponentTransform* newParent);
 
@@ -41,7 +42,6 @@ private:
 
 	enum class RotationAxisModified { MOD_ALL, MOD_X, MOD_Y, MOD_Z };
 
-	float4x4& GetModelMatrix4x4();
 	float4x4& UpdateLocalModelMatrix();
 
 	RotationAxisModified SetRotationDegFormGUI(float x, float y, float z);

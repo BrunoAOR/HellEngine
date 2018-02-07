@@ -1,9 +1,12 @@
 #include "ImGui/imgui.h"
+#include "Application.h"
 #include "ComponentCamera.h"
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "GameObject.h"
+#include "ModuleEditorCamera.h"
 #include "globals.h"
+#include "openGL.h"
 
 ComponentCamera::ComponentCamera(GameObject * owner) : Component(owner)
 {
@@ -49,15 +52,17 @@ void ComponentCamera::Update()
 	if (transform != nullptr) {
 		float3 position = transform->GetPosition();
 		SetPosition(position.x, position.y, position.z);
+		
+		DrawFrustum();
 	}
 }
 
-const float * ComponentCamera::GetPosition()
+const float * ComponentCamera::GetPosition() const
 {
 	return frustum.Pos().ptr();
 }
 
-const float3 ComponentCamera::GetPosition3()
+const float3 ComponentCamera::GetPosition3() const
 {
 	return frustum.Pos();
 }
@@ -272,4 +277,50 @@ int ComponentCamera::MaxCountInGameObject()
 float ComponentCamera::GetHorizontalFOVrad() const
 {
 	return 2 * atan(tan(verticalFOVRad / 2) * aspectRatio);
+}
+
+void ComponentCamera::DrawFrustum() const
+{
+	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
+	if (transform != nullptr)
+	{
+
+		float xTan = tanf(verticalFOVRad / 2);
+		float nearXOffset = nearClippingPlane * xTan;
+		float farXOffset = farClippingPlane * xTan;
+
+		float yTan = tanf(GetHorizontalFOVrad() / 2);
+		float nearYOffset = nearClippingPlane * yTan;
+		float farYOffset = farClippingPlane * yTan;
+
+		float nearA[3] = { -nearXOffset, -nearYOffset, nearClippingPlane };
+		float nearB[3] = { -nearXOffset, nearYOffset, nearClippingPlane };
+		float nearC[3] = { nearXOffset, nearYOffset, nearClippingPlane };
+		float nearD[3] = { nearXOffset, -nearYOffset, nearClippingPlane };
+		float farA[3] = { -farXOffset, -farYOffset, farClippingPlane };
+		float farB[3] = { -farXOffset, farYOffset, farClippingPlane };
+		float farC[3] = { farXOffset, farYOffset, farClippingPlane };
+		float farD[3] = { farXOffset, -farYOffset, farClippingPlane };
+
+		float vertices[8 * 3] = { SP_ARR_3(nearA), SP_ARR_3(nearB), SP_ARR_3(nearC), SP_ARR_3(nearD), SP_ARR_3(farA), SP_ARR_3(farB), SP_ARR_3(farC), SP_ARR_3(farD) };
+		GLubyte indices[12 * 2] = {
+			0, 1,	1, 2,	2, 3,	3, 0,	/* Near plane */
+			4, 5,	5, 6,	6, 7,	7, 4,	/*  Far plane */
+			0, 4,	1, 5,	2, 6,	3, 7	/* Near to far links */
+		};
+		
+		int currentMatrixMode = 0;
+		glGetIntegerv(GL_MATRIX_MODE, &currentMatrixMode);
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glLoadMatrixf((transform->GetModelMatrix4x4() * App->editorCamera->camera->viewMatrix).ptr());
+
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glVertexPointer(3, GL_FLOAT, 0, vertices);
+		glDrawElements(GL_LINES, 12 * 2, GL_UNSIGNED_BYTE, indices);
+		glDisableClientState(GL_VERTEX_ARRAY);
+		
+		glPopMatrix();
+		glMatrixMode(currentMatrixMode);
+	}
 }

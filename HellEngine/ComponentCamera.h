@@ -16,9 +16,9 @@ public:
 	bool Init();
 	void Update();
 
-	const float* GetPosition();
+	const float* GetPosition() const;
 
-	const float3 GetPosition3();
+	const float3 GetPosition3() const;
 
 	/* Sets the position of the camera */
 	void SetPosition(float x, float y, float z);
@@ -79,6 +79,7 @@ public:
 private:
 
 	float GetHorizontalFOVrad() const;
+	void DrawFrustum() const;
 
 private:
 
