@@ -13,6 +13,7 @@ ComponentTransform::ComponentTransform(GameObject* owner) : Component(owner)
 	position = float3(0.0f, 0.0f, 0.0f);
 	scale = float3(1.0f, 1.0f, 1.0f);
 	rotation = Quat::FromEulerXYZ(0.0f, 0.0f, 0.0f);
+	boundingBox.SetNegativeInfinity();
 	LOGGER("Component of type '%s'", GetString(type));
 }
 

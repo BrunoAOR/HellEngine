@@ -333,12 +333,14 @@ Component* GameObject::AddComponent(ComponentType type)
 		}
 	}
 
+	//Certain components should be created along with the correspondent transform component
 	switch (type)
 	{
 	case ComponentType::MATERIAL:
 		component = new ComponentMaterial(this);
 		break;
 	case ComponentType::MESH:
+		AddDependingComponent();
 		component = new ComponentMesh(this);
 		break;
 	case ComponentType::TRANSFORM:
@@ -352,6 +354,22 @@ Component* GameObject::AddComponent(ComponentType type)
 	return component;
 }
 
+void GameObject::AddDependingComponent()
+{
+	bool transformAlreadyExists = false;
+	for (std::vector<Component*>::iterator it = components.begin(); it != components.end(); ++it)
+	{
+		if ((*it)->GetType() == ComponentType::TRANSFORM) 
+		{
+			transformAlreadyExists = true;
+		}
+	}
+	if (transformAlreadyExists != true)
+	{
+		AddComponent(ComponentType::TRANSFORM);
+	}
+}
+
 bool GameObject::RemoveComponent(Component* component)
 {
 	for (std::vector<Component*>::iterator it = components.begin(); it != components.end(); ++it)
@@ -362,6 +380,7 @@ bool GameObject::RemoveComponent(Component* component)
 			components.erase(it);
 			return true;
 		}
+		
 	}
 
 	return false;

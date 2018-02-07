@@ -4,6 +4,7 @@
 #include "MathGeoLib/src/Math/float3.h"
 #include "MathGeoLib/src/Math/float4x4.h"
 #include "MathGeoLib/src/Math/Quat.h"
+#include "MathGeoLib\src\Geometry\AABB.h"
 #include "Component.h"
 
 class ComponentTransform : public Component
@@ -46,6 +47,7 @@ private:
 	float3 scale;
 	Quat rotation;
 	float rotationDeg[3];
+	AABB boundingBox;
 
 	RotationAxisModified rotationMod = RotationAxisModified::MOD_ALL;
 
