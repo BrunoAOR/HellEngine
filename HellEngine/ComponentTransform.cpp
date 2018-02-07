@@ -131,7 +131,7 @@ void ComponentTransform::InitializeCubeBoundingBox()
 
 	if (componentsMesh.size() != 0)
 	{
-		ComponentMesh *mesh = (ComponentMesh*)this->gameObject->GetComponents(ComponentType::MESH).at(0); // picks the first mesh if more than one are found
+		ComponentMesh *mesh = (ComponentMesh*)gameObject->GetComponent(ComponentType::MESH); // picks the first mesh if more than one are found
 		std::vector<float3> *cubeMeshVertexes;
 		float3 *pointerCubeMeshVertexes;
 		int numVertexes;
