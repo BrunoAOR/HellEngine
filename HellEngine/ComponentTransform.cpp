@@ -62,6 +62,25 @@ void ComponentTransform::SetRotationDeg(float x, float y, float z)
 	SetRotationRad(DegToRad(x), DegToRad(y), DegToRad(z));
 }
 
+void ComponentTransform::InitializeCubeBoundingBox()
+{
+	std::vector<Component*> componentsMesh = this->gameObject->GetComponents(ComponentType::MESH);
+
+	if (componentsMesh.size() != 0) {
+		ComponentMesh *mesh = (ComponentMesh*)this->gameObject->GetComponents(ComponentType::MESH).at(0); // picks the first mesh if more than one are found
+		std::vector<float3> *cubeMeshVertexes;
+		float3 *pointerCubeMeshVertexes;
+		int numVertexes;
+
+		cubeMeshVertexes = mesh->GetBuildVectorCubePoints();
+		pointerCubeMeshVertexes = &cubeMeshVertexes->at(0);
+		numVertexes = cubeMeshVertexes->size();
+
+		boundingBox.Enclose(pointerCubeMeshVertexes, numVertexes);
+
+	}
+}
+
 ComponentTransform::RotationAxisModified ComponentTransform::SetRotationDegFormGUI(float x, float y, float z)
 {
 	float3 rotationFP = GetRotation();
@@ -182,6 +201,10 @@ void ComponentTransform::OnEditor()
 		if (ImGui::DragFloat3("Scale", scaleFP, 0.1f, 0.1f, 1000.0f))
 			if (scaleFP[0] >= 0 && scaleFP[1] >= 0 && scaleFP[2] >0)
 				SetScale(scaleFP[0], scaleFP[1], scaleFP[2]);
+		if (ImGui::Checkbox("Bounding Box", &activeBoundingBox))
+		{
+			InitializeCubeBoundingBox();
+		}
 	}
 }
 

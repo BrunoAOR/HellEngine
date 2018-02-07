@@ -39,6 +39,21 @@ bool ComponentMesh::SetActiveVao(uint index)
 	return true;
 }
 
+void ComponentMesh::BuildVectorCubeVertexes(GLfloat arrayCubePoints[], int size)
+{
+
+	for (int i = 0; i < size; i++) {
+		float3 indivVertex(arrayCubePoints[i * 3], arrayCubePoints[i * 3 + 1], arrayCubePoints[i * 3 + 2]);
+		vecCubeVertexes.push_back(indivVertex);
+	}
+}
+
+std::vector<float3> *ComponentMesh::GetBuildVectorCubePoints()
+{
+	return &vecCubeVertexes;
+}
+
+
 void ComponentMesh::OnEditor()
 {
 	static bool optionsCreated = false;
@@ -177,6 +192,7 @@ void ComponentMesh::CreateCubeVAO()
 	const uint allVertCount = 36;
 	const uint uniqueVertCount = 8 + 4;
 	GLfloat uniqueVertices[uniqueVertCount * 3] = { SP_ARR_3F(vA), SP_ARR_3F(vB), SP_ARR_3F(vC), SP_ARR_3F(vD), SP_ARR_3F(vE), SP_ARR_3F(vF), SP_ARR_3F(vG), SP_ARR_3F(vH), SP_ARR_3F(vE), SP_ARR_3F(vF), SP_ARR_3F(vG), SP_ARR_3F(vH) };
+	BuildVectorCubeVertexes(uniqueVertices,uniqueVertCount*3);
 	GLfloat uniqueColors[uniqueVertCount * 3] = { SP_ARR_3F(cRed), SP_ARR_3F(cGreen), SP_ARR_3F(cWhite), SP_ARR_3F(cBlue), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cRed), SP_ARR_3F(cBlue), SP_ARR_3F(cWhite), SP_ARR_3F(cGreen), SP_ARR_3F(cRed) };
 	GLfloat uniqueUVCoords[uniqueVertCount * 2] = { SP_ARR_2F(bottomLeft), SP_ARR_2F(bottomRight), SP_ARR_2F(topLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(topRight), SP_ARR_2F(topLeft), SP_ARR_2F(topLeft), SP_ARR_2F(topRight), SP_ARR_2F(bottomLeft), SP_ARR_2F(bottomRight) };
 	GLubyte verticesOrder[allVertCount] = { 0, 1, 2, 1, 3, 2,		/* Front face */

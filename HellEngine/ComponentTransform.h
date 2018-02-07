@@ -6,6 +6,7 @@
 #include "MathGeoLib/src/Math/Quat.h"
 #include "MathGeoLib\src\Geometry\AABB.h"
 #include "Component.h"
+#include "ComponentMesh.h"
 
 class ComponentTransform : public Component
 {
@@ -22,6 +23,8 @@ public:
 	void SetScale(float x, float y, float z);
 	void SetRotationRad(float x, float y, float z);
 	void SetRotationDeg(float x, float y, float z);
+
+	void InitializeCubeBoundingBox();
 
 	float* GetModelMatrix();
 
@@ -48,6 +51,8 @@ private:
 	Quat rotation;
 	float rotationDeg[3];
 	AABB boundingBox;
+
+	bool activeBoundingBox = false;
 
 	RotationAxisModified rotationMod = RotationAxisModified::MOD_ALL;
 
