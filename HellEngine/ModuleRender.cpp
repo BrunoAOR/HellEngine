@@ -2,8 +2,6 @@
 #pragma comment( lib, "DevIL/libx86/DevIL.lib" )
 #pragma comment( lib, "DevIL/libx86/ILU.lib" )
 #pragma comment( lib, "DevIL/libx86/ILUT.lib" )
-#define SP_ARR_2F(x) x[0], x[1]
-#define SP_ARR_3F(x) x[0], x[1], x[2]
 #include <assert.h>
 #include <math.h>
 #include <vector>

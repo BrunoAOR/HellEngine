@@ -4,6 +4,8 @@
 #define LOGGER(format, ...) Logger(__FILE__, __LINE__, format, __VA_ARGS__);
 #define MAX( a, b ) ( ((a) > (b)) ? (a) : (b) )
 #define MIN( a, b ) ( ((a) < (b)) ? (a) : (b) )
+#define SP_ARR_2(x) x[0], x[1]
+#define SP_ARR_3(x) x[0], x[1], x[2]
 
 /* Deletes a buffer */
 #define RELEASE( x )		\
