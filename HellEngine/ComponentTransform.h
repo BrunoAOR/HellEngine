@@ -57,6 +57,7 @@ private:
 	AABB boundingBox;
 
 	bool activeBoundingBox = false;
+	bool isStatic = false;
 
 	RotationAxisModified rotationMod = RotationAxisModified::MOD_ALL;
 

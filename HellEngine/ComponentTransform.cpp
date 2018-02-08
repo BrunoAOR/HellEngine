@@ -111,26 +111,38 @@ AABB ComponentTransform::GetBoundingBox()
 
 void ComponentTransform::SetPosition(float x, float y, float z)
 {
-	position.x = x;
-	position.y = y;
-	position.z = z;
+	if (!isStatic)
+	{
+		position.x = x;
+		position.y = y;
+		position.z = z;
+	}
 }
 
 void ComponentTransform::SetScale(float x, float y, float z)
 {
-	scale.x = x;
-	scale.y = y;
-	scale.z = z;
+	if (!isStatic)
+	{
+		scale.x = x;
+		scale.y = y;
+		scale.z = z;
+	}
 }
 
 void ComponentTransform::SetRotationRad(float x, float y, float z)
 {
-	rotation = Quat::FromEulerXYZ(x, y, z);
+	if (!isStatic)
+	{
+		rotation = Quat::FromEulerXYZ(x, y, z);
+	}
 }
 
 void ComponentTransform::SetRotationDeg(float x, float y, float z)
 {
-	SetRotationRad(DegToRad(x), DegToRad(y), DegToRad(z));
+	if (!isStatic)
+	{
+		SetRotationRad(DegToRad(x), DegToRad(y), DegToRad(z));
+	}
 }
 
 void ComponentTransform::UpdateBoundingBox()
@@ -275,30 +287,47 @@ void ComponentTransform::OnEditor()
 		{
 			rotationDeg[2] = RadToDeg(GetRotation()[2]);
 		}
-
-		if (ImGui::DragFloat3("Position", positionFP, 0.03f)) {
-			SetPosition(positionFP[0], positionFP[1], positionFP[2]);
-			if (activeBoundingBox) {
-				UpdateBoundingBox();
-			}
-		}
-		if (ImGui::DragFloat3("Rotation", rotationDeg, 0.3f)) {
-			SetRotationDegFormGUI(rotationDeg[0], rotationDeg[1], rotationDeg[2]);
-			if (activeBoundingBox) {
-				UpdateBoundingBox();
-			}
-		}
-		if (ImGui::DragFloat3("Scale", scaleFP, 0.1f, 0.1f, 1000.0f)) {
-			if (scaleFP[0] >= 0 && scaleFP[1] >= 0 && scaleFP[2] > 0) {
-				SetScale(scaleFP[0], scaleFP[1], scaleFP[2]);
-				if (activeBoundingBox) {
+		if (ImGui::DragFloat3("Position", positionFP, 0.03f))
+		{
+			if (!isStatic)
+			{
+				SetPosition(positionFP[0], positionFP[1], positionFP[2]);
+				if (activeBoundingBox)
+				{
 					UpdateBoundingBox();
+				}
+			}
+		}
+		if (ImGui::DragFloat3("Rotation", rotationDeg, 0.3f))
+		{
+			if (!isStatic)
+			{
+				SetRotationDegFormGUI(rotationDeg[0], rotationDeg[1], rotationDeg[2]);
+				if (activeBoundingBox)
+				{
+					UpdateBoundingBox();
+				}
+			}
+		}
+		if (ImGui::DragFloat3("Scale", scaleFP, 0.1f, 0.1f, 1000.0f))
+		{
+			if (!isStatic)
+			{
+				if (scaleFP[0] >= 0 && scaleFP[1] >= 0 && scaleFP[2] > 0)
+				{
+					SetScale(scaleFP[0], scaleFP[1], scaleFP[2]);
+					if (activeBoundingBox)
+					{
+						UpdateBoundingBox();
+					}
 				}
 			}
 		}
 		if (ImGui::Checkbox("Bounding Box", &activeBoundingBox))
 			UpdateBoundingBox();
-
+		if (ImGui::Checkbox("Static", &isStatic))
+		{
+		}
 	}
 }
 
