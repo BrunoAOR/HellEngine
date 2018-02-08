@@ -7,6 +7,7 @@
 #include "GameObject.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleRender.h"
+#include "ModuleScene.h"
 #include "Shader.h"
 #include "globals.h"
 #include "openGL.h"
@@ -46,15 +47,37 @@ void ComponentMaterial::Update()
 		return;
 	}
 
-	float* modelMatrix = transform->GetModelMatrix();
+	bool insideFrustum = true;
 
-	ComponentMesh::VaoInfo vaoInfo = mesh->GetActiveVao();
-	if (vaoInfo.vao == 0)
-	{
-		return;
+	ComponentCamera* camera = App->editorCamera->camera;
+	insideFrustum = camera->ContainsAABB(transform->GetBoundingBox());
+
+	if (insideFrustum) {
+
+		GameObject* root = App->scene->root;
+		std::vector<GameObject*> children = root->GetChildren();
+		for (std::vector<GameObject*>::iterator it = children.begin(); it != children.end(); ++it) {
+			GameObject* go = *it;
+			camera = (ComponentCamera*)go->GetComponent(ComponentType::CAMERA);
+			if (camera != nullptr)
+				break;
+		}
+
+		if (camera != nullptr && camera->FrustumCulling())
+			insideFrustum = camera->ContainsAABB(transform->GetBoundingBox());
+
+		if (insideFrustum) {
+			float* modelMatrix = transform->GetModelMatrix();
+
+			ComponentMesh::VaoInfo vaoInfo = mesh->GetActiveVao();
+			if (vaoInfo.vao == 0)
+			{
+				return;
+			}
+
+			DrawElements(modelMatrix, vaoInfo.vao, vaoInfo.elementsCount, vaoInfo.indexesType);
+		}
 	}
-
-	DrawElements(modelMatrix, vaoInfo.vao, vaoInfo.elementsCount, vaoInfo.indexesType);
 }
 
 /* Recieves the vertex shader file path and tries to compile it */
