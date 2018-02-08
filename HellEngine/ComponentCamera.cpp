@@ -2,6 +2,7 @@
 #include "MathGeoLib/src/Geometry/Plane.h"
 #include "Application.h"
 #include "ComponentCamera.h"
+#include "ModuleScene.h"
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "GameObject.h"
@@ -283,6 +284,13 @@ void ComponentCamera::OnEditor()
 			SetPosition(position[0], position[1], position[2]);
 		*/
 
+		if (ImGui::Checkbox("Active Camera", &isActiveCamera))
+		{
+			if (isActiveCamera)
+				App->scene->SetActiveGameCamera(this);
+			else
+				App->scene->SetActiveGameCamera(nullptr);
+		}
 		ImGui::Checkbox("Frustum Culling", &frustumCulling);
 		if (ImGui::SliderFloat("Near Plane", &nearClippingPlane, 0.01f, 30.0f))
 			SetNearPlaneDistance(nearClippingPlane);

@@ -49,23 +49,18 @@ void ComponentMaterial::Update()
 
 	bool insideFrustum = true;
 
-	ComponentCamera* camera = App->editorCamera->camera;
-	insideFrustum = camera->ContainsAABB(transform->GetBoundingBox());
+	ComponentCamera* editorCamera = App->editorCamera->camera;
+	if (editorCamera != nullptr)
+		insideFrustum = editorCamera->ContainsAABB(transform->GetBoundingBox());
 
 	if (insideFrustum) {
 
-		GameObject* root = App->scene->root;
-		std::vector<GameObject*> children = root->GetChildren();
-		for (std::vector<GameObject*>::iterator it = children.begin(); it != children.end(); ++it) {
-			GameObject* go = *it;
-			camera = (ComponentCamera*)go->GetComponent(ComponentType::CAMERA);
-			if (camera != nullptr)
-				break;
+		ComponentCamera* activeGameCamera = App->scene->GetActiveGameCamera();
+
+		if (activeGameCamera != nullptr && activeGameCamera->FrustumCulling())
+		{
+			insideFrustum = activeGameCamera->ContainsAABB(transform->GetBoundingBox());
 		}
-
-		if (camera != nullptr && camera->FrustumCulling())
-			insideFrustum = camera->ContainsAABB(transform->GetBoundingBox());
-
 		if (insideFrustum) {
 			float* modelMatrix = transform->GetModelMatrix();
 

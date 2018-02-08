@@ -1,6 +1,7 @@
 #include <assert.h>
 #include "ImGui/imgui.h"
 #include "Application.h"
+#include "ComponentCamera.h"
 #include "ComponentType.h"
 #include "ModuleScene.h"
 #include "ModuleWindow.h"
@@ -68,6 +69,19 @@ void ModuleScene::OnEditorInspector(float mainMenuBarHeight, bool * pOpen)
 	}
 
 	ImGui::End();
+}
+
+void ModuleScene::SetActiveGameCamera(ComponentCamera* camera)
+{
+	if (activeGameCamera)
+		activeGameCamera->isActiveCamera = false;
+
+	activeGameCamera = camera;
+}
+
+ComponentCamera * ModuleScene::GetActiveGameCamera() const
+{
+	return activeGameCamera;
 }
 
 GameObject* ModuleScene::CreateGameObject()
