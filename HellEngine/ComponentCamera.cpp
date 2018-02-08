@@ -271,6 +271,12 @@ void ComponentCamera::OnEditor()
 	}
 }
 
+void ComponentCamera::SetAsActiveCamera()
+{
+	isActiveCamera = true;
+	App->scene->SetActiveGameCamera(this);
+}
+
 int ComponentCamera::MaxCountInGameObject()
 {
 	return 1;

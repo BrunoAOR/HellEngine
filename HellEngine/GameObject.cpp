@@ -223,6 +223,11 @@ void GameObject::OnEditorHierarchyCreateMenu()
 		if (ImGui::Selectable("Create Empty"))
 			AddEmptyChild();
 
+		if (ImGui::Selectable("Create Camera"))
+			AddCameraChild();
+
+		ImGui::Separator();
+
 		if (ImGui::Selectable("Create Cube"))
 			AddCubeChild();
 
@@ -471,6 +476,15 @@ void GameObject::SwapWithNextSibling()
 GameObject* GameObject::AddEmptyChild()
 {
 	return (new GameObject("Empty", this));
+}
+
+GameObject * GameObject::AddCameraChild()
+{
+	GameObject* go = new GameObject("Camera", this);
+	go->AddComponent(ComponentType::TRANSFORM);
+	ComponentCamera* camera = (ComponentCamera*)go->AddComponent(ComponentType::CAMERA);
+	camera->SetAsActiveCamera();
+	return go;
 }
 
 GameObject* GameObject::AddCubeChild()

@@ -44,6 +44,7 @@ private:
 	void SwapWithNextSibling();
 
 	GameObject* AddEmptyChild();
+	GameObject* AddCameraChild();
 	GameObject* AddCubeChild();
 	GameObject* AddSphereChild();
 
