@@ -71,7 +71,7 @@ public:
 
 	void SetBackground(float red, float green, float blue);
 
-	bool ContainsAABB(const AABB& bb) const;
+	const Frustum& GetFrustum() const;
 
 	bool FrustumCulling();
 

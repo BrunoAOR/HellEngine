@@ -28,7 +28,7 @@ bool ComponentCamera::Init()
 	aspectRatio = 1;
 	verticalFOVRad = 1;
 	nearClippingPlane = 0.1f;
-	farClippingPlane = 100.0f;
+	farClippingPlane = 1000.0f;
 	background.r = 0;
 	background.g = 0;
 	background.b = 0;
@@ -223,36 +223,9 @@ void ComponentCamera::SetBackground(float red, float green, float blue)
 	background.b = blue;
 }
 
-bool ComponentCamera::ContainsAABB(const AABB & bb) const
+const Frustum & ComponentCamera::GetFrustum() const
 {
-	float3 vCorner[8];
-	int totalIn = 0;
-	bb.GetCornerPoints(vCorner);
-
-	for (int i = 0; i < 6; i++) {
-		int inCount = 8;
-		int ptIn = 1;
-
-		for (int n = 0; n < 8; n++) {			
-			if (frustum.GetPlane(i).IsOnPositiveSide(vCorner[n])) {
-				ptIn = 0;
-				--inCount;
-			}
-		}
-
-		/* Outside */
-		if (inCount == 0)
-			return false;
-
-		totalIn += ptIn;
-	}
-
-	/* Inside */
-	if (totalIn == 6)
-		return true;
-
-	/* Intersect */
-	return true;
+	return frustum;
 }
 
 bool ComponentCamera::FrustumCulling()
@@ -266,24 +239,7 @@ void ComponentCamera::OnEditor()
 	{
 		if (OnEditorDeleteComponent())
 			return;
-
-		/* Decide if necessary to show in a component */
-
-		/*
-		const float* editorFront = GetFront();
-		float front[3] = { editorFront[0], editorFront[1], editorFront[2] };
-		ImGui::InputFloat3("Front", front, 2);
-
-		const float* editorUp = GetUp();
-		float up[3] = { editorUp[0], editorUp[1], editorUp[2] };
-		ImGui::InputFloat3("Up", up, 3);
-
-		const float* editorPos = GetPosition();
-		float position[3] = { editorPos[0], editorPos[1], editorPos[2] };
-		if (ImGui::InputFloat3("Position", position))
-			SetPosition(position[0], position[1], position[2]);
-		*/
-
+				
 		if (ImGui::Checkbox("Active Camera", &isActiveCamera))
 		{
 			if (isActiveCamera)

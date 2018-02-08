@@ -51,7 +51,7 @@ void ComponentMaterial::Update()
 
 	ComponentCamera* editorCamera = App->editorCamera->camera;
 	if (editorCamera != nullptr)
-		insideFrustum = editorCamera->ContainsAABB(transform->GetBoundingBox());
+		insideFrustum = transform->GetBoundingBox().Contains(editorCamera->GetFrustum());
 
 	if (insideFrustum) {
 
@@ -59,7 +59,7 @@ void ComponentMaterial::Update()
 
 		if (activeGameCamera != nullptr && activeGameCamera->FrustumCulling())
 		{
-			insideFrustum = activeGameCamera->ContainsAABB(transform->GetBoundingBox());
+			insideFrustum = transform->GetBoundingBox().Contains(activeGameCamera->GetFrustum());
 		}
 		if (insideFrustum) {
 			float* modelMatrix = transform->GetModelMatrix();

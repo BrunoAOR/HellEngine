@@ -680,7 +680,36 @@ bool AABB::Contains(const Polygon &polygon) const
 
 bool AABB::Contains(const Frustum &frustum) const
 {
-	return Contains(frustum.MinimalEnclosingAABB());
+	//return Contains(frustum.MinimalEnclosingAABB());
+
+	float3 vCorner[8];
+	int totalIn = 0;
+	GetCornerPoints(vCorner);
+
+	for (int i = 0; i < 6; i++) {
+		int inCount = 8;
+		int ptIn = 1;
+
+		for (int n = 0; n < 8; n++) {
+			if (frustum.GetPlane(i).IsOnPositiveSide(vCorner[n])) {
+				ptIn = 0;
+				--inCount;
+			}
+		}
+
+		/* Outside */
+		if (inCount == 0)
+			return false;
+
+		totalIn += ptIn;
+	}
+
+	/* Inside */
+	if (totalIn == 6)
+		return true;
+
+	/* Intersect */
+	return true;
 }
 
 bool AABB::Contains(const Polyhedron &polyhedron) const
