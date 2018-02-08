@@ -98,7 +98,7 @@ float3 ComponentTransform::GetScale()
 float3 ComponentTransform::GetRotation()
 {
 	return rotation.ToEulerXYZ();
-	
+
 }
 
 void ComponentTransform::SetPosition(float x, float y, float z)
@@ -125,7 +125,7 @@ void ComponentTransform::SetRotationDeg(float x, float y, float z)
 	SetRotationRad(DegToRad(x), DegToRad(y), DegToRad(z));
 }
 
-void ComponentTransform::InitializeCubeBoundingBox()
+void ComponentTransform::UpdateCubeBoundingBox()
 {
 	std::vector<Component*> componentsMesh = this->gameObject->GetComponents(ComponentType::MESH);
 
@@ -140,7 +140,9 @@ void ComponentTransform::InitializeCubeBoundingBox()
 		pointerCubeMeshVertexes = &cubeMeshVertexes->at(0);
 		numVertexes = cubeMeshVertexes->size();
 
+		boundingBox.SetNegativeInfinity();
 		boundingBox.Enclose(pointerCubeMeshVertexes, numVertexes);
+		boundingBox.TransformBB(localModelMatrix.Transposed());
 
 	}
 }
@@ -186,11 +188,11 @@ void ComponentTransform::SetParent(ComponentTransform* newParent)
 
 	/* Transpose to get the matrix in a shape when the bottom line is 0 0 0 1 */
 	newLocalModelMatrix.Transpose();
-	
+
 	/* Extract the Translation, Scale and Rotation */
 	/*
 	Matrix shape
-	
+
 	a  b  c  d
 	e  f  g  h
 	i  j  k  l
@@ -258,17 +260,32 @@ void ComponentTransform::OnEditor()
 			rotationDeg[2] = RadToDeg(GetRotation()[2]);
 		}
 
-		if (ImGui::DragFloat3("Position", positionFP, 0.03f))
+		if (ImGui::DragFloat3("Position", positionFP, 0.03f)) {
 			SetPosition(positionFP[0], positionFP[1], positionFP[2]);
-		if (ImGui::DragFloat3("Rotation", rotationDeg, 0.3f))
-			SetRotationDegFormGUI(rotationDeg[0], rotationDeg[1], rotationDeg[2]);
-		if (ImGui::DragFloat3("Scale", scaleFP, 0.1f, 0.1f, 1000.0f))
-			if (scaleFP[0] >= 0 && scaleFP[1] >= 0 && scaleFP[2] >0)
-				SetScale(scaleFP[0], scaleFP[1], scaleFP[2]);
-		if (ImGui::Checkbox("Bounding Box", &activeBoundingBox))
-		{
-			InitializeCubeBoundingBox();
+			if (activeBoundingBox) {
+				UpdateLocalModelMatrix();
+				UpdateCubeBoundingBox();
+			}
 		}
+		if (ImGui::DragFloat3("Rotation", rotationDeg, 0.3f)) {
+			SetRotationDegFormGUI(rotationDeg[0], rotationDeg[1], rotationDeg[2]);
+			if (activeBoundingBox) {
+				UpdateLocalModelMatrix();
+				UpdateCubeBoundingBox();
+			}
+		}
+		if (ImGui::DragFloat3("Scale", scaleFP, 0.1f, 0.1f, 1000.0f)) {
+			if (scaleFP[0] >= 0 && scaleFP[1] >= 0 && scaleFP[2] > 0) {
+				SetScale(scaleFP[0], scaleFP[1], scaleFP[2]);
+				if (activeBoundingBox) {
+					UpdateLocalModelMatrix();
+					UpdateCubeBoundingBox();
+				}
+			}
+		}
+		if (ImGui::Checkbox("Bounding Box", &activeBoundingBox))
+			UpdateCubeBoundingBox();
+
 	}
 }
 
@@ -293,7 +310,7 @@ float4x4& ComponentTransform::GetModelMatrix4x4()
 		worldModelMatrix = worldModelMatrix * parentTransform->GetModelMatrix4x4();
 		parent = parent->GetParent();
 	}
-	
+
 	return worldModelMatrix;
 }
 
