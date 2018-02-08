@@ -31,6 +31,8 @@ void ComponentTransform::Update()
 			float currentLineWidth = 0;
 			glGetFloatv(GL_LINE_WIDTH, &currentLineWidth);
 			glLineWidth(3.f);
+			float currentColor[4];
+			glGetFloatv(GL_CURRENT_COLOR, currentColor);
 
 			glBegin(GL_LINES);
 			glColor3f(0.f, 1.f, 0.f);
@@ -80,6 +82,7 @@ void ComponentTransform::Update()
 			glEnd();
 
 			glLineWidth(currentLineWidth);
+			glColor4f(currentColor[0], currentColor[1], currentColor[2], currentColor[3]);
 		}
 	}
 
