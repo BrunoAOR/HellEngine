@@ -576,8 +576,6 @@ void AABB::TransformBB(const float4x4 & transform)
 	vec za = transform.Col3(2) * minPoint.z;
 	vec zb = transform.Col3(2) * maxPoint.z;
 	
-	vec test = transform.Col3(3);
-
 	minPoint = xa.Min(xb) + ya.Min(yb) + za.Min(zb) + transform.Col3(3);
 	maxPoint = xa.Max(xb) + ya.Max(yb) + za.Max(zb) + transform.Col3(3);
 }

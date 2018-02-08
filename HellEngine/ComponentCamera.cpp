@@ -227,7 +227,6 @@ bool ComponentCamera::ContainsAABB(const AABB & bb) const
 	float3 vCorner[8];
 	int totalIn = 0;
 	bb.GetCornerPoints(vCorner);
-	float fDistance;
 
 	for (int i = 0; i < 6; i++) {
 		int inCount = 8;
