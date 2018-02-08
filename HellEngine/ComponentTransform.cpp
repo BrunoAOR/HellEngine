@@ -104,6 +104,11 @@ float3 ComponentTransform::GetRotation()
 
 }
 
+AABB ComponentTransform::GetBoundingBox()
+{
+	return boundingBox;
+}
+
 void ComponentTransform::SetPosition(float x, float y, float z)
 {
 	position.x = x;

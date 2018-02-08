@@ -21,6 +21,8 @@ public:
 	float3 GetScale();
 	float3 GetRotation();
 
+	AABB GetBoundingBox();
+
 	void SetPosition(float x, float y, float z);
 	void SetScale(float x, float y, float z);
 	void SetRotationRad(float x, float y, float z);
