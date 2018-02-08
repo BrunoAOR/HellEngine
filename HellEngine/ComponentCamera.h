@@ -71,6 +71,10 @@ public:
 
 	void SetBackground(float red, float green, float blue);
 
+	bool ContainsAABB(const AABB& bb) const;
+
+	bool FrustumCulling();
+
 	virtual void OnEditor() override;
 
 	/* Returns the maximum number of times that this particular Type of Component can be added to a GameObject */

@@ -1,4 +1,5 @@
 #include "ImGui/imgui.h"
+#include "MathGeoLib/src/Geometry/Plane.h"
 #include "Application.h"
 #include "ComponentCamera.h"
 #include "ComponentTransform.h"
@@ -219,6 +220,44 @@ void ComponentCamera::SetBackground(float red, float green, float blue)
 	background.r = red;
 	background.g = green;
 	background.b = blue;
+}
+
+bool ComponentCamera::ContainsAABB(const AABB & bb) const
+{
+	float3 vCorner[8];
+	int totalIn = 0;
+	bb.GetCornerPoints(vCorner);
+	float fDistance;
+
+	for (int i = 0; i < 6; i++) {
+		int inCount = 8;
+		int ptIn = 1;
+
+		for (int n = 0; n < 8; n++) {			
+			if (frustum.GetPlane(i).IsOnPositiveSide(vCorner[n])) {
+				ptIn = 0;
+				--inCount;
+			}
+		}
+
+		/* Outside */
+		if (inCount == 0)
+			return false;
+
+		totalIn += ptIn;
+	}
+
+	/* Inside */
+	if (totalIn == 6)
+		return true;
+
+	/* Intersect */
+	return true;
+}
+
+bool ComponentCamera::FrustumCulling()
+{
+	return frustumCulling;
 }
 
 void ComponentCamera::OnEditor()
