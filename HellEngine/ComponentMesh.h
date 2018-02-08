@@ -39,6 +39,8 @@ private:
 	void CreateCubeVAO();
 	void CreateSphereVAO(uint rings, uint sections);
 
+	void UpdateBoundingBox();
+
 private:
 
 	std::vector<VaoInfo> vaoInfos;

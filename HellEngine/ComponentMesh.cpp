@@ -2,6 +2,7 @@
 #include <math.h>
 #include "ImGui/imgui.h"
 #include "ComponentMesh.h"
+#include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "GameObject.h"
 #include "globals.h"
@@ -15,6 +16,7 @@ ComponentMesh::ComponentMesh(GameObject* owner) : Component(owner)
 	CreateCubeVAO();
 	CreateSphereVAO(32, 32);
 	activeVao = 0;
+	UpdateBoundingBox();
 	LOGGER("Component of type '%s'", GetString(type));
 }
 
@@ -34,6 +36,7 @@ bool ComponentMesh::SetActiveVao(uint index)
 		return false;
 
 	activeVao = index;
+	UpdateBoundingBox();
 	return true;
 }
 
@@ -414,4 +417,11 @@ void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE); /* Can be unbound AFTER unbinding the VAO, since the VAO stores information about the bound EBO */
 
 	vaoInfos.push_back(sphereVaoInfo);
+}
+
+void ComponentMesh::UpdateBoundingBox()
+{
+	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
+	if (transform)
+		transform->UpdateBoundingBox();
 }

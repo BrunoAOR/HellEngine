@@ -14,7 +14,6 @@ ComponentTransform::ComponentTransform(GameObject* owner) : Component(owner)
 	position = float3(0.0f, 0.0f, 0.0f);
 	scale = float3(1.0f, 1.0f, 1.0f);
 	rotation = Quat::FromEulerXYZ(0.0f, 0.0f, 0.0f);
-	UpdateBoundingBox();
 	LOGGER("Component of type '%s'", GetString(type));
 }
 
@@ -135,11 +134,10 @@ void ComponentTransform::SetRotationDeg(float x, float y, float z)
 
 void ComponentTransform::UpdateBoundingBox()
 {
-	std::vector<Component*> componentsMesh = this->gameObject->GetComponents(ComponentType::MESH);
+	ComponentMesh* mesh = (ComponentMesh*) gameObject->GetComponent(ComponentType::MESH);
 
-	if (componentsMesh.size() != 0)
+	if (mesh)
 	{
-		ComponentMesh *mesh = (ComponentMesh*)gameObject->GetComponent(ComponentType::MESH); // picks the first mesh if more than one are found
 		std::vector<float3> *cubeMeshVertexes;
 		float3 *pointerCubeMeshVertexes;
 		int numVertexes;
