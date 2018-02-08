@@ -25,7 +25,7 @@ ComponentTransform::~ComponentTransform()
 
 void ComponentTransform::Update()
 {
-	if (activeBoundingBox) {
+	if (drawBoundingBox) {
 		if (boundingBox.IsFinite())
 		{
 			float currentLineWidth = 0;
@@ -145,9 +145,10 @@ void ComponentTransform::SetRotationDeg(float x, float y, float z)
 	}
 }
 
-void ComponentTransform::UpdateBoundingBox()
+void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 {
-	ComponentMesh* mesh = (ComponentMesh*) gameObject->GetComponent(ComponentType::MESH);
+	if (!mesh)
+		mesh = (ComponentMesh*) gameObject->GetComponent(ComponentType::MESH);
 
 	if (mesh)
 	{
@@ -292,10 +293,7 @@ void ComponentTransform::OnEditor()
 			if (!isStatic)
 			{
 				SetPosition(positionFP[0], positionFP[1], positionFP[2]);
-				if (activeBoundingBox)
-				{
-					UpdateBoundingBox();
-				}
+				UpdateBoundingBox();
 			}
 		}
 		if (ImGui::DragFloat3("Rotation", rotationDeg, 0.3f))
@@ -303,10 +301,7 @@ void ComponentTransform::OnEditor()
 			if (!isStatic)
 			{
 				SetRotationDegFormGUI(rotationDeg[0], rotationDeg[1], rotationDeg[2]);
-				if (activeBoundingBox)
-				{
-					UpdateBoundingBox();
-				}
+				UpdateBoundingBox();
 			}
 		}
 		if (ImGui::DragFloat3("Scale", scaleFP, 0.1f, 0.1f, 1000.0f))
@@ -316,18 +311,14 @@ void ComponentTransform::OnEditor()
 				if (scaleFP[0] >= 0 && scaleFP[1] >= 0 && scaleFP[2] > 0)
 				{
 					SetScale(scaleFP[0], scaleFP[1], scaleFP[2]);
-					if (activeBoundingBox)
-					{
-						UpdateBoundingBox();
-					}
+					UpdateBoundingBox();
 				}
 			}
 		}
-		if (ImGui::Checkbox("Bounding Box", &activeBoundingBox))
-			UpdateBoundingBox();
-		if (ImGui::Checkbox("Static", &isStatic))
-		{
-		}
+		
+		ImGui::Checkbox("Bounding Box", &drawBoundingBox);
+
+		ImGui::Checkbox("Static", &isStatic);
 	}
 }
 

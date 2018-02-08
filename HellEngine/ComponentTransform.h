@@ -28,7 +28,7 @@ public:
 	void SetRotationRad(float x, float y, float z);
 	void SetRotationDeg(float x, float y, float z);
 
-	void UpdateBoundingBox();
+	void UpdateBoundingBox(ComponentMesh* mesh = nullptr);
 
 	float* GetModelMatrix();
 	float4x4& GetModelMatrix4x4();
@@ -56,7 +56,7 @@ private:
 	float rotationDeg[3];
 	AABB boundingBox;
 
-	bool activeBoundingBox = false;
+	bool drawBoundingBox = false;
 	bool isStatic = false;
 
 	RotationAxisModified rotationMod = RotationAxisModified::MOD_ALL;

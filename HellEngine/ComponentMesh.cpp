@@ -423,5 +423,5 @@ void ComponentMesh::UpdateBoundingBox()
 {
 	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
 	if (transform)
-		transform->UpdateBoundingBox();
+		transform->UpdateBoundingBox(this);
 }
