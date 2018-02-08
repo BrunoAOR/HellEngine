@@ -14,7 +14,7 @@ ComponentTransform::ComponentTransform(GameObject* owner) : Component(owner)
 	position = float3(0.0f, 0.0f, 0.0f);
 	scale = float3(1.0f, 1.0f, 1.0f);
 	rotation = Quat::FromEulerXYZ(0.0f, 0.0f, 0.0f);
-	UpdateCubeBoundingBox();
+	UpdateBoundingBox();
 	LOGGER("Component of type '%s'", GetString(type));
 }
 
@@ -133,7 +133,7 @@ void ComponentTransform::SetRotationDeg(float x, float y, float z)
 	SetRotationRad(DegToRad(x), DegToRad(y), DegToRad(z));
 }
 
-void ComponentTransform::UpdateCubeBoundingBox()
+void ComponentTransform::UpdateBoundingBox()
 {
 	std::vector<Component*> componentsMesh = this->gameObject->GetComponents(ComponentType::MESH);
 
@@ -150,8 +150,17 @@ void ComponentTransform::UpdateCubeBoundingBox()
 
 		boundingBox.SetNegativeInfinity();
 		boundingBox.Enclose(pointerCubeMeshVertexes, numVertexes);
-		boundingBox.TransformBB(localModelMatrix.Transposed());
+		boundingBox.TransformBB(GetModelMatrix4x4().Transposed());
+	}
 
+	/* To make iterative */
+	std::vector<GameObject*> children = gameObject->GetChildren();
+
+	for (std::vector<GameObject*>::iterator it = children.begin(); it != children.end(); ++it) {
+		GameObject* go = *it;
+		ComponentTransform* t = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM);
+		if (t != nullptr)
+			t->UpdateBoundingBox();
 	}
 }
 
@@ -271,28 +280,25 @@ void ComponentTransform::OnEditor()
 		if (ImGui::DragFloat3("Position", positionFP, 0.03f)) {
 			SetPosition(positionFP[0], positionFP[1], positionFP[2]);
 			if (activeBoundingBox) {
-				UpdateLocalModelMatrix();
-				UpdateCubeBoundingBox();
+				UpdateBoundingBox();
 			}
 		}
 		if (ImGui::DragFloat3("Rotation", rotationDeg, 0.3f)) {
 			SetRotationDegFormGUI(rotationDeg[0], rotationDeg[1], rotationDeg[2]);
 			if (activeBoundingBox) {
-				UpdateLocalModelMatrix();
-				UpdateCubeBoundingBox();
+				UpdateBoundingBox();
 			}
 		}
 		if (ImGui::DragFloat3("Scale", scaleFP, 0.1f, 0.1f, 1000.0f)) {
 			if (scaleFP[0] >= 0 && scaleFP[1] >= 0 && scaleFP[2] > 0) {
 				SetScale(scaleFP[0], scaleFP[1], scaleFP[2]);
 				if (activeBoundingBox) {
-					UpdateLocalModelMatrix();
-					UpdateCubeBoundingBox();
+					UpdateBoundingBox();
 				}
 			}
 		}
 		if (ImGui::Checkbox("Bounding Box", &activeBoundingBox))
-			UpdateCubeBoundingBox();
+			UpdateBoundingBox();
 
 	}
 }

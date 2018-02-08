@@ -28,7 +28,7 @@ public:
 	void SetRotationRad(float x, float y, float z);
 	void SetRotationDeg(float x, float y, float z);
 
-	void UpdateCubeBoundingBox();
+	void UpdateBoundingBox();
 
 	float* GetModelMatrix();
 	float4x4& GetModelMatrix4x4();
