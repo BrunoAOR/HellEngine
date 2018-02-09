@@ -19,7 +19,8 @@ public:
 
 	float3 GetPosition();
 	float3 GetScale();
-	float3 GetRotation();
+	float3 GetRotationRad();
+	float3 GetRotationDeg();
 
 	AABB GetBoundingBox();
 
@@ -42,11 +43,7 @@ public:
 
 private:
 
-	enum class RotationAxisModified { MOD_ALL, MOD_X, MOD_Y, MOD_Z };
-
 	float4x4& UpdateLocalModelMatrix();
-
-	RotationAxisModified SetRotationDegFormGUI(float x, float y, float z);
 
 private:
 
@@ -58,8 +55,6 @@ private:
 
 	bool drawBoundingBox = false;
 	bool isStatic = false;
-
-	RotationAxisModified rotationMod = RotationAxisModified::MOD_ALL;
 
 	float4x4 localModelMatrix;
 	float4x4 worldModelMatrix;

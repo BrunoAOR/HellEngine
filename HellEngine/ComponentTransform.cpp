@@ -98,10 +98,16 @@ float3 ComponentTransform::GetScale()
 	return scale;
 }
 
-float3 ComponentTransform::GetRotation()
+float3 ComponentTransform::GetRotationRad()
 {
 	return rotation.ToEulerXYZ();
+}
 
+float3 ComponentTransform::GetRotationDeg()
+{
+	float3 rotationRad = GetRotationRad();
+
+	return float3(RadToDeg(rotationRad.x), RadToDeg(rotationRad.y), RadToDeg(rotationRad.z));
 }
 
 AABB ComponentTransform::GetBoundingBox()
@@ -176,25 +182,6 @@ void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 	}
 }
 
-ComponentTransform::RotationAxisModified ComponentTransform::SetRotationDegFormGUI(float x, float y, float z)
-{
-	float3 rotationFP = GetRotation();
-	if (rotationFP[0] != x)
-	{
-		rotationMod = RotationAxisModified::MOD_X;
-	}
-	else if (rotationFP[1] != y)
-	{
-		rotationMod = RotationAxisModified::MOD_Y;
-	}
-	else if (rotationFP[2] != z)
-	{
-		rotationMod = RotationAxisModified::MOD_Z;
-	}
-	SetRotationDeg(x, y, z);
-	return rotationMod;
-}
-
 float* ComponentTransform::GetModelMatrix()
 {
 	return GetModelMatrix4x4().ptr();
@@ -255,9 +242,13 @@ void ComponentTransform::SetParent(ComponentTransform* newParent)
 	newLocalModelMatrix[0][2] /= scale.z;
 	newLocalModelMatrix[1][2] /= scale.z;
 	newLocalModelMatrix[2][2] /= scale.z;
+	
 	/* Then turn into a Quat */
 	rotation = Quat(newLocalModelMatrix);
-	rotationMod = RotationAxisModified::MOD_ALL;
+	float3 rotEuler = rotation.ToEulerXYZ();
+	rotationDeg[0] = rotEuler.x;
+	rotationDeg[1] = rotEuler.y;
+	rotationDeg[2] = rotEuler.z;
 }
 
 void ComponentTransform::OnEditor()
@@ -270,24 +261,6 @@ void ComponentTransform::OnEditor()
 		float positionFP[3] = { position.x, position.y, position.z };
 		float scaleFP[3] = { scale.x, scale.y, scale.z };
 
-		if (rotationMod == RotationAxisModified::MOD_ALL)
-		{
-			rotationDeg[0] = RadToDeg(GetRotation()[0]); //x
-			rotationDeg[1] = RadToDeg(GetRotation()[1]); //y
-			rotationDeg[2] = RadToDeg(GetRotation()[2]); //z
-		}
-		else if (rotationMod == RotationAxisModified::MOD_X)
-		{
-			rotationDeg[0] = RadToDeg(GetRotation()[0]);
-		}
-		else if (rotationMod == RotationAxisModified::MOD_Y)
-		{
-			rotationDeg[1] = RadToDeg(GetRotation()[1]);
-		}
-		else if (rotationMod == RotationAxisModified::MOD_Z)
-		{
-			rotationDeg[2] = RadToDeg(GetRotation()[2]);
-		}
 		if (ImGui::DragFloat3("Position", positionFP, 0.03f))
 		{
 			if (!isStatic)
@@ -300,7 +273,7 @@ void ComponentTransform::OnEditor()
 		{
 			if (!isStatic)
 			{
-				SetRotationDegFormGUI(rotationDeg[0], rotationDeg[1], rotationDeg[2]);
+				SetRotationDeg(rotationDeg[0], rotationDeg[1], rotationDeg[2]);
 				UpdateBoundingBox();
 			}
 		}

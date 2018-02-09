@@ -57,7 +57,7 @@ void ComponentCamera::Update()
 		float3 position = transform->GetPosition();
 		SetPosition(position.x, position.y, position.z);
 		
-		float3 rot3 = transform->GetRotation();
+		float3 rot3 = transform->GetRotationRad();
 		Quat rot = Quat::FromEulerXYZ(rot3.x, rot3.y, rot3.z);
 		float3 newFront = rot.Transform(vec(0, 0, 1));
 		float3 newUp = rot.Transform(vec(0, 1, 0));
