@@ -34,6 +34,8 @@ bool ComponentCamera::Init()
 	background.b = 0;
 	background.a = 1.0f;
 	verticalFOVRad = DegToRad(60);
+	
+	frustum.SetPerspective(GetHorizontalFOVrad(), verticalFOVRad);
 	frustum.SetViewPlaneDistances(nearClippingPlane, farClippingPlane);
 	float3 position = vec(0, 3, 0);
 
