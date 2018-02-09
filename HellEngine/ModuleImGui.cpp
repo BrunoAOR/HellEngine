@@ -10,6 +10,7 @@
 #include "ModuleRender.h"
 #include "ModuleScene.h"
 #include "ModuleWindow.h"
+#include "globals.h"
 
 ModuleImGui::ModuleImGui()
 {
@@ -93,6 +94,10 @@ UpdateStatus ModuleImGui::Update()
 
 		if (ImGui::BeginMenu("Configuration"))
 		{
+			ImGui::MenuItem("Debug Mode", nullptr, &DEBUG_MODE);
+
+			ImGui::Separator();
+
 			ImGui::MenuItem("Camera", nullptr, &showCameraWindow);
 			ImGui::MenuItem("OpenGL", nullptr, &showOpenGLWindow);
 

@@ -63,7 +63,9 @@ void ComponentCamera::Update()
 		float3 newUp = rot.Transform(vec(0, 1, 0));
 		SetFront(newFront.x, newFront.y, newFront.z);
 		SetUp(newUp.x, newUp.y, newUp.z);
-		DrawFrustum();
+		
+		if (DEBUG_MODE)
+			DrawFrustum();
 	}
 }
 

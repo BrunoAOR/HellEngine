@@ -316,7 +316,10 @@ void ComponentTransform::OnEditor()
 			}
 		}
 		
-		ImGui::Checkbox("Bounding Box", &drawBoundingBox);
+		if (DEBUG_MODE)
+			ImGui::Checkbox("Draw Bounding Box", &drawBoundingBox);
+		else if (drawBoundingBox)
+			drawBoundingBox = false;
 
 		ImGui::Checkbox("Static", &isStatic);
 	}

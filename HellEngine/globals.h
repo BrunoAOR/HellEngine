@@ -41,6 +41,8 @@
 typedef nlohmann::json Json;
 typedef unsigned int uint;
 
+extern bool DEBUG_MODE;
+
 void Logger(const char file[], int line, const char* format, ...);
 Json LoadJson(const char* path);
 bool LoadTextFile(const std::string& path, std::string& outputString);
