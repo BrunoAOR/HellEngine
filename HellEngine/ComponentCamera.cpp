@@ -112,6 +112,7 @@ float ComponentCamera::GetAspectRatio() const
 void ComponentCamera::SetAspectRatio(float ratio)
 {
 	aspectRatio = ratio;
+	SetPerspective(GetHorizontalFOVrad(), verticalFOVRad);
 }
 
 void ComponentCamera::SetPerspective(float fovh, float fovv)
@@ -268,8 +269,10 @@ void ComponentCamera::OnEditor()
 		float fovv = GetVerticalFOV();
 		if (ImGui::SliderFloat("Fov V", &fovv, 0.1f, 180.0f))
 			SetFOV(fovv);
-		aspectRatio = GetAspectRatio();
-		ImGui::SliderFloat("Aspect Ratio", &aspectRatio, 0.1f, 5.0f);
+
+		float editorAspectRatio = GetAspectRatio();
+		if (ImGui::SliderFloat("Aspect Ratio", &editorAspectRatio, 0.1f, 5.0f))
+			SetAspectRatio(editorAspectRatio);
 
 		static float backgroundColor[3] = { 0.0f, 0.0f, 0.0f };
 		if (ImGui::ColorEdit3("Background Color", backgroundColor))
@@ -303,11 +306,11 @@ void ComponentCamera::DrawFrustum() const
 	if (transform != nullptr)
 	{
 
-		float xTan = tanf(verticalFOVRad / 2);
+		float xTan = tanf(GetHorizontalFOVrad() / 2);
 		float nearXOffset = nearClippingPlane * xTan;
 		float farXOffset = farClippingPlane * xTan;
 
-		float yTan = tanf(GetHorizontalFOVrad() / 2);
+		float yTan = tanf(verticalFOVRad / 2);
 		float nearYOffset = nearClippingPlane * yTan;
 		float farYOffset = farClippingPlane * yTan;
 
