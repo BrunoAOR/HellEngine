@@ -110,6 +110,8 @@
     <ClInclude Include="openGL.h" />
     <ClInclude Include="Point.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="SpaceNode.h" />
+    <ClInclude Include="SpaceQuadTree.h" />
     <ClInclude Include="TextureConfiguration.h" />
     <ClInclude Include="TextureInfo.h" />
     <ClInclude Include="UpdateStatus.h" />
@@ -174,6 +176,8 @@
     <ClCompile Include="ModuleTime.cpp" />
     <ClCompile Include="ModuleWindow.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="SpaceNode.cpp" />
+    <ClCompile Include="SpaceQuadTree.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="MathGeoLib\src\Geometry\KDTree.inl" />

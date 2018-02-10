@@ -303,6 +303,12 @@
     <ClInclude Include="ComponentCamera.h">
       <Filter>Scene Management</Filter>
     </ClInclude>
+    <ClInclude Include="SpaceQuadTree.h">
+      <Filter>Scene Management</Filter>
+    </ClInclude>
+    <ClInclude Include="SpaceNode.h">
+      <Filter>Scene Management</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -480,6 +486,12 @@
       <Filter>Scene Management</Filter>
     </ClCompile>
     <ClCompile Include="ComponentCamera.cpp">
+      <Filter>Scene Management</Filter>
+    </ClCompile>
+    <ClCompile Include="SpaceQuadTree.cpp">
+      <Filter>Scene Management</Filter>
+    </ClCompile>
+    <ClCompile Include="SpaceNode.cpp">
       <Filter>Scene Management</Filter>
     </ClCompile>
   </ItemGroup>
