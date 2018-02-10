@@ -23,8 +23,11 @@ public:
     std::vector<GameObject*> GetChildren();
 
 	std::vector<Component*> GetComponents(ComponentType type);
+	Component* GetComponent(ComponentType type);
 	Component* AddComponent(ComponentType type);
 	bool RemoveComponent(Component* component);
+	void AddDependingComponent();
+	void RemoveDependingComponent();
 
 public:
 
@@ -41,6 +44,7 @@ private:
 	void SwapWithNextSibling();
 
 	GameObject* AddEmptyChild();
+	GameObject* AddCameraChild();
 	GameObject* AddCubeChild();
 	GameObject* AddSphereChild();
 
@@ -56,6 +60,7 @@ private:
 	std::vector<Component*> components;
 
 	static GameObject* hierarchyActiveGameObject;
+	bool componentPendingToRemove = false;
 };
 
 #endif // !__H_GAME_OBJECT__

@@ -4,6 +4,7 @@
 #include "ComponentType.h"
 #include "GameObject.h"
 #include "globals.h"
+#include "openGL.h"
 
 
 ComponentTransform::ComponentTransform(GameObject* owner) : Component(owner)
@@ -13,12 +14,78 @@ ComponentTransform::ComponentTransform(GameObject* owner) : Component(owner)
 	position = float3(0.0f, 0.0f, 0.0f);
 	scale = float3(1.0f, 1.0f, 1.0f);
 	rotation = Quat::FromEulerXYZ(0.0f, 0.0f, 0.0f);
+	UpdateBoundingBox();
 	LOGGER("Component of type '%s'", GetString(type));
 }
 
 ComponentTransform::~ComponentTransform()
 {
 	LOGGER("Deleting Component of type '%s'", GetString(type));
+}
+
+void ComponentTransform::Update()
+{
+	if (drawBoundingBox) {
+		if (boundingBox.IsFinite())
+		{
+			float currentLineWidth = 0;
+			glGetFloatv(GL_LINE_WIDTH, &currentLineWidth);
+			glLineWidth(3.f);
+			float currentColor[4];
+			glGetFloatv(GL_CURRENT_COLOR, currentColor);
+
+			glBegin(GL_LINES);
+			glColor3f(0.f, 1.f, 0.f);
+			vec points[8];
+			boundingBox.GetCornerPoints(points);
+
+			// LEFT SIDE
+			glVertex3fv(&points[0][0]);
+			glVertex3fv(&points[1][0]);
+
+			glVertex3fv(&points[0][0]);
+			glVertex3fv(&points[2][0]);
+
+			glVertex3fv(&points[2][0]);
+			glVertex3fv(&points[3][0]);
+
+			glVertex3fv(&points[3][0]);
+			glVertex3fv(&points[1][0]);
+
+			// BACK SIDE
+			glVertex3fv(&points[0][0]);
+			glVertex3fv(&points[4][0]);
+
+			glVertex3fv(&points[2][0]);
+			glVertex3fv(&points[6][0]);
+
+			glVertex3fv(&points[4][0]);
+			glVertex3fv(&points[6][0]);
+
+			// RIGHT SIDE
+			glVertex3fv(&points[6][0]);
+			glVertex3fv(&points[7][0]);
+
+			glVertex3fv(&points[4][0]);
+			glVertex3fv(&points[5][0]);
+
+			glVertex3fv(&points[7][0]);
+			glVertex3fv(&points[5][0]);
+
+			// FRONT SIDE
+			glVertex3fv(&points[1][0]);
+			glVertex3fv(&points[5][0]);
+
+			glVertex3fv(&points[3][0]);
+			glVertex3fv(&points[7][0]);
+
+			glEnd();
+
+			glLineWidth(currentLineWidth);
+			glColor4f(currentColor[0], currentColor[1], currentColor[2], currentColor[3]);
+		}
+	}
+
 }
 
 float3 ComponentTransform::GetPosition()
@@ -31,53 +98,88 @@ float3 ComponentTransform::GetScale()
 	return scale;
 }
 
-float3 ComponentTransform::GetRotation()
+float3 ComponentTransform::GetRotationRad()
 {
 	return rotation.ToEulerXYZ();
-	
+}
+
+float3 ComponentTransform::GetRotationDeg()
+{
+	float3 rotationRad = GetRotationRad();
+
+	return float3(RadToDeg(rotationRad.x), RadToDeg(rotationRad.y), RadToDeg(rotationRad.z));
+}
+
+AABB ComponentTransform::GetBoundingBox()
+{
+	return boundingBox;
 }
 
 void ComponentTransform::SetPosition(float x, float y, float z)
 {
-	position.x = x;
-	position.y = y;
-	position.z = z;
+	if (!isStatic)
+	{
+		position.x = x;
+		position.y = y;
+		position.z = z;
+	}
 }
 
 void ComponentTransform::SetScale(float x, float y, float z)
 {
-	scale.x = x;
-	scale.y = y;
-	scale.z = z;
+	if (!isStatic)
+	{
+		scale.x = x;
+		scale.y = y;
+		scale.z = z;
+	}
 }
 
 void ComponentTransform::SetRotationRad(float x, float y, float z)
 {
-	rotation = Quat::FromEulerXYZ(x, y, z);
+	if (!isStatic)
+	{
+		rotation = Quat::FromEulerXYZ(x, y, z);
+	}
 }
 
 void ComponentTransform::SetRotationDeg(float x, float y, float z)
 {
-	SetRotationRad(DegToRad(x), DegToRad(y), DegToRad(z));
+	if (!isStatic)
+	{
+		SetRotationRad(DegToRad(x), DegToRad(y), DegToRad(z));
+	}
 }
 
-ComponentTransform::RotationAxisModified ComponentTransform::SetRotationDegFormGUI(float x, float y, float z)
+void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 {
-	float3 rotationFP = GetRotation();
-	if (rotationFP[0] != x)
+	if (!mesh)
+		mesh = (ComponentMesh*) gameObject->GetComponent(ComponentType::MESH);
+
+	if (mesh)
 	{
-		rotationMod = RotationAxisModified::MOD_X;
+		std::vector<float3> *cubeMeshVertexes;
+		float3 *pointerCubeMeshVertexes;
+		int numVertexes;
+
+		cubeMeshVertexes = mesh->GetBuildVectorCubePoints();
+		pointerCubeMeshVertexes = &cubeMeshVertexes->at(0);
+		numVertexes = cubeMeshVertexes->size();
+
+		boundingBox.SetNegativeInfinity();
+		boundingBox.Enclose(pointerCubeMeshVertexes, numVertexes);
+		boundingBox.TransformBB(GetModelMatrix4x4().Transposed());
 	}
-	else if (rotationFP[1] != y)
-	{
-		rotationMod = RotationAxisModified::MOD_Y;
+
+	/* To make iterative */
+	std::vector<GameObject*> children = gameObject->GetChildren();
+
+	for (std::vector<GameObject*>::iterator it = children.begin(); it != children.end(); ++it) {
+		GameObject* go = *it;
+		ComponentTransform* t = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM);
+		if (t != nullptr)
+			t->UpdateBoundingBox();
 	}
-	else if (rotationFP[2] != z)
-	{
-		rotationMod = RotationAxisModified::MOD_Z;
-	}
-	SetRotationDeg(x, y, z);
-	return rotationMod;
 }
 
 float* ComponentTransform::GetModelMatrix()
@@ -102,11 +204,11 @@ void ComponentTransform::SetParent(ComponentTransform* newParent)
 
 	/* Transpose to get the matrix in a shape when the bottom line is 0 0 0 1 */
 	newLocalModelMatrix.Transpose();
-	
+
 	/* Extract the Translation, Scale and Rotation */
 	/*
 	Matrix shape
-	
+
 	a  b  c  d
 	e  f  g  h
 	i  j  k  l
@@ -140,9 +242,13 @@ void ComponentTransform::SetParent(ComponentTransform* newParent)
 	newLocalModelMatrix[0][2] /= scale.z;
 	newLocalModelMatrix[1][2] /= scale.z;
 	newLocalModelMatrix[2][2] /= scale.z;
+	
 	/* Then turn into a Quat */
 	rotation = Quat(newLocalModelMatrix);
-	rotationMod = RotationAxisModified::MOD_ALL;
+	float3 rotEuler = rotation.ToEulerXYZ();
+	rotationDeg[0] = rotEuler.x;
+	rotationDeg[1] = rotEuler.y;
+	rotationDeg[2] = rotEuler.z;
 }
 
 void ComponentTransform::OnEditor()
@@ -155,32 +261,40 @@ void ComponentTransform::OnEditor()
 		float positionFP[3] = { position.x, position.y, position.z };
 		float scaleFP[3] = { scale.x, scale.y, scale.z };
 
-		if (rotationMod == RotationAxisModified::MOD_ALL)
-		{
-			rotationDeg[0] = RadToDeg(GetRotation()[0]); //x
-			rotationDeg[1] = RadToDeg(GetRotation()[1]); //y
-			rotationDeg[2] = RadToDeg(GetRotation()[2]); //z
-		}
-		else if (rotationMod == RotationAxisModified::MOD_X)
-		{
-			rotationDeg[0] = RadToDeg(GetRotation()[0]);
-		}
-		else if (rotationMod == RotationAxisModified::MOD_Y)
-		{
-			rotationDeg[1] = RadToDeg(GetRotation()[1]);
-		}
-		else if (rotationMod == RotationAxisModified::MOD_Z)
-		{
-			rotationDeg[2] = RadToDeg(GetRotation()[2]);
-		}
-
 		if (ImGui::DragFloat3("Position", positionFP, 0.03f))
-			SetPosition(positionFP[0], positionFP[1], positionFP[2]);
+		{
+			if (!isStatic)
+			{
+				SetPosition(positionFP[0], positionFP[1], positionFP[2]);
+				UpdateBoundingBox();
+			}
+		}
 		if (ImGui::DragFloat3("Rotation", rotationDeg, 0.3f))
-			SetRotationDegFormGUI(rotationDeg[0], rotationDeg[1], rotationDeg[2]);
+		{
+			if (!isStatic)
+			{
+				SetRotationDeg(rotationDeg[0], rotationDeg[1], rotationDeg[2]);
+				UpdateBoundingBox();
+			}
+		}
 		if (ImGui::DragFloat3("Scale", scaleFP, 0.1f, 0.1f, 1000.0f))
-			if (scaleFP[0] >= 0 && scaleFP[1] >= 0 && scaleFP[2] >0)
-				SetScale(scaleFP[0], scaleFP[1], scaleFP[2]);
+		{
+			if (!isStatic)
+			{
+				if (scaleFP[0] >= 0 && scaleFP[1] >= 0 && scaleFP[2] > 0)
+				{
+					SetScale(scaleFP[0], scaleFP[1], scaleFP[2]);
+					UpdateBoundingBox();
+				}
+			}
+		}
+		
+		if (DEBUG_MODE)
+			ImGui::Checkbox("Draw Bounding Box", &drawBoundingBox);
+		else if (drawBoundingBox)
+			drawBoundingBox = false;
+
+		ImGui::Checkbox("Static", &isStatic);
 	}
 }
 
@@ -198,15 +312,14 @@ float4x4& ComponentTransform::GetModelMatrix4x4()
 	GameObject* parent = gameObject->GetParent();
 	while (parent)
 	{
-		std::vector<Component*> parentTransforms = parent->GetComponents(ComponentType::TRANSFORM);
-		if (parentTransforms.size() == 0)
+		ComponentTransform* parentTransform = (ComponentTransform*)parent->GetComponent(ComponentType::TRANSFORM);
+		if (!parentTransform)
 			break;
 
-		ComponentTransform* parentTransform = (ComponentTransform*)parentTransforms[0];
 		worldModelMatrix = worldModelMatrix * parentTransform->GetModelMatrix4x4();
 		parent = parent->GetParent();
 	}
-	
+
 	return worldModelMatrix;
 }
 

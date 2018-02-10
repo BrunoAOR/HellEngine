@@ -3,6 +3,7 @@
 #include "Application.h"
 #include "GameObject.h"
 #include "Component.h"
+#include "ComponentCamera.h"
 #include "ComponentMaterial.h"
 #include "ComponentMesh.h"
 #include "ComponentTransform.h"
@@ -82,6 +83,17 @@ void GameObject::OnEditorInspector()
 	for (Component* component : components)
 	{
 		component->OnEditor();
+	}
+	if (componentPendingToRemove)
+	{
+		for (Component* component : components)
+		{
+			if (component->toRemove)
+			{
+				component->gameObject->RemoveComponent(component);
+			}
+		}
+		componentPendingToRemove = false;
 	}
 }
 
@@ -211,6 +223,11 @@ void GameObject::OnEditorHierarchyCreateMenu()
 		if (ImGui::Selectable("Create Empty"))
 			AddEmptyChild();
 
+		if (ImGui::Selectable("Create Camera"))
+			AddCameraChild();
+
+		ImGui::Separator();
+
 		if (ImGui::Selectable("Create Cube"))
 			AddCubeChild();
 
@@ -247,12 +264,9 @@ bool GameObject::SetParent(GameObject* newParent)
 	if (newParent == nullptr)
 	{
 		/* Inform the transform (if it exists) */
-		std::vector<Component*> transforms = GetComponents(ComponentType::TRANSFORM);
-		if (transforms.size() > 0)
-		{
-			ComponentTransform* transform = (ComponentTransform*)transforms[0];
+		ComponentTransform* transform = (ComponentTransform*)GetComponent(ComponentType::TRANSFORM);
+		if (transform)
 			transform->SetParent(nullptr);
-		}
 
 		/* Remove from current parent. */
 		parent->RemoveChild(this);
@@ -274,17 +288,13 @@ bool GameObject::SetParent(GameObject* newParent)
 	else
 	{
 		/* Inform the transform (if it exists) about the newParent's transform (if it exists, else nullptr) */
-		std::vector<Component*> transforms = GetComponents(ComponentType::TRANSFORM);
-		if (transforms.size() > 0)
+		ComponentTransform* transform = (ComponentTransform*)GetComponent(ComponentType::TRANSFORM);
+
+		if (transform)
 		{
-			ComponentTransform* transform = (ComponentTransform*)transforms[0];
-
-			std::vector<Component*> parentTransforms = newParent->GetComponents(ComponentType::TRANSFORM);
-			ComponentTransform* parentTransform = nullptr;
+			ComponentTransform* parentTransform = (ComponentTransform*)newParent->GetComponent(ComponentType::TRANSFORM);
 			
-			if (parentTransforms.size() > 0)
-				parentTransform = (ComponentTransform*)parentTransforms[0];
-
+			/* Note that parentTransform might be nullptr, but that is a case handled by the Transform::SetParent method */
 			transform->SetParent(parentTransform);
 		}
 
@@ -315,6 +325,18 @@ std::vector<Component*> GameObject::GetComponents(ComponentType type)
 	return foundComponents;
 }
 
+Component * GameObject::GetComponent(ComponentType type)
+{
+	for (std::vector<Component*>::iterator it = components.begin(); it != components.end(); ++it)
+	{
+		if ((*it)->GetType() == type)
+		{
+			return(*it);
+		}
+	}
+	return nullptr;
+}
+
 Component* GameObject::AddComponent(ComponentType type)
 {
 	Component* component = nullptr;
@@ -333,16 +355,21 @@ Component* GameObject::AddComponent(ComponentType type)
 		}
 	}
 
+	//Certain components should be created along with the correspondent transform component
 	switch (type)
 	{
 	case ComponentType::MATERIAL:
 		component = new ComponentMaterial(this);
 		break;
 	case ComponentType::MESH:
+		AddDependingComponent();
 		component = new ComponentMesh(this);
 		break;
 	case ComponentType::TRANSFORM:
 		component = new ComponentTransform(this);
+		break;
+	case ComponentType::CAMERA:
+		component = new ComponentCamera(this);
 		break;
 	}
 
@@ -352,12 +379,33 @@ Component* GameObject::AddComponent(ComponentType type)
 	return component;
 }
 
+void GameObject::AddDependingComponent()
+{
+	bool transformAlreadyExists = false;
+	for (std::vector<Component*>::iterator it = components.begin(); it != components.end(); ++it)
+	{
+		if ((*it)->GetType() == ComponentType::TRANSFORM) 
+		{
+			transformAlreadyExists = true;
+		}
+	}
+	if (transformAlreadyExists != true)
+	{
+		AddComponent(ComponentType::TRANSFORM);
+	}
+}
+
 bool GameObject::RemoveComponent(Component* component)
 {
 	for (std::vector<Component*>::iterator it = components.begin(); it != components.end(); ++it)
 	{
 		if (component == (*it))
 		{
+			if ((*it)->GetType() == ComponentType::TRANSFORM)
+			{
+				RemoveDependingComponent();
+			}
+
 			delete component;
 			components.erase(it);
 			return true;
@@ -365,6 +413,18 @@ bool GameObject::RemoveComponent(Component* component)
 	}
 
 	return false;
+}
+
+void GameObject::RemoveDependingComponent()
+{
+	for (std::vector<Component*>::iterator it = components.begin(); it != components.end(); ++it)
+	{
+		if ((*it)->GetType() == ComponentType::MESH)
+		{
+			(*it)->toRemove = true;
+			componentPendingToRemove = true;
+		}
+	}
 }
 
 bool GameObject::HasGameObjectInChildrenHierarchy(GameObject * testGameObject)
@@ -416,6 +476,15 @@ void GameObject::SwapWithNextSibling()
 GameObject* GameObject::AddEmptyChild()
 {
 	return (new GameObject("Empty", this));
+}
+
+GameObject * GameObject::AddCameraChild()
+{
+	GameObject* go = new GameObject("Camera", this);
+	go->AddComponent(ComponentType::TRANSFORM);
+	ComponentCamera* camera = (ComponentCamera*)go->AddComponent(ComponentType::CAMERA);
+	camera->SetAsActiveCamera();
+	return go;
 }
 
 GameObject* GameObject::AddCubeChild()

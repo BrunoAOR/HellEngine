@@ -7,6 +7,7 @@
 #include "GameObject.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleRender.h"
+#include "ModuleScene.h"
 #include "Shader.h"
 #include "globals.h"
 #include "openGL.h"
@@ -38,36 +39,40 @@ void ComponentMaterial::Update()
 	if (!isActive)
 		return;
 
-	ComponentMesh* mesh = nullptr;
-	std::vector<Component*> meshes = gameObject->GetComponents(ComponentType::MESH);
-	if (meshes.size() == 0)
-	{
-		return;
-	}
-	mesh = (ComponentMesh*)meshes[0];
+	ComponentMesh* mesh = (ComponentMesh*)gameObject->GetComponent(ComponentType::MESH);
+	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);;
 	
-	ComponentTransform* transform = nullptr;
-	std::vector<Component*> transforms = gameObject->GetComponents(ComponentType::TRANSFORM);
-	if (transforms.size() == 0)
-	{
-		return;
-	}
-	transform = (ComponentTransform*)transforms[0];
-
 	if (!isValid || !mesh || !transform)
 	{
 		return;
 	}
 
-	float* modelMatrix = transform->GetModelMatrix();
+	bool insideFrustum = true;
 
-	ComponentMesh::VaoInfo vaoInfo = mesh->GetActiveVao();
-	if (vaoInfo.vao == 0)
-	{
-		return;
+	ComponentCamera* editorCamera = App->editorCamera->camera;
+	if (editorCamera != nullptr)
+		insideFrustum = transform->GetBoundingBox().Contains(editorCamera->GetFrustum());
+
+	if (insideFrustum) {
+
+		ComponentCamera* activeGameCamera = App->scene->GetActiveGameCamera();
+
+		if (activeGameCamera != nullptr && activeGameCamera->FrustumCulling())
+		{
+			insideFrustum = transform->GetBoundingBox().Contains(activeGameCamera->GetFrustum());
+		}
+		if (insideFrustum) {
+			float* modelMatrix = transform->GetModelMatrix();
+
+			ComponentMesh::VaoInfo vaoInfo = mesh->GetActiveVao();
+			if (vaoInfo.vao == 0)
+			{
+				return;
+			}
+
+			DrawElements(modelMatrix, vaoInfo.vao, vaoInfo.elementsCount, vaoInfo.indexesType);
+		}
 	}
-
-	DrawElements(modelMatrix, vaoInfo.vao, vaoInfo.elementsCount, vaoInfo.indexesType);
 }
 
 /* Recieves the vertex shader file path and tries to compile it */
@@ -330,8 +335,8 @@ bool ComponentMaterial::DrawArray(float* modelMatrix, uint vao, uint vertexCount
 	shader->Activate();
 
 	glUniformMatrix4fv(privateUniforms["model_matrix"], 1, GL_FALSE, modelMatrix);
-	glUniformMatrix4fv(privateUniforms["view"], 1, GL_FALSE, App->editorCamera->GetViewMatrix());
-	glUniformMatrix4fv(privateUniforms["projection"], 1, GL_FALSE, App->editorCamera->GetProjectionMatrix());
+	glUniformMatrix4fv(privateUniforms["view"], 1, GL_FALSE, App->editorCamera->camera->GetViewMatrix());
+	glUniformMatrix4fv(privateUniforms["projection"], 1, GL_FALSE, App->editorCamera->camera->GetProjectionMatrix());
 	UpdatePublicUniforms();
 
 	glBindTexture(GL_TEXTURE_2D, textureBufferId);
@@ -354,8 +359,8 @@ bool ComponentMaterial::DrawElements(float * modelMatrix, uint vao, uint vertexC
 	shader->Activate();
 	
 	glUniformMatrix4fv(privateUniforms["model_matrix"], 1, GL_FALSE, modelMatrix);
-	glUniformMatrix4fv(privateUniforms["view"], 1, GL_FALSE, App->editorCamera->GetViewMatrix());
-	glUniformMatrix4fv(privateUniforms["projection"], 1, GL_FALSE, App->editorCamera->GetProjectionMatrix());
+	glUniformMatrix4fv(privateUniforms["view"], 1, GL_FALSE, App->editorCamera->camera->GetViewMatrix());
+	glUniformMatrix4fv(privateUniforms["projection"], 1, GL_FALSE, App->editorCamera->camera->GetProjectionMatrix());
 	UpdatePublicUniforms();
 
 	glBindTexture(GL_TEXTURE_2D, textureBufferId);

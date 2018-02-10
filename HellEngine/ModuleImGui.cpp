@@ -10,6 +10,7 @@
 #include "ModuleRender.h"
 #include "ModuleScene.h"
 #include "ModuleWindow.h"
+#include "globals.h"
 
 ModuleImGui::ModuleImGui()
 {
@@ -93,6 +94,10 @@ UpdateStatus ModuleImGui::Update()
 
 		if (ImGui::BeginMenu("Configuration"))
 		{
+			ImGui::MenuItem("Debug Mode", nullptr, &DEBUG_MODE);
+
+			ImGui::Separator();
+
 			ImGui::MenuItem("Camera", nullptr, &showCameraWindow);
 			ImGui::MenuItem("OpenGL", nullptr, &showOpenGLWindow);
 
@@ -225,8 +230,8 @@ void ModuleImGui::ShowEditorCameraWindow(float mainMenuBarHeight, bool* pOpen)
 {
 	static float fovh = 0.0f;
 	static float fovv = 0.0f;
-	static float nearPlane = App->editorCamera->getNearPlaneDistance();;
-	static float farPlane = App->editorCamera->getFarPlaneDistance();
+	static float nearPlane = App->editorCamera->camera->GetNearPlaneDistance();
+	static float farPlane = App->editorCamera->camera->GetFarPlaneDistance();
 	static float aspectRatio = 0.0f;
 	static bool active = false;
 	static bool frustumCulling = false;
@@ -240,7 +245,7 @@ void ModuleImGui::ShowEditorCameraWindow(float mainMenuBarHeight, bool* pOpen)
 
 	static float front[3] = { 0, 0, 0 };
 	static const float* editorFront = nullptr;
-	editorFront = App->editorCamera->GetFront();
+	editorFront = App->editorCamera->camera->GetFront();
 	front[0] = editorFront[0];
 	front[1] = editorFront[1];
 	front[2] = editorFront[2];
@@ -248,7 +253,7 @@ void ModuleImGui::ShowEditorCameraWindow(float mainMenuBarHeight, bool* pOpen)
 
 	static float up[3] = { 0, 0, 0 };
 	static const float* editorUp = nullptr;
-	editorUp = App->editorCamera->GetUp();
+	editorUp = App->editorCamera->camera->GetUp();
 	up[0] = editorUp[0];
 	up[1] = editorUp[1];
 	up[2] = editorUp[2];
@@ -256,12 +261,12 @@ void ModuleImGui::ShowEditorCameraWindow(float mainMenuBarHeight, bool* pOpen)
 
 	static float position[3] = { 0, 0, 0 };
 	static const float* editorPos = nullptr;
-	editorPos = App->editorCamera->getPosition();
+	editorPos = App->editorCamera->camera->GetPosition();
 	position[0] = editorPos[0];
 	position[1] = editorPos[1];
 	position[2] = editorPos[2];
 	if (ImGui::InputFloat3("Position", position))
-		App->editorCamera->SetPosition(position[0], position[1], position[2]);
+		App->editorCamera->camera->SetPosition(position[0], position[1], position[2]);
 
 	ImGui::SliderFloat("Mov Speed", &App->editorCamera->moveSpeed, 1.0f, 25.0f);
 	ImGui::SliderFloat("Rot Speed", &App->editorCamera->rotationSpeed, 1.0f, 25.0f);
@@ -269,24 +274,22 @@ void ModuleImGui::ShowEditorCameraWindow(float mainMenuBarHeight, bool* pOpen)
 
 	ImGui::Checkbox("Frustum Culling", &frustumCulling);
 	if (ImGui::SliderFloat("Near Plane", &nearPlane, 0.01f, 30.0f))
-		App->editorCamera->SetNearPlaneDistance(nearPlane);
+		App->editorCamera->camera->SetNearPlaneDistance(nearPlane);
 	if (ImGui::SliderFloat("Far Plane", &farPlane, 50.0f, 2000.0f))
-		App->editorCamera->SetFarPlaneDistance(farPlane);
+		App->editorCamera->camera->SetFarPlaneDistance(farPlane);
 
-	fovh = App->editorCamera->getHorizontalFOV();
+	fovh = App->editorCamera->camera->GetHorizontalFOV();
 	ImGui::SliderFloat("Fov H", &fovh, 0.1f, 180.0f);
-	fovv = App->editorCamera->getVerticalFOV();
+	fovv = App->editorCamera->camera->GetVerticalFOV();
 	if (ImGui::SliderFloat("Fov V", &fovv, 0.1f, 180.0f))
-		App->editorCamera->SetFOV(fovv);
-	aspectRatio = App->editorCamera->getAspectRatio();
+		App->editorCamera->camera->SetFOV(fovv);
+	aspectRatio = App->editorCamera->camera->GetAspectRatio();
 	ImGui::SliderFloat("Aspect Ratio", &aspectRatio, 0.1f, 5.0f);
 
 	static float backgroundColor[3] = { 0.0f, 0.0f, 0.0f };
 	if (ImGui::ColorEdit3("color 1", backgroundColor))
 	{
-		App->editorCamera->background.r = backgroundColor[0];
-		App->editorCamera->background.g = backgroundColor[1];
-		App->editorCamera->background.b = backgroundColor[2];
+		App->editorCamera->camera->SetBackground(backgroundColor[0], backgroundColor[1], backgroundColor[2]);
 	}
 
 	ImGui::Checkbox("Is Active Camera", &isActiveCamera);

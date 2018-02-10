@@ -2,8 +2,6 @@
 #pragma comment( lib, "DevIL/libx86/DevIL.lib" )
 #pragma comment( lib, "DevIL/libx86/ILU.lib" )
 #pragma comment( lib, "DevIL/libx86/ILUT.lib" )
-#define SP_ARR_2F(x) x[0], x[1]
-#define SP_ARR_3F(x) x[0], x[1], x[2]
 #include <assert.h>
 #include <math.h>
 #include <vector>
@@ -11,6 +9,7 @@
 #include "SDL/include/SDL.h"
 #include "Application.h"
 #include "Color.h"
+#include "ComponentCamera.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleInput.h"
 #include "ModuleRender.h"
@@ -64,13 +63,13 @@ bool ModuleRender::Init()
 
 UpdateStatus ModuleRender::PreUpdate()
 {
-	Color c = App->editorCamera->background;
+	Color c = App->editorCamera->camera->GetBackground();
 	glClearColor(c.r, c.g, c.b, c.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_PROJECTION);
-	glLoadMatrixf(App->editorCamera->GetProjectionMatrix());
+	glLoadMatrixf(App->editorCamera->camera->GetProjectionMatrix());
 	glMatrixMode(GL_MODELVIEW);
-	glLoadMatrixf(App->editorCamera->GetViewMatrix());
+	glLoadMatrixf(App->editorCamera->camera->GetViewMatrix());
 
 	return UpdateStatus::UPDATE_CONTINUE;
 }
@@ -82,7 +81,7 @@ UpdateStatus ModuleRender::Update()
 	{
 		if (groundGridInfo.active)
 		{
-			DrawGroundGrid(App->editorCamera->getPosition()[0], App->editorCamera->getPosition()[2]);
+			DrawGroundGrid(App->editorCamera->camera->GetPosition()[0], App->editorCamera->camera->GetPosition()[2]);
 		}
 	}
 

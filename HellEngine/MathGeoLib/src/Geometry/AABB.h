@@ -4,7 +4,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,9 +12,9 @@
    See the License for the specific language governing permissions and
    limitations under the License. */
 
-/** @file AABB.h
-	@author Jukka Jylänki
-	@brief The Axis-Aligned Bounding Box (AABB) geometry object. */
+   /** @file AABB.h
+	   @author Jukka Jylänki
+	   @brief The Axis-Aligned Bounding Box (AABB) geometry object. */
 #pragma once
 
 #include "../MathGeoLibFwd.h"
@@ -43,7 +43,7 @@ MATH_BEGIN_NAMESPACE
 	be arbitrarily oriented in the space with respect to each other.
 
 	If you need to represent a box in 3D space with arbitrary orientation, see the class OBB. */
-class ALIGN16 AABB
+	class ALIGN16 AABB
 {
 public:
 
@@ -113,10 +113,10 @@ public:
 		features of the polyhedron.
 		@return If the given polyhedron is closed, this function succeeds and returns true. If the polyhedron is uncapped
 			(has infinite volume), this function does not modify this data structure, but returns false. */
-//	bool SetFrom(const Polyhedron &polyhedron);
+			//	bool SetFrom(const Polyhedron &polyhedron);
 
-	/// Sets this AABB to enclose the given sphere.
-	/** This function computes the smallest possible AABB (in terms of volume) that contains the given sphere, and stores the result in this structure. */
+				/// Sets this AABB to enclose the given sphere.
+				/** This function computes the smallest possible AABB (in terms of volume) that contains the given sphere, and stores the result in this structure. */
 	void SetFrom(const Sphere &s);
 
 	/// Sets this AABB to enclose the given set of points.
@@ -366,6 +366,12 @@ public:
 	OBB Transform(const float4x4 &transform) const;
 	OBB Transform(const Quat &transform) const;
 
+
+	/* Own function */
+
+	void TransformBB(const float4x4 &transform);
+	
+
 	/// Computes the closest point inside this AABB to the given point.
 	/** If the target point lies inside this AABB, then that point is returned.
 		@see Distance(), Contains(), Intersects().
@@ -474,14 +480,14 @@ public:
 		NumVerticesInTriangulation to obtain this value.
 		@see ToPolyhedron(), ToEdgeList(), NumVerticesInTriangulation(). */
 	void Triangulate(int numFacesX, int numFacesY, int numFacesZ,
-	                 vec *outPos, vec *outNormal, float2 *outUV,
-	                 bool ccwIsFrontFacing) const;
+		vec *outPos, vec *outNormal, float2 *outUV,
+		bool ccwIsFrontFacing) const;
 
 	/// Returns the number of vertices that the Triangulate() function will output with the given subdivision parameters.
 	/** @see Triangulate(). */
 	static int NumVerticesInTriangulation(int numFacesX, int numFacesY, int numFacesZ)
 	{
-		return (numFacesX*numFacesY + numFacesX*numFacesZ + numFacesY*numFacesZ)*2*6;
+		return (numFacesX*numFacesY + numFacesX * numFacesZ + numFacesY * numFacesZ) * 2 * 6;
 	}
 
 	/// Generates an edge list representation of the edges of this AABB.
@@ -493,7 +499,7 @@ public:
 	/** @see ToEdgeList(). */
 	static int NumVerticesInEdgeList()
 	{
-		return 4*3*2;
+		return 4 * 3 * 2;
 	}
 
 #ifdef MATH_ENABLE_STL_SUPPORT
@@ -524,30 +530,30 @@ public:
 	// Finds the set intersection of this AABB and the given OBB.
 	/* @return This function returns a Polyhedron that represents the set of points that are contained in this AABB
 		and the given OBB. */
-//	Polyhedron Intersection(const OBB &obb) const;
+		//	Polyhedron Intersection(const OBB &obb) const;
 
-	// Finds the set intersection of this AABB and the given Polyhedron.
-	/* @return This function returns a Polyhedron that represents the set of points that are contained in this AABB
-		and the given Polyhedron. */
-//	Polyhedron Intersection(const Polyhedron &polyhedron) const;
+			// Finds the set intersection of this AABB and the given Polyhedron.
+			/* @return This function returns a Polyhedron that represents the set of points that are contained in this AABB
+				and the given Polyhedron. */
+				//	Polyhedron Intersection(const Polyhedron &polyhedron) const;
 
-	/// Computes the intersection of a line, ray or line segment and an AABB.
-	/** Based on "T. Kay, J. Kajiya. Ray Tracing Complex Scenes. SIGGRAPH 1986 vol 20, number 4. pp. 269-"
-		http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter3.htm
-		@param linePos The starting position of the line.
-		@param lineDir The direction of the line. This direction vector must be normalized!
-		@param tNear [in, out] For the test, the input line is treated as a line segment. Pass in the signed distance
-			from the line origin to the start of the line. For a Line-AABB test, -FLOAT_INF is typically passed here.
-			For a Ray-AABB test, 0.0f should be inputted. If intersection occurs, the signed distance from line origin
-			to the line entry point in the AABB is returned here.
-		@param tFar [in, out] Pass in the signed distance from the line origin to the end of the line. For Line-AABB and
-			Ray-AABB tests, pass in FLOAT_INF. For a LineSegment-AABB test, pass in the length of the line segment here.
-			If intersection occurs, the signed distance from line origin to the line exit point in the AABB
-			is returned here.
-		@return True if an intersection occurs, false otherwise.
-		@note This is a low level utility function. It may be more convenient to use one of the AABB::Intersects()
-			functions instead.
-		@see Intersects(). */
+					/// Computes the intersection of a line, ray or line segment and an AABB.
+					/** Based on "T. Kay, J. Kajiya. Ray Tracing Complex Scenes. SIGGRAPH 1986 vol 20, number 4. pp. 269-"
+						http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter3.htm
+						@param linePos The starting position of the line.
+						@param lineDir The direction of the line. This direction vector must be normalized!
+						@param tNear [in, out] For the test, the input line is treated as a line segment. Pass in the signed distance
+							from the line origin to the start of the line. For a Line-AABB test, -FLOAT_INF is typically passed here.
+							For a Ray-AABB test, 0.0f should be inputted. If intersection occurs, the signed distance from line origin
+							to the line entry point in the AABB is returned here.
+						@param tFar [in, out] Pass in the signed distance from the line origin to the end of the line. For Line-AABB and
+							Ray-AABB tests, pass in FLOAT_INF. For a LineSegment-AABB test, pass in the length of the line segment here.
+							If intersection occurs, the signed distance from line origin to the line exit point in the AABB
+							is returned here.
+						@return True if an intersection occurs, false otherwise.
+						@note This is a low level utility function. It may be more convenient to use one of the AABB::Intersects()
+							functions instead.
+						@see Intersects(). */
 	bool IntersectLineAABB(const vec &linePos, const vec &lineDir, float &tNear, float &tFar) const;
 
 	bool IntersectLineAABB_CPP(const vec &linePos, const vec &lineDir, float &tNear, float &tFar) const;
@@ -556,7 +562,7 @@ public:
 #endif
 
 #ifdef MATH_OGRE_INTEROP
-	AABB(const Ogre::AxisAlignedBox &other):minPoint(other.getMinimum()), maxPoint(other.getMaximum()) {}
+	AABB(const Ogre::AxisAlignedBox &other) :minPoint(other.getMinimum()), maxPoint(other.getMaximum()) {}
 	operator Ogre::AxisAlignedBox() const { return Ogre::AxisAlignedBox(minPoint, maxPoint); }
 #endif
 #ifdef MATH_GRAPHICSENGINE_INTEROP

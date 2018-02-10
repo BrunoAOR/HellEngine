@@ -4,6 +4,9 @@
 #include <vector>
 #include "Component.h"
 #include "globals.h"
+#include "MathGeoLib\src\Math\float3.h"
+
+typedef float GLfloat;
 
 class ComponentMesh :
 	public Component
@@ -23,6 +26,9 @@ public:
 	VaoInfo GetActiveVao() const;
 	bool SetActiveVao(uint index);
 
+	void BuildVectorCubeVertexes(GLfloat arrayCubePoints[], int vertexesNumber);
+	std::vector<float3> *GetBuildVectorCubePoints();
+
 	virtual void OnEditor() override;
 
 	/* Returns the maximum number of times that this particular Type of Component can be added to a GameObject */
@@ -33,9 +39,12 @@ private:
 	void CreateCubeVAO();
 	void CreateSphereVAO(uint rings, uint sections);
 
+	void UpdateBoundingBox();
+
 private:
-	
+
 	std::vector<VaoInfo> vaoInfos;
+	std::vector<float3> vecCubeVertexes;
 	int activeVao = -1;
 
 };

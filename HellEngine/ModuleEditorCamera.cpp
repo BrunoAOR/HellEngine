@@ -2,10 +2,14 @@
 #include "MathGeoLib/src/Math/Quat.h"
 #include "SDL/include/SDL_mouse.h"
 #include "Application.h"
+#include "ComponentType.h"
+#include "GameObject.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleInput.h"
+#include "ModuleScene.h"
 #include "ModuleTime.h"
 #include "ModuleWindow.h"
+#include "globals.h"
 
 
 ModuleEditorCamera::ModuleEditorCamera()
@@ -16,175 +20,45 @@ ModuleEditorCamera::~ModuleEditorCamera()
 
 bool ModuleEditorCamera::Init()
 {
+	camera = (ComponentCamera*)App->scene->root->GetComponent(ComponentType::CAMERA);
+	if (camera == nullptr) {
+		LOGGER("Root GameObject in scene can't be found!");
+		return false;
+	}
+
+	OnWindowResize();
+
 	moveSpeed = 10;
 	rotationSpeed = 15;
 	zoomSpeed = 100;
-
-	aspectRatio = 1;
-	verticalFOVRad = 1;
-	nearClippingPlane = 0.1f;
-	farClippingPlane = 100.0f;
-	background.r = 0;
-	background.g = 0;
-	background.b = 0;
-	background.a = 1.0f;
-	verticalFOVRad = DegToRad(60);
-	onWindowResize();
-	frustum.SetViewPlaneDistances(nearClippingPlane, farClippingPlane);
-	frustum.SetFrame(vec(0, 1, 3), vec(0, 0, -1), vec(0, 1, 0));
 	
 	return true;
 }
 
 UpdateStatus ModuleEditorCamera::Update()
 {
-	handleCameraMotion();
-	handleCameraRotation();	
+	HandleCameraMotion();
+	HandleCameraRotation();	
 
 	return UpdateStatus::UPDATE_CONTINUE;
 }
 
-const float* ModuleEditorCamera::getPosition()
-{
-	return frustum.Pos().ptr();
-}
-
-/* Sets the position of the camera */
-void ModuleEditorCamera::SetPosition(float x, float y, float z)
-{
-	frustum.SetPos(vec(x, y, z));
-}
-
-/* Sets the vertical FOV of the camera and adjust the horizontal FOV accordingly */
-bool ModuleEditorCamera::SetFOV(float fovDeg)
-{
-	if (fovDeg <= 0 || fovDeg > 180)
-		return false;
-
-	verticalFOVRad = DegToRad(fovDeg);
-	frustum.SetPerspective(getHorizontalFOVrad(), verticalFOVRad);
-	return true;
-}
-
-float ModuleEditorCamera::getHorizontalFOV() const
-{
-	return RadToDeg(getHorizontalFOVrad());
-}
-
-float ModuleEditorCamera::getVerticalFOV() const
-{
-	return RadToDeg(verticalFOVRad);
-}
-
-float ModuleEditorCamera::getAspectRatio() const
-{
-	return aspectRatio;
-}
-
-/* Returns a float* to the first of 16 floats representing the view matrix */
-float* ModuleEditorCamera::GetViewMatrix()
-{
-	viewMatrix = frustum.ViewMatrix();
-	viewMatrix.Transpose();
-	return viewMatrix.v[0];
-}
-
-/* Returns a float* to the first of 16 floats representing the projection matrix */
-float* ModuleEditorCamera::GetProjectionMatrix()
-{
-	projectionMatrix = frustum.ProjectionMatrix().Transposed();
-	return projectionMatrix.v[0];
-}
-
-/* Sets the distance for the near and far clipping planes */
-bool ModuleEditorCamera::SetPlaneDistances(float near, float far)
-{
-	if (near < 0 || near > far)
-		return false;
-	
-	frustum.SetViewPlaneDistances(near, far);
-	return true;
-}
-
-float ModuleEditorCamera::getNearPlaneDistance() const
-{
-	return nearClippingPlane;
-}
-
-bool ModuleEditorCamera::SetNearPlaneDistance(float near)
-{
-	if (near < 0 || near > farClippingPlane)
-		return false;
-
-	frustum.SetViewPlaneDistances(near, farClippingPlane);
-	return true;
-}
-
-float ModuleEditorCamera::getFarPlaneDistance() const
-{
-	return farClippingPlane;
-}
-
-bool ModuleEditorCamera::SetFarPlaneDistance(float far)
-{
-	if (nearClippingPlane < 0 || nearClippingPlane > far)
-		return false;
-
-	frustum.SetViewPlaneDistances(nearClippingPlane, far);
-	return true;
-}
 
 /* Method to be called when the window is resized */
-void ModuleEditorCamera::onWindowResize()
+void ModuleEditorCamera::OnWindowResize()
 {
 	int width = App->window->getWidth();
 	int height = App->window->getHeight();
 
-	aspectRatio = (float)width / height;
-	frustum.SetPerspective(getHorizontalFOVrad(), verticalFOVRad);
+	float aspectRatio = (float)width / height;
+	camera->SetAspectRatio(aspectRatio);
+	camera->SetPerspective(DegToRad(camera->GetHorizontalFOV()), DegToRad(camera->GetVerticalFOV()));
 }
 
-const float* ModuleEditorCamera::GetFront() const
+
+void ModuleEditorCamera::HandleCameraMotion()
 {
-	return frustum.Front().ptr();
-}
-
-void ModuleEditorCamera::SetFront(float x, float y, float z)
-{
-	if (x == 0 && y == 0 && z == 0)
-		return;
-
-	vec front(x, y, z);
-	front.Normalize();
-	Quat rot = Quat::RotateFromTo(frustum.Front(), front);
-	vec up = frustum.Up();
-	rot.Transform(up);
-	frustum.SetFront(front);
-	frustum.SetUp(up);
-}
-
-const float* ModuleEditorCamera::GetUp() const
-{
-	return frustum.Up().ptr();
-}
-
-void ModuleEditorCamera::SetUp(float x, float y, float z)
-{
-	if (x == 0 && y == 0 && z == 0)
-		return;
-
-	vec up(x, y, z);
-	up.Normalize();
-	Quat rot = Quat::RotateFromTo(frustum.Up(), up);
-	vec front = frustum.Front();
-	rot.Transform(front);
-	frustum.SetUp(up);
-	frustum.SetFront(front);
-}
-
-void ModuleEditorCamera::handleCameraMotion()
-{
-	vec pos = frustum.Pos();
+	vec pos = camera->GetPosition3();
 	int moveFactor = App->input->GetKey(SDL_SCANCODE_LSHIFT) == KeyState::KEY_REPEAT ? 3 : 1;
 
 	/* Handling Keyboard (Arrows) */
@@ -195,16 +69,16 @@ void ModuleEditorCamera::handleCameraMotion()
 		&& !currentlyZoomingCamera)
 	{
 		/* Set up a vector that looks forward as the frustum, but that lies on the XZ-plane */
-		vec forwardInPlane = frustum.Front();
+		vec forwardInPlane = camera->GetFront3();
 		/* Handle looking straight down case */
 		if (forwardInPlane.y == -1)
 		{
-			forwardInPlane = frustum.Up();
+			forwardInPlane = camera->GetUp3();
 		}
 		/* Handle looking straight up case */
 		else if (forwardInPlane.y == 1)
 		{
-			forwardInPlane = -frustum.Up();
+			forwardInPlane = -camera->GetUp3();
 		}
 		/* Handle generic case, where the y-coordinate gets turned to zero */
 		else
@@ -231,7 +105,7 @@ void ModuleEditorCamera::handleCameraMotion()
 	/* Camera left */
 	if (App->input->GetKey(SDL_SCANCODE_LEFT) == KeyState::KEY_REPEAT && !currentlyZoomingCamera)
 	{
-		DragCameraHorizontalAxis(1, pos, moveFactor *moveSpeed);
+		DragCameraHorizontalAxis(1, pos, moveFactor * moveSpeed);
 		currentlyMovingCamera = true;
 	}
 	/* Camera right */
@@ -310,10 +184,10 @@ void ModuleEditorCamera::handleCameraMotion()
 		DragCameraVerticalAxis(App->input->GetMouseWheel().y, pos, 5 * zoomSpeed);
 	}	
 
-	frustum.SetPos(pos);
+	camera->SetPosition(pos.x, pos.y, pos.z);
 }
 
-void ModuleEditorCamera::handleCameraRotation()
+void ModuleEditorCamera::HandleCameraRotation()
 {
 	/*Handling Mouse*/
 	if (App->input->GetMouseButtonDown(SDL_BUTTON_RIGHT) == KeyState::KEY_REPEAT)
@@ -343,37 +217,35 @@ void ModuleEditorCamera::RotateYaw(int mouseMotionX)
 {
 	/* mouseMotionX is <0 when moving to the left and >0 when moving to the right */
 	Quat rotation = Quat::FromEulerXYZ(0, -DegToRad(rotationSpeed * mouseMotionX) * App->time->DeltaTime(), 0);
-	frustum.SetFront(rotation.Transform(frustum.Front()));
-	frustum.SetUp(rotation.Transform(frustum.Up()));
+	float3 rot = rotation.Transform(camera->GetFront3());
+	camera->SetFront(rot.x, rot.y, rot.z);
+	rot = rotation.Transform(camera->GetUp3());
+	camera->SetUp(rot.x, rot.y, rot.z);
 }
 
 void ModuleEditorCamera::RotatePitch(int mouseMotionY)
 {
 	/* mouseMotionY is <0 when moving up and >0 when moving down */
-	Quat rotation = Quat::RotateAxisAngle(frustum.WorldRight(), -DegToRad(rotationSpeed * mouseMotionY) * App->time->DeltaTime());
-	vec newUp = rotation.Transform(frustum.Up());
+	Quat rotation = Quat::RotateAxisAngle(camera->GetRight3(), -DegToRad(rotationSpeed * mouseMotionY) * App->time->DeltaTime());
+	vec newUp = rotation.Transform(camera->GetUp3());
 	if (newUp.y >= 0)
 	{
-		frustum.SetFront(rotation.Transform(frustum.Front()));
-		frustum.SetUp(newUp);
+		float3 rot = rotation.Transform(camera->GetFront3());
+		camera->SetFront(rot.x, rot.y, rot.z);
+		camera->SetUp(newUp.x, newUp.y, newUp.z);
 	}
 }
 
 void ModuleEditorCamera::DragCameraHorizontalAxis(int direction, vec& frustumPos, float speed)
 {
-	frustumPos.x -= frustum.WorldRight().x * speed * App->time->DeltaTime() * direction;
-	frustumPos.y -= frustum.WorldRight().y * speed * App->time->DeltaTime() * direction;
-	frustumPos.z -= frustum.WorldRight().z * speed * App->time->DeltaTime() * direction;
+	frustumPos.x -= camera->GetRight3().x * speed * App->time->DeltaTime() * direction;
+	frustumPos.y -= camera->GetRight3().y * speed * App->time->DeltaTime() * direction;
+	frustumPos.z -= camera->GetRight3().z * speed * App->time->DeltaTime() * direction;
 }
 
 void ModuleEditorCamera::DragCameraVerticalAxis(int direction, vec& frustumPos, float speed)
 {
-	frustumPos.x += frustum.Front().x * speed * App->time->DeltaTime() * direction;
-	frustumPos.y += frustum.Front().y * speed * App->time->DeltaTime() * direction;
-	frustumPos.z += frustum.Front().z * speed * App->time->DeltaTime() * direction;
-}
-
-float ModuleEditorCamera::getHorizontalFOVrad() const
-{
-	return 2 * atan(tan(verticalFOVRad / 2) * aspectRatio);
+	frustumPos.x += camera->GetFront3().x * speed * App->time->DeltaTime() * direction;
+	frustumPos.y += camera->GetFront3().y * speed * App->time->DeltaTime() * direction;
+	frustumPos.z += camera->GetFront3().z * speed * App->time->DeltaTime() * direction;
 }
