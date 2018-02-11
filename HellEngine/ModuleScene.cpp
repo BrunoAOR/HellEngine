@@ -136,6 +136,9 @@ std::vector<GameObject*> ModuleScene::FindByName(const std::string& name, GameOb
 }
 
 /* TEMPORARY CODE START */
+#include "MathGeoLib/src/Geometry/AABB.h"
+#include "MathGeoLib/src/Geometry/Line.h"
+#include "MathGeoLib/src/Geometry/Ray.h"
 #include "ComponentTransform.h"
 #include "ComponentMesh.h"
 #include "ComponentMaterial.h"
@@ -153,7 +156,6 @@ void ModuleScene::TestQuadTree()
 		mat->Apply();
 		gos.push_back(go);
 	}
-	GameObject* go5;
 	{
 		GameObject* go = new GameObject("Sphere 5", root);
 		ComponentTransform* transform = (ComponentTransform*)go->AddComponent(ComponentType::TRANSFORM);
@@ -164,12 +166,11 @@ void ModuleScene::TestQuadTree()
 		mat->SetDefaultMaterialConfiguration();
 		mat->Apply();
 		gos.push_back(go);
-		go5 = go;
 	}
 	{
 		GameObject* go = new GameObject("Sphere 1.5", root);
 		ComponentTransform* transform = (ComponentTransform*)go->AddComponent(ComponentType::TRANSFORM);
-		transform->SetPosition(1.5f, 1.5f, 1.5f);
+		transform->SetPosition(1.5f, 5, 1.5f);
 		ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
 		mesh->SetActiveVao(1);
 		ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
@@ -178,6 +179,18 @@ void ModuleScene::TestQuadTree()
 		gos.push_back(go);
 	}
 	quadTree.Create(gos);
-	quadTree.Remove(go5);
+	
+	Line line(float3(0, 0, 0), vec(1, 1, 1));
+	std::vector<GameObject*> lineIntersections;
+	quadTree.Intersects(lineIntersections, line);
+	LOGGER("Line hits: %i objects", lineIntersections.size());
+	AABB cube(float3(1.99f, 0, 1.99f), float3(5,5,5));
+	std::vector<GameObject*> cubeIntersections;
+	quadTree.Intersects(cubeIntersections, cube);
+	LOGGER("Cube hits: %i objects", cubeIntersections.size());
+	Ray ray(float3(0,0,0), vec(1,1,1).Normalized());
+	std::vector<GameObject*> rayIntersections;
+	quadTree.Intersects(rayIntersections, ray);
+	LOGGER("Ray hits: %i objects", rayIntersections.size());
 }
 /* TEMPORARY CODE END */

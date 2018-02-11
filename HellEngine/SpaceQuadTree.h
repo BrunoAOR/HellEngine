@@ -3,8 +3,8 @@
 
 #include <vector>
 #include "MathGeoLib/src/Math/float3.h"
+#include "SpaceNode.h"
 class GameObject;
-class SpaceNode;
 
 class SpaceQuadTree
 {
@@ -65,8 +65,9 @@ private:
 
 
 template<typename T>
-inline void SpaceQuadTree::Intersects(std::vector<GameObject*>& intersectedGameObjects, const T & primitive)
+inline void SpaceQuadTree::Intersects(std::vector<GameObject*>& intersectedGameObjects, const T& primitive)
 {
+	node->CollectIntersections(intersectedGameObjects, primitive);
 }
 
 #endif // !__H_SPACE_QUAD_TREE__
