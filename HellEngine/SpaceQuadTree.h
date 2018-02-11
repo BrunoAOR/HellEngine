@@ -16,10 +16,10 @@ public:
 	~SpaceQuadTree();
 
 	/* Creates a fixed QuadTree with the dimensions specified */
-	void Create(float3 minPoint, float3 maxPoint);
+	int Create(float3 minPoint, float3 maxPoint);
 
 	/* Creates an adaptive QuadTree for the specified GameObjects in the gameObjects vector */
-	void Create(const std::vector<GameObject*>& gameObjects);
+	int Create(const std::vector<GameObject*>& gameObjects);
 
 	/* Returns the type of the QuadTree */
 	QuadTreeType GetType();
@@ -46,10 +46,19 @@ public:
 	void Intersects(std::vector<GameObject*>& intersectedGameObjects, const T& primitive);
 
 private:
-	const int bucketSize;
+
+	void CleanUp();
+	int InsertFixed(GameObject* gameObject);
+
+private:
+
+	const unsigned int bucketSize;
 	SpaceNode* node = nullptr;
 	QuadTreeType type;
+
 	std::vector<GameObject*> containedGameObjects;
+	float3 minContainedPoint;
+	float3 maxContainedPoint;
 };
 
 

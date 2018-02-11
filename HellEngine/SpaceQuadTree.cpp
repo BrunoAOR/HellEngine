@@ -11,43 +11,64 @@ SpaceQuadTree::SpaceQuadTree(): bucketSize(1)
 
 SpaceQuadTree::~SpaceQuadTree()
 {
-	delete node;
-	node = nullptr;
+	CleanUp();
 }
 
-void SpaceQuadTree::Create(float3 minPoint, float3 maxPoint)
+int SpaceQuadTree::Create(float3 minPoint, float3 maxPoint)
 {
-	node = new SpaceNode(minPoint, maxPoint);
+	CleanUp();
+	type = QuadTreeType::FIXED;
+	if (minPoint.x < maxPoint.x && minPoint.y < maxPoint.y && minPoint.z < maxPoint.z)
+	{
+		minContainedPoint = minPoint;
+		maxContainedPoint = maxPoint;
+		node = new SpaceNode(minPoint, maxPoint, bucketSize);
+		return 0;
+	}
+	return 1;
 }
 
-void SpaceQuadTree::Create(const std::vector<GameObject*>& gameObjects)
+int SpaceQuadTree::Create(const std::vector<GameObject*>& gameObjects)
 {
-	float3 minPoint(FLT_MAX, FLT_MAX, FLT_MAX);
-	float3 maxPoint(FLT_MIN, FLT_MIN, FLT_MIN);
+	CleanUp();
+	type = QuadTreeType::ADAPTIVE;
+	int failCount = 0;
+	
 	for (GameObject* go : gameObjects)
 	{
-		if (ComponentTransform* transform = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM))
+		if (go)
 		{
-			/* Add gameObject to internal buffer (used if the Tree needs to be recreated upon inserting a new GameObject with Insert method) */
-			containedGameObjects.push_back(go);
-			
-			/* Determine the minPoint and maxPoint for the node to be created */
-			AABB goBoundingBox = transform->GetBoundingBox();
-			float3 goMinPoint = goBoundingBox.CornerPoint(0); /* The point with the smallest x, y & z coordinate */
-			float3 goMaxPoint = goBoundingBox.CornerPoint(7); /* The point with the largest x, y & z coordinate */
-			
-			minPoint.x = minPoint.x <= goMinPoint.x ? minPoint.x : goMinPoint.x;
-			minPoint.y = minPoint.y <= goMinPoint.y ? minPoint.y : goMinPoint.y;
-			minPoint.z = minPoint.z <= goMinPoint.z ? minPoint.z : goMinPoint.z;
+			if (ComponentTransform* transform = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM))
+			{
+				/* Add gameObject to internal buffer (used if the Tree needs to be recreated upon inserting a new GameObject with Insert method) */
+				containedGameObjects.push_back(go);
 
-			maxPoint.x = maxPoint.x >= goMaxPoint.x ? maxPoint.x : goMaxPoint.x;
-			maxPoint.y = maxPoint.y >= goMaxPoint.y ? maxPoint.y : goMaxPoint.y;
-			maxPoint.z = maxPoint.z >= goMaxPoint.z ? maxPoint.z : goMaxPoint.z;
+				/* Determine the minPoint and maxPoint for the node to be created */
+				AABB goBoundingBox = transform->GetBoundingBox();
+				float3 goMinPoint = goBoundingBox.minPoint;
+				float3 goMaxPoint = goBoundingBox.maxPoint;
+
+				minContainedPoint.x = minContainedPoint.x <= goMinPoint.x ? minContainedPoint.x : goMinPoint.x;
+				minContainedPoint.y = minContainedPoint.y <= goMinPoint.y ? minContainedPoint.y : goMinPoint.y;
+				minContainedPoint.z = minContainedPoint.z <= goMinPoint.z ? minContainedPoint.z : goMinPoint.z;
+
+				maxContainedPoint.x = maxContainedPoint.x >= goMaxPoint.x ? maxContainedPoint.x : goMaxPoint.x;
+				maxContainedPoint.y = maxContainedPoint.y >= goMaxPoint.y ? maxContainedPoint.y : goMaxPoint.y;
+				maxContainedPoint.z = maxContainedPoint.z >= goMaxPoint.z ? maxContainedPoint.z : goMaxPoint.z;
+			}
+			else
+				++failCount;
 		}
 	}
-
-	node = new SpaceNode(minPoint, maxPoint);
-		
+	
+	node = new SpaceNode(minContainedPoint, maxContainedPoint, bucketSize);
+	
+	for (GameObject* go : containedGameObjects)
+	{
+		ComponentTransform* transform = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM);
+		failCount += node->Insert(transform) ? 0 : 1;
+	}
+	return failCount;
 }
 
 SpaceQuadTree::QuadTreeType SpaceQuadTree::GetType()
@@ -55,17 +76,92 @@ SpaceQuadTree::QuadTreeType SpaceQuadTree::GetType()
 	return type;
 }
 
-int SpaceQuadTree::Insert(GameObject * gameObject)
+int SpaceQuadTree::Insert(GameObject* gameObject)
 {
-	return 0;
+	if (!gameObject)
+		return 1;
+
+	switch (type)
+	{
+	case SpaceQuadTree::QuadTreeType::INVALID:
+		if (gameObject->GetComponent(ComponentType::TRANSFORM))
+			return Create(std::vector<GameObject*>{gameObject});
+		break;
+
+	case SpaceQuadTree::QuadTreeType::FIXED:
+		return InsertFixed(gameObject);
+	
+	case SpaceQuadTree::QuadTreeType::ADAPTIVE:
+		if (gameObject->GetComponent(ComponentType::TRANSFORM))
+		{
+			containedGameObjects.push_back(gameObject);
+			return Create(containedGameObjects);
+		}
+		break;
+	}
+	return 1;
 }
 
 int SpaceQuadTree::Insert(std::vector<GameObject*> gameObjects)
 {
-	return 0;
+	int failCount = 0;
+
+	switch (type)
+	{
+	case SpaceQuadTree::QuadTreeType::INVALID:
+		return Create(gameObjects);
+	
+	case SpaceQuadTree::QuadTreeType::FIXED:
+		for (GameObject* go : gameObjects)
+			failCount += InsertFixed(go);
+		return failCount;
+	
+	case SpaceQuadTree::QuadTreeType::ADAPTIVE:
+		containedGameObjects.insert(containedGameObjects.end(), gameObjects.begin(), gameObjects.end());
+		return Create(containedGameObjects);
+
+	default:
+		return 1;
+	}
 }
 
-bool SpaceQuadTree::Remove(GameObject * gameObject)
+bool SpaceQuadTree::Remove(GameObject* gameObject)
 {
 	return false;
+}
+
+void SpaceQuadTree::CleanUp()
+{
+	type = QuadTreeType::INVALID;
+	if (node != nullptr)
+	{
+		delete node;
+		node = nullptr;
+	}
+	minContainedPoint.x = FLT_MAX;
+	minContainedPoint.y = FLT_MAX;
+	minContainedPoint.z = FLT_MAX;
+	maxContainedPoint.x = FLT_MIN;
+	maxContainedPoint.y = FLT_MIN;
+	maxContainedPoint.z = FLT_MIN;
+}
+
+int SpaceQuadTree::InsertFixed(GameObject* gameObject)
+{
+	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
+	if (!transform)
+		return 1;
+
+	AABB goBoundingBox = transform->GetBoundingBox();
+	float3 goMinPoint = goBoundingBox.minPoint;
+	float3 goMaxPoint = goBoundingBox.maxPoint;
+
+	if (goMinPoint.x > maxContainedPoint.x && goMinPoint.y > maxContainedPoint.y && goMinPoint.z > maxContainedPoint.z
+		|| goMaxPoint.x < minContainedPoint.x && goMaxPoint.y < minContainedPoint.y && goMaxPoint.z < minContainedPoint.z)
+		return 1;
+
+	if (node->Insert(transform))
+		return 0;
+	else
+		return 1;
 }
