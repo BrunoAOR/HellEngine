@@ -38,7 +38,7 @@ public:
 	*/
 	int Insert(std::vector<GameObject*> gameObjects);
 
-	/* Removes the provided GameObject if it is found inside the QuadTree */
+	/* Removes the provided GameObject if it is found inside the SpaceQuadTree */
 	bool Remove(GameObject* gameObject);
 
 	/* Tests collision of the provided primitive and gathers the intersected GameObjects in the provided intersectedGameObjects vector */

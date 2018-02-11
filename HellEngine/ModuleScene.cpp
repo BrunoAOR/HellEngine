@@ -143,7 +143,7 @@ void ModuleScene::TestQuadTree()
 {
 	std::vector<GameObject*> gos;
 	{
-		GameObject* go = new GameObject("Sphere-", root);
+		GameObject* go = new GameObject("Sphere -5", root);
 		ComponentTransform* transform = (ComponentTransform*)go->AddComponent(ComponentType::TRANSFORM);
 		transform->SetPosition(-5, -5, -5);
 		ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
@@ -153,8 +153,9 @@ void ModuleScene::TestQuadTree()
 		mat->Apply();
 		gos.push_back(go);
 	}
+	GameObject* go5;
 	{
-		GameObject* go = new GameObject("Sphere+", root);
+		GameObject* go = new GameObject("Sphere 5", root);
 		ComponentTransform* transform = (ComponentTransform*)go->AddComponent(ComponentType::TRANSFORM);
 		transform->SetPosition(5, 5, 5);
 		ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
@@ -163,9 +164,10 @@ void ModuleScene::TestQuadTree()
 		mat->SetDefaultMaterialConfiguration();
 		mat->Apply();
 		gos.push_back(go);
+		go5 = go;
 	}
 	{
-		GameObject* go = new GameObject("Sphere+", root);
+		GameObject* go = new GameObject("Sphere 1.5", root);
 		ComponentTransform* transform = (ComponentTransform*)go->AddComponent(ComponentType::TRANSFORM);
 		transform->SetPosition(1.5f, 1.5f, 1.5f);
 		ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
@@ -176,5 +178,6 @@ void ModuleScene::TestQuadTree()
 		gos.push_back(go);
 	}
 	quadTree.Create(gos);
+	quadTree.Remove(go5);
 }
 /* TEMPORARY CODE END */

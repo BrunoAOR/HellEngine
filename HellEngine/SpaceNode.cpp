@@ -45,6 +45,30 @@ bool SpaceNode::Insert(ComponentTransform* transform)
 	return false;
 }
 
+bool SpaceNode::Remove(ComponentTransform* transform)
+{
+	if (isLeaf)
+	{
+		for (std::vector<ComponentTransform*>::iterator it = containedTransforms.begin(); it != containedTransforms.end(); ++it)
+		{
+			if ((*it) == transform)
+			{
+				containedTransforms.erase(it);
+				return true;
+			}
+		}
+	}
+	else
+	{
+		for (int i = 0; i < childrenCount; ++i)
+		{
+			if (nodes[i]->Remove(transform))
+				return true;
+		}
+	}
+	return false;
+}
+
 void SpaceNode::DrawNode()
 {
 	/*

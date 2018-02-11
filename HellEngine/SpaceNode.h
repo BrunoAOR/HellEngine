@@ -12,6 +12,7 @@ public:
 	~SpaceNode();
 
 	bool Insert(ComponentTransform* transform);
+	bool Remove(ComponentTransform* transform);
 	void DrawNode();
 
 private:

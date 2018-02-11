@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "GameObject.h"
@@ -127,7 +128,47 @@ int SpaceQuadTree::Insert(std::vector<GameObject*> gameObjects)
 
 bool SpaceQuadTree::Remove(GameObject* gameObject)
 {
-	return false;
+	if (type == QuadTreeType::INVALID)
+		return false;
+
+	std::vector<GameObject*>::iterator it = std::find(containedGameObjects.begin(), containedGameObjects.end(), gameObject);
+	if (it == containedGameObjects.end())
+		return false;
+
+	containedGameObjects.erase(it);
+	
+	bool result = false;
+	/*
+	If the gameObject WAS previously added to the SpaceQuadTree,
+	then it should contain a ComponentTransform
+	*/
+	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
+	assert(transform);
+	std::vector<GameObject*> newGameObjectsVector(containedGameObjects);
+
+	switch (type)
+	{
+	case SpaceQuadTree::QuadTreeType::FIXED:
+		/*
+		The transform should be in the SpaceNode hierarchy
+		*/
+		result = node->Remove(transform);
+		assert(result);
+		break;
+	case SpaceQuadTree::QuadTreeType::ADAPTIVE:
+		/*
+		Recreate the whole SpaceQuadTree.
+		A different vector must be created
+		because the Create function calls CleanUp
+		which will clear the containedGameObjects vector.
+		*/
+		result = Create(newGameObjectsVector);
+		break;
+	default:
+		result = false;
+		break;
+	}
+	return result;
 }
 
 void SpaceQuadTree::DrawTree()
@@ -138,6 +179,7 @@ void SpaceQuadTree::DrawTree()
 void SpaceQuadTree::CleanUp()
 {
 	type = QuadTreeType::INVALID;
+	containedGameObjects.clear();
 	if (node != nullptr)
 	{
 		delete node;
@@ -157,6 +199,7 @@ int SpaceQuadTree::InsertFixed(GameObject* gameObject)
 	if (!transform)
 		return 1;
 
+	containedGameObjects.push_back(gameObject);
 	AABB goBoundingBox = transform->GetBoundingBox();
 	float3 goMinPoint = goBoundingBox.minPoint;
 	float3 goMaxPoint = goBoundingBox.maxPoint;
