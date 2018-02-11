@@ -45,6 +45,8 @@ public:
 	template<typename T>
 	void Intersects(std::vector<GameObject*>& intersectedGameObjects, const T& primitive);
 
+	void DrawTree();
+
 private:
 
 	void CleanUp();

@@ -35,6 +35,16 @@ bool ModuleScene::CleanUp()
 #include "globals.h"
 UpdateStatus ModuleScene::Update()
 {
+	/* TEMPORARY CODE START */
+	static bool init = false;
+	if (!init)
+	{
+		TestQuadTree();
+		init = true;
+	}
+	quadTree.DrawTree();
+	/* TEMPORARY CODE END */
+
 	root->Update();
 	return UpdateStatus::UPDATE_CONTINUE;
 }
@@ -124,3 +134,47 @@ std::vector<GameObject*> ModuleScene::FindByName(const std::string& name, GameOb
     }
     return ret;
 }
+
+/* TEMPORARY CODE START */
+#include "ComponentTransform.h"
+#include "ComponentMesh.h"
+#include "ComponentMaterial.h"
+void ModuleScene::TestQuadTree()
+{
+	std::vector<GameObject*> gos;
+	{
+		GameObject* go = new GameObject("Sphere-", root);
+		ComponentTransform* transform = (ComponentTransform*)go->AddComponent(ComponentType::TRANSFORM);
+		transform->SetPosition(-5, -5, -5);
+		ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
+		mesh->SetActiveVao(1);
+		ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
+		mat->SetDefaultMaterialConfiguration();
+		mat->Apply();
+		gos.push_back(go);
+	}
+	{
+		GameObject* go = new GameObject("Sphere+", root);
+		ComponentTransform* transform = (ComponentTransform*)go->AddComponent(ComponentType::TRANSFORM);
+		transform->SetPosition(5, 5, 5);
+		ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
+		mesh->SetActiveVao(1);
+		ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
+		mat->SetDefaultMaterialConfiguration();
+		mat->Apply();
+		gos.push_back(go);
+	}
+	{
+		GameObject* go = new GameObject("Sphere+", root);
+		ComponentTransform* transform = (ComponentTransform*)go->AddComponent(ComponentType::TRANSFORM);
+		transform->SetPosition(1.5f, 1.5f, 1.5f);
+		ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
+		mesh->SetActiveVao(1);
+		ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
+		mat->SetDefaultMaterialConfiguration();
+		mat->Apply();
+		gos.push_back(go);
+	}
+	quadTree.Create(gos);
+}
+/* TEMPORARY CODE END */

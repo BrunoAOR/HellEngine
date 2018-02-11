@@ -5,6 +5,9 @@
 #include "Module.h"
 class ComponentCamera;
 class GameObject;
+/* TEMPORARY CODE START */
+#include "SpaceQuadTree.h"
+/* TEMPORARY CODE END */
 
 class ModuleScene :
 	public Module
@@ -40,6 +43,11 @@ private:
 
 	ComponentCamera* activeGameCamera;
 
+/* TEMPORARY CODE START */
+private:
+	void TestQuadTree();
+	SpaceQuadTree quadTree;
+/* TEMPORARY CODE END */
 };
 
 #endif // !__H_MODULE_SCENE__

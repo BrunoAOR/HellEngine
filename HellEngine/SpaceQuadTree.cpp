@@ -130,6 +130,11 @@ bool SpaceQuadTree::Remove(GameObject* gameObject)
 	return false;
 }
 
+void SpaceQuadTree::DrawTree()
+{
+	node->DrawNode();
+}
+
 void SpaceQuadTree::CleanUp()
 {
 	type = QuadTreeType::INVALID;
