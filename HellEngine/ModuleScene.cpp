@@ -149,6 +149,7 @@ void ModuleScene::TestQuadTree()
 		GameObject* go = new GameObject("Sphere -5", root);
 		ComponentTransform* transform = (ComponentTransform*)go->AddComponent(ComponentType::TRANSFORM);
 		transform->SetPosition(-5, -5, -5);
+		transform->SetIsStatic(true);
 		ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
 		mesh->SetActiveVao(1);
 		ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
@@ -160,6 +161,7 @@ void ModuleScene::TestQuadTree()
 		GameObject* go = new GameObject("Sphere 5", root);
 		ComponentTransform* transform = (ComponentTransform*)go->AddComponent(ComponentType::TRANSFORM);
 		transform->SetPosition(5, 5, 5);
+		transform->SetIsStatic(true);
 		ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
 		mesh->SetActiveVao(1);
 		ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
@@ -171,6 +173,7 @@ void ModuleScene::TestQuadTree()
 		GameObject* go = new GameObject("Sphere 1.5", root);
 		ComponentTransform* transform = (ComponentTransform*)go->AddComponent(ComponentType::TRANSFORM);
 		transform->SetPosition(1.5f, 5, 1.5f);
+		transform->SetIsStatic(true);
 		ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
 		mesh->SetActiveVao(1);
 		ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
@@ -194,15 +197,21 @@ void ModuleScene::TestQuadTree()
 	LOGGER("Ray hits: %i objects", rayIntersections.size());
 }
 /* TEMPORARY CODE END */
-void ModuleScene::FindAllSceneGameObjects(GameObject* go)
+void ModuleScene::FindAllSceneStaticGameObjects(GameObject* go)
 {
 	for (GameObject* children : go->GetChildren())
 	{
-		gameObjects.push_back(children);
+		if (children->GetComponent(ComponentType::TRANSFORM) != nullptr)
+		{
+			if (((ComponentTransform*)children->GetComponent(ComponentType::TRANSFORM))->GetIsStatic())
+			{
+				gameObjects.push_back(children);
+			}
+		}
 
 		if (children->GetChildren().size() != 0)
 		{
-			FindAllSceneGameObjects(children);
+			FindAllSceneStaticGameObjects(children);
 		}
 	}
 }

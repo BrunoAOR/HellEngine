@@ -49,7 +49,7 @@ private:
 	void TestQuadTree();
 	SpaceQuadTree quadTree;
 /* TEMPORARY CODE END */
-	void FindAllSceneGameObjects(GameObject* go);
+	void FindAllSceneStaticGameObjects(GameObject* go);
 };
 
 #endif // !__H_MODULE_SCENE__

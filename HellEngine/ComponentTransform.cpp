@@ -88,6 +88,16 @@ void ComponentTransform::Update()
 
 }
 
+bool ComponentTransform::GetIsStatic()
+{
+	return isStatic;
+}
+
+void ComponentTransform::SetIsStatic(bool isStatic)
+{
+	ComponentTransform::isStatic = isStatic;
+}
+
 float3 ComponentTransform::GetPosition()
 {
 	return position;
