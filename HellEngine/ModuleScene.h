@@ -42,12 +42,14 @@ public:
 private:
 
 	ComponentCamera* activeGameCamera;
+	std::vector<GameObject*> gameObjects;
 
 /* TEMPORARY CODE START */
 private:
 	void TestQuadTree();
 	SpaceQuadTree quadTree;
 /* TEMPORARY CODE END */
+	void FindAllSceneGameObjects(GameObject* go);
 };
 
 #endif // !__H_MODULE_SCENE__

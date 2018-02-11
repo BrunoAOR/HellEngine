@@ -194,3 +194,15 @@ void ModuleScene::TestQuadTree()
 	LOGGER("Ray hits: %i objects", rayIntersections.size());
 }
 /* TEMPORARY CODE END */
+void ModuleScene::FindAllSceneGameObjects(GameObject* go)
+{
+	for (GameObject* children : go->GetChildren())
+	{
+		gameObjects.push_back(children);
+
+		if (children->GetChildren().size() != 0)
+		{
+			FindAllSceneGameObjects(children);
+		}
+	}
+}
