@@ -108,4 +108,39 @@ void SpaceNode::DrawNode()
 
 void SpaceNode::CheckBucketSize()
 {
+	if (containedTransforms.size() > bucketSize)
+	{
+		isLeaf = false;
+		/* Divide in X and Y */
+		float3 minPoint = aabb.minPoint;
+		float3 maxPoint = aabb.maxPoint;
+		float minX = minPoint.x;
+		float midX = minPoint.x + (maxPoint.x - minPoint.x) / 2;
+		float maxX = maxPoint.x;
+		float minY = minPoint.y;
+		float maxY = maxPoint.y;
+		float minZ = minPoint.z;
+		float midZ = minPoint.z + (maxPoint.z - minPoint.z) / 2;
+		float maxZ = maxPoint.z;
+		/* Create child nodes */
+		nodes[0] = new SpaceNode(minPoint, float3(midX, maxY, midZ), bucketSize);
+		nodes[1] = new SpaceNode(float3(midX, minY, minZ), float3(maxX, maxY, midZ), bucketSize);
+		nodes[2] = new SpaceNode(float3(minX, minY, midZ), float3(midX, maxY, maxZ), bucketSize);
+		nodes[3] = new SpaceNode(float3(midX, minY, midZ), maxPoint, bucketSize);
+
+		/* With the child nodes created, we insert the children into the child nodes */
+		for (ComponentTransform* transform : containedTransforms)
+		{
+			bool inserted = false;
+			for (int i = 0; i < childrenCount && !inserted; ++i)
+			{
+				if (nodes[i]->Insert(transform))
+					inserted = true;
+			}
+			assert(inserted);
+		}
+
+		/* With the contained Transforms redistributed in the children, we clear containedTransforms since they are now in child nodes */
+		containedTransforms.clear();
+	}
 }
