@@ -74,6 +74,7 @@ UpdateStatus ModuleImGui::Update()
     static bool showTextEditorWindow = false;
 	static bool showHierarchyWindow = true;
 	static bool showInspectorWindow = true;
+	static bool EnableFixedQuadTree = false;
 
 	static bool rendererWireFrame = false;
 	static bool rendererRotate = false;
@@ -100,6 +101,10 @@ UpdateStatus ModuleImGui::Update()
 
 			ImGui::MenuItem("Camera", nullptr, &showCameraWindow);
 			ImGui::MenuItem("OpenGL", nullptr, &showOpenGLWindow);
+
+			ImGui::Separator();
+
+			ImGui::MenuItem("Fixed QuadTree", nullptr, &EnableFixedQuadTree);
 
 			ImGui::EndMenu();
 		}
@@ -162,6 +167,16 @@ UpdateStatus ModuleImGui::Update()
 	if (showInspectorWindow)
 	{
 		App->scene->OnEditorInspector(mainMenuBarHeight, &showInspectorWindow);
+	}
+
+	if (EnableFixedQuadTree)
+	{
+		App->scene->GenerateSceneFixedQuadTree();
+	}
+
+	if (!EnableFixedQuadTree)
+	{
+		App->scene->UnloadSceneFixedQuadTree();
 	}
 
 	ImGui::Render();

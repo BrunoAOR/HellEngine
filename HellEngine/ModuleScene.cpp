@@ -2,6 +2,7 @@
 #include "ImGui/imgui.h"
 #include "Application.h"
 #include "ComponentCamera.h"
+#include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "ModuleScene.h"
 #include "ModuleWindow.h"
@@ -42,10 +43,14 @@ UpdateStatus ModuleScene::Update()
 		TestQuadTree();
 		init = true;
 	}
-	quadTree.DrawTree();
+	if (fixedQuadTreeActive)
+	{
+		fixedQuadTree.DrawTree();
+		
+	}
+	root->Update();
 	/* TEMPORARY CODE END */
 
-	root->Update();
 	return UpdateStatus::UPDATE_CONTINUE;
 }
 
@@ -80,6 +85,51 @@ void ModuleScene::OnEditorInspector(float mainMenuBarHeight, bool * pOpen)
 
 	ImGui::End();
 }
+
+void ModuleScene::SetFixedQuadTreeActive(bool isActive)
+{
+	fixedQuadTreeActive = isActive;
+}
+
+void ModuleScene::UnloadSceneFixedQuadTree()
+{
+	SetFixedQuadTreeActive(false);
+	fixedQuadTree.~SpaceQuadTree();
+	staticGameObjects.clear();
+}
+
+void ModuleScene::GenerateSceneFixedQuadTree()
+{
+
+	AABB staticGoAABB;
+	AABB resultingStaticGosABBB;
+	resultingStaticGosABBB.SetNegativeInfinity();
+
+	if (!fixedQuadTreeActive) //It's only necessary at the initialization instant
+	{
+		FindAllSceneStaticGameObjects(root);
+
+		if (staticGameObjects.size() != 0)
+		{
+
+			for (GameObject *staticGO : staticGameObjects) {
+
+				ComponentTransform* staticObjectTransform = (ComponentTransform*)staticGO->GetComponent(ComponentType::TRANSFORM);
+				staticGoAABB = staticObjectTransform->GetBoundingBox();
+
+				resultingStaticGosABBB.Enclose(staticGoAABB.minPoint, staticGoAABB.maxPoint);
+			}
+
+			fixedQuadTree.Create(resultingStaticGosABBB.minPoint, resultingStaticGosABBB.maxPoint);
+			fixedQuadTree.Insert(staticGameObjects);
+		}
+
+	}
+
+	fixedQuadTreeActive = true;
+
+}
+
 
 void ModuleScene::SetActiveGameCamera(ComponentCamera* camera)
 {
@@ -161,7 +211,7 @@ void ModuleScene::TestQuadTree()
 		GameObject* go = new GameObject("Sphere 5", root);
 		ComponentTransform* transform = (ComponentTransform*)go->AddComponent(ComponentType::TRANSFORM);
 		transform->SetPosition(5, 5, 5);
-		transform->SetIsStatic(true);
+		transform->SetIsStatic(false);
 		ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
 		mesh->SetActiveVao(1);
 		ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
@@ -181,9 +231,22 @@ void ModuleScene::TestQuadTree()
 		mat->Apply();
 		gos.push_back(go);
 	}
-	quadTree.Create(gos);
+
+	{
+		GameObject* go = new GameObject("Sphere 1.5", gos.at(1));
+		ComponentTransform* transform = (ComponentTransform*)go->AddComponent(ComponentType::TRANSFORM);
+		transform->SetPosition(1.7f, 5, 1.5f);
+		transform->SetIsStatic(true);
+		ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
+		mesh->SetActiveVao(1);
+		ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
+		mat->SetDefaultMaterialConfiguration();
+		mat->Apply();
+		gos.push_back(go);
+	}
+	//quadTree.Create(gos);
 	
-	Line line(float3(0, 0, 0), vec(1, 1, 1));
+	/*Line line(float3(0, 0, 0), vec(1, 1, 1));
 	std::vector<GameObject*> lineIntersections;
 	quadTree.Intersects(lineIntersections, line);
 	LOGGER("Line hits: %i objects", lineIntersections.size());
@@ -194,7 +257,7 @@ void ModuleScene::TestQuadTree()
 	Ray ray(float3(0,0,0), vec(1,1,1).Normalized());
 	std::vector<GameObject*> rayIntersections;
 	quadTree.Intersects(rayIntersections, ray);
-	LOGGER("Ray hits: %i objects", rayIntersections.size());
+	LOGGER("Ray hits: %i objects", rayIntersections.size());*/
 }
 /* TEMPORARY CODE END */
 void ModuleScene::FindAllSceneStaticGameObjects(GameObject* go)
@@ -205,7 +268,7 @@ void ModuleScene::FindAllSceneStaticGameObjects(GameObject* go)
 		{
 			if (((ComponentTransform*)children->GetComponent(ComponentType::TRANSFORM))->GetIsStatic())
 			{
-				gameObjects.push_back(children);
+				staticGameObjects.push_back(children);
 			}
 		}
 

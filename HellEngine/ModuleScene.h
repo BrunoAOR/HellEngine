@@ -24,6 +24,11 @@ public:
 	void OnEditorHierarchy(float mainMenuBarHeight, bool* pOpen);
 	void OnEditorInspector(float mainMenuBarHeight, bool* pOpen);
 
+	void SetFixedQuadTreeActive(bool isActive);
+	void UnloadSceneFixedQuadTree();
+
+	void GenerateSceneFixedQuadTree();
+
 	void SetActiveGameCamera(ComponentCamera* camera);
 	ComponentCamera* GetActiveGameCamera() const;
 
@@ -42,14 +47,16 @@ public:
 private:
 
 	ComponentCamera* activeGameCamera;
-	std::vector<GameObject*> gameObjects;
+	std::vector<GameObject*> staticGameObjects;
 
 /* TEMPORARY CODE START */
 private:
 	void TestQuadTree();
-	SpaceQuadTree quadTree;
+	SpaceQuadTree  fixedQuadTree;;
 /* TEMPORARY CODE END */
 	void FindAllSceneStaticGameObjects(GameObject* go);
+
+	bool fixedQuadTreeActive = false;
 };
 
 #endif // !__H_MODULE_SCENE__
