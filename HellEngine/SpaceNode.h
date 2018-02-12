@@ -4,11 +4,12 @@
 #include "MathGeoLib/src/Math/float3.h"
 #include "MathGeoLib/src/Geometry/AABB.h"
 class ComponentTransform;
+class SpaceQuadTree;
 
 class SpaceNode
 {
 public:
-	SpaceNode(float3 minPoint, float3 maxPoint, unsigned int bucketSize);
+	SpaceNode(float3 minPoint, float3 maxPoint, SpaceQuadTree* quadTree, unsigned int depth);
 	~SpaceNode();
 
 	bool Insert(ComponentTransform* transform);
@@ -21,7 +22,8 @@ private:
 	void CheckBucketSize();
 
 private:
-	const unsigned int bucketSize;
+	SpaceQuadTree* quadTree = nullptr;
+	const unsigned int depth;
 	AABB aabb;
 	bool isLeaf = true;
 	const int childrenCount;

@@ -1,11 +1,13 @@
 #include <assert.h>
 #include "ComponentTransform.h"
 #include "SpaceNode.h"
+#include "SpaceQuadTree.h"
 #include "openGL.h"
 
-SpaceNode::SpaceNode(float3 minPoint, float3 maxPoint, unsigned int aBucketSize):  bucketSize(aBucketSize), childrenCount(4)
+SpaceNode::SpaceNode(float3 minPoint, float3 maxPoint, SpaceQuadTree* aQuadTree, unsigned int aDepth)
+	:  quadTree(aQuadTree), depth(depth), childrenCount(4)
 {
-	assert(bucketSize > 0);
+	assert(quadTree);
 	aabb.SetNegativeInfinity();
 	vec points[2] = { minPoint, maxPoint };
 	aabb.Enclose(points, 2);
@@ -132,7 +134,7 @@ void SpaceNode::DrawNode()
 
 void SpaceNode::CheckBucketSize()
 {
-	if (containedTransforms.size() > bucketSize)
+	if (containedTransforms.size() > quadTree->bucketSize && depth < quadTree->maxDepth)
 	{
 		isLeaf = false;
 		/* Divide in X and Y */
@@ -147,10 +149,10 @@ void SpaceNode::CheckBucketSize()
 		float midZ = minPoint.z + (maxPoint.z - minPoint.z) / 2;
 		float maxZ = maxPoint.z;
 		/* Create child nodes */
-		nodes[0] = new SpaceNode(minPoint, float3(midX, maxY, midZ), bucketSize);
-		nodes[1] = new SpaceNode(float3(midX, minY, minZ), float3(maxX, maxY, midZ), bucketSize);
-		nodes[2] = new SpaceNode(float3(minX, minY, midZ), float3(midX, maxY, maxZ), bucketSize);
-		nodes[3] = new SpaceNode(float3(midX, minY, midZ), maxPoint, bucketSize);
+		nodes[0] = new SpaceNode(minPoint, float3(midX, maxY, midZ), quadTree, depth + 1);
+		nodes[1] = new SpaceNode(float3(midX, minY, minZ), float3(maxX, maxY, midZ), quadTree, depth + 1);
+		nodes[2] = new SpaceNode(float3(minX, minY, midZ), float3(midX, maxY, maxZ), quadTree, depth + 1);
+		nodes[3] = new SpaceNode(float3(midX, minY, midZ), maxPoint, quadTree, depth + 1);
 
 		/* With the child nodes created, we insert the children into the child nodes */
 		for (ComponentTransform* transform : containedTransforms)

@@ -49,13 +49,17 @@ public:
 
 	void CleanUp();
 
+public:
+	
+	const unsigned int bucketSize;
+	const unsigned int maxDepth;
+
 private:
 
 	int InsertFixed(GameObject* gameObject);
 
 private:
 
-	const unsigned int bucketSize;
 	SpaceNode* node = nullptr;
 	QuadTreeType type;
 

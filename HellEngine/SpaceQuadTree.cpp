@@ -5,7 +5,7 @@
 #include "SpaceNode.h"
 #include "SpaceQuadTree.h"
 
-SpaceQuadTree::SpaceQuadTree(): bucketSize(1)
+SpaceQuadTree::SpaceQuadTree(): bucketSize(1), maxDepth(5)
 {
 }
 
@@ -23,7 +23,7 @@ int SpaceQuadTree::Create(float3 minPoint, float3 maxPoint)
 	{
 		minContainedPoint = minPoint;
 		maxContainedPoint = maxPoint;
-		node = new SpaceNode(minPoint, maxPoint, bucketSize);
+		node = new SpaceNode(minPoint, maxPoint, this, 1);
 		return 0;
 	}
 	return 1;
@@ -62,7 +62,7 @@ int SpaceQuadTree::Create(const std::vector<GameObject*>& gameObjects)
 		}
 	}
 	
-	node = new SpaceNode(minContainedPoint, maxContainedPoint, bucketSize);
+	node = new SpaceNode(minContainedPoint, maxContainedPoint, this, 1);
 	
 	for (GameObject* go : containedGameObjects)
 	{
