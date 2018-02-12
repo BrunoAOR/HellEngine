@@ -556,6 +556,25 @@ void ModuleImGui::ShowQuadTreeWindow(float mainMenuBarHeight, bool * pOpen)
 
 	ImGui::RadioButton("Adaptive", &quadTreeOption, 2);
 
+	{
+		ImGui::Separator();
+
+		ImGui::Text("QuadTree usage test:");
+		ImGui::Text("Primitive: AABB");
+		static float aabbMinPoint[3] = { 0,0,0 };
+		static float aabbMaxPoint[3] = { 0,0,0 };
+		ImGui::InputFloat3("AABB Min point", aabbMinPoint, 2);
+		ImGui::InputFloat3("AABB Max point", aabbMaxPoint, 2);
+
+		if (ImGui::Button("Test Collisions"))
+		{
+			if (aabbMinPoint[0] < aabbMaxPoint[0] && aabbMinPoint[1] < aabbMaxPoint[1] && aabbMinPoint[2] < aabbMaxPoint[2])
+				App->scene->TestCollisionChecks(aabbMinPoint, aabbMaxPoint);
+			else
+				LOGGER("Invalid range for the AABB primitive!");
+		}
+	}
+
 	if (quadTreeOption != previousQuadTreeOption || minMaxChanged && quadTreeOption == 1)
 	{
 		previousQuadTreeOption = quadTreeOption;

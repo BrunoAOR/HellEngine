@@ -5,7 +5,7 @@
 #include "openGL.h"
 
 SpaceNode::SpaceNode(float3 minPoint, float3 maxPoint, SpaceQuadTree* aQuadTree, unsigned int aDepth)
-	:  quadTree(aQuadTree), depth(depth), childrenCount(4)
+	:  quadTree(aQuadTree), depth(aDepth), childrenCount(4)
 {
 	assert(quadTree);
 	aabb.SetNegativeInfinity();

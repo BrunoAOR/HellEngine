@@ -34,12 +34,18 @@ private:
 template<typename T>
 inline void SpaceNode::CollectIntersections(std::vector<GameObject*>& intersectedGameObjects, const T& primitive)
 {
+	static int checksPerformed = 0;
+	if (depth == 1)
+		checksPerformed = 0;
+
+	++checksPerformed;
 	if (primitive.Intersects(aabb))
 	{
 		if (isLeaf)
 		{
 			for (std::vector<ComponentTransform*>::iterator it = this->containedTransforms.begin(); it != this->containedTransforms.end(); ++it)
 			{
+				++checksPerformed;
 				if (primitive.Intersects((*it)->GetBoundingBox()))
 					intersectedGameObjects.push_back((*it)->gameObject);
 			}
@@ -51,6 +57,9 @@ inline void SpaceNode::CollectIntersections(std::vector<GameObject*>& intersecte
 					nodes[i]->CollectIntersections(intersectedGameObjects, primitive);
 		}
 	}
+
+	if (depth == 1)
+		LOGGER("QuadTree checks: %i", checksPerformed);;
 }
 
 #endif // !__H_SPACE_NODE__

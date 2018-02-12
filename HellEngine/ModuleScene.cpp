@@ -125,6 +125,26 @@ void ModuleScene::ChangeStaticStatus(ComponentTransform* transform, bool isStati
 	}
 }
 
+void ModuleScene::TestCollisionChecks(float* minPoint, float* maxPoint)
+{
+	LOGGER("");
+	LOGGER("Testing count of intersections checks:");
+	float3 min(minPoint[0], minPoint[1], minPoint[2]);
+	float3 max(maxPoint[0], maxPoint[1], maxPoint[2]);
+	AABB testCube(min, max);
+
+	std::vector<GameObject*> intersected;
+	Intersects(intersected, testCube);
+	LOGGER("Brute force found %i intersection", intersected.size());
+	intersected.clear();
+	if (quadTree.GetType() != SpaceQuadTree::QuadTreeType::INVALID)
+	{
+		quadTree.Intersects(intersected, testCube);
+		LOGGER("QuadTree found %i intersection", intersected.size());
+	}
+
+}
+
 
 void ModuleScene::SetActiveGameCamera(ComponentCamera* camera)
 {
@@ -257,6 +277,9 @@ void ModuleScene::TestQuadTree()
 /* TEMPORARY CODE END */
 void ModuleScene::FindAllSceneStaticGameObjects(std::vector<GameObject*>& staticGameObjects, GameObject* go)
 {
+	if (go == nullptr)
+		go = root;
+
 	for (GameObject* children : go->GetChildren())
 	{
 		if (children->GetComponent(ComponentType::TRANSFORM) != nullptr)
