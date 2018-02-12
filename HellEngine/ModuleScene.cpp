@@ -43,10 +43,9 @@ UpdateStatus ModuleScene::Update()
 		TestQuadTree();
 		init = true;
 	}
-	if (fixedQuadTreeActive)
+	if (quadTree.GetType() != SpaceQuadTree::QuadTreeType::INVALID)
 	{
-		fixedQuadTree.DrawTree();
-		
+		quadTree.DrawTree();
 	}
 	root->Update();
 	/* TEMPORARY CODE END */
@@ -86,48 +85,33 @@ void ModuleScene::OnEditorInspector(float mainMenuBarHeight, bool * pOpen)
 	ImGui::End();
 }
 
-void ModuleScene::SetFixedQuadTreeActive(bool isActive)
-{
-	fixedQuadTreeActive = isActive;
-}
-
 void ModuleScene::UnloadSceneFixedQuadTree()
 {
-	SetFixedQuadTreeActive(false);
-	fixedQuadTree.~SpaceQuadTree();
-	staticGameObjects.clear();
+	quadTree.CleanUp();
 }
 
-void ModuleScene::GenerateSceneFixedQuadTree()
+void ModuleScene::GenerateSceneFixedQuadTree(float* minPoint, float* maxPoint)
 {
-
-	AABB staticGoAABB;
-	AABB resultingStaticGosABBB;
-	resultingStaticGosABBB.SetNegativeInfinity();
-
-	if (!fixedQuadTreeActive) //It's only necessary at the initialization instant
+	if (quadTree.GetType() != SpaceQuadTree::QuadTreeType::FIXED)
 	{
-		FindAllSceneStaticGameObjects(root);
-
-		if (staticGameObjects.size() != 0)
-		{
-
-			for (GameObject *staticGO : staticGameObjects) {
-
-				ComponentTransform* staticObjectTransform = (ComponentTransform*)staticGO->GetComponent(ComponentType::TRANSFORM);
-				staticGoAABB = staticObjectTransform->GetBoundingBox();
-
-				resultingStaticGosABBB.Enclose(staticGoAABB.minPoint, staticGoAABB.maxPoint);
-			}
-
-			fixedQuadTree.Create(resultingStaticGosABBB.minPoint, resultingStaticGosABBB.maxPoint);
-			fixedQuadTree.Insert(staticGameObjects);
-		}
-
+		vec vecMinPoint(minPoint[0], minPoint[1], minPoint[2]);
+		vec vecMaxPoint(maxPoint[0], maxPoint[1], maxPoint[2]);
+		quadTree.Create(vecMinPoint, vecMaxPoint);
+		std::vector<GameObject*> staticGOs;
+		FindAllSceneStaticGameObjects(staticGOs, root);
+		quadTree.Insert(staticGOs);
 	}
+	return;
+}
 
-	fixedQuadTreeActive = true;
-
+void ModuleScene::GenerateSceneAdaptiveQuadTree()
+{
+	if (quadTree.GetType() != SpaceQuadTree::QuadTreeType::ADAPTIVE)
+	{
+		std::vector<GameObject*> staticGOs;
+		FindAllSceneStaticGameObjects(staticGOs, root);
+		quadTree.Create(staticGOs);
+	}
 }
 
 
@@ -260,7 +244,7 @@ void ModuleScene::TestQuadTree()
 	LOGGER("Ray hits: %i objects", rayIntersections.size());*/
 }
 /* TEMPORARY CODE END */
-void ModuleScene::FindAllSceneStaticGameObjects(GameObject* go)
+void ModuleScene::FindAllSceneStaticGameObjects(std::vector<GameObject*>& staticGameObjects, GameObject* go)
 {
 	for (GameObject* children : go->GetChildren())
 	{
@@ -274,7 +258,7 @@ void ModuleScene::FindAllSceneStaticGameObjects(GameObject* go)
 
 		if (children->GetChildren().size() != 0)
 		{
-			FindAllSceneStaticGameObjects(children);
+			FindAllSceneStaticGameObjects(staticGameObjects, children);
 		}
 	}
 }

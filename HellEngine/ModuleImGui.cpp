@@ -74,7 +74,7 @@ UpdateStatus ModuleImGui::Update()
     static bool showTextEditorWindow = false;
 	static bool showHierarchyWindow = true;
 	static bool showInspectorWindow = true;
-	static bool EnableFixedQuadTree = false;
+	static bool showQuadTreeWindow = false;
 
 	static bool rendererWireFrame = false;
 	static bool rendererRotate = false;
@@ -104,7 +104,7 @@ UpdateStatus ModuleImGui::Update()
 
 			ImGui::Separator();
 
-			ImGui::MenuItem("Fixed QuadTree", nullptr, &EnableFixedQuadTree);
+			ImGui::MenuItem("QuadTree", nullptr, &showQuadTreeWindow);
 
 			ImGui::EndMenu();
 		}
@@ -169,14 +169,9 @@ UpdateStatus ModuleImGui::Update()
 		App->scene->OnEditorInspector(mainMenuBarHeight, &showInspectorWindow);
 	}
 
-	if (EnableFixedQuadTree)
+	if (showQuadTreeWindow)
 	{
-		App->scene->GenerateSceneFixedQuadTree();
-	}
-
-	if (!EnableFixedQuadTree)
-	{
-		App->scene->UnloadSceneFixedQuadTree();
+		ShowQuadTreeWindow(mainMenuBarHeight, &showQuadTreeWindow);
 	}
 
 	ImGui::Render();
@@ -537,4 +532,38 @@ void ModuleImGui::ShowTextEditorWindow(float mainMenuBarHeight, bool* pOpen)
 	ImGui::Text(lastLog.c_str());
 
     ImGui::End();
+}
+
+void ModuleImGui::ShowQuadTreeWindow(float mainMenuBarHeight, bool * pOpen)
+{
+	static int quadTreeOption = 0;
+	
+	ImGui::RadioButton("None", &quadTreeOption, 0);
+
+	ImGui::Separator();
+
+	static float minPoint[3] = { 0,0,0 };
+	static float maxPoint[3] = { 0,0,0 };
+	ImGui::RadioButton("Fixed", &quadTreeOption, 1);
+	ImGui::InputFloat3("Min point", minPoint, 2);
+	ImGui::InputFloat3("Max point", maxPoint, 2);
+
+	ImGui::Separator();
+
+	ImGui::RadioButton("Adaptive", &quadTreeOption, 2);
+
+	switch (quadTreeOption)
+	{
+	case 0:
+		App->scene->UnloadSceneFixedQuadTree();
+		break;
+	case 1:
+		App->scene->GenerateSceneFixedQuadTree(minPoint, maxPoint);
+		break;
+	case 2:
+		App->scene->GenerateSceneAdaptiveQuadTree();
+		break;
+	default:
+		break;
+	}
 }

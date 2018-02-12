@@ -173,7 +173,8 @@ bool SpaceQuadTree::Remove(GameObject* gameObject)
 
 void SpaceQuadTree::DrawTree()
 {
-	node->DrawNode();
+	if (node)
+		node->DrawNode();
 }
 
 void SpaceQuadTree::CleanUp()

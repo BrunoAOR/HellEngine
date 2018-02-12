@@ -47,9 +47,10 @@ public:
 
 	void DrawTree();
 
+	void CleanUp();
+
 private:
 
-	void CleanUp();
 	int InsertFixed(GameObject* gameObject);
 
 private:
