@@ -95,13 +95,11 @@ int SpaceQuadTree::Insert(GameObject* gameObject)
 	switch (type)
 	{
 	case SpaceQuadTree::QuadTreeType::INVALID:
-		if (gameObject->GetComponent(ComponentType::TRANSFORM))
-			failCount = Create(std::vector<GameObject*>{gameObject});
+		failCount = 1;
 		break;
-
 	case SpaceQuadTree::QuadTreeType::FIXED:
 		failCount = InsertFixed(gameObject);
-	
+		break;
 	case SpaceQuadTree::QuadTreeType::ADAPTIVE:
 		if (gameObject->GetComponent(ComponentType::TRANSFORM))
 		{
@@ -128,7 +126,7 @@ int SpaceQuadTree::Insert(std::vector<GameObject*> gameObjects)
 	switch (type)
 	{
 	case SpaceQuadTree::QuadTreeType::INVALID:
-		failCount = Create(gameObjects);
+		failCount = gameObjects.size();
 		break;
 	case SpaceQuadTree::QuadTreeType::FIXED:
 		for (GameObject* go : gameObjects)
