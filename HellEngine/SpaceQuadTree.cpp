@@ -129,16 +129,17 @@ int SpaceQuadTree::Insert(std::vector<GameObject*> gameObjects)
 	{
 	case SpaceQuadTree::QuadTreeType::INVALID:
 		failCount = Create(gameObjects);
-	
+		break;
 	case SpaceQuadTree::QuadTreeType::FIXED:
 		for (GameObject* go : gameObjects)
 			failCount += InsertFixed(go);
-	
+		break;
 	case SpaceQuadTree::QuadTreeType::ADAPTIVE:
 		failCount = Create(newGameObjectsVector);
-
+		break;
 	default:
 		failCount = 1;
+		break;
 	}
 	LOGGER("SpaceQuadTree now contains %i GameObjects.", containedGameObjects.size());
 	return failCount;
