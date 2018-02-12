@@ -82,48 +82,67 @@ int SpaceQuadTree::Insert(GameObject* gameObject)
 	if (!gameObject)
 		return 1;
 
+	int failCount = 1;
+
+	/*
+	A different vector must be created for ADAPTIVE QuadTree
+	because the Create function calls CleanUp
+	which will clear the containedGameObjects vector.
+	*/
+	std::vector<GameObject*> newGameObjectsVector(containedGameObjects);
+	newGameObjectsVector.push_back(gameObject);
+
 	switch (type)
 	{
 	case SpaceQuadTree::QuadTreeType::INVALID:
 		if (gameObject->GetComponent(ComponentType::TRANSFORM))
-			return Create(std::vector<GameObject*>{gameObject});
+			failCount = Create(std::vector<GameObject*>{gameObject});
 		break;
 
 	case SpaceQuadTree::QuadTreeType::FIXED:
-		return InsertFixed(gameObject);
+		failCount = InsertFixed(gameObject);
 	
 	case SpaceQuadTree::QuadTreeType::ADAPTIVE:
 		if (gameObject->GetComponent(ComponentType::TRANSFORM))
 		{
-			containedGameObjects.push_back(gameObject);
-			return Create(containedGameObjects);
+			failCount = Create(newGameObjectsVector);
 		}
 		break;
 	}
-	return 1;
+	LOGGER("SpaceQuadTree now contains %i GameObjects.", containedGameObjects.size());
+	return failCount;
 }
 
 int SpaceQuadTree::Insert(std::vector<GameObject*> gameObjects)
 {
 	int failCount = 0;
 
+	/*
+	A different vector must be created for ADAPTIVE QuadTree
+	because the Create function calls CleanUp
+	which will clear the containedGameObjects vector.
+	*/
+	std::vector<GameObject*> newGameObjectsVector(containedGameObjects);
+	newGameObjectsVector.insert(newGameObjectsVector.end(), gameObjects.begin(), gameObjects.end());
+
 	switch (type)
 	{
 	case SpaceQuadTree::QuadTreeType::INVALID:
-		return Create(gameObjects);
+		failCount = Create(gameObjects);
 	
 	case SpaceQuadTree::QuadTreeType::FIXED:
 		for (GameObject* go : gameObjects)
 			failCount += InsertFixed(go);
-		return failCount;
 	
 	case SpaceQuadTree::QuadTreeType::ADAPTIVE:
-		containedGameObjects.insert(containedGameObjects.end(), gameObjects.begin(), gameObjects.end());
-		return Create(containedGameObjects);
+		failCount = Create(newGameObjectsVector);
 
 	default:
-		return 1;
+		failCount = 1;
 	}
+	LOGGER("SpaceQuadTree now contains %i GameObjects.", containedGameObjects.size());
+	return failCount;
+
 }
 
 bool SpaceQuadTree::Remove(GameObject* gameObject)
@@ -144,6 +163,11 @@ bool SpaceQuadTree::Remove(GameObject* gameObject)
 	*/
 	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
 	assert(transform);
+	/*
+	A different vector must be created for ADAPTIVE QuadTree
+	because the Create function calls CleanUp
+	which will clear the containedGameObjects vector.
+	*/
 	std::vector<GameObject*> newGameObjectsVector(containedGameObjects);
 
 	switch (type)
@@ -158,9 +182,6 @@ bool SpaceQuadTree::Remove(GameObject* gameObject)
 	case SpaceQuadTree::QuadTreeType::ADAPTIVE:
 		/*
 		Recreate the whole SpaceQuadTree.
-		A different vector must be created
-		because the Create function calls CleanUp
-		which will clear the containedGameObjects vector.
 		*/
 		result = Create(newGameObjectsVector);
 		break;
@@ -168,12 +189,13 @@ bool SpaceQuadTree::Remove(GameObject* gameObject)
 		result = false;
 		break;
 	}
+	LOGGER("SpaceQuadTree now contains %i GameObjects.", containedGameObjects.size());
 	return result;
 }
 
 void SpaceQuadTree::DrawTree()
 {
-	if (node)
+	if (type!= QuadTreeType::INVALID && node)
 		node->DrawNode();
 }
 
