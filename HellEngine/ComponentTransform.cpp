@@ -1,8 +1,10 @@
 #include "ImGui/imgui.h"
 #include "MathGeoLib/src/Math/TransformOps.h"
+#include "Application.h"
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "GameObject.h"
+#include "ModuleScene.h"
 #include "globals.h"
 #include "openGL.h"
 
@@ -95,7 +97,8 @@ bool ComponentTransform::GetIsStatic()
 
 void ComponentTransform::SetIsStatic(bool isStatic)
 {
-	ComponentTransform::isStatic = isStatic;
+	this->isStatic = isStatic;
+	App->scene->ChangeStaticStatus(this, isStatic);
 }
 
 float3 ComponentTransform::GetPosition()
@@ -304,7 +307,10 @@ void ComponentTransform::OnEditor()
 		else if (drawBoundingBox)
 			drawBoundingBox = false;
 
-		ImGui::Checkbox("Static", &isStatic);
+		if (ImGui::Checkbox("Static", &isStatic))
+		{
+			SetIsStatic(isStatic);
+		}
 	}
 }
 

@@ -27,6 +27,7 @@ public:
 	void UnloadSceneFixedQuadTree();
 	void GenerateSceneFixedQuadTree(float* minPoint, float* maxPoint);
 	void GenerateSceneAdaptiveQuadTree();
+	void ChangeStaticStatus(ComponentTransform* transform, bool isStatic);
 
 	void SetActiveGameCamera(ComponentCamera* camera);
 	ComponentCamera* GetActiveGameCamera() const;

@@ -114,6 +114,17 @@ void ModuleScene::GenerateSceneAdaptiveQuadTree()
 	}
 }
 
+void ModuleScene::ChangeStaticStatus(ComponentTransform* transform, bool isStatic)
+{
+	if (quadTree.GetType() != SpaceQuadTree::QuadTreeType::INVALID)
+	{
+		if (isStatic)
+			quadTree.Insert(transform->gameObject);
+		else
+			quadTree.Remove(transform->gameObject);
+	}
+}
+
 
 void ModuleScene::SetActiveGameCamera(ComponentCamera* camera)
 {
