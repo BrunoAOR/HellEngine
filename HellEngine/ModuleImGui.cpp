@@ -537,6 +537,8 @@ void ModuleImGui::ShowTextEditorWindow(float mainMenuBarHeight, bool* pOpen)
 void ModuleImGui::ShowQuadTreeWindow(float mainMenuBarHeight, bool * pOpen)
 {
 	static int quadTreeOption = 0;
+	static int previousQuadTreeOption = -1;
+	static bool minMaxChanged = false;
 	
 	ImGui::RadioButton("None", &quadTreeOption, 0);
 
@@ -545,25 +547,41 @@ void ModuleImGui::ShowQuadTreeWindow(float mainMenuBarHeight, bool * pOpen)
 	static float minPoint[3] = { 0,0,0 };
 	static float maxPoint[3] = { 0,0,0 };
 	ImGui::RadioButton("Fixed", &quadTreeOption, 1);
-	ImGui::InputFloat3("Min point", minPoint, 2);
-	ImGui::InputFloat3("Max point", maxPoint, 2);
+	if (ImGui::InputFloat3("Min point", minPoint, 2))
+		minMaxChanged = true;
+	if (ImGui::InputFloat3("Max point", maxPoint, 2))
+		minMaxChanged = true;
 
 	ImGui::Separator();
 
 	ImGui::RadioButton("Adaptive", &quadTreeOption, 2);
 
-	switch (quadTreeOption)
+	if (quadTreeOption != previousQuadTreeOption || minMaxChanged && quadTreeOption == 1)
 	{
-	case 0:
-		App->scene->UnloadSceneFixedQuadTree();
-		break;
-	case 1:
-		App->scene->GenerateSceneFixedQuadTree(minPoint, maxPoint);
-		break;
-	case 2:
-		App->scene->GenerateSceneAdaptiveQuadTree();
-		break;
-	default:
-		break;
+		previousQuadTreeOption = quadTreeOption;
+		minMaxChanged = false;
+		switch (quadTreeOption)
+		{
+		case 0:
+			App->scene->UnloadSceneFixedQuadTree();
+			break;
+		case 1:
+			App->scene->UnloadSceneFixedQuadTree();
+			if (minPoint[0] < maxPoint[0] && minPoint[1] < maxPoint[1] && minPoint[2] < maxPoint[2])
+			{
+				App->scene->GenerateSceneFixedQuadTree(minPoint, maxPoint);
+			}
+			else
+			{
+				previousQuadTreeOption = 0;
+				quadTreeOption = 0;
+			}
+			break;
+		case 2:
+			App->scene->GenerateSceneAdaptiveQuadTree();
+			break;
+		default:
+			break;
+		}
 	}
 }
