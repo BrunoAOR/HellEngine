@@ -1,10 +1,10 @@
 #include <assert.h>
 #include "ComponentTransform.h"
-#include "SpaceNode.h"
+#include "SpaceQuadNode.h"
 #include "SpaceQuadTree.h"
 #include "openGL.h"
 
-SpaceNode::SpaceNode(float3 minPoint, float3 maxPoint, SpaceQuadTree* aQuadTree, unsigned int aDepth)
+SpaceQuadNode::SpaceQuadNode(float3 minPoint, float3 maxPoint, SpaceQuadTree* aQuadTree, unsigned int aDepth)
 	:  quadTree(aQuadTree), depth(aDepth), childrenCount(4)
 {
 	assert(quadTree);
@@ -14,7 +14,7 @@ SpaceNode::SpaceNode(float3 minPoint, float3 maxPoint, SpaceQuadTree* aQuadTree,
 }
 
 
-SpaceNode::~SpaceNode()
+SpaceQuadNode::~SpaceQuadNode()
 {
 	for (int i = 0; i < childrenCount; ++i)
 	{
@@ -23,7 +23,7 @@ SpaceNode::~SpaceNode()
 	}
 }
 
-bool SpaceNode::Insert(ComponentTransform* transform)
+bool SpaceQuadNode::Insert(ComponentTransform* transform)
 {
 	if (isLeaf)
 	{
@@ -47,7 +47,7 @@ bool SpaceNode::Insert(ComponentTransform* transform)
 	return false;
 }
 
-bool SpaceNode::Remove(ComponentTransform* transform)
+bool SpaceQuadNode::Remove(ComponentTransform* transform)
 {
 	if (isLeaf)
 	{
@@ -71,7 +71,7 @@ bool SpaceNode::Remove(ComponentTransform* transform)
 	return false;
 }
 
-void SpaceNode::DrawNode()
+void SpaceQuadNode::DrawNode()
 {
 	/*
 	Node's AABB drawing
@@ -132,7 +132,7 @@ void SpaceNode::DrawNode()
 	}
 }
 
-void SpaceNode::CheckBucketSize()
+void SpaceQuadNode::CheckBucketSize()
 {
 	if (containedTransforms.size() > quadTree->bucketSize && depth < quadTree->maxDepth)
 	{
@@ -149,10 +149,10 @@ void SpaceNode::CheckBucketSize()
 		float midZ = minPoint.z + (maxPoint.z - minPoint.z) / 2;
 		float maxZ = maxPoint.z;
 		/* Create child nodes */
-		nodes[0] = new SpaceNode(minPoint, float3(midX, maxY, midZ), quadTree, depth + 1);
-		nodes[1] = new SpaceNode(float3(midX, minY, minZ), float3(maxX, maxY, midZ), quadTree, depth + 1);
-		nodes[2] = new SpaceNode(float3(minX, minY, midZ), float3(midX, maxY, maxZ), quadTree, depth + 1);
-		nodes[3] = new SpaceNode(float3(midX, minY, midZ), maxPoint, quadTree, depth + 1);
+		nodes[0] = new SpaceQuadNode(minPoint, float3(midX, maxY, midZ), quadTree, depth + 1);
+		nodes[1] = new SpaceQuadNode(float3(midX, minY, minZ), float3(maxX, maxY, midZ), quadTree, depth + 1);
+		nodes[2] = new SpaceQuadNode(float3(minX, minY, midZ), float3(midX, maxY, maxZ), quadTree, depth + 1);
+		nodes[3] = new SpaceQuadNode(float3(midX, minY, midZ), maxPoint, quadTree, depth + 1);
 
 		/* With the child nodes created, we insert the children into the child nodes */
 		for (ComponentTransform* transform : containedTransforms)

@@ -1,44 +1,46 @@
-#ifndef __H_SPACE_QUAD_TREE__
-#define __H_SPACE_QUAD_TREE__
+#ifndef __H_SPACE_OCT_TREE__
+#define __H_SPACE_OCT_TREE__
 
 #include <vector>
 #include "MathGeoLib/src/Math/float3.h"
-#include "SpaceQuadNode.h"
+#include "SpaceOctNode.h"
 class GameObject;
 
-class SpaceQuadTree
+class SpaceOctTree
 {
-public:
-	
-	enum class QuadTreeType { INVALID, FIXED, ADAPTIVE };
-	
-	SpaceQuadTree();
-	~SpaceQuadTree();
 
-	/* Creates a fixed QuadTree with the dimensions specified */
+public:
+
+	SpaceOctTree();
+	~SpaceOctTree();
+
+	enum class OctTreeType { INVALID, FIXED, ADAPTIVE };
+
+
+	/* Creates a fixed OctTree with the dimensions specified */
 	int Create(float3 minPoint, float3 maxPoint);
 
-	/* Creates an adaptive QuadTree for the specified GameObjects in the gameObjects vector */
+	/* Creates an adaptive OctTree for the specified GameObjects in the gameObjects vector */
 	int Create(const std::vector<GameObject*>& gameObjects);
 
-	/* Returns the type of the QuadTree */
-	QuadTreeType GetType();
+	/* Returns the type of the OctTree */
+	OctTreeType GetType();
 
 	/*
-	Adds the provided GameObject to the QuadTree.
+	Adds the provided GameObject to the OctTree.
 	The operation can be unsuccessful if the QuadTree is of type FIXED
 	and the GameObject falls outside of the predefined bounds, or if the GameObject contains no Transform
 	*/
 	int Insert(GameObject* gameObject);
 
 	/*
-	Adds the provided GameObjects to the QuadTree.
+	Adds the provided GameObjects to the OctTree.
 	Returns the number of GameObjects that could NOT be added to the QuadTree (if it is of type FIXED),
 	because they fall outside of the predefined bounds or if the GameObjects contain no Transform.
 	*/
 	int Insert(std::vector<GameObject*> gameObjects);
 
-	/* Removes the provided GameObject if it is found inside the SpaceQuadTree */
+	/* Removes the provided GameObject if it is found inside the SpaceOctTree */
 	bool Remove(GameObject* gameObject);
 
 	/* Tests collision of the provided primitive and gathers the intersected GameObjects in the provided intersectedGameObjects vector */
@@ -50,7 +52,7 @@ public:
 	void CleanUp();
 
 public:
-	
+
 	const unsigned int bucketSize;
 	const unsigned int maxDepth;
 
@@ -60,8 +62,8 @@ private:
 
 private:
 
-	SpaceQuadNode* node = nullptr;
-	QuadTreeType type;
+	SpaceOctNode * node = nullptr;
+	OctTreeType type;
 
 	std::vector<GameObject*> containedGameObjects;
 	float3 minContainedPoint;
@@ -69,9 +71,11 @@ private:
 };
 
 template<typename T>
-inline void SpaceQuadTree::Intersects(std::vector<GameObject*>& intersectedGameObjects, const T& primitive)
+inline void SpaceOctTree::Intersects(std::vector<GameObject*>& intersectedGameObjects, const T& primitive)
 {
 	node->CollectIntersections(intersectedGameObjects, primitive);
 }
 
-#endif // !__H_SPACE_QUAD_TREE__
+
+#endif
+

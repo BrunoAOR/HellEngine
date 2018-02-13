@@ -2,39 +2,38 @@
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "GameObject.h"
-#include "SpaceQuadNode.h"
-#include "SpaceQuadTree.h"
+#include "SpaceOctNode.h"
+#include "SpaceOctTree.h"
 
-SpaceQuadTree::SpaceQuadTree(): bucketSize(1), maxDepth(5)
+SpaceOctTree::SpaceOctTree(): bucketSize(1), maxDepth(5)
 {
 }
 
-
-SpaceQuadTree::~SpaceQuadTree()
+SpaceOctTree::~SpaceOctTree()
 {
 	CleanUp();
 }
 
-int SpaceQuadTree::Create(float3 minPoint, float3 maxPoint)
+int SpaceOctTree::Create(float3 minPoint, float3 maxPoint)
 {
 	CleanUp();
-	type = QuadTreeType::FIXED;
+	type = OctTreeType::FIXED;
 	if (minPoint.x < maxPoint.x && minPoint.y < maxPoint.y && minPoint.z < maxPoint.z)
 	{
 		minContainedPoint = minPoint;
 		maxContainedPoint = maxPoint;
-		node = new SpaceQuadNode(minPoint, maxPoint, this, 1);
+		node = new SpaceOctNode(minPoint, maxPoint, this, 1);
 		return 0;
 	}
 	return 1;
 }
 
-int SpaceQuadTree::Create(const std::vector<GameObject*>& gameObjects)
+int SpaceOctTree::Create(const std::vector<GameObject*>& gameObjects)
 {
 	CleanUp();
-	type = QuadTreeType::ADAPTIVE;
+	type = OctTreeType::ADAPTIVE;
 	int failCount = 0;
-	
+
 	for (GameObject* go : gameObjects)
 	{
 		if (go)
@@ -61,9 +60,9 @@ int SpaceQuadTree::Create(const std::vector<GameObject*>& gameObjects)
 				++failCount;
 		}
 	}
-	
-	node = new SpaceQuadNode(minContainedPoint, maxContainedPoint, this, 1);
-	
+
+	node = new SpaceOctNode(minContainedPoint, maxContainedPoint, this, 1);
+
 	for (GameObject* go : containedGameObjects)
 	{
 		ComponentTransform* transform = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM);
@@ -72,12 +71,12 @@ int SpaceQuadTree::Create(const std::vector<GameObject*>& gameObjects)
 	return failCount;
 }
 
-SpaceQuadTree::QuadTreeType SpaceQuadTree::GetType()
+SpaceOctTree::OctTreeType SpaceOctTree::GetType()
 {
 	return type;
 }
 
-int SpaceQuadTree::Insert(GameObject* gameObject)
+int SpaceOctTree::Insert(GameObject* gameObject)
 {
 	if (!gameObject)
 		return 1;
@@ -94,24 +93,24 @@ int SpaceQuadTree::Insert(GameObject* gameObject)
 
 	switch (type)
 	{
-	case SpaceQuadTree::QuadTreeType::INVALID:
+	case SpaceOctTree::OctTreeType::INVALID:
 		failCount = 1;
 		break;
-	case SpaceQuadTree::QuadTreeType::FIXED:
+	case SpaceOctTree::OctTreeType::FIXED:
 		failCount = InsertFixed(gameObject);
 		break;
-	case SpaceQuadTree::QuadTreeType::ADAPTIVE:
+	case SpaceOctTree::OctTreeType::ADAPTIVE:
 		if (gameObject->GetComponent(ComponentType::TRANSFORM))
 		{
 			failCount = Create(newGameObjectsVector);
 		}
 		break;
 	}
-	LOGGER("SpaceQuadTree now contains %i GameObjects.", containedGameObjects.size());
+	LOGGER("SpaceOctTree now contains %i GameObjects.", containedGameObjects.size());
 	return failCount;
 }
 
-int SpaceQuadTree::Insert(std::vector<GameObject*> gameObjects)
+int SpaceOctTree::Insert(std::vector<GameObject*> gameObjects)
 {
 	int failCount = 0;
 
@@ -125,28 +124,28 @@ int SpaceQuadTree::Insert(std::vector<GameObject*> gameObjects)
 
 	switch (type)
 	{
-	case SpaceQuadTree::QuadTreeType::INVALID:
+	case SpaceOctTree::OctTreeType::INVALID:
 		failCount = gameObjects.size();
 		break;
-	case SpaceQuadTree::QuadTreeType::FIXED:
+	case SpaceOctTree::OctTreeType::FIXED:
 		for (GameObject* go : gameObjects)
 			failCount += InsertFixed(go);
 		break;
-	case SpaceQuadTree::QuadTreeType::ADAPTIVE:
+	case SpaceOctTree::OctTreeType::ADAPTIVE:
 		failCount = Create(newGameObjectsVector);
 		break;
 	default:
 		failCount = 1;
 		break;
 	}
-	LOGGER("SpaceQuadTree now contains %i GameObjects.", containedGameObjects.size());
+	LOGGER("SpaceOctTree now contains %i GameObjects.", containedGameObjects.size());
 	return failCount;
 
 }
 
-bool SpaceQuadTree::Remove(GameObject* gameObject)
+bool SpaceOctTree::Remove(GameObject* gameObject)
 {
-	if (type == QuadTreeType::INVALID)
+	if (type == OctTreeType::INVALID)
 		return false;
 
 	std::vector<GameObject*>::iterator it = std::find(containedGameObjects.begin(), containedGameObjects.end(), gameObject);
@@ -154,16 +153,16 @@ bool SpaceQuadTree::Remove(GameObject* gameObject)
 		return false;
 
 	containedGameObjects.erase(it);
-	
+
 	bool result = false;
 	/*
-	If the gameObject WAS previously added to the SpaceQuadTree,
+	If the gameObject WAS previously added to the SpaceOctTree,
 	then it should contain a ComponentTransform
 	*/
 	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
 	assert(transform);
 	/*
-	A different vector must be created for ADAPTIVE QuadTree
+	A different vector must be created for ADAPTIVE OCtTree
 	because the Create function calls CleanUp
 	which will clear the containedGameObjects vector.
 	*/
@@ -171,16 +170,16 @@ bool SpaceQuadTree::Remove(GameObject* gameObject)
 
 	switch (type)
 	{
-	case SpaceQuadTree::QuadTreeType::FIXED:
+	case SpaceOctTree::OctTreeType::FIXED:
 		/*
 		The transform should be in the SpaceNode hierarchy
 		*/
 		result = node->Remove(transform);
 		assert(result);
 		break;
-	case SpaceQuadTree::QuadTreeType::ADAPTIVE:
+	case SpaceOctTree::OctTreeType::ADAPTIVE:
 		/*
-		Recreate the whole SpaceQuadTree.
+		Recreate the whole SpaceOctTree.
 		*/
 		result = Create(newGameObjectsVector);
 		break;
@@ -192,15 +191,15 @@ bool SpaceQuadTree::Remove(GameObject* gameObject)
 	return result;
 }
 
-void SpaceQuadTree::DrawTree()
+void SpaceOctTree::DrawTree()
 {
-	if (type!= QuadTreeType::INVALID && node)
+	if (type != OctTreeType::INVALID && node)
 		node->DrawNode();
 }
 
-void SpaceQuadTree::CleanUp()
+void SpaceOctTree::CleanUp()
 {
-	type = QuadTreeType::INVALID;
+	type = OctTreeType::INVALID;
 	containedGameObjects.clear();
 	if (node != nullptr)
 	{
@@ -215,7 +214,7 @@ void SpaceQuadTree::CleanUp()
 	maxContainedPoint.z = FLT_MIN;
 }
 
-int SpaceQuadTree::InsertFixed(GameObject* gameObject)
+int SpaceOctTree::InsertFixed(GameObject* gameObject)
 {
 	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
 	if (!transform)
@@ -235,3 +234,4 @@ int SpaceQuadTree::InsertFixed(GameObject* gameObject)
 	else
 		return 1;
 }
+

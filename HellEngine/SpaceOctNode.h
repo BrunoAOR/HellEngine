@@ -1,16 +1,16 @@
-#ifndef __H_SPACE_NODE__
-#define __H_SPACE_NODE__
+#ifndef __H_SPACE_OCT_NODE__
+#define __H_SPACE_OCT_NODE__
 
 #include "MathGeoLib/src/Math/float3.h"
 #include "MathGeoLib/src/Geometry/AABB.h"
 class ComponentTransform;
-class SpaceQuadTree;
+class SpaceOctTree;
 
-class SpaceNode
+class SpaceOctNode
 {
 public:
-	SpaceNode(float3 minPoint, float3 maxPoint, SpaceQuadTree* quadTree, unsigned int depth);
-	~SpaceNode();
+	SpaceOctNode(float3 minPoint, float3 maxPoint, SpaceOctTree* quadTree, unsigned int depth);
+	~SpaceOctNode();
 
 	bool Insert(ComponentTransform* transform);
 	bool Remove(ComponentTransform* transform);
@@ -22,17 +22,17 @@ private:
 	void CheckBucketSize();
 
 private:
-	SpaceQuadTree* quadTree = nullptr;
+	SpaceOctTree * octTree = nullptr;
 	const unsigned int depth;
 	AABB aabb;
 	bool isLeaf = true;
 	const int childrenCount;
-	SpaceNode* nodes[4] = { nullptr, nullptr, nullptr, nullptr };
+	SpaceOctNode* nodes[8] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 	std::vector<ComponentTransform*> containedTransforms;
 };
 
 template<typename T>
-inline void SpaceNode::CollectIntersections(std::vector<GameObject*>& intersectedGameObjects, const T& primitive)
+inline void SpaceOctNode::CollectIntersections(std::vector<GameObject*>& intersectedGameObjects, const T& primitive)
 {
 	static int checksPerformed = 0;
 	if (depth == 1)
@@ -59,7 +59,7 @@ inline void SpaceNode::CollectIntersections(std::vector<GameObject*>& intersecte
 	}
 
 	if (depth == 1)
-		LOGGER("QuadTree checks: %i", checksPerformed);;
+		LOGGER("OctTree checks: %i", checksPerformed);;
 }
 
-#endif // !__H_SPACE_NODE__
+#endif // !__H_SPACE_OCT_NODE__

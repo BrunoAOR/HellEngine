@@ -306,7 +306,13 @@
     <ClInclude Include="SpaceQuadTree.h">
       <Filter>Scene Management</Filter>
     </ClInclude>
-    <ClInclude Include="SpaceNode.h">
+    <ClInclude Include="SpaceQuadNode.h">
+      <Filter>Scene Management</Filter>
+    </ClInclude>
+    <ClInclude Include="SpaceOctNode.h">
+      <Filter>Scene Management</Filter>
+    </ClInclude>
+    <ClInclude Include="SpaceOctTree.h">
       <Filter>Scene Management</Filter>
     </ClInclude>
   </ItemGroup>
@@ -491,7 +497,13 @@
     <ClCompile Include="SpaceQuadTree.cpp">
       <Filter>Scene Management</Filter>
     </ClCompile>
-    <ClCompile Include="SpaceNode.cpp">
+    <ClCompile Include="SpaceQuadNode.cpp">
+      <Filter>Scene Management</Filter>
+    </ClCompile>
+    <ClCompile Include="SpaceOctTree.cpp">
+      <Filter>Scene Management</Filter>
+    </ClCompile>
+    <ClCompile Include="SpaceOctNode.cpp">
       <Filter>Scene Management</Filter>
     </ClCompile>
   </ItemGroup>

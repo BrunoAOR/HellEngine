@@ -110,7 +110,9 @@
     <ClInclude Include="openGL.h" />
     <ClInclude Include="Point.h" />
     <ClInclude Include="Shader.h" />
-    <ClInclude Include="SpaceNode.h" />
+    <ClInclude Include="SpaceOctNode.h" />
+    <ClInclude Include="SpaceQuadNode.h" />
+    <ClInclude Include="SpaceOctTree.h" />
     <ClInclude Include="SpaceQuadTree.h" />
     <ClInclude Include="TextureConfiguration.h" />
     <ClInclude Include="TextureInfo.h" />
@@ -176,7 +178,9 @@
     <ClCompile Include="ModuleTime.cpp" />
     <ClCompile Include="ModuleWindow.cpp" />
     <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="SpaceNode.cpp" />
+    <ClCompile Include="SpaceOctNode.cpp" />
+    <ClCompile Include="SpaceQuadNode.cpp" />
+    <ClCompile Include="SpaceOctTree.cpp" />
     <ClCompile Include="SpaceQuadTree.cpp" />
   </ItemGroup>
   <ItemGroup>
