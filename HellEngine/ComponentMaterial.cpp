@@ -51,7 +51,7 @@ void ComponentMaterial::Update()
 
 	ComponentCamera* editorCamera = App->editorCamera->camera;
 	if (editorCamera != nullptr)
-		if (App->scene->UsingQuadTree()) {
+		if (App->scene->UsingQuadTree() && transform->GetIsStatic()) {
 			insideFrustum = editorCamera->IsInsideFrustum(gameObject);
 		}
 		else {
@@ -64,7 +64,7 @@ void ComponentMaterial::Update()
 
 		if (activeGameCamera != nullptr && activeGameCamera->FrustumCulling())
 		{
-			if (App->scene->UsingQuadTree()) {
+			if (App->scene->UsingQuadTree() && transform->GetIsStatic()) {
 				insideFrustum = activeGameCamera->IsInsideFrustum(gameObject);
 			}
 			else {
