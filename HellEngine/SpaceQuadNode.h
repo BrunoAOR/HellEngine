@@ -20,6 +20,7 @@ public:
 private:
 
 	void CheckBucketSize();
+	void CreateVAO();
 
 private:
 	SpaceQuadTree* quadTree = nullptr;
@@ -29,6 +30,7 @@ private:
 	const int childrenCount;
 	SpaceQuadNode* nodes[4] = { nullptr, nullptr, nullptr, nullptr };
 	std::vector<ComponentTransform*> containedTransforms;
+	VaoInfo quadVao;
 };
 
 template<typename T>

@@ -318,6 +318,9 @@
     <ClInclude Include="VAOInfo.h">
       <Filter>General</Filter>
     </ClInclude>
+    <ClInclude Include="ModuleDebugDraw.h">
+      <Filter>Engine Modules</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -508,6 +511,9 @@
     </ClCompile>
     <ClCompile Include="SpaceOctNode.cpp">
       <Filter>Scene Management</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleDebugDraw.cpp">
+      <Filter>Engine Modules</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

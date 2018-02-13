@@ -1,16 +1,19 @@
 #include <assert.h>
+#include "Application.h"
 #include "ComponentTransform.h"
+#include "ModuleDebugDraw.h"
 #include "SpaceQuadNode.h"
 #include "SpaceQuadTree.h"
 #include "openGL.h"
 
 SpaceQuadNode::SpaceQuadNode(float3 minPoint, float3 maxPoint, SpaceQuadTree* aQuadTree, unsigned int aDepth)
-	:  quadTree(aQuadTree), depth(aDepth), childrenCount(4)
+	: quadTree(aQuadTree), depth(aDepth), childrenCount(4)
 {
 	assert(quadTree);
 	aabb.SetNegativeInfinity();
 	vec points[2] = { minPoint, maxPoint };
 	aabb.Enclose(points, 2);
+	CreateVAO();
 }
 
 
@@ -73,60 +76,14 @@ bool SpaceQuadNode::Remove(ComponentTransform* transform)
 
 void SpaceQuadNode::DrawNode()
 {
-	/*
-	Node's AABB drawing
-	  H-----G
-	 /|    /|
-	D-----C |
-	| |   | |
-	| E---|-F
-	|/    |/
-	A-----B
-
-	x to right, y up, z to front
-	ABCD is the front face
-	FEHG is the back face
-	*/
-	if (isLeaf)
-	{
-		float3 vA = aabb.CornerPoint(1);
-		float3 vB = aabb.CornerPoint(5);
-		float3 vC = aabb.CornerPoint(7);
-		float3 vD = aabb.CornerPoint(3);
-		float3 vE = aabb.CornerPoint(0);
-		float3 vF = aabb.CornerPoint(4);
-		float3 vG = aabb.CornerPoint(6);
-		float3 vH = aabb.CornerPoint(2);
-		float vertices[8 * 3] = { vA.x, vA.y, vA.z, vB.x, vB.y, vB.z, vC.x, vC.y, vC.z, vD.x, vD.y, vD.z, vE.x, vE.y, vE.z, vF.x, vF.y, vF.z, vG.x, vG.y, vG.z, vH.x, vH.y, vH.z, };
-		GLubyte vertIndexes[] = {
-			0, 1,	1, 2,	2, 3,	3, 0,	/* front face */
-			4, 5,	5, 6,	6, 7,	7, 4,	/* back face */
-			0, 4,	1, 5,	2, 6,	3, 7	/* front-back links */
-		};
-		GLubyte cornerIndexes[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-
-		float currentLineWidth = 0;
-		glGetFloatv(GL_LINE_WIDTH, &currentLineWidth);
-		glLineWidth(2.0f);
-		float currentPointSize = 0;
-		glGetFloatv(GL_POINT_SIZE, &currentPointSize);
-		glPointSize(10.0f);
-		float currentColor[4];
-		glGetFloatv(GL_CURRENT_COLOR, currentColor);
-		glColor4f(1.0f, 1.0f, 0.0f, 1.0f);
-
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glVertexPointer(3, GL_FLOAT, 0, vertices);
-		glDrawElements(GL_LINES, 12 * 2, GL_UNSIGNED_BYTE, vertIndexes);
-		glDrawElements(GL_POINTS, 8, GL_UNSIGNED_BYTE, cornerIndexes);
-		glDisableClientState(GL_VERTEX_ARRAY);
-
-		glLineWidth(currentLineWidth);
-		glPointSize(currentPointSize);
-		glColor4fv(currentColor);
+	if (isLeaf) {
+		if (quadVao.vao != 0)
+		{
+			float identity[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+			App->debugDraw->DrawElements(identity, quadVao.vao, quadVao.elementsCount, quadVao.indexesType);
+		}
 	}
-	else
-	{
+	else {
 		for (int i = 0; i < childrenCount; ++i)
 			nodes[i]->DrawNode();
 	}
@@ -169,4 +126,123 @@ void SpaceQuadNode::CheckBucketSize()
 		/* With the contained Transforms redistributed in the children, we clear containedTransforms since they are now in child nodes */
 		containedTransforms.clear();
 	}
+}
+
+void SpaceQuadNode::CreateVAO()
+{
+	/*
+	CUBE drawing
+	  G-----H
+	 /|    /|
+	C-----D |
+	| |   | |
+	| E---|-F
+	|/    |/
+	A-----B
+
+	ABDC is the front face
+	FEGH is the back face
+	*/
+	GLfloat vA[3];
+	GLfloat vB[3];
+	GLfloat vC[3];
+	GLfloat vD[3];
+	GLfloat vE[3];
+	GLfloat vF[3];
+	GLfloat vG[3];
+	GLfloat vH[3];
+
+	GLfloat cYellow[3];
+
+	int numCubeUniqueVertexes = 8;
+
+	/* Cube vertices */
+	{
+		vA[0] = aabb.CornerPoint(1).x;
+		vA[1] = aabb.CornerPoint(1).y;
+		vA[2] = aabb.CornerPoint(1).z;
+
+		vB[0] = aabb.CornerPoint(5).x;
+		vB[1] = aabb.CornerPoint(5).y;
+		vB[2] = aabb.CornerPoint(5).z;
+
+		vC[0] = aabb.CornerPoint(7).x;
+		vC[1] = aabb.CornerPoint(7).y;
+		vC[2] = aabb.CornerPoint(7).z;
+
+		vD[0] = aabb.CornerPoint(3).x;
+		vD[1] = aabb.CornerPoint(3).y;
+		vD[2] = aabb.CornerPoint(3).z;
+
+		vE[0] = aabb.CornerPoint(0).x;
+		vE[1] = aabb.CornerPoint(0).y;
+		vE[2] = aabb.CornerPoint(0).z;
+
+		vF[0] = aabb.CornerPoint(4).x;
+		vF[1] = aabb.CornerPoint(4).y;
+		vF[2] = aabb.CornerPoint(4).z;
+
+		vG[0] = aabb.CornerPoint(6).x;
+		vG[1] = aabb.CornerPoint(6).y;
+		vG[2] = aabb.CornerPoint(6).z;
+
+		vH[0] = aabb.CornerPoint(2).x;
+		vH[1] = aabb.CornerPoint(2).y;
+		vH[2] = aabb.CornerPoint(2).z;
+	}
+
+	{
+		cYellow[0] = 1.0f;
+		cYellow[1] = 1.0f;
+		cYellow[2] = 0.0f;
+	}
+
+	const uint allVertCount = 24;
+	const uint uniqueVertCount = 8;
+	GLfloat uniqueVertices[allVertCount] = { SP_ARR_3(vA), SP_ARR_3(vB), SP_ARR_3(vC), SP_ARR_3(vD), SP_ARR_3(vE), SP_ARR_3(vF), SP_ARR_3(vG), SP_ARR_3(vH) };
+	GLfloat uniqueColors[uniqueVertCount * 3] = { SP_ARR_3(cYellow), SP_ARR_3(cYellow), SP_ARR_3(cYellow), SP_ARR_3(cYellow), SP_ARR_3(cYellow), SP_ARR_3(cYellow), SP_ARR_3(cYellow), SP_ARR_3(cYellow) };
+	GLubyte vertIndexes[] = {
+		0, 1,	1, 2,	2, 3,	3, 0,	/* front face */
+		4, 5,	5, 6,	6, 7,	7, 4,	/* back face */
+		0, 4,	1, 5,	2, 6,	3, 7	/* front-back links */
+
+	};
+	GLubyte cornerIndexes[] = { 0, 1, 2, 3, 4, 5, 6, 7 }; /* Will use later */
+
+	float allUniqueData[uniqueVertCount * 6];
+
+	for (int i = 0; i < uniqueVertCount * 6; ++i)
+	{
+		if (i % 6 == 0 || i % 6 == 1 || i % 6 == 2)
+		{
+			allUniqueData[i] = uniqueVertices[(i / 6) * 3 + (i % 6)];
+		}
+		else 
+		{
+			allUniqueData[i] = uniqueColors[(i / 6) * 3 + ((i % 6) - 3)];
+		}
+	}
+
+	quadVao.name = "QuadNode";
+	quadVao.elementsCount = allVertCount;
+	quadVao.indexesType = GL_UNSIGNED_BYTE;
+
+	glGenVertexArrays(1, &quadVao.vao);
+	glGenBuffers(1, &quadVao.vbo);
+	glGenBuffers(1, &quadVao.ebo);
+
+	glBindVertexArray(quadVao.vao);
+	glBindBuffer(GL_ARRAY_BUFFER, quadVao.vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uniqueVertCount * 6, allUniqueData, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(0);	
+	glEnableVertexAttribArray(1);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadVao.ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLubyte) * quadVao.elementsCount, vertIndexes, GL_STATIC_DRAW);
+
+	glBindVertexArray(GL_NONE);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
 }

@@ -100,6 +100,7 @@
     <ClInclude Include="memLeaks.h" />
     <ClInclude Include="Module.h" />
     <ClInclude Include="ModuleAudio.h" />
+    <ClInclude Include="ModuleDebugDraw.h" />
     <ClInclude Include="ModuleEditorCamera.h" />
     <ClInclude Include="ModuleImGui.h" />
     <ClInclude Include="ModuleInput.h" />
@@ -171,6 +172,7 @@
     <ClCompile Include="MathGeoLib\src\Math\TransformOps.cpp" />
     <ClCompile Include="MathGeoLib\src\Time\Clock.cpp" />
     <ClCompile Include="ModuleAudio.cpp" />
+    <ClCompile Include="ModuleDebugDraw.cpp" />
     <ClCompile Include="ModuleEditorCamera.cpp" />
     <ClCompile Include="ModuleImGui.cpp" />
     <ClCompile Include="ModuleInput.cpp" />

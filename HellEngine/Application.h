@@ -3,7 +3,8 @@
 
 #include <list>
 class Module;
-class ModuleAudio;
+class ModuleAudio; 
+class ModuleDebugDraw;
 class ModuleEditorCamera;
 class ModuleImGui;
 class ModuleInput;
@@ -32,6 +33,7 @@ public:
 	ModuleScene* scene = nullptr;
 	ModuleImGui* imgui = nullptr;
 	ModuleAudio* audio = nullptr;
+	ModuleDebugDraw* debugDraw = nullptr;
 
 private:
 	std::list<Module*> modules;
