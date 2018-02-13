@@ -8,6 +8,7 @@
 #include "globals.h"
 #include "openGL.h"
 
+std::vector<float3> ComponentTransform::baseBoundingBox;
 
 ComponentTransform::ComponentTransform(GameObject* owner) : Component(owner)
 {
@@ -16,6 +17,9 @@ ComponentTransform::ComponentTransform(GameObject* owner) : Component(owner)
 	position = float3(0.0f, 0.0f, 0.0f);
 	scale = float3(1.0f, 1.0f, 1.0f);
 	rotation = Quat::FromEulerXYZ(0.0f, 0.0f, 0.0f);
+	if (baseBoundingBox.size() == 0)
+		InitializeBaseBB();
+
 	UpdateBoundingBox();
 	LOGGER("Component of type '%s'", GetString(type));
 }
@@ -167,23 +171,9 @@ void ComponentTransform::SetRotationDeg(float x, float y, float z)
 
 void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 {
-	if (!mesh)
-		mesh = (ComponentMesh*) gameObject->GetComponent(ComponentType::MESH);
-
-	if (mesh)
-	{
-		std::vector<float3> *cubeMeshVertexes;
-		float3 *pointerCubeMeshVertexes;
-		int numVertexes;
-
-		cubeMeshVertexes = mesh->GetBuildVectorCubePoints();
-		pointerCubeMeshVertexes = &cubeMeshVertexes->at(0);
-		numVertexes = cubeMeshVertexes->size();
-
-		boundingBox.SetNegativeInfinity();
-		boundingBox.Enclose(pointerCubeMeshVertexes, numVertexes);
-		boundingBox.TransformBB(GetModelMatrix4x4().Transposed());
-	}
+	boundingBox.SetNegativeInfinity();
+	boundingBox.Enclose(baseBoundingBox.data(), baseBoundingBox.size());
+	boundingBox.TransformBB(GetModelMatrix4x4().Transposed());
 
 	/* To make iterative */
 	std::vector<GameObject*> children = gameObject->GetChildren();
@@ -256,7 +246,7 @@ void ComponentTransform::SetParent(ComponentTransform* newParent)
 	newLocalModelMatrix[0][2] /= scale.z;
 	newLocalModelMatrix[1][2] /= scale.z;
 	newLocalModelMatrix[2][2] /= scale.z;
-	
+
 	/* Then turn into a Quat */
 	rotation = Quat(newLocalModelMatrix);
 	float3 rotEuler = rotation.ToEulerXYZ();
@@ -302,7 +292,7 @@ void ComponentTransform::OnEditor()
 				}
 			}
 		}
-		
+
 		if (DEBUG_MODE)
 			ImGui::Checkbox("Draw Bounding Box", &drawBoundingBox);
 		else if (drawBoundingBox)
@@ -347,4 +337,18 @@ float4x4& ComponentTransform::UpdateLocalModelMatrix()
 	float4x4 translationMatrix = float4x4::Translate(position.x, position.y, position.z);
 	memcpy_s(localModelMatrix.ptr(), sizeof(float) * 16, (translationMatrix * rotationMatrix * scaleMatrix).Transposed().ptr(), sizeof(float) * 16);
 	return localModelMatrix;
+}
+
+void ComponentTransform::InitializeBaseBB()
+{
+	const float s = 0.5f;
+
+	baseBoundingBox.push_back(float3(-s, -s, s));
+	baseBoundingBox.push_back(float3(s, -s, s));
+	baseBoundingBox.push_back(float3(-s, s, s));
+	baseBoundingBox.push_back(float3(s, s, s));
+	baseBoundingBox.push_back(float3(-s, -s, -s));
+	baseBoundingBox.push_back(float3(s, -s, -s));
+	baseBoundingBox.push_back(float3(-s, s, -s));
+	baseBoundingBox.push_back(float3(s, s, -s));
 }

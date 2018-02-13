@@ -20,9 +20,6 @@ public:
 	VaoInfo GetActiveVao() const;
 	bool SetActiveVao(uint index);
 
-	void BuildVectorCubeVertexes(GLfloat arrayCubePoints[], int vertexesNumber);
-	std::vector<float3>* GetBuildVectorCubePoints();
-
 	virtual void OnEditor() override;
 
 	/* Returns the maximum number of times that this particular Type of Component can be added to a GameObject */
@@ -38,7 +35,6 @@ private:
 private:
 
 	static std::vector<VaoInfo> vaoInfos;
-	static std::vector<float3> vecCubeVertexes;
 	int activeVao = -1;
 
 };

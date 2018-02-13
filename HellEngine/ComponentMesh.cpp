@@ -9,7 +9,6 @@
 #include "openGL.h"
 #include "VAOInfo.h"
 
-std::vector<float3> ComponentMesh::vecCubeVertexes;
 std::vector<VaoInfo> ComponentMesh::vaoInfos;
 
 ComponentMesh::ComponentMesh(GameObject* owner) : Component(owner)
@@ -45,21 +44,6 @@ bool ComponentMesh::SetActiveVao(uint index)
 	UpdateBoundingBox();
 	return true;
 }
-
-void ComponentMesh::BuildVectorCubeVertexes(GLfloat arrayCubePoints[], int vertexesNumber)
-{
-
-	for (int i = 0; i < vertexesNumber; i++) {
-		float3 indivVertex(arrayCubePoints[i * 3], arrayCubePoints[i * 3 + 1], arrayCubePoints[i * 3 + 2]);
-		vecCubeVertexes.push_back(indivVertex);
-	}
-}
-
-std::vector<float3> *ComponentMesh::GetBuildVectorCubePoints()
-{
-	return &vecCubeVertexes;
-}
-
 
 void ComponentMesh::OnEditor()
 {
@@ -201,7 +185,6 @@ void ComponentMesh::CreateCubeVAO()
 	const uint allVertCount = 36;
 	const uint uniqueVertCount = 8 + 4;
 	GLfloat uniqueVertices[uniqueVertCount * 3] = { SP_ARR_3(vA), SP_ARR_3(vB), SP_ARR_3(vC), SP_ARR_3(vD), SP_ARR_3(vE), SP_ARR_3(vF), SP_ARR_3(vG), SP_ARR_3(vH), SP_ARR_3(vE), SP_ARR_3(vF), SP_ARR_3(vG), SP_ARR_3(vH) };
-	BuildVectorCubeVertexes(uniqueVertices, numCubeUniqueVertexes);
 	GLfloat uniqueColors[uniqueVertCount * 3] = { SP_ARR_3(cRed), SP_ARR_3(cGreen), SP_ARR_3(cWhite), SP_ARR_3(cBlue), SP_ARR_3(cBlue), SP_ARR_3(cWhite), SP_ARR_3(cGreen), SP_ARR_3(cRed), SP_ARR_3(cBlue), SP_ARR_3(cWhite), SP_ARR_3(cGreen), SP_ARR_3(cRed) };
 	GLfloat uniqueUVCoords[uniqueVertCount * 2] = { SP_ARR_2(bottomLeft), SP_ARR_2(bottomRight), SP_ARR_2(topLeft), SP_ARR_2(topRight), SP_ARR_2(bottomRight), SP_ARR_2(bottomLeft), SP_ARR_2(topRight), SP_ARR_2(topLeft), SP_ARR_2(topLeft), SP_ARR_2(topRight), SP_ARR_2(bottomLeft), SP_ARR_2(bottomRight) };
 	GLubyte verticesOrder[allVertCount] = { 0, 1, 2, 1, 3, 2,		/* Front face */

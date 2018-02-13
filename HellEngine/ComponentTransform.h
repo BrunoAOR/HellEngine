@@ -47,6 +47,7 @@ public:
 private:
 
 	float4x4& UpdateLocalModelMatrix();
+	void InitializeBaseBB();
 
 private:
 
@@ -61,6 +62,8 @@ private:
 
 	float4x4 localModelMatrix;
 	float4x4 worldModelMatrix;
+
+	static std::vector<float3> baseBoundingBox;
 
 };
 
