@@ -8,13 +8,18 @@
 #include "globals.h"
 #include "openGL.h"
 
+std::vector<ComponentMesh::VaoInfo> ComponentMesh::vaoInfos;
+std::vector<float3> ComponentMesh::vecCubeVertexes;
 
 ComponentMesh::ComponentMesh(GameObject* owner) : Component(owner)
 {
 	type = ComponentType::MESH;
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
-	CreateCubeVAO();
-	CreateSphereVAO(32, 32);
+	if (vaoInfos.size() == 0)
+	{
+		CreateCubeVAO();
+		CreateSphereVAO(32, 32);
+	}
 	activeVao = 0;
 	UpdateBoundingBox();
 	LOGGER("Component of type '%s'", GetString(type));

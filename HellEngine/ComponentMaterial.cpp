@@ -1,3 +1,4 @@
+#include "Brofiler/include/Brofiler.h"
 #include "ImGui/imgui.h"
 #include "Application.h"
 #include "ComponentMaterial.h"
@@ -55,13 +56,17 @@ void ComponentMaterial::Update()
 
 	ComponentCamera* editorCamera = App->editorCamera->camera;
 	if (editorCamera != nullptr)
+	{
 		if (App->scene->UsingQuadTree() && transform->GetIsStatic()) {
+			BROFILER_CATEGORY("Frustum culling using QuadTree", Profiler::Color::GreenYellow);
 			insideFrustum = editorCamera->IsInsideFrustum(gameObject);
 		}
 		else {
+			BROFILER_CATEGORY("Frustum culling without QuadTree", Profiler::Color::GreenYellow);
 			insideFrustum = transform->GetBoundingBox().Contains(editorCamera->GetFrustum());
 		}
-
+		BROFILER_CATEGORY("Frustum culling ended", Profiler::Color::Black);
+	}
 	if (insideFrustum) {
 
 		ComponentCamera* activeGameCamera = App->scene->GetActiveGameCamera();
