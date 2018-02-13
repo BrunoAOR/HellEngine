@@ -31,6 +31,7 @@
     <ClInclude Include="EventWindow.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="globals.h" />
+    <ClInclude Include="ImGuizmo\ImGuizmo.h" />
     <ClInclude Include="KeyState.h" />
     <ClInclude Include="MainStates.h" />
     <ClInclude Include="MathGeoLib\src\Algorithm\GJK.h" />
@@ -128,6 +129,7 @@
     <ClCompile Include="ComponentType.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="globals.cpp" />
+    <ClCompile Include="ImGuizmo\ImGuizmo.cpp" />
     <ClCompile Include="ImGui\imgui.cpp" />
     <ClCompile Include="ImGui\imgui_demo.cpp" />
     <ClCompile Include="ImGui\imgui_draw.cpp" />
