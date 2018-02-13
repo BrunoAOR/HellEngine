@@ -4,6 +4,7 @@
 #include <vector>
 #include "Component.h"
 #include "globals.h"
+#include "VAOInfo.h"
 #include "MathGeoLib\src\Math\float3.h"
 
 typedef float GLfloat;
@@ -12,13 +13,6 @@ class ComponentMesh :
 	public Component
 {
 public:
-	struct VaoInfo
-	{
-		const char* name = "";
-		uint vao = 0;
-		uint elementsCount = 0;
-		int indexesType = 0;
-	};
 
 	ComponentMesh(GameObject* owner);
 	virtual ~ComponentMesh() override;

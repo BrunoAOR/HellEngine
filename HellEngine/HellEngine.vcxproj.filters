@@ -315,6 +315,9 @@
     <ClInclude Include="SpaceOctTree.h">
       <Filter>Scene Management</Filter>
     </ClInclude>
+    <ClInclude Include="VAOInfo.h">
+      <Filter>General</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">

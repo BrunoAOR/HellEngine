@@ -10,6 +10,7 @@
 #include "ModuleRender.h"
 #include "ModuleScene.h"
 #include "Shader.h"
+#include "VAOInfo.h"
 #include "globals.h"
 #include "openGL.h"
 
@@ -83,7 +84,7 @@ void ComponentMaterial::Update()
 		if (insideFrustum) {
 			float* modelMatrix = transform->GetModelMatrix();
 
-			ComponentMesh::VaoInfo vaoInfo = mesh->GetActiveVao();
+			VaoInfo vaoInfo = mesh->GetActiveVao();
 			if (vaoInfo.vao == 0)
 			{
 				return;

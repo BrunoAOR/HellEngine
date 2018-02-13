@@ -117,6 +117,7 @@
     <ClInclude Include="TextureConfiguration.h" />
     <ClInclude Include="TextureInfo.h" />
     <ClInclude Include="UpdateStatus.h" />
+    <ClInclude Include="VAOInfo.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
