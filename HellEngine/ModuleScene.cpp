@@ -142,9 +142,17 @@ void ModuleScene::TestCollisionChecks(float* minPoint, float* maxPoint)
 		quadTree.Intersects(intersected, testCube);
 		LOGGER("QuadTree found %i intersection", intersected.size());
 	}
-
 }
 
+void ModuleScene::QuadTreeFrustumCulling(std::vector<GameObject*>& insideFrustum, Frustum frustum)
+{
+	LOGGER("");
+	if (quadTree.GetType() != SpaceQuadTree::QuadTreeType::INVALID)
+	{
+		quadTree.Intersects(insideFrustum, frustum);
+		LOGGER("QuadTree found %i intersection", insideFrustum.size());
+	}
+}
 
 void ModuleScene::SetActiveGameCamera(ComponentCamera* camera)
 {
@@ -274,6 +282,12 @@ void ModuleScene::TestQuadTree()
 	quadTree.Intersects(rayIntersections, ray);
 	LOGGER("Ray hits: %i objects", rayIntersections.size());*/
 }
+
+bool ModuleScene::UsingQuadTree()
+{
+	return quadTree.GetType() != SpaceQuadTree::QuadTreeType::INVALID;
+}
+
 /* TEMPORARY CODE END */
 void ModuleScene::FindAllSceneStaticGameObjects(std::vector<GameObject*>& staticGameObjects, GameObject* go)
 {

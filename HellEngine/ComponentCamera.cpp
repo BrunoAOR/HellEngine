@@ -1,12 +1,13 @@
+#include <algorithm>
 #include "ImGui/imgui.h"
 #include "MathGeoLib/src/Geometry/Plane.h"
 #include "Application.h"
 #include "ComponentCamera.h"
-#include "ModuleScene.h"
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "GameObject.h"
 #include "ModuleEditorCamera.h"
+#include "ModuleScene.h"
 #include "globals.h"
 #include "openGL.h"
 
@@ -66,7 +67,10 @@ void ComponentCamera::Update()
 		
 		if (DEBUG_MODE)
 			DrawFrustum();
+
 	}
+
+	App->scene->QuadTreeFrustumCulling(insideFrustum, frustum);
 }
 
 const float * ComponentCamera::GetPosition() const
@@ -293,6 +297,11 @@ void ComponentCamera::SetAsActiveCamera()
 int ComponentCamera::MaxCountInGameObject()
 {
 	return 1;
+}
+
+bool ComponentCamera::IsInsideFrustum(GameObject * go)
+{
+	return	std::find(insideFrustum.begin(), insideFrustum.end(), go) != insideFrustum.end();
 }
 
 float ComponentCamera::GetHorizontalFOVrad() const

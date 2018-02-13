@@ -51,7 +51,12 @@ void ComponentMaterial::Update()
 
 	ComponentCamera* editorCamera = App->editorCamera->camera;
 	if (editorCamera != nullptr)
-		insideFrustum = transform->GetBoundingBox().Contains(editorCamera->GetFrustum());
+		if (App->scene->UsingQuadTree()) {
+			insideFrustum = editorCamera->IsInsideFrustum(gameObject);
+		}
+		else {
+			insideFrustum = transform->GetBoundingBox().Contains(editorCamera->GetFrustum());
+		}
 
 	if (insideFrustum) {
 
@@ -59,7 +64,12 @@ void ComponentMaterial::Update()
 
 		if (activeGameCamera != nullptr && activeGameCamera->FrustumCulling())
 		{
-			insideFrustum = transform->GetBoundingBox().Contains(activeGameCamera->GetFrustum());
+			if (App->scene->UsingQuadTree()) {
+				insideFrustum = activeGameCamera->IsInsideFrustum(gameObject);
+			}
+			else {
+				insideFrustum = transform->GetBoundingBox().Contains(activeGameCamera->GetFrustum());
+			}
 		}
 		if (insideFrustum) {
 			float* modelMatrix = transform->GetModelMatrix();

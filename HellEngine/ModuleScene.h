@@ -32,6 +32,8 @@ public:
 	void GenerateSceneAdaptiveQuadTree();
 	void ChangeStaticStatus(ComponentTransform* transform, bool isStatic);
 	void TestCollisionChecks(float* minPoint, float* maxPoint);
+	void QuadTreeFrustumCulling(std::vector<GameObject*> &insideFrustum, Frustum frustum);
+	bool UsingQuadTree();
 
 	void SetActiveGameCamera(ComponentCamera* camera);
 	ComponentCamera* GetActiveGameCamera() const;
@@ -61,7 +63,7 @@ private:
 /* TEMPORARY CODE START */
 private:
 	void TestQuadTree();
-	SpaceQuadTree  quadTree;;
+	SpaceQuadTree  quadTree;
 /* TEMPORARY CODE END */
 };
 
