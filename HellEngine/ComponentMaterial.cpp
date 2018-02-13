@@ -346,31 +346,6 @@ void ComponentMaterial::OnEditorShaderOptions()
 	}
 }
 
-/* Draws a certain model using the Material's shader and texture */
-bool ComponentMaterial::DrawArray(float* modelMatrix, uint vao, uint vertexCount)
-{
-	if (!IsValid())
-		return false;
-
-	shader->Activate();
-
-	glUniformMatrix4fv(privateUniforms["model_matrix"], 1, GL_FALSE, modelMatrix);
-	glUniformMatrix4fv(privateUniforms["view"], 1, GL_FALSE, App->editorCamera->camera->GetViewMatrix());
-	glUniformMatrix4fv(privateUniforms["projection"], 1, GL_FALSE, App->editorCamera->camera->GetProjectionMatrix());
-	UpdatePublicUniforms();
-
-	glBindTexture(GL_TEXTURE_2D, textureBufferId);
-
-	glBindVertexArray(vao);
-	glDrawArrays(GL_TRIANGLES, 0, vertexCount);
-	glBindVertexArray(GL_NONE);
-
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	shader->Deactivate();
-	return true;
-}
-
 bool ComponentMaterial::DrawElements(float * modelMatrix, uint vao, uint vertexCount, int indexesType)
 {
 	if (!IsValid())
