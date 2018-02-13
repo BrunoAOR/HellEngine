@@ -33,6 +33,7 @@ int SpaceQuadTree::Create(const std::vector<GameObject*>& gameObjects)
 {
 	CleanUp();
 	type = QuadTreeType::ADAPTIVE;
+
 	int failCount = 0;
 	
 	for (GameObject* go : gameObjects)
@@ -61,7 +62,7 @@ int SpaceQuadTree::Create(const std::vector<GameObject*>& gameObjects)
 				++failCount;
 		}
 	}
-	
+
 	node = new SpaceQuadNode(minContainedPoint, maxContainedPoint, this, 1);
 	
 	for (GameObject* go : containedGameObjects)
@@ -194,7 +195,7 @@ bool SpaceQuadTree::Remove(GameObject* gameObject)
 
 void SpaceQuadTree::DrawTree()
 {
-	if (type!= QuadTreeType::INVALID && node)
+	if (type!= QuadTreeType::INVALID && node && containedGameObjects.size() > 0)
 		node->DrawNode();
 }
 

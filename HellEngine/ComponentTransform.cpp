@@ -22,6 +22,7 @@ ComponentTransform::ComponentTransform(GameObject* owner) : Component(owner)
 
 ComponentTransform::~ComponentTransform()
 {
+	App->scene->ChangeStaticStatus(this, false);
 	LOGGER("Deleting Component of type '%s'", GetString(type));
 }
 

@@ -70,6 +70,7 @@ void ComponentCamera::Update()
 
 	}
 
+	insideFrustum.clear();
 	App->scene->QuadTreeFrustumCulling(insideFrustum, frustum);
 }
 
