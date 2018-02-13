@@ -53,6 +53,7 @@ public:
 	
 	const unsigned int bucketSize;
 	const unsigned int maxDepth;
+	int lastChecksPerformed = 0;
 
 private:
 

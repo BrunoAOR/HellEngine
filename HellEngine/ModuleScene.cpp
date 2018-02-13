@@ -140,6 +140,7 @@ void ModuleScene::TestCollisionChecks(float* minPoint, float* maxPoint)
 	if (quadTree.GetType() != SpaceQuadTree::QuadTreeType::INVALID)
 	{
 		quadTree.Intersects(intersected, testCube);
+		LOGGER("QuadTree checks: %i", quadTree.lastChecksPerformed);
 		LOGGER("QuadTree found %i intersection", intersected.size());
 	}
 }

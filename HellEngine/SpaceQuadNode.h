@@ -59,7 +59,7 @@ inline void SpaceQuadNode::CollectIntersections(std::vector<GameObject*>& inters
 	}
 
 	if (depth == 1)
-		LOGGER("QuadTree checks: %i", checksPerformed);;
+		quadTree->lastChecksPerformed = checksPerformed;
 }
 
 #endif // !__H_SPACE_QUAD_NODE__
