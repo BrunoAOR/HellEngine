@@ -2,15 +2,14 @@
 #define __H_MODULE_SCENE__
 
 #include <vector>
-#include "Module.h"
-class ComponentCamera;
-class GameObject;
-/* TEMPORARY CODE START */
+#include "Brofiler/include/Brofiler.h"
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "GameObject.h"
+#include "Module.h"
 #include "SpaceQuadTree.h"
-/* TEMPORARY CODE END */
+class ComponentCamera;
+class GameObject;
 
 class ModuleScene :
 	public Module
@@ -31,7 +30,7 @@ public:
 	void GenerateSceneFixedQuadTree(float* minPoint, float* maxPoint);
 	void GenerateSceneAdaptiveQuadTree();
 	void ChangeStaticStatus(ComponentTransform* transform, bool isStatic);
-	void TestCollisionChecks(float* minPoint, float* maxPoint);
+	void TestCollisionChecks(float3 aabbMinPoint, float3 aabbMaxPoint, float3 spawnMinPoint, float3 spawnMaxPoint, int spawnedObjectsCount);
 	void QuadTreeFrustumCulling(std::vector<GameObject*> &insideFrustum, Frustum frustum);
 	bool UsingQuadTree();
 
@@ -59,12 +58,8 @@ private:
 private:
 
 	ComponentCamera* activeGameCamera;
-
-/* TEMPORARY CODE START */
-private:
-	void TestQuadTree();
 	SpaceQuadTree  quadTree;
-/* TEMPORARY CODE END */
+
 };
 
 template<typename T>
@@ -78,6 +73,7 @@ inline void ModuleScene::Intersects(std::vector<GameObject*>& intersectedGameObj
 		staticTransforms.push_back((ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM));
 	}
 
+	BROFILER_CATEGORY("Brute Force check start", Profiler::Color::Brown);
 	int checksPerformed = 0;
 	for (std::vector<ComponentTransform*>::iterator it = staticTransforms.begin(); it != staticTransforms.end(); ++it)
 	{
@@ -85,6 +81,7 @@ inline void ModuleScene::Intersects(std::vector<GameObject*>& intersectedGameObj
 		if (primitive.Intersects((*it)->GetBoundingBox()))
 			intersectedGameObjects.push_back((*it)->gameObject);
 	}
+	BROFILER_CATEGORY("Brute Force check end", Profiler::Color::White);
 	LOGGER("Brute force checks: %i", checksPerformed);
 }
 

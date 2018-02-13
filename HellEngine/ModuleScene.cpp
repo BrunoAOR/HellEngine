@@ -7,7 +7,10 @@
 #include "ModuleScene.h"
 #include "ModuleWindow.h"
 #include "GameObject.h"
-
+/* For TestCollisionChecks */
+#include "ComponentTransform.h"
+#include "ComponentMesh.h"
+#include "ComponentMaterial.h"
 
 ModuleScene::ModuleScene() 
 {
@@ -40,7 +43,7 @@ UpdateStatus ModuleScene::Update()
 	static bool init = false;
 	if (!init)
 	{
-		TestQuadTree();
+		//TestQuadTree();
 		init = true;
 	}
 	if (quadTree.GetType() != SpaceQuadTree::QuadTreeType::INVALID)
@@ -125,33 +128,75 @@ void ModuleScene::ChangeStaticStatus(ComponentTransform* transform, bool isStati
 	}
 }
 
-void ModuleScene::TestCollisionChecks(float* minPoint, float* maxPoint)
+void ModuleScene::TestCollisionChecks(float3 aabbMinPoint, float3 aabbMaxPoint, float3 spawnMinPoint, float3 spawnMaxPoint, int spawnedObjectsCount)
 {
+	static GameObject* spawnedParent = nullptr;
+	static bool wasAdaptive = false;
+
+	if (spawnedParent != nullptr)
+	{
+		Destroy(spawnedParent);
+		spawnedParent = nullptr;
+	}
+	spawnedParent = CreateGameObject();
+
+	wasAdaptive = quadTree.GetType() == SpaceQuadTree::QuadTreeType::ADAPTIVE;
+	if (wasAdaptive)
+	{
+		quadTree.CleanUp();
+	}
+
 	LOGGER("");
 	LOGGER("Testing count of intersections checks:");
-	float3 min(minPoint[0], minPoint[1], minPoint[2]);
-	float3 max(maxPoint[0], maxPoint[1], maxPoint[2]);
-	AABB testCube(min, max);
+	AABB testCube(aabbMinPoint, aabbMaxPoint);
 
+	static std::string sphereName = "";
+
+	std::vector<GameObject*> allNewStaticGameObjects;
+	for (int i = 0; i < spawnedObjectsCount; ++i)
+	{
+		sphereName = "Sphere " + std::to_string(i + 1);
+		GameObject* go = new GameObject(sphereName.c_str(), spawnedParent);
+		ComponentTransform* transform = (ComponentTransform*)go->AddComponent(ComponentType::TRANSFORM);
+		float x = spawnMinPoint.x + rand() % (int)(spawnMaxPoint.x - spawnMinPoint.x);
+		float y = spawnMinPoint.y + rand() % (int)(spawnMaxPoint.y - spawnMinPoint.y);
+		float z = spawnMinPoint.z + rand() % (int)(spawnMaxPoint.z - spawnMinPoint.z);
+		transform->SetPosition(x, y, z);
+		transform->SetIsStatic(true);
+		ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
+		mesh->SetActiveVao(1);
+		ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
+		mat->SetDefaultMaterialConfiguration();
+		mat->Apply();
+		allNewStaticGameObjects.push_back(go);
+	}
+
+	if (wasAdaptive)
+		quadTree.Create(allNewStaticGameObjects);
+
+	LOGGER("Spheres tested: %i", spawnedObjectsCount);
 	std::vector<GameObject*> intersected;
 	Intersects(intersected, testCube);
 	LOGGER("Brute force found %i intersection", intersected.size());
 	intersected.clear();
 	if (quadTree.GetType() != SpaceQuadTree::QuadTreeType::INVALID)
 	{
+		BROFILER_CATEGORY("Quad Tree check start", Profiler::Color::Yellow);
 		quadTree.Intersects(intersected, testCube);
+		BROFILER_CATEGORY("Quad Tree check end", Profiler::Color::White);
 		LOGGER("QuadTree checks: %i", quadTree.lastChecksPerformed);
 		LOGGER("QuadTree found %i intersection", intersected.size());
 	}
+
 }
 
 void ModuleScene::QuadTreeFrustumCulling(std::vector<GameObject*>& insideFrustum, Frustum frustum)
 {
-	LOGGER("");
 	if (quadTree.GetType() != SpaceQuadTree::QuadTreeType::INVALID)
 	{
+		//LOGGER("");
 		quadTree.Intersects(insideFrustum, frustum);
-		LOGGER("QuadTree found %i intersection", insideFrustum.size());
+		//LOGGER("QuadTree found %i intersection", insideFrustum.size());
 	}
 }
 
@@ -209,87 +254,11 @@ std::vector<GameObject*> ModuleScene::FindByName(const std::string& name, GameOb
     return ret;
 }
 
-/* TEMPORARY CODE START */
-#include "MathGeoLib/src/Geometry/AABB.h"
-#include "MathGeoLib/src/Geometry/Line.h"
-#include "MathGeoLib/src/Geometry/Ray.h"
-#include "ComponentTransform.h"
-#include "ComponentMesh.h"
-#include "ComponentMaterial.h"
-void ModuleScene::TestQuadTree()
-{
-	std::vector<GameObject*> gos;
-	{
-		GameObject* go = new GameObject("Sphere -5", root);
-		ComponentTransform* transform = (ComponentTransform*)go->AddComponent(ComponentType::TRANSFORM);
-		transform->SetPosition(-5, -5, -5);
-		transform->SetIsStatic(true);
-		ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
-		mesh->SetActiveVao(1);
-		ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
-		mat->SetDefaultMaterialConfiguration();
-		mat->Apply();
-		gos.push_back(go);
-	}
-	{
-		GameObject* go = new GameObject("Sphere 5", root);
-		ComponentTransform* transform = (ComponentTransform*)go->AddComponent(ComponentType::TRANSFORM);
-		transform->SetPosition(5, 5, 5);
-		transform->SetIsStatic(false);
-		ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
-		mesh->SetActiveVao(1);
-		ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
-		mat->SetDefaultMaterialConfiguration();
-		mat->Apply();
-		gos.push_back(go);
-	}
-	{
-		GameObject* go = new GameObject("Sphere 1.5", root);
-		ComponentTransform* transform = (ComponentTransform*)go->AddComponent(ComponentType::TRANSFORM);
-		transform->SetPosition(1.5f, 5, 1.5f);
-		transform->SetIsStatic(true);
-		ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
-		mesh->SetActiveVao(1);
-		ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
-		mat->SetDefaultMaterialConfiguration();
-		mat->Apply();
-		gos.push_back(go);
-	}
-
-	{
-		GameObject* go = new GameObject("Sphere 1.5", gos.at(1));
-		ComponentTransform* transform = (ComponentTransform*)go->AddComponent(ComponentType::TRANSFORM);
-		transform->SetPosition(1.7f, 5, 1.5f);
-		transform->SetIsStatic(true);
-		ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
-		mesh->SetActiveVao(1);
-		ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
-		mat->SetDefaultMaterialConfiguration();
-		mat->Apply();
-		gos.push_back(go);
-	}
-	//quadTree.Create(gos);
-	
-	/*Line line(float3(0, 0, 0), vec(1, 1, 1));
-	std::vector<GameObject*> lineIntersections;
-	quadTree.Intersects(lineIntersections, line);
-	LOGGER("Line hits: %i objects", lineIntersections.size());
-	AABB cube(float3(1.99f, 0, 1.99f), float3(5,5,5));
-	std::vector<GameObject*> cubeIntersections;
-	quadTree.Intersects(cubeIntersections, cube);
-	LOGGER("Cube hits: %i objects", cubeIntersections.size());
-	Ray ray(float3(0,0,0), vec(1,1,1).Normalized());
-	std::vector<GameObject*> rayIntersections;
-	quadTree.Intersects(rayIntersections, ray);
-	LOGGER("Ray hits: %i objects", rayIntersections.size());*/
-}
-
 bool ModuleScene::UsingQuadTree()
 {
 	return quadTree.GetType() != SpaceQuadTree::QuadTreeType::INVALID;
 }
 
-/* TEMPORARY CODE END */
 void ModuleScene::FindAllSceneStaticGameObjects(std::vector<GameObject*>& staticGameObjects, GameObject* go)
 {
 	if (go == nullptr)

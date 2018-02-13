@@ -561,17 +561,33 @@ void ModuleImGui::ShowQuadTreeWindow(float mainMenuBarHeight, bool * pOpen)
 
 		ImGui::Text("QuadTree usage test:");
 		ImGui::Text("Primitive: AABB");
-		static float aabbMinPoint[3] = { 0,0,0 };
-		static float aabbMaxPoint[3] = { 0,0,0 };
+		static float aabbMinPoint[3] = { -1,-1,-1 };
+		static float aabbMaxPoint[3] = { 1,1,1 };
 		ImGui::InputFloat3("AABB Min point", aabbMinPoint, 2);
 		ImGui::InputFloat3("AABB Max point", aabbMaxPoint, 2);
 
+		ImGui::Text("Randomly positions spheres:");
+		static int spheresCount = 25;
+		static float spawnMinPoint[3] = { -25,-25,-25 };
+		static float spawnMaxPoint[3] = { 25,25,25 };
+		ImGui::InputInt("Spheres count", &spheresCount);
+		ImGui::InputFloat3("Spawn Min point", spawnMinPoint, 1);
+		ImGui::InputFloat3("Spawn Max point", spawnMaxPoint, 1);
+
 		if (ImGui::Button("Test Collisions"))
 		{
-			if (aabbMinPoint[0] < aabbMaxPoint[0] && aabbMinPoint[1] < aabbMaxPoint[1] && aabbMinPoint[2] < aabbMaxPoint[2])
-				App->scene->TestCollisionChecks(aabbMinPoint, aabbMaxPoint);
+			if (aabbMinPoint[0] < aabbMaxPoint[0] && aabbMinPoint[1] < aabbMaxPoint[1] && aabbMinPoint[2] < aabbMaxPoint[2]
+				&& spawnMinPoint[0] < spawnMaxPoint[0] && spawnMinPoint[1] < spawnMaxPoint[1] && spawnMinPoint[2] < spawnMaxPoint[2]
+				&& spheresCount > 0)
+			{
+				float3 aabbMin(minPoint[0], minPoint[1], minPoint[2]);
+				float3 aabbMax(maxPoint[0], maxPoint[1], maxPoint[2]);
+				float3 spawnMin(spawnMinPoint[0], spawnMinPoint[1], spawnMinPoint[2]);
+				float3 spawnMax(spawnMaxPoint[0], spawnMaxPoint[1], spawnMaxPoint[2]);
+				App->scene->TestCollisionChecks(aabbMin, aabbMax, spawnMin, spawnMax, spheresCount);
+			}
 			else
-				LOGGER("Invalid range for the AABB primitive!");
+				LOGGER("Invalid test conditions!");
 		}
 	}
 
