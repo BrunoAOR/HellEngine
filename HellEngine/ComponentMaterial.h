@@ -75,7 +75,7 @@ private:
 private:
 
 	/* General */
-	uint checkeredPatternBufferId = 0;
+	static uint checkeredPatternBufferId;
 
 	TextureConfigutaion textureConfiguration;
 	TextureInfo textureInfo;

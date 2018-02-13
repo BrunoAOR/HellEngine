@@ -12,12 +12,16 @@
 #include "globals.h"
 #include "openGL.h"
 
+uint ComponentMaterial::checkeredPatternBufferId = 0;
+
 ComponentMaterial::ComponentMaterial(GameObject* owner) : Component(owner)
 {
 	type = ComponentType::MATERIAL;
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
 	shader = new Shader();
-	checkeredPatternBufferId = CreateCheckeredTexture();
+	if (checkeredPatternBufferId == 0)
+		checkeredPatternBufferId = CreateCheckeredTexture();
+
 	LOGGER("Component of type '%s'", GetString(type));
 }
 
