@@ -254,6 +254,11 @@ bool ModuleScene::UsingQuadTree()
 	return quadTree.GetType() != SpaceQuadTree::QuadTreeType::INVALID;
 }
 
+const SpaceQuadTree& ModuleScene::GetQuadTree()
+{
+	return quadTree;
+}
+
 void ModuleScene::FindAllSceneStaticGameObjects(std::vector<GameObject*>& staticGameObjects, GameObject* go)
 {
 	if (go == nullptr)

@@ -30,7 +30,7 @@ ComponentMesh::~ComponentMesh()
 	//LOGGER("Deleting Component of type '%s'", GetString(type));
 }
 
-VaoInfo ComponentMesh::GetActiveVao() const
+const VaoInfo& ComponentMesh::GetActiveVao() const
 {
 	return vaoInfos[activeVao];
 }

@@ -321,6 +321,9 @@
     <ClInclude Include="ModuleDebugDraw.h">
       <Filter>Engine Modules</Filter>
     </ClInclude>
+    <ClInclude Include="physicsFunctions.h">
+      <Filter>General</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -514,6 +517,9 @@
     </ClCompile>
     <ClCompile Include="ModuleDebugDraw.cpp">
       <Filter>Engine Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="physicsFunctions.cpp">
+      <Filter>General</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -33,6 +33,7 @@ public:
 	void TestCollisionChecks(float3 aabbMinPoint, float3 aabbMaxPoint, float3 spawnMinPoint, float3 spawnMaxPoint, int spawnedObjectsCount);
 	void QuadTreeFrustumCulling(std::vector<GameObject*> &insideFrustum, Frustum frustum);
 	bool UsingQuadTree();
+	const SpaceQuadTree& GetQuadTree();
 
 	void SetActiveGameCamera(ComponentCamera* camera);
 	ComponentCamera* GetActiveGameCamera() const;

@@ -22,7 +22,7 @@ public:
 	int Create(const std::vector<GameObject*>& gameObjects);
 
 	/* Returns the type of the QuadTree */
-	QuadTreeType GetType();
+	QuadTreeType GetType() const;
 
 	/*
 	Adds the provided GameObject to the QuadTree.
@@ -43,9 +43,9 @@ public:
 
 	/* Tests collision of the provided primitive and gathers the intersected GameObjects in the provided intersectedGameObjects vector */
 	template<typename T>
-	void Intersects(std::vector<GameObject*>& intersectedGameObjects, const T& primitive);
+	void Intersects(std::vector<GameObject*>& intersectedGameObjects, const T& primitive) const;
 
-	void DrawTree();
+	void DrawTree() const;
 
 	void CleanUp();
 
@@ -70,7 +70,7 @@ private:
 };
 
 template<typename T>
-inline void SpaceQuadTree::Intersects(std::vector<GameObject*>& intersectedGameObjects, const T& primitive)
+inline void SpaceQuadTree::Intersects(std::vector<GameObject*>& intersectedGameObjects, const T& primitive) const
 {
 	if (containedGameObjects.size() > 0)
 		node->CollectIntersections(intersectedGameObjects, primitive);

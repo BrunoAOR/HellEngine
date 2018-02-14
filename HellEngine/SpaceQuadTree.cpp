@@ -73,7 +73,7 @@ int SpaceQuadTree::Create(const std::vector<GameObject*>& gameObjects)
 	return failCount;
 }
 
-SpaceQuadTree::QuadTreeType SpaceQuadTree::GetType()
+SpaceQuadTree::QuadTreeType SpaceQuadTree::GetType() const
 {
 	return type;
 }
@@ -193,7 +193,7 @@ bool SpaceQuadTree::Remove(GameObject* gameObject)
 	return result;
 }
 
-void SpaceQuadTree::DrawTree()
+void SpaceQuadTree::DrawTree() const
 {
 	if (type!= QuadTreeType::INVALID && node && containedGameObjects.size() > 0)
 		node->DrawNode();
