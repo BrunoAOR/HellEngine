@@ -29,8 +29,11 @@ bool ModuleScene::Init()
 
 bool ModuleScene::CleanUp()
 {
+	quadTree.CleanUp();
+
 	delete root;
 	root = nullptr;
+
 	return true;
 }
 
