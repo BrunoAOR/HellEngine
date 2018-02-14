@@ -72,7 +72,8 @@ private:
 template<typename T>
 inline void SpaceQuadTree::Intersects(std::vector<GameObject*>& intersectedGameObjects, const T& primitive)
 {
-	node->CollectIntersections(intersectedGameObjects, primitive);
+	if (containedGameObjects.size() > 0)
+		node->CollectIntersections(intersectedGameObjects, primitive);
 }
 
 #endif // !__H_SPACE_QUAD_TREE__
