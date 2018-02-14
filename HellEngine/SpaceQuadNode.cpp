@@ -21,30 +21,50 @@ SpaceQuadNode::~SpaceQuadNode()
 {
 	for (int i = 0; i < childrenCount; ++i)
 	{
-		delete nodes[i];
-		nodes[i] = nullptr;
+		delete childNodes[i];
+		childNodes[i] = nullptr;
 	}
+}
+
+bool SpaceQuadNode::CanContain(ComponentTransform * transform)
+{
+	AABB goBoundingBox = transform->GetBoundingBox();
+	return aabb.Intersects(goBoundingBox);
+}
+
+bool SpaceQuadNode::CanContain(AABB goAABB)
+{
+	return aabb.Intersects(goAABB);
 }
 
 bool SpaceQuadNode::Insert(ComponentTransform* transform)
 {
-	if (isLeaf)
+	AABB goBoundingBox = transform->GetBoundingBox();
+	if (aabb.Intersects(goBoundingBox))
 	{
-		AABB goBoundingBox = transform->GetBoundingBox();
-		if (goBoundingBox.MinX() < aabb.MaxX() && goBoundingBox.MinY() < aabb.MaxY() && goBoundingBox.MinZ() < aabb.MaxZ()
-			&& goBoundingBox.MaxX() > aabb.MinX() && goBoundingBox.MaxY() > aabb.MinY() && goBoundingBox.MaxZ() > aabb.MinZ())
+		if (isLeaf)
 		{
 			containedTransforms.push_back(transform);
 			CheckBucketSize();
 			return true;
 		}
-	}
-	else
-	{
-		for (int i = 0; i < childrenCount; ++i)
+		else
 		{
-			if (nodes[i]->Insert(transform))
-				return true;
+			std::vector<SpaceQuadNode*> candidates;
+			for (int i = 0; i < childrenCount; ++i)
+			{
+				if (childNodes[i]->CanContain(goBoundingBox))
+					candidates.push_back(childNodes[i]);
+			}
+			assert(candidates.size() > 0);
+			if (candidates.size() == 1)
+			{
+				candidates[0]->Insert(transform);
+			}
+			else
+			{
+				containedTransforms.push_back(transform);
+			}
 		}
 	}
 	return false;
@@ -67,7 +87,7 @@ bool SpaceQuadNode::Remove(ComponentTransform* transform)
 	{
 		for (int i = 0; i < childrenCount; ++i)
 		{
-			if (nodes[i]->Remove(transform))
+			if (childNodes[i]->Remove(transform))
 				return true;
 		}
 	}
@@ -85,7 +105,7 @@ void SpaceQuadNode::DrawNode()
 	}
 	else {
 		for (int i = 0; i < childrenCount; ++i)
-			nodes[i]->DrawNode();
+			childNodes[i]->DrawNode();
 	}
 }
 
@@ -106,25 +126,37 @@ void SpaceQuadNode::CheckBucketSize()
 		float midZ = minPoint.z + (maxPoint.z - minPoint.z) / 2;
 		float maxZ = maxPoint.z;
 		/* Create child nodes */
-		nodes[0] = new SpaceQuadNode(minPoint, float3(midX, maxY, midZ), quadTree, depth + 1);
-		nodes[1] = new SpaceQuadNode(float3(midX, minY, minZ), float3(maxX, maxY, midZ), quadTree, depth + 1);
-		nodes[2] = new SpaceQuadNode(float3(minX, minY, midZ), float3(midX, maxY, maxZ), quadTree, depth + 1);
-		nodes[3] = new SpaceQuadNode(float3(midX, minY, midZ), maxPoint, quadTree, depth + 1);
+		childNodes[0] = new SpaceQuadNode(minPoint, float3(midX, maxY, midZ), quadTree, depth + 1);
+		childNodes[1] = new SpaceQuadNode(float3(midX, minY, minZ), float3(maxX, maxY, midZ), quadTree, depth + 1);
+		childNodes[2] = new SpaceQuadNode(float3(minX, minY, midZ), float3(midX, maxY, maxZ), quadTree, depth + 1);
+		childNodes[3] = new SpaceQuadNode(float3(midX, minY, midZ), maxPoint, quadTree, depth + 1);
 
-		/* With the child nodes created, we insert the children into the child nodes */
-		for (ComponentTransform* transform : containedTransforms)
+		/* With the child nodes created, we insert the children into the child nodes, whenever they are not shared.
+		When they are shared, they will be returned to the containedTransforms and kept by this node */
+		std::vector<ComponentTransform*> transformsToRedistribute(containedTransforms);
+		containedTransforms.clear();
+
+		for (ComponentTransform* transform : transformsToRedistribute)
 		{
-			bool inserted = false;
-			for (int i = 0; i < childrenCount && !inserted; ++i)
+			std::vector<SpaceQuadNode*> candidates;
+			for (int i = 0; i < childrenCount; ++i)
 			{
-				if (nodes[i]->Insert(transform))
-					inserted = true;
+				if (childNodes[i]->CanContain(transform))
+					candidates.push_back(childNodes[i]);
 			}
-			assert(inserted);
+			assert(candidates.size() > 0);
+			if (candidates.size() == 1)
+			{
+				candidates[0]->Insert(transform);
+			}
+			else
+			{
+				containedTransforms.push_back(transform);
+			}
 		}
 
-		/* With the contained Transforms redistributed in the children, we clear containedTransforms since they are now in child nodes */
-		containedTransforms.clear();
+		/* With the contained Transforms redistributed in the children,
+		we only keep transforms that fall between two or more child nodes in containedTransforms */
 	}
 }
 

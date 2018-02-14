@@ -12,6 +12,8 @@ public:
 	SpaceQuadNode(float3 minPoint, float3 maxPoint, SpaceQuadTree* quadTree, unsigned int depth);
 	~SpaceQuadNode();
 
+	bool CanContain(ComponentTransform* transform);
+	bool CanContain(AABB goAABB);
 	bool Insert(ComponentTransform* transform);
 	bool Remove(ComponentTransform* transform);
 	void DrawNode();
@@ -28,7 +30,7 @@ private:
 	AABB aabb;
 	bool isLeaf = true;
 	const int childrenCount;
-	SpaceQuadNode* nodes[4] = { nullptr, nullptr, nullptr, nullptr };
+	SpaceQuadNode* childNodes[4] = { nullptr, nullptr, nullptr, nullptr };
 	std::vector<ComponentTransform*> containedTransforms;
 	VaoInfo quadVao;
 };
@@ -43,20 +45,18 @@ inline void SpaceQuadNode::CollectIntersections(std::vector<GameObject*>& inters
 	++checksPerformed;
 	if (primitive.Intersects(aabb))
 	{
-		if (isLeaf)
+		for (std::vector<ComponentTransform*>::iterator it = this->containedTransforms.begin(); it != this->containedTransforms.end(); ++it)
 		{
-			for (std::vector<ComponentTransform*>::iterator it = this->containedTransforms.begin(); it != this->containedTransforms.end(); ++it)
-			{
-				++checksPerformed;
-				if (primitive.Intersects((*it)->GetBoundingBox()))
-					intersectedGameObjects.push_back((*it)->gameObject);
-			}
+			++checksPerformed;
+			if (primitive.Intersects((*it)->GetBoundingBox()))
+				intersectedGameObjects.push_back((*it)->gameObject);
 		}
-		else
+
+		if (!isLeaf)
 		{
 			for (int i = 0; i < childrenCount; ++i)
-				if (nodes[i] != nullptr)
-					nodes[i]->CollectIntersections(intersectedGameObjects, primitive);
+				if (childNodes[i] != nullptr)
+					childNodes[i]->CollectIntersections(intersectedGameObjects, primitive);
 		}
 	}
 

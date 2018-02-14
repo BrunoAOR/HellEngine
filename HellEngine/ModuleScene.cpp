@@ -39,19 +39,11 @@ bool ModuleScene::CleanUp()
 #include "globals.h"
 UpdateStatus ModuleScene::Update()
 {
-	/* TEMPORARY CODE START */
-	static bool init = false;
-	if (!init)
-	{
-		//TestQuadTree();
-		init = true;
-	}
 	if (quadTree.GetType() != SpaceQuadTree::QuadTreeType::INVALID)
 	{
 		quadTree.DrawTree();
 	}
 	root->Update();
-	/* TEMPORARY CODE END */
 
 	return UpdateStatus::UPDATE_CONTINUE;
 }
@@ -133,18 +125,18 @@ void ModuleScene::TestCollisionChecks(float3 aabbMinPoint, float3 aabbMaxPoint, 
 	static GameObject* spawnedParent = nullptr;
 	static bool wasAdaptive = false;
 
+	wasAdaptive = quadTree.GetType() == SpaceQuadTree::QuadTreeType::ADAPTIVE;
+	if (wasAdaptive)
+	{
+		quadTree.CleanUp();
+	}
+
 	if (spawnedParent != nullptr)
 	{
 		Destroy(spawnedParent);
 		spawnedParent = nullptr;
 	}
 	spawnedParent = CreateGameObject();
-
-	wasAdaptive = quadTree.GetType() == SpaceQuadTree::QuadTreeType::ADAPTIVE;
-	if (wasAdaptive)
-	{
-		quadTree.CleanUp();
-	}
 
 	LOGGER("");
 	LOGGER("Testing count of intersections checks:");
