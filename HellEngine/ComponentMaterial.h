@@ -21,7 +21,7 @@ public:
 	virtual ~ComponentMaterial() override;
 
 	virtual void Update() override;
-
+	
 	/* Recieves the vertex shader file path and tries to compile it */
 	bool SetVertexShaderPath(const std::string& sourcePath);
 
@@ -69,10 +69,13 @@ private:
 	void OnEditorTextureConfiguration();
 	void OnEditorShaderOptions();
 
+	Shader* ShaderAlreadyLinked();
+
 private:
 
 	/* General */
 	static uint checkeredPatternBufferId;
+	static uint checkeredTextureCount;
 
 	TextureConfigutaion textureConfiguration;
 	TextureInfo textureInfo;
@@ -99,6 +102,9 @@ private:
 	};
 	std::vector<Uniform> publicUniforms;
 	std::map<std::string, uint> privateUniforms;
+
+	static std::vector<Shader*> loadedShaders;
+	static std::map<Shader*, uint> loadedShaderCount;
 
 };
 

@@ -34,7 +34,7 @@ ComponentTransform::~ComponentTransform()
 }
 
 void ComponentTransform::Update()
-{
+{	
 	if (drawBoundingBox) {
 		if (boundingBox.IsFinite())
 		{
@@ -42,8 +42,7 @@ void ComponentTransform::Update()
 				App->debugDraw->DrawElements(GetModelMatrix(), baseBoundingBoxVAO.vao, baseBoundingBoxVAO.elementsCount, baseBoundingBoxVAO.indexesType);
 			
 		}
-	}
-
+	}	
 }
 
 bool ComponentTransform::GetIsStatic()
@@ -124,16 +123,10 @@ void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 {
 	boundingBox.SetNegativeInfinity();
 	boundingBox.Enclose(baseBoundingBox.data(), baseBoundingBox.size());
-	float4 prevMin(boundingBox.minPoint.x, boundingBox.minPoint.y, boundingBox.minPoint.z, 1);
-	float4 prevMax(boundingBox.maxPoint.x, boundingBox.maxPoint.y, boundingBox.maxPoint.z, 1);
-	float4 preMid = (prevMin + prevMax) / 2;
 	boundingBox.TransformBB(GetModelMatrix4x4().Transposed());
-	float4 minPoint(boundingBox.minPoint.x, boundingBox.minPoint.y, boundingBox.minPoint.z, 1);
-	float4 maxPoint(boundingBox.maxPoint.x, boundingBox.maxPoint.y, boundingBox.maxPoint.z, 1);
-	float4 midPoint = (minPoint + maxPoint) / 2;
-
 
 	/* To make iterative */
+	
 	std::vector<GameObject*> children = gameObject->GetChildren();
 
 	for (std::vector<GameObject*>::iterator it = children.begin(); it != children.end(); ++it) {
@@ -141,7 +134,7 @@ void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 		ComponentTransform* t = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM);
 		if (t != nullptr)
 			t->UpdateBoundingBox();
-	}
+	}	
 }
 
 float* ComponentTransform::GetModelMatrix()
