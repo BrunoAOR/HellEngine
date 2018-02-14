@@ -23,7 +23,6 @@ ComponentMaterial::ComponentMaterial(GameObject* owner) : Component(owner)
 {
 	type = ComponentType::MATERIAL;
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
-	shader = new Shader();
 	if (checkeredPatternBufferId == 0) {
 		checkeredPatternBufferId = CreateCheckeredTexture();
 		checkeredTextureCount++;
@@ -186,6 +185,7 @@ bool ComponentMaterial::Apply()
 		isValid = true;
 	}
 	else {
+		shader = new Shader();
 		isValid = (LoadVertexShader()
 			&& LoadFragmentShader()
 			&& shader->LinkShaderProgram()
@@ -197,6 +197,8 @@ bool ComponentMaterial::Apply()
 			memset(vertexShaderPath, 0, sizeof(vertexShaderPath));
 			memset(fragmentShaderPath, 0, sizeof(fragmentShaderPath));
 		}
+		else
+			delete shader;
 	}
 
 	isValid &= LoadTexture()
