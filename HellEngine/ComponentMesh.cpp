@@ -22,12 +22,12 @@ ComponentMesh::ComponentMesh(GameObject* owner) : Component(owner)
 	}
 	activeVao = 0;
 	UpdateBoundingBox();
-	LOGGER("Component of type '%s'", GetString(type));
+	//LOGGER("Component of type '%s'", GetString(type));
 }
 
 ComponentMesh::~ComponentMesh()
 {
-	LOGGER("Deleting Component of type '%s'", GetString(type));
+	//LOGGER("Deleting Component of type '%s'", GetString(type));
 }
 
 VaoInfo ComponentMesh::GetActiveVao() const

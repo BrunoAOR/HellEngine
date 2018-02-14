@@ -29,7 +29,7 @@ ComponentMaterial::ComponentMaterial(GameObject* owner) : Component(owner)
 		checkeredTextureCount++;
 	}
 
-	LOGGER("Component of type '%s'", GetString(type));
+	//LOGGER("Component of type '%s'", GetString(type));
 }
 
 ComponentMaterial::~ComponentMaterial()
@@ -55,7 +55,7 @@ ComponentMaterial::~ComponentMaterial()
 		checkeredPatternBufferId = 0;
 	}
 
-	LOGGER("Deleting Component of type '%s'", GetString(type));
+	//LOGGER("Deleting Component of type '%s'", GetString(type));
 }
 
 void ComponentMaterial::Update()

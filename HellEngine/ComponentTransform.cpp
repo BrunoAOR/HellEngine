@@ -24,13 +24,13 @@ ComponentTransform::ComponentTransform(GameObject* owner) : Component(owner)
 		CreateBBVAO();
 	}
 	UpdateBoundingBox();
-	LOGGER("Component of type '%s'", GetString(type));
+	//LOGGER("Component of type '%s'", GetString(type));
 }
 
 ComponentTransform::~ComponentTransform()
 {
 	App->scene->ChangeStaticStatus(this, false);
-	LOGGER("Deleting Component of type '%s'", GetString(type));
+	//LOGGER("Deleting Component of type '%s'", GetString(type));
 }
 
 void ComponentTransform::Update()

@@ -16,12 +16,12 @@ ComponentCamera::ComponentCamera(GameObject * owner) : Component(owner)
 	type = ComponentType::CAMERA;
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
 	Init();
-	LOGGER("Component of type '%s'", GetString(type));
+	//LOGGER("Component of type '%s'", GetString(type));
 }
 
 ComponentCamera::~ComponentCamera()
 {
-	LOGGER("Deleting Component of type '%s'", GetString(type));
+	//LOGGER("Deleting Component of type '%s'", GetString(type));
 }
 
 bool ComponentCamera::Init()
