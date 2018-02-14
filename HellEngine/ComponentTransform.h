@@ -48,6 +48,7 @@ private:
 
 	float4x4& UpdateLocalModelMatrix();
 	void InitializeBaseBB();
+	void CreateBBVAO();
 
 private:
 
@@ -64,6 +65,7 @@ private:
 	float4x4 worldModelMatrix;
 
 	static std::vector<float3> baseBoundingBox;
+	static VaoInfo baseBoundingBoxVAO;
 
 };
 

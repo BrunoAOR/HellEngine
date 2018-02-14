@@ -200,7 +200,7 @@ void SpaceQuadNode::CreateVAO()
 	const uint allVertCount = 24;
 	const uint uniqueVertCount = 8;
 	GLfloat uniqueVertices[allVertCount] = { SP_ARR_3(vA), SP_ARR_3(vB), SP_ARR_3(vC), SP_ARR_3(vD), SP_ARR_3(vE), SP_ARR_3(vF), SP_ARR_3(vG), SP_ARR_3(vH) };
-	GLfloat uniqueColors[uniqueVertCount * 3] = { SP_ARR_3(cYellow), SP_ARR_3(cYellow), SP_ARR_3(cYellow), SP_ARR_3(cYellow), SP_ARR_3(cYellow), SP_ARR_3(cYellow), SP_ARR_3(cYellow), SP_ARR_3(cYellow) };
+	GLfloat uniqueColors[allVertCount] = { SP_ARR_3(cYellow), SP_ARR_3(cYellow), SP_ARR_3(cYellow), SP_ARR_3(cYellow), SP_ARR_3(cYellow), SP_ARR_3(cYellow), SP_ARR_3(cYellow), SP_ARR_3(cYellow) };
 	GLubyte vertIndexes[] = {
 		0, 1,	1, 2,	2, 3,	3, 0,	/* front face */
 		4, 5,	5, 6,	6, 7,	7, 4,	/* back face */
