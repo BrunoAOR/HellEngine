@@ -66,8 +66,43 @@ void ComponentCamera::Update()
 		SetFront(newFront.x, newFront.y, newFront.z);
 		SetUp(newUp.x, newUp.y, newUp.z);
 
-		if (DEBUG_MODE)
+		if (DEBUG_MODE) {
+			float xTan = tanf(GetHorizontalFOVrad() / 2);
+			float nearXOffset = nearClippingPlane * xTan;
+			float farXOffset = farClippingPlane * xTan;
+
+			float yTan = tanf(verticalFOVRad / 2);
+			float nearYOffset = nearClippingPlane * yTan;
+			float farYOffset = farClippingPlane * yTan;
+
+			float nearA[3] = { -nearXOffset, -nearYOffset, nearClippingPlane };
+			float nearB[3] = { -nearXOffset, nearYOffset, nearClippingPlane };
+			float nearC[3] = { nearXOffset, nearYOffset, nearClippingPlane };
+			float nearD[3] = { nearXOffset, -nearYOffset, nearClippingPlane };
+			float farA[3] = { -farXOffset, -farYOffset, farClippingPlane };
+			float farB[3] = { -farXOffset, farYOffset, farClippingPlane };
+			float farC[3] = { farXOffset, farYOffset, farClippingPlane };
+			float farD[3] = { farXOffset, -farYOffset, farClippingPlane };
+
+			float uniqueVertices[8 * 3] = { SP_ARR_3(nearA), SP_ARR_3(nearB), SP_ARR_3(nearC), SP_ARR_3(nearD), SP_ARR_3(farA), SP_ARR_3(farB), SP_ARR_3(farC), SP_ARR_3(farD) };
+
+			for (int i = 0; i < 8 * 6; ++i)
+			{
+				if (i % 6 == 0 || i % 6 == 1 || i % 6 == 2)
+				{
+					frustumVertData[i] = uniqueVertices[(i / 6) * 3 + (i % 6)];
+				}
+			}
+
+			glBindVertexArray(frustumVAO.vao);
+			glBindBuffer(GL_ARRAY_BUFFER, frustumVAO.vbo);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8 * 6, frustumVertData, GL_DYNAMIC_DRAW);
+
+			glBindVertexArray(GL_NONE);
+			glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
 			DrawFrustum();
+		}
 
 	}
 
@@ -360,18 +395,16 @@ void ComponentCamera::CreateFrustumVAO()
 			4, 5,	5, 6,	6, 7,	7, 4,	/*  Far plane */
 			0, 4,	1, 5,	2, 6,	3, 7	/* Near to far links */
 		};
-
-		float allUniqueData[uniqueVertCount * 6];
-
+		
 		for (int i = 0; i < uniqueVertCount * 6; ++i)
 		{
 			if (i % 6 == 0 || i % 6 == 1 || i % 6 == 2)
 			{
-				allUniqueData[i] = uniqueVertices[(i / 6) * 3 + (i % 6)];
+				frustumVertData[i] = uniqueVertices[(i / 6) * 3 + (i % 6)];
 			}
 			else
 			{
-				allUniqueData[i] = uniqueColors[(i / 6) * 3 + ((i % 6) - 3)];
+				frustumVertData[i] = uniqueColors[(i / 6) * 3 + ((i % 6) - 3)];
 			}
 		}
 
@@ -385,7 +418,7 @@ void ComponentCamera::CreateFrustumVAO()
 
 		glBindVertexArray(frustumVAO.vao);
 		glBindBuffer(GL_ARRAY_BUFFER, frustumVAO.vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uniqueVertCount * 6, allUniqueData, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uniqueVertCount * 6, frustumVertData, GL_DYNAMIC_DRAW);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 		glEnableVertexAttribArray(0);

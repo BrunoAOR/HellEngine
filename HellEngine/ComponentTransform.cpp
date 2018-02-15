@@ -39,9 +39,69 @@ void ComponentTransform::Update()
 	if (drawBoundingBox) {
 		if (boundingBox.IsFinite())
 		{
-			if (baseBoundingBoxVAO.vao != 0)
-				App->debugDraw->DrawElements(GetModelMatrix(), baseBoundingBoxVAO.vao, baseBoundingBoxVAO.elementsCount, baseBoundingBoxVAO.indexesType);
+			GLfloat vA[3];
+			GLfloat vB[3];
+			GLfloat vC[3];
+			GLfloat vD[3];
+			GLfloat vE[3];
+			GLfloat vF[3];
+			GLfloat vG[3];
+			GLfloat vH[3];
 
+			/* Cube vertices */
+			{
+				vA[0] = boundingBox.CornerPoint(0).x;
+				vA[1] = boundingBox.CornerPoint(0).y;
+				vA[2] = boundingBox.CornerPoint(0).z;
+
+				vB[0] = boundingBox.CornerPoint(4).x;
+				vB[1] = boundingBox.CornerPoint(4).y;
+				vB[2] = boundingBox.CornerPoint(4).z;
+
+				vC[0] = boundingBox.CornerPoint(2).x;
+				vC[1] = boundingBox.CornerPoint(2).y;
+				vC[2] = boundingBox.CornerPoint(2).z;
+
+				vD[0] = boundingBox.CornerPoint(6).x;
+				vD[1] = boundingBox.CornerPoint(6).y;
+				vD[2] = boundingBox.CornerPoint(6).z;
+
+				vE[0] = boundingBox.CornerPoint(1).x;
+				vE[1] = boundingBox.CornerPoint(1).y;
+				vE[2] = boundingBox.CornerPoint(1).z;
+
+				vF[0] = boundingBox.CornerPoint(5).x;
+				vF[1] = boundingBox.CornerPoint(5).y;
+				vF[2] = boundingBox.CornerPoint(5).z;
+
+				vG[0] = boundingBox.CornerPoint(3).x;
+				vG[1] = boundingBox.CornerPoint(3).y;
+				vG[2] = boundingBox.CornerPoint(3).z;
+
+				vH[0] = boundingBox.CornerPoint(7).x;
+				vH[1] = boundingBox.CornerPoint(7).y;
+				vH[2] = boundingBox.CornerPoint(7).z;
+			}
+
+			GLfloat uniqueVertices[24] = { SP_ARR_3(vA), SP_ARR_3(vB), SP_ARR_3(vC), SP_ARR_3(vD), SP_ARR_3(vE), SP_ARR_3(vF), SP_ARR_3(vG), SP_ARR_3(vH) };
+
+			for (int i = 0; i < 8 * 6; ++i)
+			{
+				if (i % 6 == 0 || i % 6 == 1 || i % 6 == 2)
+					boundingBoxUniqueData[i] = uniqueVertices[(i / 6) * 3 + (i % 6)];
+			}
+
+			glBindVertexArray(baseBoundingBoxVAO.vao);
+			glBindBuffer(GL_ARRAY_BUFFER, baseBoundingBoxVAO.vbo);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8 * 6, boundingBoxUniqueData, GL_DYNAMIC_DRAW);
+
+			glBindVertexArray(GL_NONE);
+			glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
+			if (baseBoundingBoxVAO.vao != 0) {
+				float identity[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+				App->debugDraw->DrawElements(identity, baseBoundingBoxVAO.vao, baseBoundingBoxVAO.elementsCount, baseBoundingBoxVAO.indexesType);
+			}
 		}
 	}
 }
@@ -144,7 +204,7 @@ void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 
 			for (int i = children.size(); i > 0; i--)
 				stack.push(children.at(i - 1));
-		}		
+		}
 	}
 }
 
@@ -397,17 +457,15 @@ void ComponentTransform::CreateBBVAO()
 	};
 	GLubyte cornerIndexes[] = { 0, 1, 2, 3, 4, 5, 6, 7 }; /* Will use later */
 
-	float allUniqueData[uniqueVertCount * 6];
-
 	for (int i = 0; i < uniqueVertCount * 6; ++i)
 	{
 		if (i % 6 == 0 || i % 6 == 1 || i % 6 == 2)
 		{
-			allUniqueData[i] = uniqueVertices[(i / 6) * 3 + (i % 6)];
+			boundingBoxUniqueData[i] = uniqueVertices[(i / 6) * 3 + (i % 6)];
 		}
 		else
 		{
-			allUniqueData[i] = uniqueColors[(i / 6) * 3 + ((i % 6) - 3)];
+			boundingBoxUniqueData[i] = uniqueColors[(i / 6) * 3 + ((i % 6) - 3)];
 		}
 	}
 
@@ -421,7 +479,7 @@ void ComponentTransform::CreateBBVAO()
 
 	glBindVertexArray(baseBoundingBoxVAO.vao);
 	glBindBuffer(GL_ARRAY_BUFFER, baseBoundingBoxVAO.vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uniqueVertCount * 6, allUniqueData, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uniqueVertCount * 6, boundingBoxUniqueData, GL_DYNAMIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(0);

@@ -64,6 +64,8 @@ private:
 	float4x4 localModelMatrix;
 	float4x4 worldModelMatrix;
 
+	float boundingBoxUniqueData[8 * 6];
+
 	static std::vector<float3> baseBoundingBox;
 	static VaoInfo baseBoundingBoxVAO;
 

@@ -108,6 +108,8 @@ private:
 	bool frustumCulling;
 	std::vector<GameObject*> insideFrustum;
 	VaoInfo frustumVAO;
+
+	float frustumVertData[48];
 };
 
 #endif
