@@ -61,7 +61,11 @@ GameObject* CalculateCollisionsWithGameObjects(const std::vector<GameObject*>& g
 		{
 			/* Transform the lineSegment to localSpace for this GameObject */
 			LineSegment localLineSegment(lineSegment);
-			localLineSegment.Transform((*it).transform->GetModelMatrix4x4());
+			/* Note: MathGeoLib handles matrices transposed in relation to OpenGL (and the GetModelMatrix4x4 method) */
+			float4x4 inverseModelMatrix = (*it).transform->GetModelMatrix4x4();
+			inverseModelMatrix.Transpose();
+			inverseModelMatrix.Inverse();
+			localLineSegment.Transform(inverseModelMatrix);
 
 			/* Get vertices and indices */
 			const VaoInfo& vaoInfo = mesh->GetActiveVao();
@@ -71,9 +75,9 @@ GameObject* CalculateCollisionsWithGameObjects(const std::vector<GameObject*>& g
 
 			/* Iterate through triangles looking for the closest hit */
 			bool triangleHit = false;
-			for (unsigned int idx = 0; idx < indices.size() / 3; idx += 3)
+			for (unsigned int idx = 0; idx < indices.size(); idx += 3)
 			{
-				Triangle triangle(vertices[idx], vertices[idx + 1], vertices[idx + 2]);
+				Triangle triangle(vertices[indices[idx]], vertices[indices[idx + 1]], vertices[indices[idx + 2]]);
 				float hitDistance = 0;
 				if (localLineSegment.Intersects(triangle, &hitDistance, nullptr) && hitDistance < closestHitGameObject.hitDistance)
 				{
