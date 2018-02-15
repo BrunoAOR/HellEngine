@@ -120,6 +120,13 @@ void Frustum::SetFront(const vec &f)
 	WorldMatrixChanged();
 }
 
+void Frustum::SetFrontAndUp(const vec & f, const vec & u)
+{
+	front = f;
+	up = u;
+	WorldMatrixChanged();
+}
+
 void Frustum::SetUp(const vec &u)
 {
 	up = u;

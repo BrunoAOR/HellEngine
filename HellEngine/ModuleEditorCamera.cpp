@@ -37,6 +37,7 @@ bool ModuleEditorCamera::Init()
 
 UpdateStatus ModuleEditorCamera::Update()
 {
+	BROFILER_CATEGORY("ModuleEditorCamera::Update", Profiler::Color::Beige);
 	HandleCameraMotion();
 	HandleCameraRotation();	
 
@@ -58,6 +59,7 @@ void ModuleEditorCamera::OnWindowResize()
 
 void ModuleEditorCamera::HandleCameraMotion()
 {
+	BROFILER_CATEGORY("ModuleCamera::Motion", Profiler::Color::Black);
 	vec pos = camera->GetPosition3();
 	int moveFactor = App->input->GetKey(SDL_SCANCODE_LSHIFT) == KeyState::KEY_REPEAT ? 3 : 1;
 
@@ -189,9 +191,11 @@ void ModuleEditorCamera::HandleCameraMotion()
 
 void ModuleEditorCamera::HandleCameraRotation()
 {
+	BROFILER_CATEGORY("ModuleCamera::Rotation", Profiler::Color::Black);
 	/*Handling Mouse*/
 	if (App->input->GetMouseButtonDown(SDL_BUTTON_RIGHT) == KeyState::KEY_REPEAT)
 	{
+		BROFILER_CATEGORY("ModuleCamera::Input", Profiler::Color::Black);
 		int xMotion = App->input->GetMouseMotion().x;
 		int yMotion = App->input->GetMouseMotion().y;
 
@@ -201,6 +205,7 @@ void ModuleEditorCamera::HandleCameraRotation()
 		if (yMotion > 50)
 			yMotion = 50;
 
+		BROFILER_CATEGORY("ModuleCamera::Pitch", Profiler::Color::Black);
 		/* Camera rotate upwards and downwards */
 		if (yMotion != 0
 			&& !currentlyMovingCamera
@@ -208,7 +213,8 @@ void ModuleEditorCamera::HandleCameraRotation()
 		{
 			RotatePitch(yMotion);
 		}
-		
+
+		BROFILER_CATEGORY("ModuleCamera::Yaw", Profiler::Color::Black);
 		/* Camera rotate leftwards and rightwards */
 		if (xMotion != 0
 			&& !currentlyMovingCamera
@@ -224,8 +230,10 @@ void ModuleEditorCamera::RotateYaw(int mouseMotionX)
 	/* mouseMotionX is <0 when moving to the left and >0 when moving to the right */
 	Quat rotation = Quat::FromEulerXYZ(0, -DegToRad(rotationSpeed * mouseMotionX) * App->time->DeltaTime(), 0);
 	float3 rot = rotation.Transform(camera->GetFront3());
+	BROFILER_CATEGORY("ModuleCamera::SetFront", Profiler::Color::Black);
 	camera->SetFront(rot.x, rot.y, rot.z);
 	rot = rotation.Transform(camera->GetUp3());
+	BROFILER_CATEGORY("ModuleCamera::SetUp", Profiler::Color::Black);
 	camera->SetUp(rot.x, rot.y, rot.z);
 }
 
@@ -237,7 +245,9 @@ void ModuleEditorCamera::RotatePitch(int mouseMotionY)
 	if (newUp.y >= 0)
 	{
 		float3 rot = rotation.Transform(camera->GetFront3());
+		BROFILER_CATEGORY("ModuleCamera::SetFront", Profiler::Color::Black);
 		camera->SetFront(rot.x, rot.y, rot.z);
+		BROFILER_CATEGORY("ModuleCamera::SetUp", Profiler::Color::Black);
 		camera->SetUp(newUp.x, newUp.y, newUp.z);
 	}
 }

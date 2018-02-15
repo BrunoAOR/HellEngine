@@ -36,6 +36,7 @@ ComponentTransform::~ComponentTransform()
 
 void ComponentTransform::Update()
 {
+	BROFILER_CATEGORY("ComponentTransform::Update", Profiler::Color::PapayaWhip);
 	if (drawBoundingBox) {
 		if (boundingBox.IsFinite())
 		{

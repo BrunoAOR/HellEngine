@@ -20,6 +20,16 @@ SpaceQuadNode::SpaceQuadNode(float3 minPoint, float3 maxPoint, SpaceQuadTree* aQ
 
 SpaceQuadNode::~SpaceQuadNode()
 {
+	glDeleteVertexArrays(1, &quadVao.vao);
+	quadVao.vao = 0;
+	glDeleteBuffers(1, &quadVao.vbo);
+	quadVao.vbo = 0;
+	glDeleteBuffers(1, &quadVao.ebo);
+	quadVao.ebo = 0;
+	quadVao.vertices.clear();
+	quadVao.indices.clear();
+	quadVao.elementsCount = 0;
+
 	for (int i = 0; i < childrenCount; ++i)
 	{
 		delete childNodes[i];

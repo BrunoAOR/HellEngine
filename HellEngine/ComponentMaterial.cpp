@@ -59,6 +59,7 @@ ComponentMaterial::~ComponentMaterial()
 
 void ComponentMaterial::Update()
 {
+	BROFILER_CATEGORY("ComponentMaterial::UpdateStart", Profiler::Color::Gold);
 	if (!isActive)
 		return;
 
@@ -83,7 +84,6 @@ void ComponentMaterial::Update()
 			BROFILER_CATEGORY("Frustum culling without QuadTree", Profiler::Color::GreenYellow);
 			insideFrustum = transform->GetBoundingBox().Contains(editorCamera->GetFrustum());
 		}
-		BROFILER_CATEGORY("Frustum culling ended", Profiler::Color::Black);
 	}
 	if (insideFrustum) {
 
@@ -98,15 +98,18 @@ void ComponentMaterial::Update()
 				insideFrustum = transform->GetBoundingBox().Contains(activeGameCamera->GetFrustum());
 			}
 		}
+
 		if (insideFrustum) {
 			float* modelMatrix = transform->GetModelMatrix();
 
+			BROFILER_CATEGORY("ComponentMaterial::GetVao", Profiler::Color::Gold);
 			VaoInfo vaoInfo = mesh->GetActiveVao();
 			if (vaoInfo.vao == 0)
 			{
 				return;
 			}
 
+			BROFILER_CATEGORY("ComponentMaterial::DrawingCall", Profiler::Color::Gold);
 			DrawElements(modelMatrix, vaoInfo.vao, vaoInfo.elementsCount, vaoInfo.indexesType);
 		}
 	}

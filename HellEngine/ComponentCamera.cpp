@@ -53,6 +53,7 @@ bool ComponentCamera::Init()
 
 void ComponentCamera::Update()
 {
+	BROFILER_CATEGORY("ComponentCamera::Update", Profiler::Color::BlueViolet);
 	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
 
 	if (transform != nullptr) {
@@ -106,6 +107,7 @@ void ComponentCamera::Update()
 
 	}
 
+	BROFILER_CATEGORY("ComponentCamera::QuadCulling", Profiler::Color::BlueViolet);
 	insideFrustum.clear();
 	App->scene->QuadTreeFrustumCulling(insideFrustum, frustum);
 }
@@ -230,8 +232,8 @@ void ComponentCamera::SetFront(float x, float y, float z)
 	Quat rot = Quat::RotateFromTo(frustum.Front(), front);
 	vec up = frustum.Up();
 	rot.Transform(up);
-	frustum.SetFront(front);
-	frustum.SetUp(up);
+	BROFILER_CATEGORY("ModuleCamera::FrontUp", Profiler::Color::Black);
+	frustum.SetFrontAndUp(front, up);
 }
 
 const float * ComponentCamera::GetUp() const
@@ -254,8 +256,8 @@ void ComponentCamera::SetUp(float x, float y, float z)
 	Quat rot = Quat::RotateFromTo(frustum.Up(), up);
 	vec front = frustum.Front();
 	rot.Transform(front);
-	frustum.SetUp(up);
-	frustum.SetFront(front);
+	BROFILER_CATEGORY("ModuleCamera::FrontUp", Profiler::Color::Black);
+	frustum.SetFrontAndUp(front, up);
 }
 
 const float3 ComponentCamera::GetRight3() const
@@ -338,6 +340,7 @@ int ComponentCamera::MaxCountInGameObject()
 
 bool ComponentCamera::IsInsideFrustum(GameObject * go)
 {
+	BROFILER_CATEGORY("ComponentMaterial::Find", Profiler::Color::Gold);
 	return	std::find(insideFrustum.begin(), insideFrustum.end(), go) != insideFrustum.end();
 }
 

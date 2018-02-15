@@ -44,8 +44,9 @@ UpdateStatus ModuleScene::Update()
 {
 	if (quadTree.GetType() != SpaceQuadTree::QuadTreeType::INVALID)
 	{
-		quadTree.DrawTree();
+		//quadTree.DrawTree(); activate with debug checkbox
 	}
+	BROFILER_CATEGORY("ModuleScene::Update", Profiler::Color::PapayaWhip);
 	root->Update();
 
 	return UpdateStatus::UPDATE_CONTINUE;
@@ -178,7 +179,6 @@ void ModuleScene::TestCollisionChecks(float3 aabbMinPoint, float3 aabbMaxPoint, 
 	{
 		BROFILER_CATEGORY("Quad Tree check start", Profiler::Color::Yellow);
 		quadTree.Intersects(intersected, testCube);
-		BROFILER_CATEGORY("Quad Tree check end", Profiler::Color::White);
 		LOGGER("QuadTree checks: %i", quadTree.lastChecksPerformed);
 		LOGGER("QuadTree found %i intersection", intersected.size());
 	}

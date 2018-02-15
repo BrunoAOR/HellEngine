@@ -1,6 +1,7 @@
 #ifndef __H_SPACE_QUAD_NODE__
 #define __H_SPACE_QUAD_NODE__
 
+#include <stack>
 #include "MathGeoLib/src/Math/float3.h"
 #include "MathGeoLib/src/Geometry/AABB.h"
 class ComponentTransform;
@@ -25,11 +26,11 @@ private:
 	void CreateVAO();
 
 private:
-	SpaceQuadTree* quadTree = nullptr;
+	SpaceQuadTree * quadTree = nullptr;
 	const unsigned int depth;
 	AABB aabb;
 	bool isLeaf = true;
-	const int childrenCount;
+	const int childrenCount = 0;
 	SpaceQuadNode* childNodes[4] = { nullptr, nullptr, nullptr, nullptr };
 	std::vector<ComponentTransform*> containedTransforms;
 	VaoInfo quadVao;
@@ -38,30 +39,45 @@ private:
 template<typename T>
 inline void SpaceQuadNode::CollectIntersections(std::vector<GameObject*>& intersectedGameObjects, const T& primitive)
 {
-	static int checksPerformed = 0;
-	if (depth == 1)
-		checksPerformed = 0;
+	int checksPerformed = 0;
 
-	++checksPerformed;
-	if (primitive.Intersects(aabb))
-	{
-		for (std::vector<ComponentTransform*>::iterator it = this->containedTransforms.begin(); it != this->containedTransforms.end(); ++it)
+	std::stack<SpaceQuadNode*> stack;
+
+	SpaceQuadNode* node = this;
+
+	stack.push(node);
+
+	BROFILER_CATEGORY("QuadNode::CollectIntersections", Profiler::Color::Green);
+	while (!stack.empty()) {
+		node = stack.top();
+		stack.pop();
+
+		++checksPerformed;
+		BROFILER_CATEGORY("QuadNode::Intersects", Profiler::Color::Green);
+		if (primitive.Intersects(node->aabb))
 		{
-			++checksPerformed;
-			if (primitive.Intersects((*it)->GetBoundingBox()))
-				intersectedGameObjects.push_back((*it)->gameObject);
+			/*
+			for (std::vector<ComponentTransform*>::iterator it = node->containedTransforms.begin(); it != node->containedTransforms.end(); ++it)
+			{
+				++checksPerformed;
+				if (primitive.Intersects((*it)->GetBoundingBox()))
+					intersectedGameObjects.push_back((*it)->gameObject);
+			}
+			*/
+			for (int i = 0; i < node->containedTransforms.size(); i++) {
+				++checksPerformed;
+				if (primitive.Intersects(node->containedTransforms.at(i)->GetBoundingBox()))
+					intersectedGameObjects.push_back(node->containedTransforms.at(i)->gameObject);
+			}
+
+			for (int i = 0; i < node->childrenCount; ++i)
+				if (node->childNodes[i] != nullptr)
+					stack.push(node->childNodes[i]);
+
 		}
 
-		if (!isLeaf)
-		{
-			for (int i = 0; i < childrenCount; ++i)
-				if (childNodes[i] != nullptr)
-					childNodes[i]->CollectIntersections(intersectedGameObjects, primitive);
-		}
+		node->quadTree->lastChecksPerformed = checksPerformed;
 	}
-
-	if (depth == 1)
-		quadTree->lastChecksPerformed = checksPerformed;
 }
 
 #endif // !__H_SPACE_QUAD_NODE__
