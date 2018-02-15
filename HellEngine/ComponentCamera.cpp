@@ -6,6 +6,7 @@
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "GameObject.h"
+#include "ModuleDebugDraw.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleScene.h"
 #include "globals.h"
@@ -35,7 +36,7 @@ bool ComponentCamera::Init()
 	background.b = 0;
 	background.a = 1.0f;
 	verticalFOVRad = DegToRad(60);
-	
+
 	frustum.SetPerspective(GetHorizontalFOVrad(), verticalFOVRad);
 	frustum.SetViewPlaneDistances(nearClippingPlane, farClippingPlane);
 	float3 position = vec(0, 3, 0);
@@ -53,18 +54,18 @@ bool ComponentCamera::Init()
 void ComponentCamera::Update()
 {
 	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
-	
+
 	if (transform != nullptr) {
 		float3 position = transform->GetPosition();
 		SetPosition(position.x, position.y, position.z);
-		
+
 		float3 rot3 = transform->GetRotationRad();
 		Quat rot = Quat::FromEulerXYZ(rot3.x, rot3.y, rot3.z);
 		float3 newFront = rot.Transform(vec(0, 0, 1));
 		float3 newUp = rot.Transform(vec(0, 1, 0));
 		SetFront(newFront.x, newFront.y, newFront.z);
 		SetUp(newUp.x, newUp.y, newUp.z);
-		
+
 		if (DEBUG_MODE)
 			DrawFrustum();
 
@@ -255,7 +256,7 @@ void ComponentCamera::OnEditor()
 	{
 		if (OnEditorDeleteComponent())
 			return;
-				
+
 		if (ImGui::Checkbox("Active Camera", &isActiveCamera))
 		{
 			if (isActiveCamera)
@@ -310,7 +311,17 @@ float ComponentCamera::GetHorizontalFOVrad() const
 	return 2 * atan(tan(verticalFOVRad / 2) * aspectRatio);
 }
 
-void ComponentCamera::DrawFrustum() const
+void ComponentCamera::DrawFrustum()
+{
+	if (frustumVAO.vao == 0) 
+		CreateFrustumVAO();
+
+	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
+	if (transform != nullptr)
+		App->debugDraw->DrawElements(transform->GetModelMatrix(), frustumVAO.vao, frustumVAO.elementsCount, frustumVAO.indexesType);
+}
+
+void ComponentCamera::CreateFrustumVAO()
 {
 	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
 	if (transform != nullptr)
@@ -333,25 +344,60 @@ void ComponentCamera::DrawFrustum() const
 		float farC[3] = { farXOffset, farYOffset, farClippingPlane };
 		float farD[3] = { farXOffset, -farYOffset, farClippingPlane };
 
-		float vertices[8 * 3] = { SP_ARR_3(nearA), SP_ARR_3(nearB), SP_ARR_3(nearC), SP_ARR_3(nearD), SP_ARR_3(farA), SP_ARR_3(farB), SP_ARR_3(farC), SP_ARR_3(farD) };
+		GLfloat cRed[3];
+
+		{
+			cRed[0] = 0.0f;
+			cRed[1] = 1.0f;
+			cRed[2] = 0.0f;
+		}
+
+		const uint uniqueVertCount = 8;
+		float uniqueVertices[uniqueVertCount * 3] = { SP_ARR_3(nearA), SP_ARR_3(nearB), SP_ARR_3(nearC), SP_ARR_3(nearD), SP_ARR_3(farA), SP_ARR_3(farB), SP_ARR_3(farC), SP_ARR_3(farD) };
+		GLfloat uniqueColors[uniqueVertCount * 3] = { SP_ARR_3(cRed), SP_ARR_3(cRed), SP_ARR_3(cRed), SP_ARR_3(cRed), SP_ARR_3(cRed), SP_ARR_3(cRed), SP_ARR_3(cRed), SP_ARR_3(cRed) };
 		GLubyte indices[12 * 2] = {
 			0, 1,	1, 2,	2, 3,	3, 0,	/* Near plane */
 			4, 5,	5, 6,	6, 7,	7, 4,	/*  Far plane */
 			0, 4,	1, 5,	2, 6,	3, 7	/* Near to far links */
 		};
-		
-		int currentMatrixMode = 0;
-		glGetIntegerv(GL_MATRIX_MODE, &currentMatrixMode);
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
-		glLoadMatrixf((transform->GetModelMatrix4x4() * App->editorCamera->camera->viewMatrix).ptr());
 
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glVertexPointer(3, GL_FLOAT, 0, vertices);
-		glDrawElements(GL_LINES, 12 * 2, GL_UNSIGNED_BYTE, indices);
-		glDisableClientState(GL_VERTEX_ARRAY);
-		
-		glPopMatrix();
-		glMatrixMode(currentMatrixMode);
+		float allUniqueData[uniqueVertCount * 6];
+
+		for (int i = 0; i < uniqueVertCount * 6; ++i)
+		{
+			if (i % 6 == 0 || i % 6 == 1 || i % 6 == 2)
+			{
+				allUniqueData[i] = uniqueVertices[(i / 6) * 3 + (i % 6)];
+			}
+			else
+			{
+				allUniqueData[i] = uniqueColors[(i / 6) * 3 + ((i % 6) - 3)];
+			}
+		}
+
+		frustumVAO.name = "BaseBoundingBox";
+		frustumVAO.elementsCount = uniqueVertCount * 3;
+		frustumVAO.indexesType = GL_UNSIGNED_BYTE;
+
+		glGenVertexArrays(1, &frustumVAO.vao);
+		glGenBuffers(1, &frustumVAO.vbo);
+		glGenBuffers(1, &frustumVAO.ebo);
+
+		glBindVertexArray(frustumVAO.vao);
+		glBindBuffer(GL_ARRAY_BUFFER, frustumVAO.vbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uniqueVertCount * 6, allUniqueData, GL_STATIC_DRAW);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, frustumVAO.ebo);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLubyte) * frustumVAO.elementsCount, indices, GL_STATIC_DRAW);
+
+		glBindVertexArray(GL_NONE);
+		glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
 	}
 }
+
+

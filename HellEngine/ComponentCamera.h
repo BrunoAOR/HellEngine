@@ -4,6 +4,7 @@
 #include "MathGeoLib/src/Geometry/Frustum.h"
 #include "Color.h"
 #include "Component.h"
+#include "VAOInfo.h"
 
 
 class ComponentCamera :
@@ -91,7 +92,8 @@ public:
 private:
 
 	float GetHorizontalFOVrad() const;
-	void DrawFrustum() const;
+	void DrawFrustum();
+	void CreateFrustumVAO();
 
 private:
 
@@ -105,6 +107,7 @@ private:
 	float farClippingPlane;
 	bool frustumCulling;
 	std::vector<GameObject*> insideFrustum;
+	VaoInfo frustumVAO;
 };
 
 #endif
