@@ -303,6 +303,6 @@ void ModuleScene::TestLineSegmentChecks(float3 lineStartPoint, float3 lineEndPoi
 	assert(lineStartPoint.x != lineEndPoint.x || lineStartPoint.y != lineEndPoint.y || lineStartPoint.z != lineEndPoint.z);
 
 	LineSegment testSegment(lineStartPoint, lineEndPoint);
-	GameObject* collidedGO = CalculateCollisionsWithStaticGameObjects(testSegment);
+	GameObject* collidedGO = CalculateRaycast(testSegment);
 	LOGGER("The line collided with GameObject: %s", collidedGO ? collidedGO->name.c_str() : "none");
 }

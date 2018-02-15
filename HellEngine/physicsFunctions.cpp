@@ -47,14 +47,6 @@ void GatherPotentialCollisionGameObjects(std::vector<GameObject*>& potentialColl
 	}
 }
 
-GameObject* CalculateCollisionsWithStaticGameObjects(const LineSegment& lineSegment)
-{
-	/* First, get all potential collision GameObjects from the scene's SpaceQuadTree */
-	std::vector<GameObject*> potentialCollisionGOs;
-	GatherPotentialCollisionGameObjects(potentialCollisionGOs, lineSegment);
-	return CalculateCollisionsWithGameObjects(potentialCollisionGOs, lineSegment);
-}
-
 GameObject* CalculateCollisionsWithGameObjects(const std::vector<GameObject*>& gameObjects, const LineSegment& lineSegment)
 {
 	/* Pair the GameObjects with information about the distance of their AABB's collision with the LineSegment */
@@ -134,4 +126,13 @@ GameObject* CalculateCollisionsWithGameObjects(const std::vector<GameObject*>& g
 	}
 
 	return closestHitGameObject.gameObject;
+}
+
+
+GameObject* CalculateRaycast(const LineSegment& lineSegment)
+{
+	/* First, get all potential collision GameObjects from the scene's SpaceQuadTree */
+	std::vector<GameObject*> potentialCollisionGOs;
+	GatherPotentialCollisionGameObjects(potentialCollisionGOs, lineSegment);
+	return CalculateCollisionsWithGameObjects(potentialCollisionGOs, lineSegment);
 }
