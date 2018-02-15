@@ -225,6 +225,7 @@ void ModuleEditorCamera::HandleCameraMousePicking()
 		if (App->input->GetMouseButtonDown(SDL_BUTTON_LEFT) == KeyState::KEY_DOWN) {
 			lineSegmentFromMousePicking = GetRayFromMouse();
 			GameObject* collidedGO = CalculateRaycast(lineSegmentFromMousePicking);
+			App->scene->SetSelectedGameObject(collidedGO);
 			LOGGER("The mouse ray collided with GameObject: %s", collidedGO ? collidedGO->name.c_str() : "none");
 		}
 	}
@@ -276,8 +277,8 @@ LineSegment ModuleEditorCamera::GetRayFromMouse()
 	float f = this->camera->GetFarPlaneDistance();
 	float3 pos = this->camera->GetPosition3();
 
-	float2 windowsSize = float2(App->window->getWidth(), App->window->getHeight());
-	float2 mouseOnWindowCoordinates = float2(App->input->GetMousePosition().x, App->input->GetMousePosition().y);
+	float2 windowsSize = float2((float)App->window->getWidth(), (float)App->window->getHeight());
+	float2 mouseOnWindowCoordinates = float2((float)App->input->GetMousePosition().x, (float)App->input->GetMousePosition().y);
 
 	float normalizedCoordinateX = -(1.0f - (float(mouseOnWindowCoordinates.x) * 2.0f) / windowsSize.x);
 	float normalizedCoordinateY = 1.0f - (float(mouseOnWindowCoordinates.y) * 2.0f) / windowsSize.y;

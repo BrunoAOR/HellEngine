@@ -211,6 +211,11 @@ ComponentCamera * ModuleScene::GetActiveGameCamera() const
 	return activeGameCamera;
 }
 
+void ModuleScene::SetSelectedGameObject(GameObject * go)
+{
+	editorInfo.selectedGameObject = go;
+}
+
 GameObject* ModuleScene::CreateGameObject()
 {
     GameObject* gameObject = new GameObject("name", root);

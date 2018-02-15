@@ -41,6 +41,7 @@ public:
 
 	void SetActiveGameCamera(ComponentCamera* camera);
 	ComponentCamera* GetActiveGameCamera() const;
+	void SetSelectedGameObject(GameObject* go);
 
 	GameObject* CreateGameObject();
 	void Destroy(GameObject* gameObject);
