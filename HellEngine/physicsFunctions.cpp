@@ -21,13 +21,37 @@ struct TriangleDistanceInfo {
 	float hitDistance = std::numeric_limits<float>::max();
 };
 
+void GatherPotentialCollisionGameObjects(std::vector<GameObject*>& potentialCollisionGOs, const LineSegment& lineSegment)
+{
+	std::vector<GameObject*> bruteForceCheckGOs;
+
+	/* First, gather static GameObjects */
+	const SpaceQuadTree& quadTree = App->scene->GetQuadTree();
+	if (quadTree.GetType() != SpaceQuadTree::QuadTreeType::INVALID)
+		quadTree.Intersects(potentialCollisionGOs, lineSegment);
+	else
+	{
+		App->scene->FindAllStaticGameObjects(bruteForceCheckGOs);
+	}
+
+	/* Get dynamic GameObjects */
+	App->scene->FindAllDynamicGameObjects(bruteForceCheckGOs);
+
+	/* Check for collision in the bruteForceCheckGOs AABBs */
+	for (GameObject* go : bruteForceCheckGOs)
+	{
+		ComponentTransform* transform = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM);
+		if (transform && lineSegment.Intersects(transform->GetBoundingBox()))
+			potentialCollisionGOs.push_back(go);
+
+	}
+}
+
 GameObject* CalculateCollisionsWithStaticGameObjects(const LineSegment& lineSegment)
 {
 	/* First, get all potential collision GameObjects from the scene's SpaceQuadTree */
-	const SpaceQuadTree& quadTree = App->scene->GetQuadTree();
 	std::vector<GameObject*> potentialCollisionGOs;
-	quadTree.Intersects(potentialCollisionGOs, lineSegment);
-
+	GatherPotentialCollisionGameObjects(potentialCollisionGOs, lineSegment);
 	return CalculateCollisionsWithGameObjects(potentialCollisionGOs, lineSegment);
 }
 
