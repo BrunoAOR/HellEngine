@@ -4,6 +4,7 @@
 #include "GameObject.h"
 #include "ComponentMesh.h"
 #include "ComponentTransform.h"
+#include "ModuleRender.h"
 #include "ModuleScene.h"
 #include "physicsFunctions.h"
 
@@ -49,7 +50,10 @@ GameObject* CalculateCollisionsWithGameObjects(const std::vector<GameObject*>& g
 	/* Sort them by distance based on the collision point closest to the start of the lineSegment */
 	distanceSortedGOs.sort([](GameObjectDistanceInfo a, GameObjectDistanceInfo b) -> bool {return a.nearDistance < b.nearDistance; });
 
-	/* Now iterate through the sorted GameObjects and calculate collision agains every triangle in every GameObject's mesh (if available) */
+	/* Now iterate through the sorted GameObjects and calculate collision against every triangle in every GameObject's mesh (if available)
+	Discard backface-triangles if backface culling is in use
+	*/
+	bool backfaceCulling = App->renderer->isBackFaceCullActive();
 	bool goHit = false;
 	TriangleDistanceInfo closestHitGameObject;
 	float maxQueryDistance = lineSegment.Length();
@@ -78,12 +82,17 @@ GameObject* CalculateCollisionsWithGameObjects(const std::vector<GameObject*>& g
 			for (unsigned int idx = 0; idx < indices.size(); idx += 3)
 			{
 				Triangle triangle(vertices[indices[idx]], vertices[indices[idx + 1]], vertices[indices[idx + 2]]);
-				float hitDistance = 0;
-				if (localLineSegment.Intersects(triangle, &hitDistance, nullptr) && hitDistance < closestHitGameObject.hitDistance)
+				
+				/* Discard triangle if back face culling is active and the triangle is back facing */
+				if (!backfaceCulling || Dot(triangle.NormalCCW(), lineSegment.b - lineSegment.a) < 0)
 				{
-					triangleHit = true;
-					closestHitGameObject.triangle = triangle;
-					closestHitGameObject.hitDistance = hitDistance;
+					float hitDistance = 0;
+					if (localLineSegment.Intersects(triangle, &hitDistance, nullptr) && hitDistance < closestHitGameObject.hitDistance)
+					{
+						triangleHit = true;
+						closestHitGameObject.triangle = triangle;
+						closestHitGameObject.hitDistance = hitDistance;
+					}
 				}
 			}
 
