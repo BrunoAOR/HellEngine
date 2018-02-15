@@ -44,6 +44,9 @@ public:
 	/* Returns the maximum number of times that this particular Type of Component can be added to a GameObject */
 	virtual int MaxCountInGameObject() override;
 
+    /* Aplies the transform from the Guizmo */
+    void ApplyGuizmo(const float4x4& modelMatrix, const float3& position, const float rotation[], const float3& scale);
+
 private:
 
 	float4x4& UpdateLocalModelMatrix();

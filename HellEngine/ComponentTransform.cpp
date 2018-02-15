@@ -348,3 +348,23 @@ float4x4& ComponentTransform::UpdateLocalModelMatrix()
 	memcpy_s(localModelMatrix.ptr(), sizeof(float) * 16, (translationMatrix * rotationMatrix * scaleMatrix).Transposed().ptr(), sizeof(float) * 16);
 	return localModelMatrix;
 }
+
+void ComponentTransform::ApplyGuizmo(const float4x4& modelMatrix, const float3& newPosition, const float newRotation[], const float3& newScale) 
+{
+    if (!isStatic) 
+    {
+        worldModelMatrix = modelMatrix;
+
+        position = newPosition;
+
+        rotationDeg[0] = newRotation[0];
+        rotationDeg[1] = newRotation[1];
+        rotationDeg[2] = newRotation[2];
+
+        float3 radAngles = DegToRad((float3)newRotation);
+
+        rotation = Quat::FromEulerXYX(radAngles.x, radAngles.y, radAngles.z);
+
+        scale = newScale;
+    }
+}

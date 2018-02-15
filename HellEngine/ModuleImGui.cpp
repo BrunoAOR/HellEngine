@@ -654,6 +654,10 @@ void ModuleImGui::DrawGuizmo()
 
     ImGuizmo::SetRect(0, 0, App->window->getWidth(), App->window->getHeight());
 
+    float translation[3]{0,0,0};
+    float rotation[3]{ 0,0,0 };
+    float scale[3]{ 0,0,0 };
+
     if (App->scene->editorInfo.selectedGameObject != nullptr)
     {
         ComponentTransform* transform = (ComponentTransform*)App->scene->editorInfo.selectedGameObject->GetComponent(ComponentType::TRANSFORM);
@@ -661,11 +665,14 @@ void ModuleImGui::DrawGuizmo()
         float4x4 matrixTransposed = transform->GetModelMatrix4x4().Transposed();
         float* objectMatrix = (float*)matrixTransposed.ptr();
 
-        ImGuizmo::Manipulate(App->editorCamera->camera->GetViewMatrix(), App->editorCamera->camera->GetProjectionMatrix(), mCurrentGizmoOperation, mCurrentGizmoMode, objectMatrix);
+        ImGuizmo::Manipulate(App->editorCamera->camera->GetViewMatrix(), App->editorCamera->camera->GetProjectionMatrix(), mCurrentGizmoOperation, mCurrentGizmoMode, objectMatrix, nullptr);
 
         if (ImGuizmo::IsUsing())
         {
-            /* Do things */
+
+
+            ImGuizmo::DecomposeMatrixToComponents(objectMatrix, translation, rotation, scale);
+            transform->ApplyGuizmo(matrixTransposed.Transposed(), (float3)translation, rotation, (float3)scale);
         }         
     }
 }
