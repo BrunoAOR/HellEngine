@@ -35,6 +35,8 @@ public:
 	bool UsingQuadTree();
 	const SpaceQuadTree& GetQuadTree();
 
+	void TestLineSegmentChecks(float3 lineStartPoint, float3 lineEndPoint);
+
 	void SetActiveGameCamera(ComponentCamera* camera);
 	ComponentCamera* GetActiveGameCamera() const;
 

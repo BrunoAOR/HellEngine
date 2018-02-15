@@ -11,6 +11,9 @@
 #include "ComponentTransform.h"
 #include "ComponentMesh.h"
 #include "ComponentMaterial.h"
+/* For TestLineSegmentChecks */
+#include "MathGeoLib/src/Geometry/LineSegment.h"
+#include "physicsFunctions.h"
 
 ModuleScene::ModuleScene() 
 {
@@ -257,6 +260,15 @@ bool ModuleScene::UsingQuadTree()
 const SpaceQuadTree& ModuleScene::GetQuadTree()
 {
 	return quadTree;
+}
+
+void ModuleScene::TestLineSegmentChecks(float3 lineStartPoint, float3 lineEndPoint)
+{
+	assert(lineStartPoint.x != lineEndPoint.x || lineStartPoint.y != lineEndPoint.y || lineStartPoint.z != lineEndPoint.z);
+
+	LineSegment testSegment(lineStartPoint, lineEndPoint);
+	GameObject* collidedGO = CalculateCollisionsWithStaticGameObjects(testSegment);
+	LOGGER("The line collided with GameObject: %s", collidedGO ? collidedGO->name.c_str() : "none");
 }
 
 void ModuleScene::FindAllSceneStaticGameObjects(std::vector<GameObject*>& staticGameObjects, GameObject* go)
