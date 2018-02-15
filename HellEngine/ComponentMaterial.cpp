@@ -100,7 +100,6 @@ void ComponentMaterial::Update()
 		}
 		if (insideFrustum) {
 			float* modelMatrix = transform->GetModelMatrix();
-			float4x4 test = transform->GetModelMatrix4x4();
 
 			VaoInfo vaoInfo = mesh->GetActiveVao();
 			if (vaoInfo.vao == 0)
@@ -186,6 +185,7 @@ bool ComponentMaterial::Apply()
 	}
 	else {
 		shader = new Shader();
+
 		isValid = (LoadVertexShader()
 			&& LoadFragmentShader()
 			&& shader->LinkShaderProgram()
@@ -197,8 +197,10 @@ bool ComponentMaterial::Apply()
 			memset(vertexShaderPath, 0, sizeof(vertexShaderPath));
 			memset(fragmentShaderPath, 0, sizeof(fragmentShaderPath));
 		}
-		else
+		else {
 			delete shader;
+			shader = nullptr;
+		}
 	}
 
 	isValid &= LoadTexture()

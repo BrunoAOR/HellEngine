@@ -1,3 +1,4 @@
+#include <stack>
 #include "ImGui/imgui.h"
 #include "MathGeoLib/src/Math/TransformOps.h"
 #include "Application.h"
@@ -34,15 +35,15 @@ ComponentTransform::~ComponentTransform()
 }
 
 void ComponentTransform::Update()
-{	
+{
 	if (drawBoundingBox) {
 		if (boundingBox.IsFinite())
 		{
-			if (baseBoundingBoxVAO.vao != 0) 
+			if (baseBoundingBoxVAO.vao != 0)
 				App->debugDraw->DrawElements(GetModelMatrix(), baseBoundingBoxVAO.vao, baseBoundingBoxVAO.elementsCount, baseBoundingBoxVAO.indexesType);
-			
+
 		}
-	}	
+	}
 }
 
 bool ComponentTransform::GetIsStatic()
@@ -121,20 +122,30 @@ void ComponentTransform::SetRotationDeg(float x, float y, float z)
 
 void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 {
-	boundingBox.SetNegativeInfinity();
-	boundingBox.Enclose(baseBoundingBox.data(), baseBoundingBox.size());
-	boundingBox.TransformBB(GetModelMatrix4x4().Transposed());
+	std::stack<GameObject*> stack;
 
-	/* To make iterative */
-	
-	std::vector<GameObject*> children = gameObject->GetChildren();
+	GameObject* go = gameObject;
+	std::vector<GameObject*> children;
+	ComponentTransform* t = nullptr;
 
-	for (std::vector<GameObject*>::iterator it = children.begin(); it != children.end(); ++it) {
-		GameObject* go = *it;
-		ComponentTransform* t = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM);
-		if (t != nullptr)
-			t->UpdateBoundingBox();
-	}	
+	stack.push(go);
+
+	while (!stack.empty()) {
+		go = stack.top();
+		stack.pop();
+		t = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM);
+
+		if (t != nullptr) {
+			t->boundingBox.SetNegativeInfinity();
+			t->boundingBox.Enclose(baseBoundingBox.data(), baseBoundingBox.size());
+			t->boundingBox.TransformBB(GetModelMatrix4x4().Transposed());
+
+			children = go->GetChildren();
+
+			for (int i = children.size(); i > 0; i--)
+				stack.push(children.at(i - 1));
+		}		
+	}
 }
 
 float* ComponentTransform::GetModelMatrix()
@@ -332,7 +343,7 @@ void ComponentTransform::CreateBBVAO()
 	GLfloat cGreen[3];
 
 	int numCubeUniqueVertexes = 8;
-	
+
 	/* Cube vertices */
 	{
 		vA[0] = baseBoundingBox.at(0).x;
