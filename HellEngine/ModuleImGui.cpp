@@ -12,6 +12,9 @@
 #include "ModuleWindow.h"
 #include "globals.h"
 
+
+#include "ImGuizmo\ImGuizmo.h"
+
 ModuleImGui::ModuleImGui()
 {
 	licenseString = std::string("")
@@ -60,7 +63,9 @@ bool ModuleImGui::Init()
 UpdateStatus ModuleImGui::PreUpdate()
 {
 	ImGui_ImplSdlGL3_NewFrame(App->window->window);
-	return UpdateStatus::UPDATE_CONTINUE;
+    ImGuizmo::BeginFrame();
+    ImGuizmo::Enable(true);
+  	return UpdateStatus::UPDATE_CONTINUE;
 }
 
 /* Called each loop iteration */
@@ -173,6 +178,8 @@ UpdateStatus ModuleImGui::Update()
 	{
 		ShowQuadTreeWindow(mainMenuBarHeight, &showQuadTreeWindow);
 	}
+
+    DrawGuizmo();
 
 	ImGui::Render();
 
@@ -619,4 +626,46 @@ void ModuleImGui::ShowQuadTreeWindow(float mainMenuBarHeight, bool * pOpen)
 			break;
 		}
 	}
+}
+
+
+#include "Component.h"
+#include "ComponentTransform.h"
+
+void ModuleImGui::DrawGuizmo() 
+{
+    static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
+    static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
+
+    ImGui::SetNextWindowPos(ImVec2(400, 0));
+
+    if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
+        mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+
+    ImGui::SameLine();
+
+    if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE))
+        mCurrentGizmoOperation = ImGuizmo::ROTATE;
+
+    ImGui::SameLine();
+
+    if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
+        mCurrentGizmoOperation = ImGuizmo::SCALE;  
+
+    ImGuizmo::SetRect(0, 0, App->window->getWidth(), App->window->getHeight());
+
+    if (App->scene->editorInfo.selectedGameObject != nullptr)
+    {
+        ComponentTransform* transform = (ComponentTransform*)App->scene->editorInfo.selectedGameObject->GetComponent(ComponentType::TRANSFORM);
+
+        float4x4 matrixTransposed = transform->GetModelMatrix4x4().Transposed();
+        float* objectMatrix = (float*)matrixTransposed.ptr();
+
+        ImGuizmo::Manipulate(App->editorCamera->camera->GetViewMatrix(), App->editorCamera->camera->GetProjectionMatrix(), mCurrentGizmoOperation, mCurrentGizmoMode, objectMatrix);
+
+        if (ImGuizmo::IsUsing())
+        {
+            /* Do things */
+        }         
+    }
 }

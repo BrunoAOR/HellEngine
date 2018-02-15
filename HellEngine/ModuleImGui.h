@@ -46,6 +46,9 @@ private:
 	/* Draws the QuadTree options window*/
 	void ShowQuadTreeWindow(float mainMenuBarHeight, bool* pOpen);
 
+    /* Draws Guizmo */
+    void DrawGuizmo();
+
 private:
 
 	std::string licenseString;
