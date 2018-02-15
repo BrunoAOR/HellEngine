@@ -195,6 +195,12 @@ void ModuleEditorCamera::HandleCameraRotation()
 		int xMotion = App->input->GetMouseMotion().x;
 		int yMotion = App->input->GetMouseMotion().y;
 
+		if (xMotion > 50)
+			xMotion = 50;
+
+		if (yMotion > 50)
+			yMotion = 50;
+
 		/* Camera rotate upwards and downwards */
 		if (yMotion != 0
 			&& !currentlyMovingCamera
