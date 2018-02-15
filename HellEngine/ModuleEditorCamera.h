@@ -29,6 +29,8 @@ public:
 
 	void DragCameraVerticalAxis(int direction, vec &frustumPos, float speed);
 
+	LineSegment GetRayFromMouse();
+
 public:
 	ComponentCamera* camera;
 	float moveSpeed;
@@ -42,6 +44,7 @@ private:
 
 	void HandleCameraMotion();
 	void HandleCameraRotation();
+	void HandleCameraMousePicking();
 };
 
 #endif // !__H_MODULE_EDITOR_CAMERA__

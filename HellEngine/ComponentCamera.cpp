@@ -1,12 +1,13 @@
+#include <algorithm>
 #include "ImGui/imgui.h"
 #include "MathGeoLib/src/Geometry/Plane.h"
 #include "Application.h"
 #include "ComponentCamera.h"
-#include "ModuleScene.h"
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "GameObject.h"
 #include "ModuleEditorCamera.h"
+#include "ModuleScene.h"
 #include "globals.h"
 #include "openGL.h"
 
@@ -15,12 +16,12 @@ ComponentCamera::ComponentCamera(GameObject * owner) : Component(owner)
 	type = ComponentType::CAMERA;
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
 	Init();
-	LOGGER("Component of type '%s'", GetString(type));
+	//LOGGER("Component of type '%s'", GetString(type));
 }
 
 ComponentCamera::~ComponentCamera()
 {
-	LOGGER("Deleting Component of type '%s'", GetString(type));
+	//LOGGER("Deleting Component of type '%s'", GetString(type));
 }
 
 bool ComponentCamera::Init()
@@ -66,7 +67,11 @@ void ComponentCamera::Update()
 		
 		if (DEBUG_MODE)
 			DrawFrustum();
+
 	}
+
+	insideFrustum.clear();
+	App->scene->QuadTreeFrustumCulling(insideFrustum, frustum);
 }
 
 const float * ComponentCamera::GetPosition() const
@@ -293,6 +298,11 @@ void ComponentCamera::SetAsActiveCamera()
 int ComponentCamera::MaxCountInGameObject()
 {
 	return 1;
+}
+
+bool ComponentCamera::IsInsideFrustum(GameObject * go)
+{
+	return	std::find(insideFrustum.begin(), insideFrustum.end(), go) != insideFrustum.end();
 }
 
 float ComponentCamera::GetHorizontalFOVrad() const

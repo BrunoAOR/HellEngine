@@ -43,6 +43,12 @@ private:
     /*Draws the Text Editor window*/
     void ShowTextEditorWindow(float mainMenuBarHeight, bool* pOpen);
 
+	/* Draws the QuadTree options window*/
+	void ShowQuadTreeWindow(float mainMenuBarHeight, bool* pOpen);
+
+	/* Draws the Raycast testing window */
+	void ShowRaycastTestWindow(float mainmenuBarHeight, bool* pOpen);
+
 private:
 
 	std::string licenseString;

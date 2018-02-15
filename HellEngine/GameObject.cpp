@@ -16,7 +16,7 @@ GameObject* GameObject::hierarchyActiveGameObject = nullptr;
 
 GameObject::GameObject(const char* name, GameObject* parentGameObject) : name(name)
 {
-	LOGGER("Constructing GameObject '%s'", name);
+	//LOGGER("Constructing GameObject '%s'", name);
 	/* If the root is nullptr, then that means that we are currently creating the root and no parent should be set. */
 	if (App->scene->root != nullptr)
 	{
@@ -30,7 +30,7 @@ GameObject::GameObject(const char* name, GameObject* parentGameObject) : name(na
 
 GameObject::~GameObject()
 {
-	LOGGER("Began deletion of GameObject '%s'", name.c_str());
+	//LOGGER("Began deletion of GameObject '%s'", name.c_str());
 	for (Component* component : components)
 	{
 		delete component;
@@ -42,7 +42,7 @@ GameObject::~GameObject()
 		delete child;
 	}
 	children.clear();
-	LOGGER("Deleted GameObject '%s'", name.c_str());
+	//LOGGER("Deleted GameObject '%s'", name.c_str());
 }
 
 void GameObject::Update()
@@ -301,7 +301,7 @@ bool GameObject::SetParent(GameObject* newParent)
 		/* Remove from current parent. */
 		parent->RemoveChild(this);
 
-		LOGGER("Changed parent of '%s' from '%s' to '%s'", name.c_str(), parent->name.c_str(), newParent->name.c_str());
+		//LOGGER("Changed parent of '%s' from '%s' to '%s'", name.c_str(), parent->name.c_str(), newParent->name.c_str());
 
 		/* Assign new parent */
 		parent = newParent;

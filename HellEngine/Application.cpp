@@ -2,6 +2,7 @@
 #include "globals.h"
 #include "Module.h"
 #include "ModuleAudio.h"
+#include "ModuleDebugDraw.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleImGui.h"
 #include "ModuleInput.h"
@@ -22,6 +23,7 @@ Application::Application()
 	modules.push_back(renderer = new ModuleRender());
 	modules.push_back(imgui = new ModuleImGui());
 	modules.push_back(audio = new ModuleAudio());
+	modules.push_back(debugDraw = new ModuleDebugDraw());
 }
 
 Application::~Application()

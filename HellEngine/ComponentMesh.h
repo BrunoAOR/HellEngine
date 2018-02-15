@@ -4,6 +4,7 @@
 #include <vector>
 #include "Component.h"
 #include "globals.h"
+#include "VAOInfo.h"
 #include "MathGeoLib\src\Math\float3.h"
 
 typedef float GLfloat;
@@ -12,22 +13,12 @@ class ComponentMesh :
 	public Component
 {
 public:
-	struct VaoInfo
-	{
-		const char* name = "";
-		uint vao = 0;
-		uint elementsCount = 0;
-		int indexesType = 0;
-	};
 
 	ComponentMesh(GameObject* owner);
 	virtual ~ComponentMesh() override;
 
-	VaoInfo GetActiveVao() const;
+	const VaoInfo& GetActiveVao() const;
 	bool SetActiveVao(uint index);
-
-	void BuildVectorCubeVertexes(GLfloat arrayCubePoints[], int vertexesNumber);
-	std::vector<float3> *GetBuildVectorCubePoints();
 
 	virtual void OnEditor() override;
 
@@ -43,8 +34,7 @@ private:
 
 private:
 
-	std::vector<VaoInfo> vaoInfos;
-	std::vector<float3> vecCubeVertexes;
+	static std::vector<VaoInfo> vaoInfos;
 	int activeVao = -1;
 
 };

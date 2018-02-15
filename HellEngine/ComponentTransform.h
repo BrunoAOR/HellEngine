@@ -24,6 +24,9 @@ public:
 
 	AABB GetBoundingBox();
 
+	bool GetIsStatic();
+	void SetIsStatic(bool isStatic);
+
 	void SetPosition(float x, float y, float z);
 	void SetScale(float x, float y, float z);
 	void SetRotationRad(float x, float y, float z);
@@ -44,6 +47,8 @@ public:
 private:
 
 	float4x4& UpdateLocalModelMatrix();
+	void InitializeBaseBB();
+	void CreateBBVAO();
 
 private:
 
@@ -58,6 +63,9 @@ private:
 
 	float4x4 localModelMatrix;
 	float4x4 worldModelMatrix;
+
+	static std::vector<float3> baseBoundingBox;
+	static VaoInfo baseBoundingBoxVAO;
 
 };
 

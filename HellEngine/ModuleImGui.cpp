@@ -74,6 +74,8 @@ UpdateStatus ModuleImGui::Update()
     static bool showTextEditorWindow = false;
 	static bool showHierarchyWindow = true;
 	static bool showInspectorWindow = true;
+	static bool showQuadTreeWindow = false;
+	static bool showRaycastTestWindow = false;
 
 	static bool rendererWireFrame = false;
 	static bool rendererRotate = false;
@@ -100,6 +102,11 @@ UpdateStatus ModuleImGui::Update()
 
 			ImGui::MenuItem("Camera", nullptr, &showCameraWindow);
 			ImGui::MenuItem("OpenGL", nullptr, &showOpenGLWindow);
+
+			ImGui::Separator();
+
+			ImGui::MenuItem("QuadTree", nullptr, &showQuadTreeWindow);
+			ImGui::MenuItem("RayCastTest", nullptr, &showRaycastTestWindow);
 
 			ImGui::EndMenu();
 		}
@@ -162,6 +169,16 @@ UpdateStatus ModuleImGui::Update()
 	if (showInspectorWindow)
 	{
 		App->scene->OnEditorInspector(mainMenuBarHeight, &showInspectorWindow);
+	}
+
+	if (showQuadTreeWindow)
+	{
+		ShowQuadTreeWindow(mainMenuBarHeight, &showQuadTreeWindow);
+	}
+
+	if (showRaycastTestWindow)
+	{
+		ShowRaycastTestWindow(mainMenuBarHeight, &showRaycastTestWindow);
 	}
 
 	ImGui::Render();
@@ -522,4 +539,117 @@ void ModuleImGui::ShowTextEditorWindow(float mainMenuBarHeight, bool* pOpen)
 	ImGui::Text(lastLog.c_str());
 
     ImGui::End();
+}
+
+void ModuleImGui::ShowQuadTreeWindow(float mainMenuBarHeight, bool * pOpen)
+{
+	static int quadTreeOption = 0;
+	static int previousQuadTreeOption = -1;
+	static bool minMaxChanged = false;
+	
+	ImGui::Begin("QuadTree setup", pOpen);
+
+	ImGui::RadioButton("None", &quadTreeOption, 0);
+
+	ImGui::Separator();
+
+	static float minPoint[3] = { 0,0,0 };
+	static float maxPoint[3] = { 0,0,0 };
+	ImGui::RadioButton("Fixed", &quadTreeOption, 1);
+	if (ImGui::InputFloat3("Min point", minPoint, 2))
+		minMaxChanged = true;
+	if (ImGui::InputFloat3("Max point", maxPoint, 2))
+		minMaxChanged = true;
+
+	ImGui::Separator();
+
+	ImGui::RadioButton("Adaptive", &quadTreeOption, 2);
+
+	{
+		ImGui::Separator();
+
+		ImGui::Text("QuadTree usage test:");
+		ImGui::Text("Primitive: AABB");
+		static float aabbMinPoint[3] = { -1,-1,-1 };
+		static float aabbMaxPoint[3] = { 1,1,1 };
+		ImGui::InputFloat3("AABB Min point", aabbMinPoint, 2);
+		ImGui::InputFloat3("AABB Max point", aabbMaxPoint, 2);
+
+		ImGui::Text("Randomly positions spheres:");
+		static int spheresCount = 25;
+		static float spawnMinPoint[3] = { -25,-25,-25 };
+		static float spawnMaxPoint[3] = { 25,25,25 };
+		ImGui::InputInt("Spheres count", &spheresCount);
+		ImGui::InputFloat3("Spawn Min point", spawnMinPoint, 1);
+		ImGui::InputFloat3("Spawn Max point", spawnMaxPoint, 1);
+
+		if (ImGui::Button("Test Collisions"))
+		{
+			if (aabbMinPoint[0] < aabbMaxPoint[0] && aabbMinPoint[1] < aabbMaxPoint[1] && aabbMinPoint[2] < aabbMaxPoint[2]
+				&& spawnMinPoint[0] < spawnMaxPoint[0] && spawnMinPoint[1] < spawnMaxPoint[1] && spawnMinPoint[2] < spawnMaxPoint[2]
+				&& spheresCount > 0)
+			{
+				float3 aabbMin(minPoint[0], minPoint[1], minPoint[2]);
+				float3 aabbMax(maxPoint[0], maxPoint[1], maxPoint[2]);
+				float3 spawnMin(spawnMinPoint[0], spawnMinPoint[1], spawnMinPoint[2]);
+				float3 spawnMax(spawnMaxPoint[0], spawnMaxPoint[1], spawnMaxPoint[2]);
+				App->scene->TestCollisionChecks(aabbMin, aabbMax, spawnMin, spawnMax, spheresCount);
+			}
+			else
+				LOGGER("Invalid test conditions!");
+		}
+	}
+
+	ImGui::End();
+
+	if (quadTreeOption != previousQuadTreeOption || minMaxChanged && quadTreeOption == 1)
+	{
+		previousQuadTreeOption = quadTreeOption;
+		minMaxChanged = false;
+		switch (quadTreeOption)
+		{
+		case 0:
+			App->scene->UnloadSceneFixedQuadTree();
+			break;
+		case 1:
+			App->scene->UnloadSceneFixedQuadTree();
+			if (minPoint[0] < maxPoint[0] && minPoint[1] < maxPoint[1] && minPoint[2] < maxPoint[2])
+			{
+				App->scene->GenerateSceneFixedQuadTree(minPoint, maxPoint);
+			}
+			else
+			{
+				previousQuadTreeOption = 0;
+				quadTreeOption = 0;
+			}
+			break;
+		case 2:
+			App->scene->GenerateSceneAdaptiveQuadTree();
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+void ModuleImGui::ShowRaycastTestWindow(float mainmenuBarHeight, bool * pOpen)
+{
+	static float start[3];
+	static float end[3];
+
+	ImGui::Begin("Raycast testing", pOpen);
+
+	ImGui::Text("Line segment range:");
+	ImGui::InputFloat3("Start", start, 1);
+	ImGui::InputFloat3("End", end, 1);
+
+	if (ImGui::Button("Cast Ray") && (start[0] != end[0] || start[1] != end[1] || start[2] != end[2]))
+	{
+		float3 startPoint(start[0], start[1], start[2]);
+		float3 endPoint(end[0], end[1], end[2]);
+
+		App->scene->TestLineSegmentChecks(startPoint, endPoint);
+	}
+
+	ImGui::End();
 }

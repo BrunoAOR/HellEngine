@@ -1,3 +1,4 @@
+#include "Brofiler/include/Brofiler.h"
 #include "ImGui/imgui.h"
 #include "Application.h"
 #include "ComponentMaterial.h"
@@ -9,29 +10,51 @@
 #include "ModuleRender.h"
 #include "ModuleScene.h"
 #include "Shader.h"
+#include "VAOInfo.h"
 #include "globals.h"
 #include "openGL.h"
+
+uint ComponentMaterial::checkeredPatternBufferId = 0;
+uint ComponentMaterial::checkeredTextureCount = 0;
+std::vector<Shader*> ComponentMaterial::loadedShaders;
+std::map<Shader*, uint> ComponentMaterial::loadedShaderCount;
 
 ComponentMaterial::ComponentMaterial(GameObject* owner) : Component(owner)
 {
 	type = ComponentType::MATERIAL;
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
-	shader = new Shader();
-	checkeredPatternBufferId = CreateCheckeredTexture();
-	LOGGER("Component of type '%s'", GetString(type));
+	if (checkeredPatternBufferId == 0) {
+		checkeredPatternBufferId = CreateCheckeredTexture();
+		checkeredTextureCount++;
+	}
+
+	//LOGGER("Component of type '%s'", GetString(type));
 }
 
 ComponentMaterial::~ComponentMaterial()
 {
-	delete shader;
-	shader = nullptr;
+	if (loadedShaderCount.at(shader) == 1) {
+		delete shader;
+		loadedShaderCount.erase(shader);
+		shader = nullptr;
+	}
+	else {
+		loadedShaderCount.at(shader)--;
+	}
 
-	glDeleteTextures(1, &checkeredPatternBufferId);
-	checkeredPatternBufferId = 0;
-	glDeleteTextures(1, &textureBufferId);
+	if (textureBufferId == checkeredPatternBufferId)
+		checkeredTextureCount--;
+	else
+		glDeleteTextures(1, &textureBufferId);
+
 	textureBufferId = 0;
 
-	LOGGER("Deleting Component of type '%s'", GetString(type));
+	if (checkeredTextureCount == 0) {
+		glDeleteTextures(1, &checkeredPatternBufferId);
+		checkeredPatternBufferId = 0;
+	}
+
+	//LOGGER("Deleting Component of type '%s'", GetString(type));
 }
 
 void ComponentMaterial::Update()
@@ -41,7 +64,7 @@ void ComponentMaterial::Update()
 
 	ComponentMesh* mesh = (ComponentMesh*)gameObject->GetComponent(ComponentType::MESH);
 	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);;
-	
+
 	if (!isValid || !mesh || !transform)
 	{
 		return;
@@ -51,20 +74,35 @@ void ComponentMaterial::Update()
 
 	ComponentCamera* editorCamera = App->editorCamera->camera;
 	if (editorCamera != nullptr)
-		insideFrustum = transform->GetBoundingBox().Contains(editorCamera->GetFrustum());
-
+	{
+		if (App->scene->UsingQuadTree() && transform->GetIsStatic()) {
+			BROFILER_CATEGORY("Frustum culling using QuadTree", Profiler::Color::GreenYellow);
+			insideFrustum = editorCamera->IsInsideFrustum(gameObject);
+		}
+		else {
+			BROFILER_CATEGORY("Frustum culling without QuadTree", Profiler::Color::GreenYellow);
+			insideFrustum = transform->GetBoundingBox().Contains(editorCamera->GetFrustum());
+		}
+		BROFILER_CATEGORY("Frustum culling ended", Profiler::Color::Black);
+	}
 	if (insideFrustum) {
 
 		ComponentCamera* activeGameCamera = App->scene->GetActiveGameCamera();
 
 		if (activeGameCamera != nullptr && activeGameCamera->FrustumCulling())
 		{
-			insideFrustum = transform->GetBoundingBox().Contains(activeGameCamera->GetFrustum());
+			if (App->scene->UsingQuadTree() && transform->GetIsStatic()) {
+				insideFrustum = activeGameCamera->IsInsideFrustum(gameObject);
+			}
+			else {
+				insideFrustum = transform->GetBoundingBox().Contains(activeGameCamera->GetFrustum());
+			}
 		}
 		if (insideFrustum) {
 			float* modelMatrix = transform->GetModelMatrix();
+			float4x4 test = transform->GetModelMatrix4x4();
 
-			ComponentMesh::VaoInfo vaoInfo = mesh->GetActiveVao();
+			VaoInfo vaoInfo = mesh->GetActiveVao();
 			if (vaoInfo.vao == 0)
 			{
 				return;
@@ -139,13 +177,34 @@ bool ComponentMaterial::IsValid()
 /* Attemps to apply all of the material setup */
 bool ComponentMaterial::Apply()
 {
-	isValid = (LoadVertexShader()
-		&& LoadFragmentShader()
-		&& LoadShaderData()
-		&& LoadTexture()
-		&& shader->LinkShaderProgram()
-		&& GenerateUniforms());
+	Shader* s = ShaderAlreadyLinked();
 
+	if (s) {
+		shader = s;
+		loadedShaderCount.at(shader)++;
+		isValid = true;
+	}
+	else {
+		shader = new Shader();
+		isValid = (LoadVertexShader()
+			&& LoadFragmentShader()
+			&& shader->LinkShaderProgram()
+			&& GenerateUniforms());
+
+		if (isValid) {
+			loadedShaders.push_back(shader);
+			loadedShaderCount.insert(std::pair<Shader*, int>(shader, 1));
+			memset(vertexShaderPath, 0, sizeof(vertexShaderPath));
+			memset(fragmentShaderPath, 0, sizeof(fragmentShaderPath));
+		}
+		else
+			delete shader;
+	}
+
+	isValid &= LoadTexture()
+		&& LoadShaderData()
+		&& GenerateUniforms();
+	
 	return isValid;
 }
 
@@ -167,9 +226,9 @@ void ComponentMaterial::OnEditor()
 			return;
 
 		ImGui::Checkbox("Active", &isActive);
-		
+
 		OnEditorMaterialConfiguration();
-		
+
 		if (!isValid)
 		{
 			ImGui::Text("Invalid Material setup detected!");
@@ -195,7 +254,7 @@ void ComponentMaterial::OnEditorMaterialConfiguration()
 	{
 		if (ImGui::Button("Use defaults"))
 			SetDefaultMaterialConfiguration();
-		
+
 		ImGui::InputText("Vertex shader", vertexShaderPath, 256);
 		ImGui::InputText("Fragment shader", fragmentShaderPath, 256);
 		ImGui::InputText("Shader data", shaderDataPath, 256);
@@ -326,29 +385,15 @@ void ComponentMaterial::OnEditorShaderOptions()
 	}
 }
 
-/* Draws a certain model using the Material's shader and texture */
-bool ComponentMaterial::DrawArray(float* modelMatrix, uint vao, uint vertexCount)
+Shader * ComponentMaterial::ShaderAlreadyLinked()
 {
-	if (!IsValid())
-		return false;
+	Shader* s = nullptr;
+	for (std::vector<Shader*>::iterator it = loadedShaders.begin(); it != loadedShaders.end() && s == nullptr; ++it) {
+		if ((strcmp(vertexShaderPath, (*it)->vertexPath) == 0) && (strcmp(fragmentShaderPath, (*it)->fragmentPath) == 0))
+			s = *it;
+	}
 
-	shader->Activate();
-
-	glUniformMatrix4fv(privateUniforms["model_matrix"], 1, GL_FALSE, modelMatrix);
-	glUniformMatrix4fv(privateUniforms["view"], 1, GL_FALSE, App->editorCamera->camera->GetViewMatrix());
-	glUniformMatrix4fv(privateUniforms["projection"], 1, GL_FALSE, App->editorCamera->camera->GetProjectionMatrix());
-	UpdatePublicUniforms();
-
-	glBindTexture(GL_TEXTURE_2D, textureBufferId);
-
-	glBindVertexArray(vao);
-	glDrawArrays(GL_TRIANGLES, 0, vertexCount);
-	glBindVertexArray(GL_NONE);
-
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	shader->Deactivate();
-	return true;
+	return s;
 }
 
 bool ComponentMaterial::DrawElements(float * modelMatrix, uint vao, uint vertexCount, int indexesType)
@@ -357,7 +402,7 @@ bool ComponentMaterial::DrawElements(float * modelMatrix, uint vao, uint vertexC
 		return false;
 
 	shader->Activate();
-	
+
 	glUniformMatrix4fv(privateUniforms["model_matrix"], 1, GL_FALSE, modelMatrix);
 	glUniformMatrix4fv(privateUniforms["view"], 1, GL_FALSE, App->editorCamera->camera->GetViewMatrix());
 	glUniformMatrix4fv(privateUniforms["projection"], 1, GL_FALSE, App->editorCamera->camera->GetProjectionMatrix());
@@ -483,6 +528,8 @@ bool ComponentMaterial::LoadVertexShader()
 	if (!LoadTextFile(vertexShaderPath, vertexString))
 		return false;
 
+	strncpy_s(shader->vertexPath, sizeof(shader->vertexPath), vertexShaderPath, sizeof(vertexShaderPath));
+
 	if (!shader->CompileVertexShader(vertexString.c_str()))
 		return false;
 
@@ -494,6 +541,8 @@ bool ComponentMaterial::LoadFragmentShader()
 	std::string fragmentString;
 	if (!LoadTextFile(fragmentShaderPath, fragmentString))
 		return false;
+	
+	strncpy_s(shader->fragmentPath, sizeof(shader->fragmentPath), fragmentShaderPath, sizeof(fragmentShaderPath));
 
 	if (!shader->CompileFragmentShader(fragmentString.c_str()))
 		return false;
@@ -524,6 +573,7 @@ bool ComponentMaterial::LoadTexture()
 	{
 		textureBufferId = checkeredPatternBufferId;
 		textureInfo.Zero();
+		checkeredTextureCount++;
 	}
 	else
 		textureBufferId = App->renderer->LoadImageWithDevIL(texturePath, &textureInfo);

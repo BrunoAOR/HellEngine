@@ -82,6 +82,8 @@ public:
 	/* Returns the maximum number of times that this particular Type of Component can be added to a GameObject */
 	virtual int MaxCountInGameObject() override;
 
+	bool IsInsideFrustum(GameObject* go);
+
 public:
 
 	bool isActiveCamera;
@@ -102,6 +104,7 @@ private:
 	float nearClippingPlane;
 	float farClippingPlane;
 	bool frustumCulling;
+	std::vector<GameObject*> insideFrustum;
 };
 
 #endif
