@@ -1,6 +1,8 @@
 #include <math.h>
 #include "MathGeoLib/src/Math/Quat.h"
+#include "MathGeoLib\src\Geometry\LineSegment.h"
 #include "SDL/include/SDL_mouse.h"
+#include "ImGui\imgui.h"
 #include "Application.h"
 #include "ComponentType.h"
 #include "GameObject.h"
@@ -9,6 +11,7 @@
 #include "ModuleScene.h"
 #include "ModuleTime.h"
 #include "ModuleWindow.h"
+#include "physicsFunctions.h"
 #include "globals.h"
 
 
@@ -39,6 +42,7 @@ UpdateStatus ModuleEditorCamera::Update()
 {
 	HandleCameraMotion();
 	HandleCameraRotation();	
+	HandleCameraMousePicking();
 
 	return UpdateStatus::UPDATE_CONTINUE;
 }
@@ -213,6 +217,19 @@ void ModuleEditorCamera::HandleCameraRotation()
 	}
 }
 
+void ModuleEditorCamera::HandleCameraMousePicking()
+{
+	LineSegment lineSegmentFromMousePicking;
+	
+	if (!ImGui::IsMouseHoveringAnyWindow()) {
+		if (App->input->GetMouseButtonDown(SDL_BUTTON_LEFT) == KeyState::KEY_DOWN) {
+			lineSegmentFromMousePicking = GetRayFromMouse();
+			GameObject* collidedGO = CalculateRaycast(lineSegmentFromMousePicking);
+			LOGGER("The mouse ray collided with GameObject: %s", collidedGO ? collidedGO->name.c_str() : "none");
+		}
+	}
+}
+
 void ModuleEditorCamera::RotateYaw(int mouseMotionX)
 {
 	/* mouseMotionX is <0 when moving to the left and >0 when moving to the right */
@@ -248,4 +265,24 @@ void ModuleEditorCamera::DragCameraVerticalAxis(int direction, vec& frustumPos, 
 	frustumPos.x += camera->GetFront3().x * speed * App->time->DeltaTime() * direction;
 	frustumPos.y += camera->GetFront3().y * speed * App->time->DeltaTime() * direction;
 	frustumPos.z += camera->GetFront3().z * speed * App->time->DeltaTime() * direction;
+}
+
+
+LineSegment ModuleEditorCamera::GetRayFromMouse()
+{
+	LineSegment lineSegment;
+
+	float n = this->camera->GetNearPlaneDistance();
+	float f = this->camera->GetFarPlaneDistance();
+	float3 pos = this->camera->GetPosition3();
+
+	float2 windowsSize = float2(App->window->getWidth(), App->window->getHeight());
+	float2 mouseOnWindowCoordinates = float2(App->input->GetMousePosition().x, App->input->GetMousePosition().y);
+
+	float normalizedCoordinateX = -(1.0f - (float(mouseOnWindowCoordinates.x) * 2.0f) / windowsSize.x);
+	float normalizedCoordinateY = 1.0f - (float(mouseOnWindowCoordinates.y) * 2.0f) / windowsSize.y;
+
+	lineSegment = this->camera->GetFrustum().UnProjectLineSegment(normalizedCoordinateX, normalizedCoordinateY);
+
+	return lineSegment;
 }
