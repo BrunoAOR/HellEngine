@@ -268,14 +268,11 @@ float4x4& ComponentTransform::GetModelMatrix4x4()
 	worldModelMatrix = localModelMatrix;
 
 	GameObject* parent = gameObject->GetParent();
-	while (parent)
+	if (parent)
 	{
 		ComponentTransform* parentTransform = (ComponentTransform*)parent->GetComponent(ComponentType::TRANSFORM);
-		if (!parentTransform)
-			break;
-
-		worldModelMatrix = worldModelMatrix * parentTransform->GetModelMatrix4x4();
-		parent = parent->GetParent();
+		if (parentTransform)
+			worldModelMatrix = worldModelMatrix * parentTransform->GetModelMatrix4x4();
 	}
 
 	return worldModelMatrix;
