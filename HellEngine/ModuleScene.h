@@ -10,6 +10,7 @@
 #include "SpaceQuadTree.h"
 class ComponentCamera;
 class GameObject;
+class Model;
 
 class ModuleScene :
 	public Module
@@ -62,8 +63,9 @@ private:
 
 private:
 
-	ComponentCamera* activeGameCamera;
+	ComponentCamera* activeGameCamera = nullptr;
 	SpaceQuadTree  quadTree;
+	Model* houseModel = nullptr;
 
 };
 

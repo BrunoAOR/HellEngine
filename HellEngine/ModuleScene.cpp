@@ -4,6 +4,7 @@
 #include "ComponentCamera.h"
 #include "ComponentTransform.h"
 #include "ComponentType.h"
+#include "Model.h"
 #include "ModuleScene.h"
 #include "ModuleWindow.h"
 #include "GameObject.h"
@@ -21,12 +22,16 @@ ModuleScene::ModuleScene()
 
 ModuleScene::~ModuleScene() 
 {
+	delete houseModel;
+	houseModel = nullptr;
 }
 
 bool ModuleScene::Init()
 {
 	root = new GameObject("root", nullptr);
 	root->AddComponent(ComponentType::CAMERA);
+	houseModel = new Model();
+	houseModel->Load("assets/models/BakerHouse.fbx");
 	return true;
 }
 
@@ -49,6 +54,7 @@ UpdateStatus ModuleScene::Update()
 	{
 		quadTree.DrawTree();
 	}
+	houseModel->Draw();
 	root->Update();
 
 	return UpdateStatus::UPDATE_CONTINUE;
