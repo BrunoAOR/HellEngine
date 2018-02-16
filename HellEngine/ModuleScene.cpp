@@ -42,9 +42,9 @@ bool ModuleScene::CleanUp()
 #include "globals.h"
 UpdateStatus ModuleScene::Update()
 {
-	if (quadTree.GetType() != SpaceQuadTree::QuadTreeType::INVALID)
+	if (quadTree.GetType() != SpaceQuadTree::QuadTreeType::INVALID && DEBUG_MODE)
 	{
-		//quadTree.DrawTree(); activate with debug checkbox
+		quadTree.DrawTree(); 
 	}
 	BROFILER_CATEGORY("ModuleScene::Update", Profiler::Color::PapayaWhip);
 	root->Update();
