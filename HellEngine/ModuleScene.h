@@ -49,6 +49,8 @@ public:
 		GameObject* selectedGameObject = nullptr;
 	} editorInfo;
 
+	static uint gameObjectsCount;
+
 private:
 
 	void FindAllSceneStaticGameObjects(std::vector<GameObject*>& staticGameObjects, GameObject* go = nullptr);
@@ -59,7 +61,7 @@ private:
 
 	ComponentCamera* activeGameCamera;
 	SpaceQuadTree  quadTree;
-
+	
 };
 
 template<typename T>

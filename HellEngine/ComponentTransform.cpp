@@ -107,6 +107,11 @@ void ComponentTransform::Update()
 	}
 }
 
+bool ComponentTransform::Equals(ComponentTransform * t)
+{
+	return position.Equals(t->position) && scale.Equals(t->scale) && rotation.Equals(t->rotation);
+}
+
 bool ComponentTransform::GetIsStatic()
 {
 	return isStatic;

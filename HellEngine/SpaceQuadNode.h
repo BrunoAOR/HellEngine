@@ -53,18 +53,9 @@ inline void SpaceQuadNode::CollectIntersections(std::vector<GameObject*>& inters
 		stack.pop();
 
 		++checksPerformed;
-		BROFILER_CATEGORY("QuadNode::Intersects", Profiler::Color::Green);
 		if (primitive.Intersects(node->aabb))
 		{
-			/*
-			for (std::vector<ComponentTransform*>::iterator it = node->containedTransforms.begin(); it != node->containedTransforms.end(); ++it)
-			{
-				++checksPerformed;
-				if (primitive.Intersects((*it)->GetBoundingBox()))
-					intersectedGameObjects.push_back((*it)->gameObject);
-			}
-			*/
-			for (int i = 0; i < node->containedTransforms.size(); i++) {
+			for (uint i = 0; i < node->containedTransforms.size(); i++) {
 				++checksPerformed;
 				if (primitive.Intersects(node->containedTransforms.at(i)->GetBoundingBox()))
 					intersectedGameObjects.push_back(node->containedTransforms.at(i)->gameObject);

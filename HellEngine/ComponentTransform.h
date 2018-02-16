@@ -17,6 +17,8 @@ public:
 
 	virtual void Update();
 
+	bool Equals(ComponentTransform* t);
+
 	float3 GetPosition();
 	float3 GetScale();
 	float3 GetRotationRad();
