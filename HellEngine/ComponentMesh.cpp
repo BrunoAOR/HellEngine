@@ -42,6 +42,7 @@ bool ComponentMesh::SetActiveVao(uint index)
 
 	activeVao = index;
 	UpdateBoundingBox();
+	activeVaoChanged = true;
 	return true;
 }
 

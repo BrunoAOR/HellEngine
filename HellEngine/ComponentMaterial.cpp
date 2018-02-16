@@ -10,7 +10,6 @@
 #include "ModuleRender.h"
 #include "ModuleScene.h"
 #include "Shader.h"
-#include "VAOInfo.h"
 #include "globals.h"
 #include "openGL.h"
 
@@ -103,7 +102,11 @@ void ComponentMaterial::Update()
 			float* modelMatrix = transform->GetModelMatrix();
 
 			BROFILER_CATEGORY("ComponentMaterial::GetVao", Profiler::Color::Gold);
-			VaoInfo vaoInfo = mesh->GetActiveVao();
+			if (mesh->activeVaoChanged) {
+				vaoInfo = mesh->GetActiveVao();
+				mesh->activeVaoChanged = false;
+			}
+			BROFILER_CATEGORY("ComponentMaterial::ValidVao", Profiler::Color::Gold);
 			if (vaoInfo.vao == 0)
 			{
 				return;
@@ -209,7 +212,7 @@ bool ComponentMaterial::Apply()
 	isValid &= LoadTexture()
 		&& LoadShaderData()
 		&& GenerateUniforms();
-	
+
 	return isValid;
 }
 
@@ -546,7 +549,7 @@ bool ComponentMaterial::LoadFragmentShader()
 	std::string fragmentString;
 	if (!LoadTextFile(fragmentShaderPath, fragmentString))
 		return false;
-	
+
 	strncpy_s(shader->fragmentPath, sizeof(shader->fragmentPath), fragmentShaderPath, sizeof(fragmentShaderPath));
 
 	if (!shader->CompileFragmentShader(fragmentString.c_str()))
