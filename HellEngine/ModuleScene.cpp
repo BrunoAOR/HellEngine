@@ -12,6 +12,8 @@
 #include "ComponentMesh.h"
 #include "ComponentMaterial.h"
 
+uint ModuleScene::gameObjectsCount = 0;
+
 ModuleScene::ModuleScene() 
 {
 }
@@ -48,6 +50,7 @@ UpdateStatus ModuleScene::Update()
 	}
 	BROFILER_CATEGORY("ModuleScene::Update", Profiler::Color::PapayaWhip);
 	root->Update();
+	BROFILER_CATEGORY("ModuleScene::UpdateEnd", Profiler::Color::PapayaWhip);
 
 	return UpdateStatus::UPDATE_CONTINUE;
 }
@@ -189,6 +192,7 @@ void ModuleScene::QuadTreeFrustumCulling(std::vector<GameObject*>& insideFrustum
 {
 	if (quadTree.GetType() != SpaceQuadTree::QuadTreeType::INVALID)
 	{
+		BROFILER_CATEGORY("QuadTreeCulling", Profiler::Color::RosyBrown);
 		//LOGGER("");
 		quadTree.Intersects(insideFrustum, frustum);
 		//LOGGER("QuadTree found %i intersection", insideFrustum.size());

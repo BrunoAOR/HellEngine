@@ -27,6 +27,8 @@ GameObject::GameObject(const char* name, GameObject* parentGameObject) : name(na
 		if (parentGameObject != nullptr && parentGameObject != App->scene->root)
 			SetParent(parentGameObject);
 	}
+
+	App->scene->gameObjectsCount++;
 }
 
 GameObject::~GameObject()
@@ -43,6 +45,8 @@ GameObject::~GameObject()
 		delete child;
 	}
 	children.clear();
+
+	App->scene->gameObjectsCount--;
 	//LOGGER("Deleted GameObject '%s'", name.c_str());
 }
 
@@ -63,11 +67,13 @@ void GameObject::Update()
 		go = stack.top();
 		stack.pop();
 
+		BROFILER_CATEGORY("ModuleScene::ComponentsUpdate", Profiler::Color::PapayaWhip);
 		for (Component* component : go->components)
 		{
 			component->Update();
 		}
 
+		BROFILER_CATEGORY("ModuleScene::PostComponentUpdate", Profiler::Color::PapayaWhip);
 		children = go->GetChildren();
 
 		for (int i = children.size(); i > 0; i--)
