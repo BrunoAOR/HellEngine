@@ -229,12 +229,9 @@ void ModuleEditorCamera::RotateYaw(int mouseMotionX)
 {
 	/* mouseMotionX is <0 when moving to the left and >0 when moving to the right */
 	Quat rotation = Quat::FromEulerXYZ(0, -DegToRad(rotationSpeed * mouseMotionX) * App->time->DeltaTime(), 0);
-	float3 rot = rotation.Transform(camera->GetFront3());
-	BROFILER_CATEGORY("ModuleCamera::SetFront", Profiler::Color::Black);
-	camera->SetFront(rot.x, rot.y, rot.z);
-	rot = rotation.Transform(camera->GetUp3());
-	BROFILER_CATEGORY("ModuleCamera::SetUp", Profiler::Color::Black);
-	camera->SetUp(rot.x, rot.y, rot.z);
+	float3 newFront = rotation.Transform(camera->GetFront3());
+	float3 newUp = rotation.Transform(camera->GetUp3());
+	camera->SetFrontAndUp(newFront.x, newFront.y, newFront.z, newUp.x, newUp.y, newUp.z);
 }
 
 void ModuleEditorCamera::RotatePitch(int mouseMotionY)
@@ -242,13 +239,9 @@ void ModuleEditorCamera::RotatePitch(int mouseMotionY)
 	/* mouseMotionY is <0 when moving up and >0 when moving down */
 	Quat rotation = Quat::RotateAxisAngle(camera->GetRight3(), -DegToRad(rotationSpeed * mouseMotionY) * App->time->DeltaTime());
 	vec newUp = rotation.Transform(camera->GetUp3());
-	if (newUp.y >= 0)
-	{
-		float3 rot = rotation.Transform(camera->GetFront3());
-		BROFILER_CATEGORY("ModuleCamera::SetFront", Profiler::Color::Black);
-		camera->SetFront(rot.x, rot.y, rot.z);
-		BROFILER_CATEGORY("ModuleCamera::SetUp", Profiler::Color::Black);
-		camera->SetUp(newUp.x, newUp.y, newUp.z);
+	if (newUp.y >= 0)	{
+		float3 newFront = rotation.Transform(camera->GetFront3());
+		camera->SetFrontAndUp(newFront.x, newFront.y, newFront.z, newUp.x, newUp.y, newUp.z);
 	}
 }
 

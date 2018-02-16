@@ -230,10 +230,7 @@ void ComponentCamera::SetFront(float x, float y, float z)
 	vec front(x, y, z);
 	front.Normalize();
 	Quat rot = Quat::RotateFromTo(frustum.Front(), front);
-	vec up = frustum.Up();
-	rot.Transform(up);
-	BROFILER_CATEGORY("ModuleCamera::FrontUp", Profiler::Color::Black);
-	frustum.SetFrontAndUp(front, up);
+	frustum.SetFront(front);
 }
 
 const float * ComponentCamera::GetUp() const
@@ -254,9 +251,20 @@ void ComponentCamera::SetUp(float x, float y, float z)
 	vec up(x, y, z);
 	up.Normalize();
 	Quat rot = Quat::RotateFromTo(frustum.Up(), up);
-	vec front = frustum.Front();
-	rot.Transform(front);
-	BROFILER_CATEGORY("ModuleCamera::FrontUp", Profiler::Color::Black);
+	frustum.SetUp(up);
+}
+
+void ComponentCamera::SetFrontAndUp(float fx, float fy, float fz, float ux, float uy, float uz)
+{
+	if ((fx == 0 && fy == 0 && fz == 0) && (ux == 0 && uy == 0 && uz == 0))
+		return;
+
+	vec front(fx, fy, fz);
+	vec up(ux, uy, uz);
+	front.Normalize();
+	up.Normalize();
+	Quat rotF = Quat::RotateFromTo(frustum.Front(), front);
+	Quat rotU = Quat::RotateFromTo(frustum.Up(), up);
 	frustum.SetFrontAndUp(front, up);
 }
 

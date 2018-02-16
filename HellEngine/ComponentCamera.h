@@ -66,6 +66,8 @@ public:
 
 	void SetUp(float x, float y, float z);
 
+	void SetFrontAndUp(float fx, float fy, float fz, float ux, float uy, float uz);
+
 	const float3 GetRight3() const;
 
 	const Color GetBackground() const;
