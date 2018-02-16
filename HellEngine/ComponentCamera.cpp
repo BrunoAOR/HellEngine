@@ -64,8 +64,7 @@ void ComponentCamera::Update()
 		Quat rot = Quat::FromEulerXYZ(rot3.x, rot3.y, rot3.z);
 		float3 newFront = rot.Transform(vec(0, 0, 1));
 		float3 newUp = rot.Transform(vec(0, 1, 0));
-		SetFront(newFront.x, newFront.y, newFront.z);
-		SetUp(newUp.x, newUp.y, newUp.z);
+		SetFrontAndUp(newFront.x, newFront.y, newFront.z, newUp.x, newUp.y, newUp.z);
 
 		if (DEBUG_MODE) {
 			float xTan = tanf(GetHorizontalFOVrad() / 2);

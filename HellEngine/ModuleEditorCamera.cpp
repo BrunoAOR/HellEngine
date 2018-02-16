@@ -61,6 +61,7 @@ void ModuleEditorCamera::HandleCameraMotion()
 {
 	BROFILER_CATEGORY("ModuleCamera::Motion", Profiler::Color::Black);
 	vec pos = camera->GetPosition3();
+	vec initialPos = pos;
 	int moveFactor = App->input->GetKey(SDL_SCANCODE_LSHIFT) == KeyState::KEY_REPEAT ? 3 : 1;
 
 	/* Handling Keyboard (Arrows) */
@@ -186,7 +187,8 @@ void ModuleEditorCamera::HandleCameraMotion()
 		DragCameraVerticalAxis(App->input->GetMouseWheel().y, pos, 5 * zoomSpeed);
 	}	
 
-	camera->SetPosition(pos.x, pos.y, pos.z);
+	if (!initialPos.Equals(pos))
+		camera->SetPosition(pos.x, pos.y, pos.z);
 }
 
 void ModuleEditorCamera::HandleCameraRotation()
