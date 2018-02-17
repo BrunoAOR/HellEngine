@@ -22,7 +22,6 @@ ComponentMesh::ComponentMesh(GameObject* owner) : Component(owner)
 		CreateSphereVAO(32, 32);
 	}
 	++meshesCount;
-	activeVao = 0;
 	UpdateBoundingBox();
 	//LOGGER("Component of type '%s'", GetString(type));
 }
@@ -43,9 +42,12 @@ ComponentMesh::~ComponentMesh()
 	}
 }
 
-const VaoInfo& ComponentMesh::GetActiveVao() const
+const VaoInfo* ComponentMesh::GetActiveVao() const
 {
-	return vaoInfos[activeVao];
+	if (activeVao == -1)
+		return nullptr;
+	
+	return &vaoInfos[activeVao];
 }
 
 bool ComponentMesh::SetActiveVao(uint index)

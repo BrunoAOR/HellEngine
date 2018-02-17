@@ -8,11 +8,11 @@
 #include "TextureConfiguration.h"
 #include "TextureInfo.h"
 #include "globals.h"
-#include "VAOInfo.h"
 
 class ComponentMesh;
 class ComponentTransform;
 class Shader;
+struct VaoInfo;
 
 class ComponentMaterial :
 	public Component
@@ -108,7 +108,7 @@ private:
 	static std::vector<Shader*> loadedShaders;
 	static std::map<Shader*, uint> loadedShaderCount;
 
-	VaoInfo vaoInfo;
+	const VaoInfo* vaoInfo;
 };
 
 #endif // !__H_COMPONENT_MATERIAL__

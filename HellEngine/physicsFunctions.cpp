@@ -88,9 +88,9 @@ GameObject* CalculateCollisionsWithGameObjects(const std::vector<GameObject*>& g
 			localLineSegment.Transform(inverseModelMatrix);
 
 			/* Get vertices and indices */
-			const VaoInfo& vaoInfo = mesh->GetActiveVao();
-			const std::vector<float3>& vertices = vaoInfo.vertices;
-			const std::vector<uint>& indices = vaoInfo.indices;
+			const VaoInfo* vaoInfo = mesh->GetActiveVao();
+			const std::vector<float3>& vertices = vaoInfo->vertices;
+			const std::vector<uint>& indices = vaoInfo->indices;
 			assert(indices.size() % 3 == 0);
 
 			/* Iterate through triangles looking for the closest hit */

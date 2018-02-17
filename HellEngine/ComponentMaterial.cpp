@@ -10,6 +10,7 @@
 #include "ModuleRender.h"
 #include "ModuleScene.h"
 #include "Shader.h"
+#include "VAOInfo.h"
 #include "globals.h"
 #include "openGL.h"
 
@@ -107,13 +108,13 @@ void ComponentMaterial::Update()
 				mesh->activeVaoChanged = false;
 			}
 			BROFILER_CATEGORY("ComponentMaterial::ValidVao", Profiler::Color::Gold);
-			if (vaoInfo.vao == 0)
+			if (!vaoInfo || vaoInfo->vao == 0)
 			{
 				return;
 			}
 
 			BROFILER_CATEGORY("ComponentMaterial::DrawingCall", Profiler::Color::Gold);
-			DrawElements(modelMatrix, vaoInfo.vao, vaoInfo.elementsCount);
+			DrawElements(modelMatrix, vaoInfo->vao, vaoInfo->elementsCount);
 		}
 	}
 }

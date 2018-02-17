@@ -17,8 +17,8 @@ public:
 	ComponentMesh(GameObject* owner);
 	virtual ~ComponentMesh() override;
 
-	const VaoInfo& GetActiveVao() const;
 	bool SetActiveVao(uint index);
+	const VaoInfo* GetActiveVao() const;
 
 	virtual void OnEditor() override;
 
