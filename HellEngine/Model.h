@@ -2,7 +2,7 @@
 #define __H_MODEL__
 
 #include <vector>
-#include "VaoInfo.h"
+#include "ModelInfo.h"
 class Shader;
 struct aiScene;
 
@@ -25,7 +25,7 @@ private:
 
 private:
 
-	std::vector<VaoInfo> vaoInfos;
+	ModelInfo modelInfo;
 	const aiScene* assimpScene = nullptr;
 	unsigned int* textureBufferIds = nullptr;
 	unsigned int numTextureBufferIds = 0;
