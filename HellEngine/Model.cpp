@@ -77,6 +77,7 @@ void Model::Clear()
 	{
 		for (unsigned int i = 0; i < numVaoInfos; ++i)
 		{
+			glDeleteVertexArrays(1, &vaoInfos[i].vao);
 			glDeleteBuffers(1, &vaoInfos[i].vbo);
 			glDeleteBuffers(1, &vaoInfos[i].ebo);
 		}
@@ -106,28 +107,9 @@ void Model::DrawMesh(unsigned int meshIndex) const
 	VaoInfo& vaoInfo = vaoInfos[meshIndex];
 
 	glBindTexture(GL_TEXTURE_2D, textureBufferIds[vaoInfo.textureID]);
-	glBindBuffer(GL_ARRAY_BUFFER, vaoInfo.vbo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vaoInfo.ebo);
-
-	/* vertex */
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
-	/* normal */
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-	/* uvCoord */
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
-
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
-	
+	glBindVertexArray(vaoInfo.vao);
 	glDrawElements(GL_TRIANGLES, vaoInfo.indices.size(), GL_UNSIGNED_INT, nullptr);
-	
-	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(2);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
-	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+	glBindVertexArray(GL_NONE);
 	glBindTexture(GL_TEXTURE_2D, GL_NONE);
 }
 
@@ -215,14 +197,29 @@ void Model::CreateVaoInfo()
 		}
 
 		/* Transfer data from temporary buffers to VRAM */
+		glGenVertexArrays(1, &vaoInfo.vao);
 		glGenBuffers(1, &vaoInfo.vbo);
 		glGenBuffers(1, &vaoInfo.ebo);
+
+		glBindVertexArray(vaoInfo.vao);
 		glBindBuffer(GL_ARRAY_BUFFER, vaoInfo.vbo);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * allDataSize, allData, GL_STATIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+		/* vertex */
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
+		/* normal */
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+		/* uvCoord */
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
+		glBindBuffer(GL_ARRAY_BUFFER, GL_NONE); /* Can be unbound before unbinding the VAO, because the glVertexAttribPointer preserves the VBO to VAO conection */
+
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vaoInfo.ebo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indexesSize, indexes, GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
+
+		glBindVertexArray(GL_NONE);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE); /* Must be unbound AFTER unbinding the VAO */
 
 		/* Delete temporary data buffers */
 		delete[] allData;
