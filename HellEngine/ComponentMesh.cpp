@@ -50,9 +50,9 @@ const VaoInfo* ComponentMesh::GetActiveVao() const
 	return &vaoInfos[activeVao];
 }
 
-bool ComponentMesh::SetActiveVao(uint index)
+bool ComponentMesh::SetActiveVao(int index)
 {
-	if (index >= vaoInfos.size())
+	if (index < -1 || index >= (int)vaoInfos.size())
 		return false;
 
 	activeVao = index;
@@ -64,11 +64,14 @@ bool ComponentMesh::SetActiveVao(uint index)
 void ComponentMesh::OnEditor()
 {
 	static bool optionsCreated = false;
+	static int selectedMeshOption = 0;
 	static std::string options = "";
 
 	if (!optionsCreated)
 	{
 		optionsCreated = true;
+		options += "None";
+		options += '\0';
 		for (const VaoInfo& vaoInfo : vaoInfos)
 		{
 			options += vaoInfo.name;
@@ -82,7 +85,9 @@ void ComponentMesh::OnEditor()
 		if (OnEditorDeleteComponent())
 			return;
 
-		ImGui::Combo("Selected Mesh", &activeVao, options.c_str());
+		selectedMeshOption = activeVao + 1;
+		if (ImGui::Combo("Selected Mesh", &selectedMeshOption, options.c_str()))
+			SetActiveVao(selectedMeshOption - 1);
 	}
 }
 
