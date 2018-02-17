@@ -315,9 +315,6 @@
     <ClInclude Include="SpaceOctTree.h">
       <Filter>Scene Management</Filter>
     </ClInclude>
-    <ClInclude Include="VAOInfo.h">
-      <Filter>General</Filter>
-    </ClInclude>
     <ClInclude Include="ModuleDebugDraw.h">
       <Filter>Engine Modules</Filter>
     </ClInclude>
@@ -325,6 +322,9 @@
       <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="Model.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="VaoInfo.h">
       <Filter>General</Filter>
     </ClInclude>
   </ItemGroup>
