@@ -98,6 +98,7 @@
     <ClInclude Include="MathGeoLib\src\Math\TransformOps.h" />
     <ClInclude Include="MathGeoLib\src\Time\Clock.h" />
     <ClInclude Include="memLeaks.h" />
+    <ClInclude Include="ModelInfo.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="Module.h" />
     <ClInclude Include="ModuleAudio.h" />

@@ -513,7 +513,7 @@ GameObject* GameObject::AddCubeChild()
 	GameObject* go = new GameObject("Cube", this);
 	go->AddComponent(ComponentType::TRANSFORM);
 	ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
-	mesh->SetActiveVao(0);
+	mesh->SetActiveModelInfo(0);
 	ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
 	mat->SetDefaultMaterialConfiguration();
 	mat->Apply();
@@ -525,7 +525,7 @@ GameObject* GameObject::AddSphereChild()
 	GameObject* go = new GameObject("Sphere", this);
 	go->AddComponent(ComponentType::TRANSFORM);
 	ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
-	mesh->SetActiveVao(1);
+	mesh->SetActiveModelInfo(1);
 	ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
 	mat->SetDefaultMaterialConfiguration();
 	mat->Apply();

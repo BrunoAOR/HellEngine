@@ -73,17 +73,15 @@ void Model::Clear()
 		textureBufferIds = nullptr;
 		numTextureBufferIds = 0;
 	}
-	if (numVaoInfos)
+	if (vaoInfos.size() > 0)
 	{
-		for (unsigned int i = 0; i < numVaoInfos; ++i)
+		for (VaoInfo& vaoInfo : vaoInfos)
 		{
-			glDeleteVertexArrays(1, &vaoInfos[i].vao);
-			glDeleteBuffers(1, &vaoInfos[i].vbo);
-			glDeleteBuffers(1, &vaoInfos[i].ebo);
+			glDeleteVertexArrays(1, &vaoInfo.vao);
+			glDeleteBuffers(1, &vaoInfo.vbo);
+			glDeleteBuffers(1, &vaoInfo.ebo);
 		}
-		delete[] vaoInfos;
-		vaoInfos = nullptr;
-		numVaoInfos = 0;
+		vaoInfos.clear();
 	}
 }
 
@@ -104,7 +102,7 @@ void Model::Draw() const
 
 void Model::DrawMesh(unsigned int meshIndex) const
 {
-	VaoInfo& vaoInfo = vaoInfos[meshIndex];
+	const VaoInfo& vaoInfo = vaoInfos[meshIndex];
 
 	glBindTexture(GL_TEXTURE_2D, textureBufferIds[vaoInfo.textureID]);
 	glBindVertexArray(vaoInfo.vao);
@@ -136,14 +134,14 @@ void Model::CreateTextureBuffers(const char* modelPath)
 
 void Model::CreateVaoInfo()
 {
-	numVaoInfos = assimpScene->mNumMeshes;
-	vaoInfos = new VaoInfo[numVaoInfos];
+	int numVaoInfos = assimpScene->mNumMeshes;
+	vaoInfos.reserve(numVaoInfos);
 	for (unsigned int m = 0; m < assimpScene->mNumMeshes; ++m)
 	{
 		const aiMesh* assimpMesh = assimpScene->mMeshes[m];
 		unsigned int materialIndex = assimpMesh->mMaterialIndex;
 
-		VaoInfo& vaoInfo = vaoInfos[m];
+		VaoInfo vaoInfo;
 		vaoInfo.textureID = materialIndex;
 
 		/* Create temporary data buffers */
@@ -220,6 +218,10 @@ void Model::CreateVaoInfo()
 
 		glBindVertexArray(GL_NONE);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE); /* Must be unbound AFTER unbinding the VAO */
+
+
+		/* Store the generated vaoInfo into the vaoInfos vector */
+		vaoInfos.push_back(vaoInfo);
 
 		/* Delete temporary data buffers */
 		delete[] allData;

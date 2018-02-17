@@ -1,9 +1,10 @@
 #ifndef __H_MODEL__
 #define __H_MODEL__
 
+#include <vector>
+#include "VaoInfo.h"
 class Shader;
 struct aiScene;
-struct VaoInfo;
 
 class Model
 {
@@ -24,8 +25,7 @@ private:
 
 private:
 
-	VaoInfo* vaoInfos;
-	unsigned int numVaoInfos;
+	std::vector<VaoInfo> vaoInfos;
 	const aiScene* assimpScene = nullptr;
 	unsigned int* textureBufferIds = nullptr;
 	unsigned int numTextureBufferIds = 0;

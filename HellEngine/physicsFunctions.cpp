@@ -4,8 +4,10 @@
 #include "GameObject.h"
 #include "ComponentMesh.h"
 #include "ComponentTransform.h"
+#include "ModelInfo.h"
 #include "ModuleRender.h"
 #include "ModuleScene.h"
+#include "VaoInfo.h"
 #include "physicsFunctions.h"
 
 struct GameObjectDistanceInfo {
@@ -87,27 +89,32 @@ GameObject* CalculateCollisionsWithGameObjects(const std::vector<GameObject*>& g
 			inverseModelMatrix.Inverse();
 			localLineSegment.Transform(inverseModelMatrix);
 
-			/* Get vertices and indices */
-			const VaoInfo* vaoInfo = mesh->GetActiveVao();
-			const std::vector<float3>& vertices = vaoInfo->vertices;
-			const std::vector<uint>& indices = vaoInfo->indices;
-			assert(indices.size() % 3 == 0);
-
-			/* Iterate through triangles looking for the closest hit */
+			/* Get the modelInfo */
+			const ModelInfo* modelInfo = mesh->GetActiveModelInfo();
 			bool triangleHit = false;
-			for (unsigned int idx = 0; idx < indices.size(); idx += 3)
+
+			for (const VaoInfo& vaoInfo : modelInfo->vaoInfos)
 			{
-				Triangle triangle(vertices[indices[idx]], vertices[indices[idx + 1]], vertices[indices[idx + 2]]);
-				
-				/* Discard triangle if back face culling is active and the triangle is back facing */
-				if (!backfaceCulling || Dot(triangle.NormalCCW(), lineSegment.b - lineSegment.a) < 0)
+				/* Get vertices and indices */
+				const std::vector<float3>& vertices = vaoInfo.vertices;
+				const std::vector<uint>& indices = vaoInfo.indices;
+				assert(indices.size() % 3 == 0);
+
+				/* Iterate through triangles looking for the closest hit */
+				for (unsigned int idx = 0; idx < indices.size(); idx += 3)
 				{
-					float hitDistance = 0;
-					if (localLineSegment.Intersects(triangle, &hitDistance, nullptr) && hitDistance < closestHitGameObject.hitDistance)
+					Triangle triangle(vertices[indices[idx]], vertices[indices[idx + 1]], vertices[indices[idx + 2]]);
+
+					/* Discard triangle if back face culling is active and the triangle is back facing */
+					if (!backfaceCulling || Dot(triangle.NormalCCW(), lineSegment.b - lineSegment.a) < 0)
 					{
-						triangleHit = true;
-						closestHitGameObject.triangle = triangle;
-						closestHitGameObject.hitDistance = hitDistance;
+						float hitDistance = 0;
+						if (localLineSegment.Intersects(triangle, &hitDistance, nullptr) && hitDistance < closestHitGameObject.hitDistance)
+						{
+							triangleHit = true;
+							closestHitGameObject.triangle = triangle;
+							closestHitGameObject.hitDistance = hitDistance;
+						}
 					}
 				}
 			}

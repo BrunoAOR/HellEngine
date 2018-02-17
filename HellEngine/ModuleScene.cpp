@@ -172,7 +172,7 @@ void ModuleScene::TestCollisionChecks(float3 aabbMinPoint, float3 aabbMaxPoint, 
 		transform->SetPosition(x, y, z);
 		transform->SetIsStatic(true);
 		ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
-		mesh->SetActiveVao(1);
+		mesh->SetActiveModelInfo(1);
 		ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
 		mat->SetDefaultMaterialConfiguration();
 		mat->Apply();

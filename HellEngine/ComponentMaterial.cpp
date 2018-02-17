@@ -10,6 +10,7 @@
 #include "ModuleRender.h"
 #include "ModuleScene.h"
 #include "Shader.h"
+#include "ModelInfo.h"
 #include "VAOInfo.h"
 #include "globals.h"
 #include "openGL.h"
@@ -102,17 +103,17 @@ void ComponentMaterial::Update()
 
 			BROFILER_CATEGORY("ComponentMaterial::GetVao", Profiler::Color::Gold);
 			if (mesh->activeVaoChanged) {
-				vaoInfo = mesh->GetActiveVao();
+				modelInfo = mesh->GetActiveModelInfo();
 				mesh->activeVaoChanged = false;
 			}
 			BROFILER_CATEGORY("ComponentMaterial::ValidVao", Profiler::Color::Gold);
-			if (!vaoInfo || vaoInfo->vao == 0)
+			if (!modelInfo || modelInfo->vaoInfos.size() == 0)
 			{
 				return;
 			}
 
 			BROFILER_CATEGORY("ComponentMaterial::DrawingCall", Profiler::Color::Gold);
-			DrawElements(modelMatrix, vaoInfo->vao, vaoInfo->elementsCount);
+			DrawElements(modelMatrix, modelInfo);
 		}
 	}
 }
@@ -406,9 +407,9 @@ Shader * ComponentMaterial::ShaderAlreadyLinked()
 	return s;
 }
 
-bool ComponentMaterial::DrawElements(float * modelMatrix, uint vao, uint vertexCount)
+bool ComponentMaterial::DrawElements(float * modelMatrix, const ModelInfo* modelInfo)
 {
-	if (!IsValid())
+	if (!IsValid() || modelInfo == nullptr)
 		return false;
 
 	shader->Activate();
@@ -420,9 +421,12 @@ bool ComponentMaterial::DrawElements(float * modelMatrix, uint vao, uint vertexC
 
 	glBindTexture(GL_TEXTURE_2D, textureBufferId);
 
-	glBindVertexArray(vao);
-	glDrawElements(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, nullptr);
-	glBindVertexArray(GL_NONE);
+	for (const VaoInfo& vaoInfo : modelInfo->vaoInfos)
+	{
+		glBindVertexArray(vaoInfo.vao);
+		glDrawElements(GL_TRIANGLES, vaoInfo.elementsCount, GL_UNSIGNED_INT, nullptr);
+		glBindVertexArray(GL_NONE);
+	}
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 

@@ -327,6 +327,9 @@
     <ClInclude Include="VaoInfo.h">
       <Filter>General</Filter>
     </ClInclude>
+    <ClInclude Include="ModelInfo.h">
+      <Filter>General</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">

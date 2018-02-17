@@ -7,6 +7,7 @@
 #include "VAOInfo.h"
 #include "MathGeoLib\src\Math\float3.h"
 
+struct ModelInfo;
 typedef float GLfloat;
 
 class ComponentMesh :
@@ -17,8 +18,8 @@ public:
 	ComponentMesh(GameObject* owner);
 	virtual ~ComponentMesh() override;
 
-	const VaoInfo* GetActiveVao() const;
-	bool SetActiveVao(int index);
+	const ModelInfo* GetActiveModelInfo() const;
+	bool SetActiveModelInfo(int index);
 
 	virtual void OnEditor() override;
 
@@ -39,7 +40,7 @@ private:
 private:
 
 	static uint meshesCount;
-	static std::vector<VaoInfo> vaoInfos;
+	static std::vector<ModelInfo> defaultModelInfos;
 	int activeVao = -1;
 
 };
