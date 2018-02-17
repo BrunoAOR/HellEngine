@@ -15,6 +15,8 @@
 #include "MathGeoLib/src/Geometry/LineSegment.h"
 #include "physicsFunctions.h"
 
+uint ModuleScene::gameObjectsCount = 0;
+
 ModuleScene::ModuleScene() 
 {
 }
@@ -45,11 +47,13 @@ bool ModuleScene::CleanUp()
 #include "globals.h"
 UpdateStatus ModuleScene::Update()
 {
-	if (quadTree.GetType() != SpaceQuadTree::QuadTreeType::INVALID)
+	if (quadTree.GetType() != SpaceQuadTree::QuadTreeType::INVALID && DEBUG_MODE)
 	{
-		quadTree.DrawTree();
+		quadTree.DrawTree(); 
 	}
+	BROFILER_CATEGORY("ModuleScene::Update", Profiler::Color::PapayaWhip);
 	root->Update();
+	BROFILER_CATEGORY("ModuleScene::UpdateEnd", Profiler::Color::PapayaWhip);
 
 	return UpdateStatus::UPDATE_CONTINUE;
 }
@@ -181,7 +185,6 @@ void ModuleScene::TestCollisionChecks(float3 aabbMinPoint, float3 aabbMaxPoint, 
 	{
 		BROFILER_CATEGORY("Quad Tree check start", Profiler::Color::Yellow);
 		quadTree.Intersects(intersected, testCube);
-		BROFILER_CATEGORY("Quad Tree check end", Profiler::Color::White);
 		LOGGER("QuadTree checks: %i", quadTree.lastChecksPerformed);
 		LOGGER("QuadTree found %i intersection", intersected.size());
 	}
@@ -192,6 +195,7 @@ void ModuleScene::QuadTreeFrustumCulling(std::vector<GameObject*>& insideFrustum
 {
 	if (quadTree.GetType() != SpaceQuadTree::QuadTreeType::INVALID)
 	{
+		BROFILER_CATEGORY("QuadTreeCulling", Profiler::Color::RosyBrown);
 		//LOGGER("");
 		quadTree.Intersects(insideFrustum, frustum);
 		//LOGGER("QuadTree found %i intersection", insideFrustum.size());

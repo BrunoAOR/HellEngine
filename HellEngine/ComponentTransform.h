@@ -17,6 +17,8 @@ public:
 
 	virtual void Update();
 
+	bool Equals(ComponentTransform* t);
+
 	float3 GetPosition();
 	float3 GetScale();
 	float3 GetRotationRad();
@@ -63,6 +65,8 @@ private:
 
 	float4x4 localModelMatrix;
 	float4x4 worldModelMatrix;
+
+	float boundingBoxUniqueData[8 * 6];
 
 	static std::vector<float3> baseBoundingBox;
 	static VaoInfo baseBoundingBoxVAO;

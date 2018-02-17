@@ -40,6 +40,7 @@ bool ModuleEditorCamera::Init()
 
 UpdateStatus ModuleEditorCamera::Update()
 {
+	BROFILER_CATEGORY("ModuleEditorCamera::Update", Profiler::Color::Beige);
 	HandleCameraMotion();
 	HandleCameraRotation();	
 	HandleCameraMousePicking();
@@ -62,7 +63,9 @@ void ModuleEditorCamera::OnWindowResize()
 
 void ModuleEditorCamera::HandleCameraMotion()
 {
+	BROFILER_CATEGORY("ModuleCamera::Motion", Profiler::Color::Black);
 	vec pos = camera->GetPosition3();
+	vec initialPos = pos;
 	int moveFactor = App->input->GetKey(SDL_SCANCODE_LSHIFT) == KeyState::KEY_REPEAT ? 3 : 1;
 
 	/* Handling Keyboard (Arrows) */
@@ -188,17 +191,27 @@ void ModuleEditorCamera::HandleCameraMotion()
 		DragCameraVerticalAxis(App->input->GetMouseWheel().y, pos, 5 * zoomSpeed);
 	}	
 
-	camera->SetPosition(pos.x, pos.y, pos.z);
+	if (!initialPos.Equals(pos))
+		camera->SetPosition(pos.x, pos.y, pos.z);
 }
 
 void ModuleEditorCamera::HandleCameraRotation()
 {
+	BROFILER_CATEGORY("ModuleCamera::Rotation", Profiler::Color::Black);
 	/*Handling Mouse*/
 	if (App->input->GetMouseButtonDown(SDL_BUTTON_RIGHT) == KeyState::KEY_REPEAT)
 	{
+		BROFILER_CATEGORY("ModuleCamera::Input", Profiler::Color::Black);
 		int xMotion = App->input->GetMouseMotion().x;
 		int yMotion = App->input->GetMouseMotion().y;
 
+		if (xMotion > 50)
+			xMotion = 50;
+
+		if (yMotion > 50)
+			yMotion = 50;
+
+		BROFILER_CATEGORY("ModuleCamera::Pitch", Profiler::Color::Black);
 		/* Camera rotate upwards and downwards */
 		if (yMotion != 0
 			&& !currentlyMovingCamera
@@ -206,7 +219,8 @@ void ModuleEditorCamera::HandleCameraRotation()
 		{
 			RotatePitch(yMotion);
 		}
-		
+
+		BROFILER_CATEGORY("ModuleCamera::Yaw", Profiler::Color::Black);
 		/* Camera rotate leftwards and rightwards */
 		if (xMotion != 0
 			&& !currentlyMovingCamera
@@ -235,10 +249,9 @@ void ModuleEditorCamera::RotateYaw(int mouseMotionX)
 {
 	/* mouseMotionX is <0 when moving to the left and >0 when moving to the right */
 	Quat rotation = Quat::FromEulerXYZ(0, -DegToRad(rotationSpeed * mouseMotionX) * App->time->DeltaTime(), 0);
-	float3 rot = rotation.Transform(camera->GetFront3());
-	camera->SetFront(rot.x, rot.y, rot.z);
-	rot = rotation.Transform(camera->GetUp3());
-	camera->SetUp(rot.x, rot.y, rot.z);
+	float3 newFront = rotation.Transform(camera->GetFront3());
+	float3 newUp = rotation.Transform(camera->GetUp3());
+	camera->SetFrontAndUp(newFront.x, newFront.y, newFront.z, newUp.x, newUp.y, newUp.z);
 }
 
 void ModuleEditorCamera::RotatePitch(int mouseMotionY)
@@ -246,11 +259,9 @@ void ModuleEditorCamera::RotatePitch(int mouseMotionY)
 	/* mouseMotionY is <0 when moving up and >0 when moving down */
 	Quat rotation = Quat::RotateAxisAngle(camera->GetRight3(), -DegToRad(rotationSpeed * mouseMotionY) * App->time->DeltaTime());
 	vec newUp = rotation.Transform(camera->GetUp3());
-	if (newUp.y >= 0)
-	{
-		float3 rot = rotation.Transform(camera->GetFront3());
-		camera->SetFront(rot.x, rot.y, rot.z);
-		camera->SetUp(newUp.x, newUp.y, newUp.z);
+	if (newUp.y >= 0)	{
+		float3 newFront = rotation.Transform(camera->GetFront3());
+		camera->SetFrontAndUp(newFront.x, newFront.y, newFront.z, newUp.x, newUp.y, newUp.z);
 	}
 }
 

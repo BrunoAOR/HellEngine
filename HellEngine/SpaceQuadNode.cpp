@@ -1,3 +1,4 @@
+#include <stack>
 #include <assert.h>
 #include "Application.h"
 #include "ComponentTransform.h"
@@ -19,6 +20,16 @@ SpaceQuadNode::SpaceQuadNode(float3 minPoint, float3 maxPoint, SpaceQuadTree* aQ
 
 SpaceQuadNode::~SpaceQuadNode()
 {
+	glDeleteVertexArrays(1, &quadVao.vao);
+	quadVao.vao = 0;
+	glDeleteBuffers(1, &quadVao.vbo);
+	quadVao.vbo = 0;
+	glDeleteBuffers(1, &quadVao.ebo);
+	quadVao.ebo = 0;
+	quadVao.vertices.clear();
+	quadVao.indices.clear();
+	quadVao.elementsCount = 0;
+
 	for (int i = 0; i < childrenCount; ++i)
 	{
 		delete childNodes[i];
@@ -40,38 +51,91 @@ bool SpaceQuadNode::CanContain(AABB goAABB)
 bool SpaceQuadNode::Insert(ComponentTransform* transform)
 {
 	AABB goBoundingBox = transform->GetBoundingBox();
-	if (aabb.Intersects(goBoundingBox))
-	{
-		if (isLeaf)
+
+	std::stack<SpaceQuadNode*> stack;
+	SpaceQuadNode* root = this;
+	stack.push(root);
+
+	while (!stack.empty()) {
+		root = stack.top();
+		stack.pop();
+
+		if (root->aabb.Intersects(goBoundingBox))
 		{
-			containedTransforms.push_back(transform);
-			CheckBucketSize();
-			return true;
-		}
-		else
-		{
-			std::vector<SpaceQuadNode*> candidates;
-			for (int i = 0; i < childrenCount; ++i)
+			if (root->isLeaf)
 			{
-				if (childNodes[i]->CanContain(goBoundingBox))
-					candidates.push_back(childNodes[i]);
-			}
-			assert(candidates.size() > 0);
-			if (candidates.size() == 1)
-			{
-				candidates[0]->Insert(transform);
+				root->containedTransforms.push_back(transform);
+				root->CheckBucketSize();
+				return true;
 			}
 			else
 			{
-				containedTransforms.push_back(transform);
+				for (int i = 0; i < root->childrenCount; i++)
+				{
+					if (root->childNodes[i]->CanContain(goBoundingBox))
+						stack.push(root->childNodes[i]);
+				}
+				assert(stack.size() > 0);
+				if (stack.size() > 1) {
+					root->containedTransforms.push_back(transform);
+					for (unsigned int i = 0; i < stack.size(); i++)
+						stack.pop();
+				}
 			}
 		}
 	}
+
 	return false;
 }
 
 bool SpaceQuadNode::Remove(ComponentTransform* transform)
 {
+	std::stack<SpaceQuadNode*> stack;
+
+	SpaceQuadNode* root = this;
+
+	do {
+		while (root != nullptr) {
+			for (unsigned int i = 4; i > 1; i--) {
+				if (root->childNodes[i - 1] != nullptr)
+					stack.push(root->childNodes[i - 1]);
+			}
+
+			stack.push(root);
+			root = root->childNodes[0];
+		}
+
+		root = stack.top();
+		stack.pop();
+
+		bool rightChild = false;
+		for (unsigned int i = 4; i > 1; i--) {
+			if (root->childNodes[i - 1] == stack.top()) {
+				SpaceQuadNode* aux = stack.top();
+				stack.pop();
+				stack.push(root);
+				root = aux;
+				rightChild = true;
+			}
+		}
+
+		if (rightChild) {
+			if (root->isLeaf)
+			{
+				for (std::vector<ComponentTransform*>::iterator it = root->containedTransforms.begin(); it != root->containedTransforms.end(); ++it)
+				{
+					if ((*it) == transform)
+					{
+						root->containedTransforms.erase(it);
+						return true;
+					}
+				}
+			}
+		}
+
+	} while (!stack.empty());
+
+	/* Pending further test
 	if (isLeaf)
 	{
 		for (std::vector<ComponentTransform*>::iterator it = containedTransforms.begin(); it != containedTransforms.end(); ++it)
@@ -90,22 +154,35 @@ bool SpaceQuadNode::Remove(ComponentTransform* transform)
 			if (childNodes[i]->Remove(transform))
 				return true;
 		}
-	}
+	} */
+
 	return false;
 }
 
 void SpaceQuadNode::DrawNode()
 {
-	if (isLeaf) {
-		if (quadVao.vao != 0)
-		{
-			float identity[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
-			App->debugDraw->DrawElements(identity, quadVao.vao, quadVao.elementsCount, quadVao.indexesType);
+	std::stack<SpaceQuadNode*> stack;
+
+	SpaceQuadNode* root = this;
+
+	stack.push(root);
+
+	while (!stack.empty()) {
+		root = stack.top();
+		stack.pop();
+
+		if (root->isLeaf) {
+			if (root->quadVao.vao != 0)
+			{
+				float identity[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+				App->debugDraw->DrawElements(identity, root->quadVao.vao, root->quadVao.elementsCount, root->quadVao.indexesType);
+			}
 		}
-	}
-	else {
-		for (int i = 0; i < childrenCount; ++i)
-			childNodes[i]->DrawNode();
+		else {
+			for (unsigned int i = 4; i > 0; i--)
+				stack.push(root->childNodes[i - 1]);
+
+		}
 	}
 }
 
@@ -249,7 +326,7 @@ void SpaceQuadNode::CreateVAO()
 		{
 			allUniqueData[i] = uniqueVertices[(i / 6) * 3 + (i % 6)];
 		}
-		else 
+		else
 		{
 			allUniqueData[i] = uniqueColors[(i / 6) * 3 + ((i % 6) - 3)];
 		}
@@ -268,7 +345,7 @@ void SpaceQuadNode::CreateVAO()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uniqueVertCount * 6, allUniqueData, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(0);	
+	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadVao.ebo);
