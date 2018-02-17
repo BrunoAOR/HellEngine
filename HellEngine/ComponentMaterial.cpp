@@ -10,7 +10,6 @@
 #include "ModuleRender.h"
 #include "ModuleScene.h"
 #include "Shader.h"
-#include "VAOInfo.h"
 #include "globals.h"
 #include "openGL.h"
 
@@ -59,6 +58,7 @@ ComponentMaterial::~ComponentMaterial()
 
 void ComponentMaterial::Update()
 {
+	BROFILER_CATEGORY("ComponentMaterial::UpdateStart", Profiler::Color::Gold);
 	if (!isActive)
 		return;
 
@@ -83,7 +83,6 @@ void ComponentMaterial::Update()
 			BROFILER_CATEGORY("Frustum culling without QuadTree", Profiler::Color::GreenYellow);
 			insideFrustum = transform->GetBoundingBox().Contains(editorCamera->GetFrustum());
 		}
-		BROFILER_CATEGORY("Frustum culling ended", Profiler::Color::Black);
 	}
 	if (insideFrustum) {
 
@@ -98,16 +97,22 @@ void ComponentMaterial::Update()
 				insideFrustum = transform->GetBoundingBox().Contains(activeGameCamera->GetFrustum());
 			}
 		}
+
 		if (insideFrustum) {
 			float* modelMatrix = transform->GetModelMatrix();
-			float4x4 test = transform->GetModelMatrix4x4();
 
-			VaoInfo vaoInfo = mesh->GetActiveVao();
+			BROFILER_CATEGORY("ComponentMaterial::GetVao", Profiler::Color::Gold);
+			if (mesh->activeVaoChanged) {
+				vaoInfo = mesh->GetActiveVao();
+				mesh->activeVaoChanged = false;
+			}
+			BROFILER_CATEGORY("ComponentMaterial::ValidVao", Profiler::Color::Gold);
 			if (vaoInfo.vao == 0)
 			{
 				return;
 			}
 
+			BROFILER_CATEGORY("ComponentMaterial::DrawingCall", Profiler::Color::Gold);
 			DrawElements(modelMatrix, vaoInfo.vao, vaoInfo.elementsCount, vaoInfo.indexesType);
 		}
 	}
@@ -177,6 +182,9 @@ bool ComponentMaterial::IsValid()
 /* Attemps to apply all of the material setup */
 bool ComponentMaterial::Apply()
 {
+	if (shader != nullptr)
+		loadedShaderCount.at(shader)--;
+
 	Shader* s = ShaderAlreadyLinked();
 
 	if (s) {
@@ -186,6 +194,7 @@ bool ComponentMaterial::Apply()
 	}
 	else {
 		shader = new Shader();
+
 		isValid = (LoadVertexShader()
 			&& LoadFragmentShader()
 			&& shader->LinkShaderProgram()
@@ -194,17 +203,17 @@ bool ComponentMaterial::Apply()
 		if (isValid) {
 			loadedShaders.push_back(shader);
 			loadedShaderCount.insert(std::pair<Shader*, int>(shader, 1));
-			memset(vertexShaderPath, 0, sizeof(vertexShaderPath));
-			memset(fragmentShaderPath, 0, sizeof(fragmentShaderPath));
 		}
-		else
+		else {
 			delete shader;
+			shader = nullptr;
+		}
 	}
 
 	isValid &= LoadTexture()
 		&& LoadShaderData()
 		&& GenerateUniforms();
-	
+
 	return isValid;
 }
 
@@ -389,8 +398,10 @@ Shader * ComponentMaterial::ShaderAlreadyLinked()
 {
 	Shader* s = nullptr;
 	for (std::vector<Shader*>::iterator it = loadedShaders.begin(); it != loadedShaders.end() && s == nullptr; ++it) {
-		if ((strcmp(vertexShaderPath, (*it)->vertexPath) == 0) && (strcmp(fragmentShaderPath, (*it)->fragmentPath) == 0))
+		if ((strcmp(vertexShaderPath, (*it)->vertexPath) == 0) && (strcmp(fragmentShaderPath, (*it)->fragmentPath) == 0)) {
 			s = *it;
+			break;
+		}
 	}
 
 	return s;
@@ -541,7 +552,7 @@ bool ComponentMaterial::LoadFragmentShader()
 	std::string fragmentString;
 	if (!LoadTextFile(fragmentShaderPath, fragmentString))
 		return false;
-	
+
 	strncpy_s(shader->fragmentPath, sizeof(shader->fragmentPath), fragmentShaderPath, sizeof(fragmentShaderPath));
 
 	if (!shader->CompileFragmentShader(fragmentString.c_str()))

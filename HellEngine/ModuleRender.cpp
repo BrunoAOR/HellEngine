@@ -76,7 +76,7 @@ UpdateStatus ModuleRender::PreUpdate()
 
 /* Called every draw update */
 UpdateStatus ModuleRender::Update()
-{	
+{
 	/* DrawGroundGrid */
 	{
 		if (groundGridInfo.active)

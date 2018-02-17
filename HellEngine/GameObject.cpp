@@ -1,3 +1,4 @@
+#include <stack>
 #include <assert.h>
 #include "ImGui/imgui.h"
 #include "Application.h"
@@ -26,6 +27,8 @@ GameObject::GameObject(const char* name, GameObject* parentGameObject) : name(na
 		if (parentGameObject != nullptr && parentGameObject != App->scene->root)
 			SetParent(parentGameObject);
 	}
+
+	App->scene->gameObjectsCount++;
 }
 
 GameObject::~GameObject()
@@ -42,6 +45,8 @@ GameObject::~GameObject()
 		delete child;
 	}
 	children.clear();
+
+	App->scene->gameObjectsCount--;
 	//LOGGER("Deleted GameObject '%s'", name.c_str());
 }
 
@@ -50,13 +55,29 @@ void GameObject::Update()
 	if (!isActive)
 		return;
 
-	for (Component* component : components)
-	{
-		component->Update();
-	}
-	for (GameObject* child : children)
-	{
-		child->Update();
+	BROFILER_CATEGORY("ModuleScene::IterativeUpdate", Profiler::Color::PapayaWhip);
+	std::stack<GameObject*> stack;
+
+	GameObject* go = this;
+	std::vector<GameObject*> children;
+
+	stack.push(go);
+
+	while (!stack.empty()) {
+		go = stack.top();
+		stack.pop();
+
+		BROFILER_CATEGORY("ModuleScene::ComponentsUpdate", Profiler::Color::PapayaWhip);
+		for (Component* component : go->components)
+		{
+			component->Update();
+		}
+
+		BROFILER_CATEGORY("ModuleScene::PostComponentUpdate", Profiler::Color::PapayaWhip);
+		children = go->GetChildren();
+
+		for (int i = children.size(); i > 0; i--)
+			stack.push(children.at(i - 1));
 	}
 }
 
@@ -190,14 +211,14 @@ void GameObject::OnEditorHierarchyRightClick()
 	{
 		OnEditorHierarchyCreateMenu();
 
-		if(ImGui::Selectable("Destroy"))
+		if (ImGui::Selectable("Destroy"))
 		{
 			App->scene->Destroy(this);
 			App->scene->editorInfo.selectedGameObject = nullptr;
 			ImGui::EndPopup();
 			return;
 		}
-		
+
 		ImGui::Separator();
 
 		if (IsFirstChild())
@@ -205,7 +226,7 @@ void GameObject::OnEditorHierarchyRightClick()
 		else
 			if (ImGui::Selectable("Move up"))
 				SwapWithPreviousSibling();
-		
+
 		if (IsLastChild())
 			ImGui::TextDisabled("Move down");
 		else
@@ -293,7 +314,7 @@ bool GameObject::SetParent(GameObject* newParent)
 		if (transform)
 		{
 			ComponentTransform* parentTransform = (ComponentTransform*)newParent->GetComponent(ComponentType::TRANSFORM);
-			
+
 			/* Note that parentTransform might be nullptr, but that is a case handled by the Transform::SetParent method */
 			transform->SetParent(parentTransform);
 		}
@@ -384,7 +405,7 @@ void GameObject::AddDependingComponent()
 	bool transformAlreadyExists = false;
 	for (std::vector<Component*>::iterator it = components.begin(); it != components.end(); ++it)
 	{
-		if ((*it)->GetType() == ComponentType::TRANSFORM) 
+		if ((*it)->GetType() == ComponentType::TRANSFORM)
 		{
 			transformAlreadyExists = true;
 		}
@@ -524,7 +545,7 @@ bool GameObject::RemoveChild(GameObject * childToRemove)
 	return false;
 }
 
-std::vector<GameObject*> GameObject::GetChildren() 
+std::vector<GameObject*> GameObject::GetChildren()
 {
-    return children;
+	return children;
 }

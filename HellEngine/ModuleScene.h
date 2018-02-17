@@ -56,6 +56,8 @@ public:
 		GameObject* selectedGameObject = nullptr;
 	} editorInfo;
 
+	static uint gameObjectsCount;
+
 private:
 
 	template<typename T>

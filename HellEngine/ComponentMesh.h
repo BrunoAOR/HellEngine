@@ -25,6 +25,10 @@ public:
 	/* Returns the maximum number of times that this particular Type of Component can be added to a GameObject */
 	virtual int MaxCountInGameObject() override;
 
+public:
+
+	bool activeVaoChanged = true;
+
 private:
 
 	void CreateCubeVAO();
