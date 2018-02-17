@@ -13,9 +13,10 @@ public:
 	Model();
 	~Model();
 
-	void Load(const char* modelPath);
+	bool Load(const char* modelPath);
 	void Clear();
 	void Draw() const;
+	const ModelInfo* GetModelInfo() const;
 
 private:
 

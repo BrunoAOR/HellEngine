@@ -50,13 +50,16 @@ Model::~Model()
 	}
 }
 
-void Model::Load(const char* modelPath)
+bool Model::Load(const char* modelPath)
 {
 	Clear();
 	assimpScene = aiImportFile(modelPath, 0);
-
-	CreateTextureBuffers(modelPath);
-	CreateVaoInfo();
+	if (assimpScene)
+	{
+		CreateTextureBuffers(modelPath);
+		CreateVaoInfo();
+	}
+	return assimpScene != nullptr;
 }
 
 void Model::Clear()
@@ -98,6 +101,11 @@ void Model::Draw() const
 		DrawMesh(assimpScene->mRootNode->mChildren[i]->mMeshes[0]);
 	}
 	shader->Deactivate();
+}
+
+const ModelInfo* Model::GetModelInfo() const
+{
+	return &modelInfo;
 }
 
 void Model::DrawMesh(unsigned int meshIndex) const
