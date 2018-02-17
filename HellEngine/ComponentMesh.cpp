@@ -188,7 +188,7 @@ void ComponentMesh::CreateCubeVAO()
 	GLfloat uniqueVertices[uniqueVertCount * 3] = { SP_ARR_3(vA), SP_ARR_3(vB), SP_ARR_3(vC), SP_ARR_3(vD), SP_ARR_3(vE), SP_ARR_3(vF), SP_ARR_3(vG), SP_ARR_3(vH), SP_ARR_3(vE), SP_ARR_3(vF), SP_ARR_3(vG), SP_ARR_3(vH) };
 	GLfloat uniqueColors[uniqueVertCount * 3] = { SP_ARR_3(cRed), SP_ARR_3(cGreen), SP_ARR_3(cWhite), SP_ARR_3(cBlue), SP_ARR_3(cBlue), SP_ARR_3(cWhite), SP_ARR_3(cGreen), SP_ARR_3(cRed), SP_ARR_3(cBlue), SP_ARR_3(cWhite), SP_ARR_3(cGreen), SP_ARR_3(cRed) };
 	GLfloat uniqueUVCoords[uniqueVertCount * 2] = { SP_ARR_2(bottomLeft), SP_ARR_2(bottomRight), SP_ARR_2(topLeft), SP_ARR_2(topRight), SP_ARR_2(bottomRight), SP_ARR_2(bottomLeft), SP_ARR_2(topRight), SP_ARR_2(topLeft), SP_ARR_2(topLeft), SP_ARR_2(topRight), SP_ARR_2(bottomLeft), SP_ARR_2(bottomRight) };
-	GLubyte verticesOrder[allVertCount] = { 0, 1, 2, 1, 3, 2,		/* Front face */
+	GLuint verticesOrder[allVertCount] = { 0, 1, 2, 1, 3, 2,		/* Front face */
 		1, 5, 3, 5, 7, 3,		/* Right face */
 		5, 4, 7, 4, 6, 7,		/* Back face */
 		4, 0, 6, 0, 2, 6,		/* Left face */
@@ -216,7 +216,6 @@ void ComponentMesh::CreateCubeVAO()
 	VaoInfo cubeVaoInfo;
 	cubeVaoInfo.name = "Cube";
 	cubeVaoInfo.elementsCount = allVertCount;
-	cubeVaoInfo.indexesType = GL_UNSIGNED_BYTE;
 	cubeVaoInfo.vertices = std::vector<float3>{ float3(vA[0], vA[1], vA[2]), float3(vB[0], vB[1], vB[2]), float3(vC[0], vC[1], vC[2]), float3(vD[0], vD[1], vD[2]), float3(vE[0], vE[1], vE[2]), float3(vF[0], vF[1], vF[2]), float3(vG[0], vG[1], vG[2]), float3(vH[0], vH[1], vH[2]) };
 	cubeVaoInfo.indices = { 0, 1, 2, 1, 3, 2,		/* Front face */
 		1, 5, 3, 5, 7, 3,		/* Right face */
@@ -241,7 +240,7 @@ void ComponentMesh::CreateCubeVAO()
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE); /* Can be unbound, since the vertex information is stored in the VAO throught the VertexAttribPointers */
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeVaoInfo.ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLubyte) * cubeVaoInfo.elementsCount, verticesOrder, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * cubeVaoInfo.elementsCount, verticesOrder, GL_STATIC_DRAW);
 
 	glBindVertexArray(GL_NONE);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE); /* Can be unbound AFTER unbinding the VAO, since the VAO stores information about the bound EBO */
@@ -339,7 +338,6 @@ void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 	*/
 	uint trianglesCount = 2 * sections * (rings - 1);
 	sphereVaoInfo.elementsCount = 3 * trianglesCount;
-	sphereVaoInfo.indexesType = GL_UNSIGNED_INT;
 
 	std::vector<GLuint> indexes;
 	indexes.resize(sphereVaoInfo.elementsCount);

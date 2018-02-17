@@ -113,7 +113,7 @@ void ComponentMaterial::Update()
 			}
 
 			BROFILER_CATEGORY("ComponentMaterial::DrawingCall", Profiler::Color::Gold);
-			DrawElements(modelMatrix, vaoInfo.vao, vaoInfo.elementsCount, vaoInfo.indexesType);
+			DrawElements(modelMatrix, vaoInfo.vao, vaoInfo.elementsCount);
 		}
 	}
 }
@@ -407,7 +407,7 @@ Shader * ComponentMaterial::ShaderAlreadyLinked()
 	return s;
 }
 
-bool ComponentMaterial::DrawElements(float * modelMatrix, uint vao, uint vertexCount, int indexesType)
+bool ComponentMaterial::DrawElements(float * modelMatrix, uint vao, uint vertexCount)
 {
 	if (!IsValid())
 		return false;
@@ -422,7 +422,7 @@ bool ComponentMaterial::DrawElements(float * modelMatrix, uint vao, uint vertexC
 	glBindTexture(GL_TEXTURE_2D, textureBufferId);
 
 	glBindVertexArray(vao);
-	glDrawElements(GL_TRIANGLES, vertexCount, indexesType, nullptr);
+	glDrawElements(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, nullptr);
 	glBindVertexArray(GL_NONE);
 
 	glBindTexture(GL_TEXTURE_2D, 0);

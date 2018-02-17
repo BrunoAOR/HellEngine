@@ -44,7 +44,7 @@ bool ModuleDebugDraw::CleanUp()
 }
 
 
-bool ModuleDebugDraw::DrawElements(float * modelMatrix, uint vao, uint vertexCount, int indexesType)
+bool ModuleDebugDraw::DrawElements(float * modelMatrix, uint vao, uint vertexCount)
 {
 	shader->Activate();
 
@@ -54,7 +54,7 @@ bool ModuleDebugDraw::DrawElements(float * modelMatrix, uint vao, uint vertexCou
 	UpdatePublicUniforms();
 	
 	glBindVertexArray(vao);
-	glDrawElements(GL_LINES, vertexCount, indexesType, nullptr);
+	glDrawElements(GL_LINES, vertexCount, GL_UNSIGNED_INT, nullptr);
 	glBindVertexArray(GL_NONE);
 	
 	shader->Deactivate();

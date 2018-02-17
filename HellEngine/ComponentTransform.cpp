@@ -101,7 +101,7 @@ void ComponentTransform::Update()
 
 			if (baseBoundingBoxVAO.vao != 0) {
 				float identity[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
-				App->debugDraw->DrawElements(identity, baseBoundingBoxVAO.vao, baseBoundingBoxVAO.elementsCount, baseBoundingBoxVAO.indexesType);
+				App->debugDraw->DrawElements(identity, baseBoundingBoxVAO.vao, baseBoundingBoxVAO.elementsCount);
 			}
 		}
 	}
@@ -452,13 +452,13 @@ void ComponentTransform::CreateBBVAO()
 	const uint uniqueVertCount = 8;
 	GLfloat uniqueVertices[allVertCount] = { SP_ARR_3(vA), SP_ARR_3(vB), SP_ARR_3(vC), SP_ARR_3(vD), SP_ARR_3(vE), SP_ARR_3(vF), SP_ARR_3(vG), SP_ARR_3(vH) };
 	GLfloat uniqueColors[allVertCount] = { SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen) };
-	GLubyte vertIndexes[] = {
+	GLuint vertIndexes[] = {
 		0, 1,	0, 2,	2, 3,	3, 1,	/* front face */
 		4, 5,	4, 6,	6, 7,	7, 5,	/* back face */
 		0, 4,	1, 5,	2, 6,	3, 7	/* front-back links */
 
 	};
-	GLubyte cornerIndexes[] = { 0, 1, 2, 3, 4, 5, 6, 7 }; /* Will use later */
+	GLuint cornerIndexes[] = { 0, 1, 2, 3, 4, 5, 6, 7 }; /* Will use later */
 
 	for (int i = 0; i < uniqueVertCount * 6; ++i)
 	{
@@ -474,7 +474,6 @@ void ComponentTransform::CreateBBVAO()
 
 	baseBoundingBoxVAO.name = "BaseBoundingBox";
 	baseBoundingBoxVAO.elementsCount = allVertCount;
-	baseBoundingBoxVAO.indexesType = GL_UNSIGNED_BYTE;
 
 	glGenVertexArrays(1, &baseBoundingBoxVAO.vao);
 	glGenBuffers(1, &baseBoundingBoxVAO.vbo);
@@ -489,7 +488,7 @@ void ComponentTransform::CreateBBVAO()
 	glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, baseBoundingBoxVAO.ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLubyte) * baseBoundingBoxVAO.elementsCount, vertIndexes, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * baseBoundingBoxVAO.elementsCount, vertIndexes, GL_STATIC_DRAW);
 
 	glBindVertexArray(GL_NONE);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
