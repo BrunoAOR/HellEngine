@@ -409,7 +409,7 @@ Shader * ComponentMaterial::ShaderAlreadyLinked()
 
 bool ComponentMaterial::DrawElements(float * modelMatrix, const ModelInfo* modelInfo)
 {
-	if (!IsValid() || modelInfo == nullptr)
+	if (!IsValid() || modelInfo == nullptr || modelInfo->vaoInfos.size() == 0)
 		return false;
 
 	shader->Activate();
@@ -419,16 +419,19 @@ bool ComponentMaterial::DrawElements(float * modelMatrix, const ModelInfo* model
 	glUniformMatrix4fv(privateUniforms["projection"], 1, GL_FALSE, App->editorCamera->camera->GetProjectionMatrix());
 	UpdatePublicUniforms();
 
-	glBindTexture(GL_TEXTURE_2D, textureBufferId);
-
 	for (const VaoInfo& vaoInfo : modelInfo->vaoInfos)
 	{
+		int textureId = textureBufferId;
+		if (textureBufferId == checkeredPatternBufferId && vaoInfo.textureID != 0)
+			textureId = vaoInfo.textureID;
+		
+		glBindTexture(GL_TEXTURE_2D, textureId);
 		glBindVertexArray(vaoInfo.vao);
 		glDrawElements(GL_TRIANGLES, vaoInfo.elementsCount, GL_UNSIGNED_INT, nullptr);
 		glBindVertexArray(GL_NONE);
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
-	glBindTexture(GL_TEXTURE_2D, 0);
 
 	shader->Deactivate();
 	return true;
