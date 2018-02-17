@@ -33,9 +33,15 @@ public:
 	void TestCollisionChecks(float3 aabbMinPoint, float3 aabbMaxPoint, float3 spawnMinPoint, float3 spawnMaxPoint, int spawnedObjectsCount);
 	void QuadTreeFrustumCulling(std::vector<GameObject*> &insideFrustum, Frustum frustum);
 	bool UsingQuadTree();
+	const SpaceQuadTree& GetQuadTree();
+	void FindAllStaticGameObjects(std::vector<GameObject*>& staticGameObjects, GameObject* go = nullptr);
+	void FindAllDynamicGameObjects(std::vector<GameObject*>& dynamicGameObjects, GameObject* go = nullptr);
+
+	void TestLineSegmentChecks(float3 lineStartPoint, float3 lineEndPoint);
 
 	void SetActiveGameCamera(ComponentCamera* camera);
 	ComponentCamera* GetActiveGameCamera() const;
+	void SetSelectedGameObject(GameObject* go);
 
 	GameObject* CreateGameObject();
 	void Destroy(GameObject* gameObject);
@@ -53,7 +59,6 @@ public:
 
 private:
 
-	void FindAllSceneStaticGameObjects(std::vector<GameObject*>& staticGameObjects, GameObject* go = nullptr);
 	template<typename T>
 	void Intersects(std::vector<GameObject*>& intersectedGameObjects, const T& primitive);
 
@@ -68,7 +73,7 @@ template<typename T>
 inline void ModuleScene::Intersects(std::vector<GameObject*>& intersectedGameObjects, const T& primitive)
 {
 	std::vector<GameObject*> staticGameObjects;
-	FindAllSceneStaticGameObjects(staticGameObjects);
+	FindAllStaticGameObjects(staticGameObjects);
 	std::vector<ComponentTransform*> staticTransforms;
 	for (GameObject* go : staticGameObjects)
 	{

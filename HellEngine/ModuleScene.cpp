@@ -11,6 +11,9 @@
 #include "ComponentTransform.h"
 #include "ComponentMesh.h"
 #include "ComponentMaterial.h"
+/* For TestLineSegmentChecks */
+#include "MathGeoLib/src/Geometry/LineSegment.h"
+#include "physicsFunctions.h"
 
 uint ModuleScene::gameObjectsCount = 0;
 
@@ -100,7 +103,7 @@ void ModuleScene::GenerateSceneFixedQuadTree(float* minPoint, float* maxPoint)
 		vec vecMaxPoint(maxPoint[0], maxPoint[1], maxPoint[2]);
 		quadTree.Create(vecMinPoint, vecMaxPoint);
 		std::vector<GameObject*> staticGOs;
-		FindAllSceneStaticGameObjects(staticGOs, root);
+		FindAllStaticGameObjects(staticGOs, root);
 		quadTree.Insert(staticGOs);
 	}
 	return;
@@ -111,7 +114,7 @@ void ModuleScene::GenerateSceneAdaptiveQuadTree()
 	if (quadTree.GetType() != SpaceQuadTree::QuadTreeType::ADAPTIVE)
 	{
 		std::vector<GameObject*> staticGOs;
-		FindAllSceneStaticGameObjects(staticGOs, root);
+		FindAllStaticGameObjects(staticGOs, root);
 		quadTree.Create(staticGOs);
 	}
 }
@@ -212,6 +215,11 @@ ComponentCamera * ModuleScene::GetActiveGameCamera() const
 	return activeGameCamera;
 }
 
+void ModuleScene::SetSelectedGameObject(GameObject * go)
+{
+	editorInfo.selectedGameObject = go;
+}
+
 GameObject* ModuleScene::CreateGameObject()
 {
     GameObject* gameObject = new GameObject("name", root);
@@ -258,24 +266,52 @@ bool ModuleScene::UsingQuadTree()
 	return quadTree.GetType() != SpaceQuadTree::QuadTreeType::INVALID;
 }
 
-void ModuleScene::FindAllSceneStaticGameObjects(std::vector<GameObject*>& staticGameObjects, GameObject* go)
+const SpaceQuadTree& ModuleScene::GetQuadTree()
+{
+	return quadTree;
+}
+
+void ModuleScene::FindAllStaticGameObjects(std::vector<GameObject*>& staticGameObjects, GameObject* go)
 {
 	if (go == nullptr)
 		go = root;
 
-	for (GameObject* children : go->GetChildren())
+	for (GameObject* child : go->GetChildren())
 	{
-		if (children->GetComponent(ComponentType::TRANSFORM) != nullptr)
-		{
-			if (((ComponentTransform*)children->GetComponent(ComponentType::TRANSFORM))->GetIsStatic())
-			{
-				staticGameObjects.push_back(children);
-			}
-		}
+		ComponentTransform* transform = (ComponentTransform*)child->GetComponent(ComponentType::TRANSFORM);
+		if (transform && transform->GetIsStatic())
+			staticGameObjects.push_back(child);
 
-		if (children->GetChildren().size() != 0)
+		if (child->GetChildren().size() != 0)
 		{
-			FindAllSceneStaticGameObjects(staticGameObjects, children);
+			FindAllStaticGameObjects(staticGameObjects, child);
 		}
 	}
+}
+
+void ModuleScene::FindAllDynamicGameObjects(std::vector<GameObject*>& dynamicGameObjects, GameObject* go)
+{
+	if (go == nullptr)
+		go = root;
+
+	for (GameObject* child : go->GetChildren())
+	{
+		ComponentTransform* transform = (ComponentTransform*)child->GetComponent(ComponentType::TRANSFORM);
+		if (transform && !transform->GetIsStatic())
+			dynamicGameObjects.push_back(child);
+
+		if (child->GetChildren().size() != 0)
+		{
+			FindAllDynamicGameObjects(dynamicGameObjects, child);
+		}
+	}
+}
+
+void ModuleScene::TestLineSegmentChecks(float3 lineStartPoint, float3 lineEndPoint)
+{
+	assert(lineStartPoint.x != lineEndPoint.x || lineStartPoint.y != lineEndPoint.y || lineStartPoint.z != lineEndPoint.z);
+
+	LineSegment testSegment(lineStartPoint, lineEndPoint);
+	GameObject* collidedGO = CalculateRaycast(testSegment);
+	LOGGER("The line collided with GameObject: %s", collidedGO ? collidedGO->name.c_str() : "none");
 }

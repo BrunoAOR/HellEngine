@@ -115,6 +115,17 @@ void ModuleRender::onWindowResize()
 	glViewport(0, 0, App->window->getWidth(), App->window->getHeight());
 }
 
+bool ModuleRender::isBackFaceCullActive()
+{
+	if (glIsEnabled(GL_CULL_FACE))
+	{
+		GLint faceMode;
+		glGetIntegerv(GL_CULL_FACE_MODE, &faceMode);
+		return faceMode == GL_BACK || faceMode == GL_FRONT_AND_BACK;
+	}
+	return false;
+}
+
 /* Initializes the GLEW library */
 bool ModuleRender::InitGlew() const
 {
