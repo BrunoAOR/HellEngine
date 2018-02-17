@@ -104,7 +104,7 @@ void Model::DrawMesh(unsigned int meshIndex) const
 {
 	const VaoInfo& vaoInfo = modelInfo.vaoInfos[meshIndex];
 
-	glBindTexture(GL_TEXTURE_2D, textureBufferIds[vaoInfo.textureID]);
+	glBindTexture(GL_TEXTURE_2D, vaoInfo.textureID);
 	glBindVertexArray(vaoInfo.vao);
 	glDrawElements(GL_TRIANGLES, vaoInfo.indices.size(), GL_UNSIGNED_INT, nullptr);
 	glBindVertexArray(GL_NONE);
@@ -142,7 +142,7 @@ void Model::CreateVaoInfo()
 		unsigned int materialIndex = assimpMesh->mMaterialIndex;
 
 		VaoInfo vaoInfo;
-		vaoInfo.textureID = materialIndex;
+		vaoInfo.textureID = textureBufferIds[materialIndex];
 
 		/* Create temporary data buffers */
 		const unsigned int allDataSize = assimpMesh->mNumVertices * 8;
@@ -178,12 +178,14 @@ void Model::CreateVaoInfo()
 		}
 
 		/* Gather indexes */
+		vaoInfo.elementsCount = 0;
 		for (unsigned int faceIdx = 0; faceIdx < assimpMesh->mNumFaces; ++faceIdx)
 		{
 			const aiFace& face = assimpMesh->mFaces[faceIdx];
 
 			for (unsigned int i = 0; i < face.mNumIndices; ++i)
 			{
+				++vaoInfo.elementsCount;
 				unsigned int index = face.mIndices[i];
 				/* Store indices in vaoInfo (for raycasting calculations) */
 				vaoInfo.indices.push_back(index);
