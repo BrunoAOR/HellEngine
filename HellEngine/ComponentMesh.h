@@ -38,6 +38,7 @@ private:
 
 private:
 
+	static uint meshesCount;
 	static std::vector<VaoInfo> vaoInfos;
 	int activeVao = -1;
 

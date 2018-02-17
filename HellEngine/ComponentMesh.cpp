@@ -9,17 +9,19 @@
 #include "openGL.h"
 #include "VAOInfo.h"
 
+uint ComponentMesh::meshesCount = 0;
 std::vector<VaoInfo> ComponentMesh::vaoInfos;
 
 ComponentMesh::ComponentMesh(GameObject* owner) : Component(owner)
 {
 	type = ComponentType::MESH;
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
-	if (vaoInfos.size() == 0)
+	if (meshesCount == 0)
 	{
 		CreateCubeVAO();
 		CreateSphereVAO(32, 32);
 	}
+	++meshesCount;
 	activeVao = 0;
 	UpdateBoundingBox();
 	//LOGGER("Component of type '%s'", GetString(type));
@@ -28,6 +30,17 @@ ComponentMesh::ComponentMesh(GameObject* owner) : Component(owner)
 ComponentMesh::~ComponentMesh()
 {
 	//LOGGER("Deleting Component of type '%s'", GetString(type));
+	--meshesCount;
+	if (meshesCount == 0)
+	{
+		for (VaoInfo& vaoInfo : vaoInfos)
+		{
+			glDeleteVertexArrays(1, &vaoInfo.vao);
+			glDeleteBuffers(1, &vaoInfo.vbo);
+			glDeleteBuffers(1, &vaoInfo.ebo);
+		}
+		vaoInfos.clear();
+	}
 }
 
 const VaoInfo& ComponentMesh::GetActiveVao() const
