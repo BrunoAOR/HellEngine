@@ -14,8 +14,8 @@
 #include "globals.h"
 #include "openGL.h"
 
+uint ComponentMaterial::materialsCount = 0;
 uint ComponentMaterial::checkeredPatternBufferId = 0;
-uint ComponentMaterial::checkeredTextureCount = 0;
 std::vector<Shader*> ComponentMaterial::loadedShaders;
 std::map<Shader*, uint> ComponentMaterial::loadedShaderCount;
 
@@ -23,11 +23,10 @@ ComponentMaterial::ComponentMaterial(GameObject* owner) : Component(owner)
 {
 	type = ComponentType::MATERIAL;
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
-	if (checkeredPatternBufferId == 0) {
+	if (materialsCount == 0) {
 		checkeredPatternBufferId = CreateCheckeredTexture();
-		checkeredTextureCount++;
 	}
-
+	materialsCount++;
 	//LOGGER("Component of type '%s'", GetString(type));
 }
 
@@ -42,14 +41,13 @@ ComponentMaterial::~ComponentMaterial()
 		loadedShaderCount.at(shader)--;
 	}
 
-	if (textureBufferId == checkeredPatternBufferId)
-		checkeredTextureCount--;
-	else
+	if (textureBufferId != checkeredPatternBufferId)
 		glDeleteTextures(1, &textureBufferId);
 
 	textureBufferId = 0;
+	materialsCount--;
 
-	if (checkeredTextureCount == 0) {
+	if (materialsCount == 0) {
 		glDeleteTextures(1, &checkeredPatternBufferId);
 		checkeredPatternBufferId = 0;
 	}
@@ -585,7 +583,6 @@ bool ComponentMaterial::LoadTexture()
 	{
 		textureBufferId = checkeredPatternBufferId;
 		textureInfo.Zero();
-		checkeredTextureCount++;
 	}
 	else
 		textureBufferId = App->renderer->LoadImageWithDevIL(texturePath, &textureInfo);

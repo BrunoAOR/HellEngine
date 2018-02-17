@@ -76,8 +76,8 @@ private:
 private:
 
 	/* General */
+	static uint materialsCount;
 	static uint checkeredPatternBufferId;
-	static uint checkeredTextureCount;
 
 	TextureConfigutaion textureConfiguration;
 	TextureInfo textureInfo;
