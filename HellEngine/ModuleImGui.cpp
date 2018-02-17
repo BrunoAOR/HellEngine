@@ -654,12 +654,12 @@ void ModuleImGui::DrawGuizmo()
 
     ImGuizmo::SetRect(0, 0, App->window->getWidth(), App->window->getHeight());
 
-    float translation[3]{0,0,0};
-    float rotation[3]{ 0,0,0 };
-    float scale[3]{ 0,0,0 };
-
     if (App->scene->editorInfo.selectedGameObject != nullptr)
     {
+		float translation[3];
+		float rotation[3];
+		float scale[3];
+
         ComponentTransform* transform = (ComponentTransform*)App->scene->editorInfo.selectedGameObject->GetComponent(ComponentType::TRANSFORM);
 
         float4x4 modelMatrix = transform->GetModelMatrix4x4();

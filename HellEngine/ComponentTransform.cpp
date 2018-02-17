@@ -353,7 +353,7 @@ void ComponentTransform::ApplyGuizmo(const float4x4& modelMatrix, const float3& 
 {
     if (!isStatic) 
     {
-        worldModelMatrix = modelMatrix;
+        localModelMatrix = modelMatrix;
 
         position = newPosition;
 
@@ -363,7 +363,7 @@ void ComponentTransform::ApplyGuizmo(const float4x4& modelMatrix, const float3& 
 
         float3 radAngles = DegToRad((float3)newRotation);
 
-        rotation = Quat::FromEulerXYX(radAngles.x, radAngles.y, radAngles.z);
+        rotation = Quat::FromEulerXYZ(radAngles.x, radAngles.y, radAngles.z);
 
         scale = newScale;
     }
