@@ -23,6 +23,8 @@ ComponentCamera::ComponentCamera(GameObject * owner) : Component(owner)
 ComponentCamera::~ComponentCamera()
 {
 	//LOGGER("Deleting Component of type '%s'", GetString(type));
+	if (isActiveCamera)
+		App->scene->SetActiveGameCamera(nullptr);
 }
 
 bool ComponentCamera::Init()
