@@ -182,6 +182,9 @@ bool ComponentMaterial::IsValid()
 /* Attemps to apply all of the material setup */
 bool ComponentMaterial::Apply()
 {
+	if (shader != nullptr)
+		loadedShaderCount.at(shader)--;
+
 	Shader* s = ShaderAlreadyLinked();
 
 	if (s) {
@@ -200,8 +203,6 @@ bool ComponentMaterial::Apply()
 		if (isValid) {
 			loadedShaders.push_back(shader);
 			loadedShaderCount.insert(std::pair<Shader*, int>(shader, 1));
-			memset(vertexShaderPath, 0, sizeof(vertexShaderPath));
-			memset(fragmentShaderPath, 0, sizeof(fragmentShaderPath));
 		}
 		else {
 			delete shader;
@@ -397,8 +398,10 @@ Shader * ComponentMaterial::ShaderAlreadyLinked()
 {
 	Shader* s = nullptr;
 	for (std::vector<Shader*>::iterator it = loadedShaders.begin(); it != loadedShaders.end() && s == nullptr; ++it) {
-		if ((strcmp(vertexShaderPath, (*it)->vertexPath) == 0) && (strcmp(fragmentShaderPath, (*it)->fragmentPath) == 0))
+		if ((strcmp(vertexShaderPath, (*it)->vertexPath) == 0) && (strcmp(fragmentShaderPath, (*it)->fragmentPath) == 0)) {
 			s = *it;
+			break;
+		}
 	}
 
 	return s;
