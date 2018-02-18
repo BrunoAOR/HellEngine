@@ -491,8 +491,10 @@ void ComponentMesh::UpdateBoundingBox()
 bool ComponentMesh::LoadModel()
 {
 	bool success = model.Load(modelPath);
-	if (success)
+	if (success) {
 		activeVaoChanged = true;
+		UpdateBoundingBox();
+	}
 
 	return success;
 }

@@ -204,6 +204,7 @@ void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 	GameObject* go = gameObject;
 	std::vector<GameObject*> children;
 	ComponentTransform* t = nullptr;
+	ComponentMesh* m = nullptr;
 
 	stack.push(go);
 
@@ -211,16 +212,44 @@ void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 		go = stack.top();
 		stack.pop();
 		t = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM);
+		m = (ComponentMesh*)go->GetComponent(ComponentType::MESH);
 
 		if (t != nullptr) {
 			t->boundingBox.SetNegativeInfinity();
-			t->boundingBox.Enclose(baseBoundingBox.data(), baseBoundingBox.size());
+
+			if (m != nullptr) {
+				EncloseBoundingBox(t, m);				
+			}
+			else {
+				t->boundingBox.Enclose(baseBoundingBox.data(), baseBoundingBox.size());
+			}
+			
 			t->boundingBox.TransformBB(GetModelMatrix4x4().Transposed());
 
 			children = go->GetChildren();
 
 			for (int i = children.size(); i > 0; i--)
 				stack.push(children.at(i - 1));
+		}
+	}
+}
+
+void ComponentTransform::EncloseBoundingBox(ComponentTransform* transform, ComponentMesh * mesh)
+{
+	if (mesh->GetActiveModelInfo() != nullptr) {
+		uint size = mesh->GetActiveModelInfo()->vaoInfos.size();
+		if (size > 0) {
+			float3 minPoint(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+			float3 maxPoint(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest());
+			for (uint i = 0; i < size; i++) {
+				std::vector<float3> vertices = mesh->GetActiveModelInfo()->vaoInfos.at(i).vertices;
+				for (uint j = 0; j < vertices.size(); j++) {
+					minPoint = minPoint.Min(vertices.at(j));
+					maxPoint = maxPoint.Max(vertices.at(j));
+				}
+			}
+
+			transform->boundingBox.Enclose(minPoint, maxPoint);
 		}
 	}
 }
