@@ -84,12 +84,23 @@ void ComponentTransform::Update()
 				vH[2] = boundingBox.CornerPoint(7).z;
 			}
 
+			GLfloat cGreen[3];
+
+			{
+				cGreen[0] = 0.0f;
+				cGreen[1] = 1.0f;
+				cGreen[2] = 0.0f;
+			}
+
 			GLfloat uniqueVertices[24] = { SP_ARR_3(vA), SP_ARR_3(vB), SP_ARR_3(vC), SP_ARR_3(vD), SP_ARR_3(vE), SP_ARR_3(vF), SP_ARR_3(vG), SP_ARR_3(vH) };
+			GLfloat uniqueColors[24] = { SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen) };
 
 			for (int i = 0; i < 8 * 6; ++i)
 			{
 				if (i % 6 == 0 || i % 6 == 1 || i % 6 == 2)
 					boundingBoxUniqueData[i] = uniqueVertices[(i / 6) * 3 + (i % 6)];
+				else
+					boundingBoxUniqueData[i] = uniqueColors[(i / 6) * 3 + ((i % 6) - 3)];
 			}
 
 			glBindVertexArray(baseBoundingBoxVAO.vao);
