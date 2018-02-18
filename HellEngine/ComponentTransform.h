@@ -35,6 +35,7 @@ public:
 	void SetRotationDeg(float x, float y, float z);
 
 	void UpdateBoundingBox(ComponentMesh* mesh = nullptr);
+	void EncloseBoundingBox(ComponentTransform* transform, ComponentMesh* mesh);
 
 	float* GetModelMatrix();
 	float4x4& GetModelMatrix4x4();

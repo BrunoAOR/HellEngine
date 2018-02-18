@@ -8,11 +8,11 @@
 #include "TextureConfiguration.h"
 #include "TextureInfo.h"
 #include "globals.h"
-#include "VAOInfo.h"
 
 class ComponentMesh;
 class ComponentTransform;
 class Shader;
+struct ModelInfo;
 
 class ComponentMaterial :
 	public Component
@@ -54,7 +54,7 @@ public:
 private:
 
 	/* Draws a certain model using the Material's shader and texture, from a Vertex Array Oject WITH indexes */
-	bool DrawElements(float* modelMatrix, uint vao, uint vertexCount, int indexesType);
+	bool DrawElements(float* modelMatrix, const ModelInfo* modelInfo);
 
 	uint CreateCheckeredTexture();
 
@@ -76,8 +76,8 @@ private:
 private:
 
 	/* General */
+	static uint materialsCount;
 	static uint checkeredPatternBufferId;
-	static uint checkeredTextureCount;
 
 	TextureConfigutaion textureConfiguration;
 	TextureInfo textureInfo;
@@ -108,7 +108,7 @@ private:
 	static std::vector<Shader*> loadedShaders;
 	static std::map<Shader*, uint> loadedShaderCount;
 
-	VaoInfo vaoInfo;
+	const ModelInfo* modelInfo = nullptr;
 };
 
 #endif // !__H_COMPONENT_MATERIAL__

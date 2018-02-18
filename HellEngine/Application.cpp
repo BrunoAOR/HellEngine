@@ -18,9 +18,9 @@ Application::Application()
 	modules.push_back(input = new ModuleInput());
 	modules.push_back(time = new ModuleTime());
 	modules.push_back(window = new ModuleWindow());
+	modules.push_back(renderer = new ModuleRender());
 	modules.push_back(scene = new ModuleScene());
 	modules.push_back(editorCamera = new ModuleEditorCamera());
-	modules.push_back(renderer = new ModuleRender());
 	modules.push_back(imgui = new ModuleImGui());
 	modules.push_back(audio = new ModuleAudio());
 	modules.push_back(debugDraw = new ModuleDebugDraw());

@@ -10,11 +10,13 @@
 #include "ModuleRender.h"
 #include "ModuleScene.h"
 #include "Shader.h"
+#include "ModelInfo.h"
+#include "VAOInfo.h"
 #include "globals.h"
 #include "openGL.h"
 
+uint ComponentMaterial::materialsCount = 0;
 uint ComponentMaterial::checkeredPatternBufferId = 0;
-uint ComponentMaterial::checkeredTextureCount = 0;
 std::vector<Shader*> ComponentMaterial::loadedShaders;
 std::map<Shader*, uint> ComponentMaterial::loadedShaderCount;
 
@@ -22,11 +24,10 @@ ComponentMaterial::ComponentMaterial(GameObject* owner) : Component(owner)
 {
 	type = ComponentType::MATERIAL;
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
-	if (checkeredPatternBufferId == 0) {
+	if (materialsCount == 0) {
 		checkeredPatternBufferId = CreateCheckeredTexture();
-		checkeredTextureCount++;
 	}
-
+	materialsCount++;
 	//LOGGER("Component of type '%s'", GetString(type));
 }
 
@@ -41,14 +42,13 @@ ComponentMaterial::~ComponentMaterial()
 		loadedShaderCount.at(shader)--;
 	}
 
-	if (textureBufferId == checkeredPatternBufferId)
-		checkeredTextureCount--;
-	else
+	if (textureBufferId != checkeredPatternBufferId)
 		glDeleteTextures(1, &textureBufferId);
 
 	textureBufferId = 0;
+	materialsCount--;
 
-	if (checkeredTextureCount == 0) {
+	if (materialsCount == 0) {
 		glDeleteTextures(1, &checkeredPatternBufferId);
 		checkeredPatternBufferId = 0;
 	}
@@ -103,17 +103,17 @@ void ComponentMaterial::Update()
 
 			BROFILER_CATEGORY("ComponentMaterial::GetVao", Profiler::Color::Gold);
 			if (mesh->activeVaoChanged) {
-				vaoInfo = mesh->GetActiveVao();
+				modelInfo = mesh->GetActiveModelInfo();
 				mesh->activeVaoChanged = false;
 			}
 			BROFILER_CATEGORY("ComponentMaterial::ValidVao", Profiler::Color::Gold);
-			if (vaoInfo.vao == 0)
+			if (!modelInfo || modelInfo->vaoInfos.size() == 0)
 			{
 				return;
 			}
 
 			BROFILER_CATEGORY("ComponentMaterial::DrawingCall", Profiler::Color::Gold);
-			DrawElements(modelMatrix, vaoInfo.vao, vaoInfo.elementsCount, vaoInfo.indexesType);
+			DrawElements(modelMatrix, modelInfo);
 		}
 	}
 }
@@ -407,9 +407,9 @@ Shader * ComponentMaterial::ShaderAlreadyLinked()
 	return s;
 }
 
-bool ComponentMaterial::DrawElements(float * modelMatrix, uint vao, uint vertexCount, int indexesType)
+bool ComponentMaterial::DrawElements(float * modelMatrix, const ModelInfo* modelInfo)
 {
-	if (!IsValid())
+	if (!IsValid() || modelInfo == nullptr || modelInfo->vaoInfos.size() == 0)
 		return false;
 
 	shader->Activate();
@@ -419,13 +419,19 @@ bool ComponentMaterial::DrawElements(float * modelMatrix, uint vao, uint vertexC
 	glUniformMatrix4fv(privateUniforms["projection"], 1, GL_FALSE, App->editorCamera->camera->GetProjectionMatrix());
 	UpdatePublicUniforms();
 
-	glBindTexture(GL_TEXTURE_2D, textureBufferId);
+	for (const VaoInfo& vaoInfo : modelInfo->vaoInfos)
+	{
+		int textureId = textureBufferId;
+		if (textureBufferId == checkeredPatternBufferId && vaoInfo.textureID != 0)
+			textureId = vaoInfo.textureID;
+		
+		glBindTexture(GL_TEXTURE_2D, textureId);
+		glBindVertexArray(vaoInfo.vao);
+		glDrawElements(GL_TRIANGLES, vaoInfo.elementsCount, GL_UNSIGNED_INT, nullptr);
+		glBindVertexArray(GL_NONE);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
 
-	glBindVertexArray(vao);
-	glDrawElements(GL_TRIANGLES, vertexCount, indexesType, nullptr);
-	glBindVertexArray(GL_NONE);
-
-	glBindTexture(GL_TEXTURE_2D, 0);
 
 	shader->Deactivate();
 	return true;
@@ -584,7 +590,6 @@ bool ComponentMaterial::LoadTexture()
 	{
 		textureBufferId = checkeredPatternBufferId;
 		textureInfo.Zero();
-		checkeredTextureCount++;
 	}
 	else
 		textureBufferId = App->renderer->LoadImageWithDevIL(texturePath, &textureInfo);

@@ -23,6 +23,8 @@ ComponentCamera::ComponentCamera(GameObject * owner) : Component(owner)
 ComponentCamera::~ComponentCamera()
 {
 	//LOGGER("Deleting Component of type '%s'", GetString(type));
+	if (isActiveCamera)
+		App->scene->SetActiveGameCamera(nullptr);
 }
 
 bool ComponentCamera::Init()
@@ -363,7 +365,7 @@ void ComponentCamera::DrawFrustum()
 
 	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
 	if (transform != nullptr)
-		App->debugDraw->DrawElements(transform->GetModelMatrix(), frustumVAO.vao, frustumVAO.elementsCount, frustumVAO.indexesType);
+		App->debugDraw->DrawElements(transform->GetModelMatrix(), frustumVAO.vao, frustumVAO.elementsCount);
 }
 
 void ComponentCamera::CreateFrustumVAO()
@@ -400,7 +402,7 @@ void ComponentCamera::CreateFrustumVAO()
 		const uint uniqueVertCount = 8;
 		float uniqueVertices[uniqueVertCount * 3] = { SP_ARR_3(nearA), SP_ARR_3(nearB), SP_ARR_3(nearC), SP_ARR_3(nearD), SP_ARR_3(farA), SP_ARR_3(farB), SP_ARR_3(farC), SP_ARR_3(farD) };
 		GLfloat uniqueColors[uniqueVertCount * 3] = { SP_ARR_3(cRed), SP_ARR_3(cRed), SP_ARR_3(cRed), SP_ARR_3(cRed), SP_ARR_3(cRed), SP_ARR_3(cRed), SP_ARR_3(cRed), SP_ARR_3(cRed) };
-		GLubyte indices[12 * 2] = {
+		GLuint indices[12 * 2] = {
 			0, 1,	1, 2,	2, 3,	3, 0,	/* Near plane */
 			4, 5,	5, 6,	6, 7,	7, 4,	/*  Far plane */
 			0, 4,	1, 5,	2, 6,	3, 7	/* Near to far links */
@@ -420,7 +422,6 @@ void ComponentCamera::CreateFrustumVAO()
 
 		frustumVAO.name = "BaseBoundingBox";
 		frustumVAO.elementsCount = uniqueVertCount * 3;
-		frustumVAO.indexesType = GL_UNSIGNED_BYTE;
 
 		glGenVertexArrays(1, &frustumVAO.vao);
 		glGenBuffers(1, &frustumVAO.vbo);
@@ -435,7 +436,7 @@ void ComponentCamera::CreateFrustumVAO()
 		glEnableVertexAttribArray(1);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, frustumVAO.ebo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLubyte) * frustumVAO.elementsCount, indices, GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * frustumVAO.elementsCount, indices, GL_STATIC_DRAW);
 
 		glBindVertexArray(GL_NONE);
 		glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);

@@ -315,13 +315,19 @@
     <ClInclude Include="SpaceOctTree.h">
       <Filter>Scene Management</Filter>
     </ClInclude>
-    <ClInclude Include="VAOInfo.h">
-      <Filter>General</Filter>
-    </ClInclude>
     <ClInclude Include="ModuleDebugDraw.h">
       <Filter>Engine Modules</Filter>
     </ClInclude>
     <ClInclude Include="physicsFunctions.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="VaoInfo.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelInfo.h">
       <Filter>General</Filter>
     </ClInclude>
   </ItemGroup>
@@ -519,6 +525,9 @@
       <Filter>Engine Modules</Filter>
     </ClCompile>
     <ClCompile Include="physicsFunctions.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
       <Filter>General</Filter>
     </ClCompile>
   </ItemGroup>

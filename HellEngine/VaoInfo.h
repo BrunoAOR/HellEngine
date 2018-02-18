@@ -13,7 +13,7 @@ struct VaoInfo
 	uint elementsCount = 0;
 	std::vector<float3> vertices;
 	std::vector<uint> indices;
-	int indexesType = 0;
+	uint textureID = 0;
 };
 
 #endif

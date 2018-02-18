@@ -2,11 +2,13 @@
 #define __H_COMPONENT_MESH__
 
 #include <vector>
-#include "Component.h"
-#include "globals.h"
-#include "VAOInfo.h"
 #include "MathGeoLib\src\Math\float3.h"
+#include "Component.h"
+#include "Model.h"
+#include "VAOInfo.h"
+#include "globals.h"
 
+struct ModelInfo;
 typedef float GLfloat;
 
 class ComponentMesh :
@@ -17,8 +19,8 @@ public:
 	ComponentMesh(GameObject* owner);
 	virtual ~ComponentMesh() override;
 
-	const VaoInfo& GetActiveVao() const;
-	bool SetActiveVao(uint index);
+	const ModelInfo* GetActiveModelInfo() const;
+	bool SetActiveModelInfo(int index);
 
 	virtual void OnEditor() override;
 
@@ -35,11 +37,17 @@ private:
 	void CreateSphereVAO(uint rings, uint sections);
 
 	void UpdateBoundingBox();
+	bool LoadModel();
+	void UnloadModel();
 
 private:
 
-	static std::vector<VaoInfo> vaoInfos;
+	static uint meshesCount;
+	static std::vector<ModelInfo> defaultModelInfos;
+	
 	int activeVao = -1;
+	Model model;
+	char modelPath[256] = "";
 
 };
 

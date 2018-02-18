@@ -175,7 +175,7 @@ void SpaceQuadNode::DrawNode()
 			if (root->quadVao.vao != 0)
 			{
 				float identity[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
-				App->debugDraw->DrawElements(identity, root->quadVao.vao, root->quadVao.elementsCount, root->quadVao.indexesType);
+				App->debugDraw->DrawElements(identity, root->quadVao.vao, root->quadVao.elementsCount);
 			}
 		}
 		else {
@@ -310,13 +310,13 @@ void SpaceQuadNode::CreateVAO()
 	const uint uniqueVertCount = 8;
 	GLfloat uniqueVertices[allVertCount] = { SP_ARR_3(vA), SP_ARR_3(vB), SP_ARR_3(vC), SP_ARR_3(vD), SP_ARR_3(vE), SP_ARR_3(vF), SP_ARR_3(vG), SP_ARR_3(vH) };
 	GLfloat uniqueColors[allVertCount] = { SP_ARR_3(cYellow), SP_ARR_3(cYellow), SP_ARR_3(cYellow), SP_ARR_3(cYellow), SP_ARR_3(cYellow), SP_ARR_3(cYellow), SP_ARR_3(cYellow), SP_ARR_3(cYellow) };
-	GLubyte vertIndexes[] = {
+	GLuint vertIndexes[] = {
 		0, 1,	1, 2,	2, 3,	3, 0,	/* front face */
 		4, 5,	5, 6,	6, 7,	7, 4,	/* back face */
 		0, 4,	1, 5,	2, 6,	3, 7	/* front-back links */
 
 	};
-	GLubyte cornerIndexes[] = { 0, 1, 2, 3, 4, 5, 6, 7 }; /* Will use later */
+	GLuint cornerIndexes[] = { 0, 1, 2, 3, 4, 5, 6, 7 }; /* Will use later */
 
 	float allUniqueData[uniqueVertCount * 6];
 
@@ -334,7 +334,6 @@ void SpaceQuadNode::CreateVAO()
 
 	quadVao.name = "QuadNode";
 	quadVao.elementsCount = allVertCount;
-	quadVao.indexesType = GL_UNSIGNED_BYTE;
 
 	glGenVertexArrays(1, &quadVao.vao);
 	glGenBuffers(1, &quadVao.vbo);
@@ -349,7 +348,7 @@ void SpaceQuadNode::CreateVAO()
 	glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadVao.ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLubyte) * quadVao.elementsCount, vertIndexes, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * quadVao.elementsCount, vertIndexes, GL_STATIC_DRAW);
 
 	glBindVertexArray(GL_NONE);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);

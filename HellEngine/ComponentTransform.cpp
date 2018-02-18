@@ -84,12 +84,23 @@ void ComponentTransform::Update()
 				vH[2] = boundingBox.CornerPoint(7).z;
 			}
 
+			GLfloat cGreen[3];
+
+			{
+				cGreen[0] = 0.0f;
+				cGreen[1] = 1.0f;
+				cGreen[2] = 0.0f;
+			}
+
 			GLfloat uniqueVertices[24] = { SP_ARR_3(vA), SP_ARR_3(vB), SP_ARR_3(vC), SP_ARR_3(vD), SP_ARR_3(vE), SP_ARR_3(vF), SP_ARR_3(vG), SP_ARR_3(vH) };
+			GLfloat uniqueColors[24] = { SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen) };
 
 			for (int i = 0; i < 8 * 6; ++i)
 			{
 				if (i % 6 == 0 || i % 6 == 1 || i % 6 == 2)
 					boundingBoxUniqueData[i] = uniqueVertices[(i / 6) * 3 + (i % 6)];
+				else
+					boundingBoxUniqueData[i] = uniqueColors[(i / 6) * 3 + ((i % 6) - 3)];
 			}
 
 			glBindVertexArray(baseBoundingBoxVAO.vao);
@@ -101,7 +112,7 @@ void ComponentTransform::Update()
 
 			if (baseBoundingBoxVAO.vao != 0) {
 				float identity[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
-				App->debugDraw->DrawElements(identity, baseBoundingBoxVAO.vao, baseBoundingBoxVAO.elementsCount, baseBoundingBoxVAO.indexesType);
+				App->debugDraw->DrawElements(identity, baseBoundingBoxVAO.vao, baseBoundingBoxVAO.elementsCount);
 			}
 		}
 	}
@@ -193,6 +204,7 @@ void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 	GameObject* go = gameObject;
 	std::vector<GameObject*> children;
 	ComponentTransform* t = nullptr;
+	ComponentMesh* m = nullptr;
 
 	stack.push(go);
 
@@ -200,16 +212,44 @@ void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 		go = stack.top();
 		stack.pop();
 		t = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM);
+		m = (ComponentMesh*)go->GetComponent(ComponentType::MESH);
 
 		if (t != nullptr) {
 			t->boundingBox.SetNegativeInfinity();
-			t->boundingBox.Enclose(baseBoundingBox.data(), baseBoundingBox.size());
+
+			if (m != nullptr) {
+				EncloseBoundingBox(t, m);				
+			}
+			else {
+				t->boundingBox.Enclose(baseBoundingBox.data(), baseBoundingBox.size());
+			}
+			
 			t->boundingBox.TransformBB(GetModelMatrix4x4().Transposed());
 
 			children = go->GetChildren();
 
 			for (int i = children.size(); i > 0; i--)
 				stack.push(children.at(i - 1));
+		}
+	}
+}
+
+void ComponentTransform::EncloseBoundingBox(ComponentTransform* transform, ComponentMesh * mesh)
+{
+	if (mesh->GetActiveModelInfo() != nullptr) {
+		uint size = mesh->GetActiveModelInfo()->vaoInfos.size();
+		if (size > 0) {
+			float3 minPoint(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+			float3 maxPoint(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest());
+			for (uint i = 0; i < size; i++) {
+				std::vector<float3> vertices = mesh->GetActiveModelInfo()->vaoInfos.at(i).vertices;
+				for (uint j = 0; j < vertices.size(); j++) {
+					minPoint = minPoint.Min(vertices.at(j));
+					maxPoint = maxPoint.Max(vertices.at(j));
+				}
+			}
+
+			transform->boundingBox.Enclose(minPoint, maxPoint);
 		}
 	}
 }
@@ -452,13 +492,13 @@ void ComponentTransform::CreateBBVAO()
 	const uint uniqueVertCount = 8;
 	GLfloat uniqueVertices[allVertCount] = { SP_ARR_3(vA), SP_ARR_3(vB), SP_ARR_3(vC), SP_ARR_3(vD), SP_ARR_3(vE), SP_ARR_3(vF), SP_ARR_3(vG), SP_ARR_3(vH) };
 	GLfloat uniqueColors[allVertCount] = { SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen) };
-	GLubyte vertIndexes[] = {
+	GLuint vertIndexes[] = {
 		0, 1,	0, 2,	2, 3,	3, 1,	/* front face */
 		4, 5,	4, 6,	6, 7,	7, 5,	/* back face */
 		0, 4,	1, 5,	2, 6,	3, 7	/* front-back links */
 
 	};
-	GLubyte cornerIndexes[] = { 0, 1, 2, 3, 4, 5, 6, 7 }; /* Will use later */
+	GLuint cornerIndexes[] = { 0, 1, 2, 3, 4, 5, 6, 7 }; /* Will use later */
 
 	for (int i = 0; i < uniqueVertCount * 6; ++i)
 	{
@@ -474,7 +514,6 @@ void ComponentTransform::CreateBBVAO()
 
 	baseBoundingBoxVAO.name = "BaseBoundingBox";
 	baseBoundingBoxVAO.elementsCount = allVertCount;
-	baseBoundingBoxVAO.indexesType = GL_UNSIGNED_BYTE;
 
 	glGenVertexArrays(1, &baseBoundingBoxVAO.vao);
 	glGenBuffers(1, &baseBoundingBoxVAO.vbo);
@@ -489,7 +528,7 @@ void ComponentTransform::CreateBBVAO()
 	glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, baseBoundingBoxVAO.ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLubyte) * baseBoundingBoxVAO.elementsCount, vertIndexes, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * baseBoundingBoxVAO.elementsCount, vertIndexes, GL_STATIC_DRAW);
 
 	glBindVertexArray(GL_NONE);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);

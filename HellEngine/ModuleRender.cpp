@@ -167,6 +167,9 @@ bool ModuleRender::InitOpenGL() const
 	glEnable(GL_TEXTURE_2D);
 	glDisable(GL_FOG);
 
+	glFrontFace(GL_CCW);
+	glCullFace(GL_BACK);
+
 	/* Set viewport */
 	//glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 

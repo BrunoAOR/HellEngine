@@ -64,9 +64,9 @@ private:
 
 private:
 
-	ComponentCamera* activeGameCamera;
+	ComponentCamera* activeGameCamera = nullptr;
 	SpaceQuadTree  quadTree;
-	
+
 };
 
 template<typename T>
