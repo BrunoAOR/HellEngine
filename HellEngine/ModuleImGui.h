@@ -46,9 +46,12 @@ private:
 	/* Draws the QuadTree options window*/
 	void ShowQuadTreeWindow(float mainMenuBarHeight, bool* pOpen);
 
+	/* Draws the Raycast testing window */
+	void ShowRaycastTestWindow(float mainmenuBarHeight, bool* pOpen);
+
     /* Draws Guizmo */
     void DrawGuizmo();
-
+	
 private:
 
 	std::string licenseString;

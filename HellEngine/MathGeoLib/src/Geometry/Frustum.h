@@ -207,6 +207,8 @@ public:
 		@see SetKind(), SetViewPlaneDistances(), SetFrame(), SetPos(), SetUp(), SetPerspective(), SetOrthographic(), Front(). */
 	void SetFront(const vec &front);
 
+	void SetFrontAndUp(const vec &f, const vec &u);
+
 	/// Sets the world-space camera up direction vector of this Frustum.
 	/** @note Calling this function recomputes the cached world matrix of this Frustum.
 		@see SetKind(), SetViewPlaneDistances(), SetFrame(), SetPos(), SetFront(), SetPerspective(), SetOrthographic(), Up(). */

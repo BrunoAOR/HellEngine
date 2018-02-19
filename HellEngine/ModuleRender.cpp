@@ -76,7 +76,7 @@ UpdateStatus ModuleRender::PreUpdate()
 
 /* Called every draw update */
 UpdateStatus ModuleRender::Update()
-{	
+{
 	/* DrawGroundGrid */
 	{
 		if (groundGridInfo.active)
@@ -113,6 +113,17 @@ bool ModuleRender::CleanUp()
 void ModuleRender::onWindowResize()
 {
 	glViewport(0, 0, App->window->getWidth(), App->window->getHeight());
+}
+
+bool ModuleRender::isBackFaceCullActive()
+{
+	if (glIsEnabled(GL_CULL_FACE))
+	{
+		GLint faceMode;
+		glGetIntegerv(GL_CULL_FACE_MODE, &faceMode);
+		return faceMode == GL_BACK || faceMode == GL_FRONT_AND_BACK;
+	}
+	return false;
 }
 
 /* Initializes the GLEW library */
@@ -155,6 +166,9 @@ bool ModuleRender::InitOpenGL() const
 	glEnable(GL_COLOR_MATERIAL);
 	glEnable(GL_TEXTURE_2D);
 	glDisable(GL_FOG);
+
+	glFrontFace(GL_CCW);
+	glCullFace(GL_BACK);
 
 	/* Set viewport */
 	//glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);

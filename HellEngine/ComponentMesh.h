@@ -2,37 +2,34 @@
 #define __H_COMPONENT_MESH__
 
 #include <vector>
-#include "Component.h"
-#include "globals.h"
 #include "MathGeoLib\src\Math\float3.h"
+#include "Component.h"
+#include "Model.h"
+#include "VAOInfo.h"
+#include "globals.h"
 
+struct ModelInfo;
 typedef float GLfloat;
 
 class ComponentMesh :
 	public Component
 {
 public:
-	struct VaoInfo
-	{
-		const char* name = "";
-		uint vao = 0;
-		uint elementsCount = 0;
-		int indexesType = 0;
-	};
 
 	ComponentMesh(GameObject* owner);
 	virtual ~ComponentMesh() override;
 
-	VaoInfo GetActiveVao() const;
-	bool SetActiveVao(uint index);
-
-	void BuildVectorCubeVertexes(GLfloat arrayCubePoints[], int vertexesNumber);
-	std::vector<float3>* GetBuildVectorCubePoints();
+	const ModelInfo* GetActiveModelInfo() const;
+	bool SetActiveModelInfo(int index);
 
 	virtual void OnEditor() override;
 
 	/* Returns the maximum number of times that this particular Type of Component can be added to a GameObject */
 	virtual int MaxCountInGameObject() override;
+
+public:
+
+	bool activeVaoChanged = true;
 
 private:
 
@@ -40,12 +37,17 @@ private:
 	void CreateSphereVAO(uint rings, uint sections);
 
 	void UpdateBoundingBox();
+	bool LoadModel();
+	void UnloadModel();
 
 private:
 
-	static std::vector<VaoInfo> vaoInfos;
-	static std::vector<float3> vecCubeVertexes;
+	static uint meshesCount;
+	static std::vector<ModelInfo> defaultModelInfos;
+	
 	int activeVao = -1;
+	Model model;
+	char modelPath[256] = "";
 
 };
 

@@ -5,74 +5,91 @@
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "GameObject.h"
+#include "ModelInfo.h"
+#include "VAOInfo.h"
 #include "globals.h"
 #include "openGL.h"
 
-std::vector<ComponentMesh::VaoInfo> ComponentMesh::vaoInfos;
-std::vector<float3> ComponentMesh::vecCubeVertexes;
+uint ComponentMesh::meshesCount = 0;
+std::vector<ModelInfo> ComponentMesh::defaultModelInfos;
 
 ComponentMesh::ComponentMesh(GameObject* owner) : Component(owner)
 {
 	type = ComponentType::MESH;
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
-	if (vaoInfos.size() == 0)
+	if (meshesCount == 0)
 	{
 		CreateCubeVAO();
 		CreateSphereVAO(32, 32);
 	}
-	activeVao = 0;
+	++meshesCount;
 	UpdateBoundingBox();
-	LOGGER("Component of type '%s'", GetString(type));
+	//LOGGER("Component of type '%s'", GetString(type));
 }
 
 ComponentMesh::~ComponentMesh()
 {
-	LOGGER("Deleting Component of type '%s'", GetString(type));
+	//LOGGER("Deleting Component of type '%s'", GetString(type));
+	--meshesCount;
+	if (meshesCount == 0)
+	{
+		for (ModelInfo& modelInfo : defaultModelInfos)
+		{
+			for (VaoInfo& vaoInfo : modelInfo.vaoInfos)
+			{
+				glDeleteVertexArrays(1, &vaoInfo.vao);
+				glDeleteBuffers(1, &vaoInfo.vbo);
+				glDeleteBuffers(1, &vaoInfo.ebo);
+			}
+		}
+		defaultModelInfos.clear();
+	}
 }
 
-ComponentMesh::VaoInfo ComponentMesh::GetActiveVao() const
+const ModelInfo* ComponentMesh::GetActiveModelInfo() const
 {
-	return vaoInfos[activeVao];
+	if (activeVao >= 0 && activeVao < (int)defaultModelInfos.size())
+		return &defaultModelInfos[activeVao];
+	
+	if (activeVao == (int)defaultModelInfos.size())
+		return model.GetModelInfo();
+
+	return nullptr;
 }
 
-bool ComponentMesh::SetActiveVao(uint index)
+bool ComponentMesh::SetActiveModelInfo(int index)
 {
-	if (index >= vaoInfos.size())
+	/* Both -1 and the defaultModelInfos size are allowed to account for the "None" and the "Custom Model" option */
+	if (index < -1 || index > (int)defaultModelInfos.size())
 		return false;
 
 	activeVao = index;
 	UpdateBoundingBox();
+	activeVaoChanged = true;
 	return true;
 }
-
-void ComponentMesh::BuildVectorCubeVertexes(GLfloat arrayCubePoints[], int vertexesNumber)
-{
-
-	for (int i = 0; i < vertexesNumber; i++) {
-		float3 indivVertex(arrayCubePoints[i * 3], arrayCubePoints[i * 3 + 1], arrayCubePoints[i * 3 + 2]);
-		vecCubeVertexes.push_back(indivVertex);
-	}
-}
-
-std::vector<float3> *ComponentMesh::GetBuildVectorCubePoints()
-{
-	return &vecCubeVertexes;
-}
-
 
 void ComponentMesh::OnEditor()
 {
 	static bool optionsCreated = false;
+	static int selectedMeshOption = 0;
 	static std::string options = "";
+	static std::string buttonLabel = "Load Model##" + std::to_string(editorInfo.id);
+	static std::string loadModelMessage = "";
+	static bool inCustomModel = false;
 
 	if (!optionsCreated)
 	{
 		optionsCreated = true;
-		for (const VaoInfo& vaoInfo : vaoInfos)
+		options += "None";
+		options += '\0';
+		for (const ModelInfo& modelInfo : defaultModelInfos)
 		{
-			options += vaoInfo.name;
+			options += modelInfo.vaoInfos[0].name;
 			options += '\0';
 		}
+		options += "Custom Model";
+		options += '\0';
 		options += '\0';
 	}	
 
@@ -81,7 +98,29 @@ void ComponentMesh::OnEditor()
 		if (OnEditorDeleteComponent())
 			return;
 
-		ImGui::Combo("Selected Mesh", &activeVao, options.c_str());
+		selectedMeshOption = activeVao + 1;
+		if (ImGui::Combo("Selected Mesh", &selectedMeshOption, options.c_str()))
+			SetActiveModelInfo(selectedMeshOption - 1);
+
+		if (activeVao >= (int)defaultModelInfos.size())
+		{
+			inCustomModel = true;
+			ImGui::InputText("Model path", modelPath, 256);
+			if (ImGui::Button(buttonLabel.c_str()))
+			{
+				if (LoadModel())
+					loadModelMessage = "Model loaded successfully!";
+				else
+					loadModelMessage = "Failed to load model!";
+			}
+			ImGui::Text(loadModelMessage.c_str());
+		}
+		else if (inCustomModel)
+		{
+			inCustomModel = false;
+			loadModelMessage = "";
+			UnloadModel();
+		}
 	}
 }
 
@@ -200,10 +239,9 @@ void ComponentMesh::CreateCubeVAO()
 	const uint allVertCount = 36;
 	const uint uniqueVertCount = 8 + 4;
 	GLfloat uniqueVertices[uniqueVertCount * 3] = { SP_ARR_3(vA), SP_ARR_3(vB), SP_ARR_3(vC), SP_ARR_3(vD), SP_ARR_3(vE), SP_ARR_3(vF), SP_ARR_3(vG), SP_ARR_3(vH), SP_ARR_3(vE), SP_ARR_3(vF), SP_ARR_3(vG), SP_ARR_3(vH) };
-	BuildVectorCubeVertexes(uniqueVertices, numCubeUniqueVertexes);
 	GLfloat uniqueColors[uniqueVertCount * 3] = { SP_ARR_3(cRed), SP_ARR_3(cGreen), SP_ARR_3(cWhite), SP_ARR_3(cBlue), SP_ARR_3(cBlue), SP_ARR_3(cWhite), SP_ARR_3(cGreen), SP_ARR_3(cRed), SP_ARR_3(cBlue), SP_ARR_3(cWhite), SP_ARR_3(cGreen), SP_ARR_3(cRed) };
 	GLfloat uniqueUVCoords[uniqueVertCount * 2] = { SP_ARR_2(bottomLeft), SP_ARR_2(bottomRight), SP_ARR_2(topLeft), SP_ARR_2(topRight), SP_ARR_2(bottomRight), SP_ARR_2(bottomLeft), SP_ARR_2(topRight), SP_ARR_2(topLeft), SP_ARR_2(topLeft), SP_ARR_2(topRight), SP_ARR_2(bottomLeft), SP_ARR_2(bottomRight) };
-	GLubyte verticesOrder[allVertCount] = { 0, 1, 2, 1, 3, 2,		/* Front face */
+	GLuint verticesOrder[allVertCount] = { 0, 1, 2, 1, 3, 2,		/* Front face */
 		1, 5, 3, 5, 7, 3,		/* Right face */
 		5, 4, 7, 4, 6, 7,		/* Back face */
 		4, 0, 6, 0, 2, 6,		/* Left face */
@@ -231,17 +269,20 @@ void ComponentMesh::CreateCubeVAO()
 	VaoInfo cubeVaoInfo;
 	cubeVaoInfo.name = "Cube";
 	cubeVaoInfo.elementsCount = allVertCount;
-	cubeVaoInfo.indexesType = GL_UNSIGNED_BYTE;
-	
-	uint VBO;
-	uint EBO;
+	cubeVaoInfo.vertices = std::vector<float3>{ float3(vA[0], vA[1], vA[2]), float3(vB[0], vB[1], vB[2]), float3(vC[0], vC[1], vC[2]), float3(vD[0], vD[1], vD[2]), float3(vE[0], vE[1], vE[2]), float3(vF[0], vF[1], vF[2]), float3(vG[0], vG[1], vG[2]), float3(vH[0], vH[1], vH[2]) };
+	cubeVaoInfo.indices = { 0, 1, 2, 1, 3, 2,		/* Front face */
+		1, 5, 3, 5, 7, 3,		/* Right face */
+		5, 4, 7, 4, 6, 7,		/* Back face */
+		4, 0, 6, 0, 2, 6,		/* Left face */
+		2, 3, 7, 2, 7, 6,	/* Top face */
+		0, 5, 1, 5, 0, 4 };		/* Botttom face */
 
 	glGenVertexArrays(1, &cubeVaoInfo.vao);
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
+	glGenBuffers(1, &cubeVaoInfo.vbo);
+	glGenBuffers(1, &cubeVaoInfo.ebo);
 
 	glBindVertexArray(cubeVaoInfo.vao);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, cubeVaoInfo.vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uniqueVertCount * 8, allUniqueData, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
@@ -251,13 +292,15 @@ void ComponentMesh::CreateCubeVAO()
 	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE); /* Can be unbound, since the vertex information is stored in the VAO throught the VertexAttribPointers */
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLubyte) * cubeVaoInfo.elementsCount, verticesOrder, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeVaoInfo.ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * cubeVaoInfo.elementsCount, verticesOrder, GL_STATIC_DRAW);
 
 	glBindVertexArray(GL_NONE);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE); /* Can be unbound AFTER unbinding the VAO, since the VAO stores information about the bound EBO */
 
-	vaoInfos.push_back(cubeVaoInfo);
+	ModelInfo modelInfo;
+	modelInfo.vaoInfos.push_back(cubeVaoInfo);
+	defaultModelInfos.push_back(modelInfo);
 }
 
 void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
@@ -284,6 +327,7 @@ void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 	*d++ = 0;
 	*d++ = radius;
 	*d++ = 0;
+	sphereVaoInfo.vertices.push_back(float3(0, radius, 0));
 
 	*d++ = 1.0f;
 	*d++ = 0;
@@ -310,6 +354,8 @@ void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 			*d++ = x;
 			*d++ = y;
 			*d++ = z;
+			float3 vertex(x, y, z);
+			sphereVaoInfo.vertices.push_back(vertex);
 
 			float blue = blueStep * s;
 			if (blue > 1.0f)
@@ -328,6 +374,7 @@ void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 	*d++ = 0;
 	*d++ = -radius;
 	*d++ = 0;
+	sphereVaoInfo.vertices.push_back(float3(0, -radius, 0));
 
 	*d++ = 0;
 	*d++ = 1.0f;
@@ -346,7 +393,6 @@ void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 	*/
 	uint trianglesCount = 2 * sections * (rings - 1);
 	sphereVaoInfo.elementsCount = 3 * trianglesCount;
-	sphereVaoInfo.indexesType = GL_UNSIGNED_INT;
 
 	std::vector<GLuint> indexes;
 	indexes.resize(sphereVaoInfo.elementsCount);
@@ -362,25 +408,35 @@ void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 			*i = vNum;
 			if (*i > vRingMax)
 				*i = vRingMax;
+
+			sphereVaoInfo.indices.push_back(*i);
 			++i;
 
-			*i++ = vNum - sections;
+			*i = vNum - sections;
+			sphereVaoInfo.indices.push_back(*i);
+			++i;
 
 			*i = vNum - sections - 1;
 			/* Handle section wrap-around */
 			if (*i % sections == 0)
 				*i += sections;
+
+			sphereVaoInfo.indices.push_back(*i);
 			++i;
 		}
 		/* Triangle going right and then up-left from the vertex */
 		if (vNum < vRingMax)
 		{
-			*i++ = vNum;
+			*i = vNum;
+			sphereVaoInfo.indices.push_back(*i);
+			++i;
 
 			*i = vNum + 1;
 			/* Handle section wrap-around */
 			if (vNum % sections == 0)
 				*i -= sections;
+
+			sphereVaoInfo.indices.push_back(*i);
 			++i;
 
 			int idx = (int)vNum - sections;
@@ -389,6 +445,8 @@ void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 				*i = 0;
 			else
 				*i = vNum - sections;
+
+			sphereVaoInfo.indices.push_back(*i);
 			++i;
 		}
 	}
@@ -397,15 +455,12 @@ void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 	
 	/* Now we send the vertices and indexes to the VRAM */
 
-	uint VBO;
-	uint EBO;
-
 	glGenVertexArrays(1, &sphereVaoInfo.vao);
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
+	glGenBuffers(1, &sphereVaoInfo.vbo);
+	glGenBuffers(1, &sphereVaoInfo.ebo);
 
 	glBindVertexArray(sphereVaoInfo.vao);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, sphereVaoInfo.vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * verticesCount * 8, allData.data(), GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
@@ -415,13 +470,15 @@ void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE); /* Can be unbound, since the vertex information is stored in the VAO throught the VertexAttribPointers */
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphereVaoInfo.ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * sphereVaoInfo.elementsCount, indexes.data(), GL_STATIC_DRAW);
 
 	glBindVertexArray(GL_NONE);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE); /* Can be unbound AFTER unbinding the VAO, since the VAO stores information about the bound EBO */
 
-	vaoInfos.push_back(sphereVaoInfo);
+	ModelInfo modelInfo;
+	modelInfo.vaoInfos.push_back(sphereVaoInfo);
+	defaultModelInfos.push_back(modelInfo);
 }
 
 void ComponentMesh::UpdateBoundingBox()
@@ -429,4 +486,20 @@ void ComponentMesh::UpdateBoundingBox()
 	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
 	if (transform)
 		transform->UpdateBoundingBox(this);
+}
+
+bool ComponentMesh::LoadModel()
+{
+	bool success = model.Load(modelPath);
+	if (success) {
+		activeVaoChanged = true;
+		UpdateBoundingBox();
+	}
+
+	return success;
+}
+
+void ComponentMesh::UnloadModel()
+{
+	model.Clear();
 }

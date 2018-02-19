@@ -73,7 +73,7 @@ int SpaceQuadTree::Create(const std::vector<GameObject*>& gameObjects)
 	return failCount;
 }
 
-SpaceQuadTree::QuadTreeType SpaceQuadTree::GetType()
+SpaceQuadTree::QuadTreeType SpaceQuadTree::GetType() const
 {
 	return type;
 }
@@ -193,7 +193,7 @@ bool SpaceQuadTree::Remove(GameObject* gameObject)
 	return result;
 }
 
-void SpaceQuadTree::DrawTree()
+void SpaceQuadTree::DrawTree() const
 {
 	if (type!= QuadTreeType::INVALID && node && containedGameObjects.size() > 0)
 		node->DrawNode();
@@ -208,12 +208,12 @@ void SpaceQuadTree::CleanUp()
 		delete node;
 		node = nullptr;
 	}
-	minContainedPoint.x = FLT_MAX;
-	minContainedPoint.y = FLT_MAX;
-	minContainedPoint.z = FLT_MAX;
-	maxContainedPoint.x = FLT_MIN;
-	maxContainedPoint.y = FLT_MIN;
-	maxContainedPoint.z = FLT_MIN;
+	minContainedPoint.x = std::numeric_limits<float>::max();
+	minContainedPoint.y = std::numeric_limits<float>::max();
+	minContainedPoint.z = std::numeric_limits<float>::max();
+	maxContainedPoint.x = std::numeric_limits<float>::lowest();
+	maxContainedPoint.y = std::numeric_limits<float>::lowest();
+	maxContainedPoint.z = std::numeric_limits<float>::lowest();
 }
 
 int SpaceQuadTree::InsertFixed(GameObject* gameObject)

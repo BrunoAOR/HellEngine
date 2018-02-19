@@ -1,13 +1,17 @@
+#include <stack>
 #include "ImGui/imgui.h"
 #include "MathGeoLib/src/Math/TransformOps.h"
 #include "Application.h"
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "GameObject.h"
+#include "ModuleDebugDraw.h"
 #include "ModuleScene.h"
 #include "globals.h"
 #include "openGL.h"
 
+std::vector<float3> ComponentTransform::baseBoundingBox;
+VaoInfo ComponentTransform::baseBoundingBoxVAO;
 
 ComponentTransform::ComponentTransform(GameObject* owner) : Component(owner)
 {
@@ -16,79 +20,107 @@ ComponentTransform::ComponentTransform(GameObject* owner) : Component(owner)
 	position = float3(0.0f, 0.0f, 0.0f);
 	scale = float3(1.0f, 1.0f, 1.0f);
 	rotation = Quat::FromEulerXYZ(0.0f, 0.0f, 0.0f);
+	if (baseBoundingBox.size() == 0) {
+		InitializeBaseBB();
+		CreateBBVAO();
+	}
 	UpdateBoundingBox();
-	LOGGER("Component of type '%s'", GetString(type));
+	//LOGGER("Component of type '%s'", GetString(type));
 }
 
 ComponentTransform::~ComponentTransform()
 {
 	App->scene->ChangeStaticStatus(this, false);
-	LOGGER("Deleting Component of type '%s'", GetString(type));
+	//LOGGER("Deleting Component of type '%s'", GetString(type));
 }
 
 void ComponentTransform::Update()
 {
+	BROFILER_CATEGORY("ComponentTransform::Update", Profiler::Color::PapayaWhip);
 	if (drawBoundingBox) {
 		if (boundingBox.IsFinite())
 		{
-			float currentLineWidth = 0;
-			glGetFloatv(GL_LINE_WIDTH, &currentLineWidth);
-			glLineWidth(3.f);
-			float currentColor[4];
-			glGetFloatv(GL_CURRENT_COLOR, currentColor);
+			GLfloat vA[3];
+			GLfloat vB[3];
+			GLfloat vC[3];
+			GLfloat vD[3];
+			GLfloat vE[3];
+			GLfloat vF[3];
+			GLfloat vG[3];
+			GLfloat vH[3];
 
-			glBegin(GL_LINES);
-			glColor3f(0.f, 1.f, 0.f);
-			vec points[8];
-			boundingBox.GetCornerPoints(points);
+			/* Cube vertices */
+			{
+				vA[0] = boundingBox.CornerPoint(0).x;
+				vA[1] = boundingBox.CornerPoint(0).y;
+				vA[2] = boundingBox.CornerPoint(0).z;
 
-			// LEFT SIDE
-			glVertex3fv(&points[0][0]);
-			glVertex3fv(&points[1][0]);
+				vB[0] = boundingBox.CornerPoint(4).x;
+				vB[1] = boundingBox.CornerPoint(4).y;
+				vB[2] = boundingBox.CornerPoint(4).z;
 
-			glVertex3fv(&points[0][0]);
-			glVertex3fv(&points[2][0]);
+				vC[0] = boundingBox.CornerPoint(2).x;
+				vC[1] = boundingBox.CornerPoint(2).y;
+				vC[2] = boundingBox.CornerPoint(2).z;
 
-			glVertex3fv(&points[2][0]);
-			glVertex3fv(&points[3][0]);
+				vD[0] = boundingBox.CornerPoint(6).x;
+				vD[1] = boundingBox.CornerPoint(6).y;
+				vD[2] = boundingBox.CornerPoint(6).z;
 
-			glVertex3fv(&points[3][0]);
-			glVertex3fv(&points[1][0]);
+				vE[0] = boundingBox.CornerPoint(1).x;
+				vE[1] = boundingBox.CornerPoint(1).y;
+				vE[2] = boundingBox.CornerPoint(1).z;
 
-			// BACK SIDE
-			glVertex3fv(&points[0][0]);
-			glVertex3fv(&points[4][0]);
+				vF[0] = boundingBox.CornerPoint(5).x;
+				vF[1] = boundingBox.CornerPoint(5).y;
+				vF[2] = boundingBox.CornerPoint(5).z;
 
-			glVertex3fv(&points[2][0]);
-			glVertex3fv(&points[6][0]);
+				vG[0] = boundingBox.CornerPoint(3).x;
+				vG[1] = boundingBox.CornerPoint(3).y;
+				vG[2] = boundingBox.CornerPoint(3).z;
 
-			glVertex3fv(&points[4][0]);
-			glVertex3fv(&points[6][0]);
+				vH[0] = boundingBox.CornerPoint(7).x;
+				vH[1] = boundingBox.CornerPoint(7).y;
+				vH[2] = boundingBox.CornerPoint(7).z;
+			}
 
-			// RIGHT SIDE
-			glVertex3fv(&points[6][0]);
-			glVertex3fv(&points[7][0]);
+			GLfloat cGreen[3];
 
-			glVertex3fv(&points[4][0]);
-			glVertex3fv(&points[5][0]);
+			{
+				cGreen[0] = 0.0f;
+				cGreen[1] = 1.0f;
+				cGreen[2] = 0.0f;
+			}
 
-			glVertex3fv(&points[7][0]);
-			glVertex3fv(&points[5][0]);
+			GLfloat uniqueVertices[24] = { SP_ARR_3(vA), SP_ARR_3(vB), SP_ARR_3(vC), SP_ARR_3(vD), SP_ARR_3(vE), SP_ARR_3(vF), SP_ARR_3(vG), SP_ARR_3(vH) };
+			GLfloat uniqueColors[24] = { SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen) };
 
-			// FRONT SIDE
-			glVertex3fv(&points[1][0]);
-			glVertex3fv(&points[5][0]);
+			for (int i = 0; i < 8 * 6; ++i)
+			{
+				if (i % 6 == 0 || i % 6 == 1 || i % 6 == 2)
+					boundingBoxUniqueData[i] = uniqueVertices[(i / 6) * 3 + (i % 6)];
+				else
+					boundingBoxUniqueData[i] = uniqueColors[(i / 6) * 3 + ((i % 6) - 3)];
+			}
 
-			glVertex3fv(&points[3][0]);
-			glVertex3fv(&points[7][0]);
+			glBindVertexArray(baseBoundingBoxVAO.vao);
+			glBindBuffer(GL_ARRAY_BUFFER, baseBoundingBoxVAO.vbo);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8 * 6, boundingBoxUniqueData, GL_DYNAMIC_DRAW);
 
-			glEnd();
+			glBindVertexArray(GL_NONE);
+			glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
-			glLineWidth(currentLineWidth);
-			glColor4f(currentColor[0], currentColor[1], currentColor[2], currentColor[3]);
+			if (baseBoundingBoxVAO.vao != 0) {
+				float identity[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+				App->debugDraw->DrawElements(identity, baseBoundingBoxVAO.vao, baseBoundingBoxVAO.elementsCount);
+			}
 		}
 	}
+}
 
+bool ComponentTransform::Equals(ComponentTransform * t)
+{
+	return position.Equals(t->position) && scale.Equals(t->scale) && rotation.Equals(t->rotation);
 }
 
 bool ComponentTransform::GetIsStatic()
@@ -167,32 +199,58 @@ void ComponentTransform::SetRotationDeg(float x, float y, float z)
 
 void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 {
-	if (!mesh)
-		mesh = (ComponentMesh*) gameObject->GetComponent(ComponentType::MESH);
+	std::stack<GameObject*> stack;
 
-	if (mesh)
-	{
-		std::vector<float3> *cubeMeshVertexes;
-		float3 *pointerCubeMeshVertexes;
-		int numVertexes;
+	GameObject* go = gameObject;
+	std::vector<GameObject*> children;
+	ComponentTransform* t = nullptr;
+	ComponentMesh* m = nullptr;
 
-		cubeMeshVertexes = mesh->GetBuildVectorCubePoints();
-		pointerCubeMeshVertexes = &cubeMeshVertexes->at(0);
-		numVertexes = cubeMeshVertexes->size();
+	stack.push(go);
 
-		boundingBox.SetNegativeInfinity();
-		boundingBox.Enclose(pointerCubeMeshVertexes, numVertexes);
-		boundingBox.TransformBB(GetModelMatrix4x4().Transposed());
+	while (!stack.empty()) {
+		go = stack.top();
+		stack.pop();
+		t = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM);
+		m = (ComponentMesh*)go->GetComponent(ComponentType::MESH);
+
+		if (t != nullptr) {
+			t->boundingBox.SetNegativeInfinity();
+
+			if (m != nullptr) {
+				EncloseBoundingBox(t, m);				
+			}
+			else {
+				t->boundingBox.Enclose(baseBoundingBox.data(), baseBoundingBox.size());
+			}
+			
+			t->boundingBox.TransformBB(GetModelMatrix4x4().Transposed());
+
+			children = go->GetChildren();
+
+			for (int i = children.size(); i > 0; i--)
+				stack.push(children.at(i - 1));
+		}
 	}
+}
 
-	/* To make iterative */
-	std::vector<GameObject*> children = gameObject->GetChildren();
+void ComponentTransform::EncloseBoundingBox(ComponentTransform* transform, ComponentMesh * mesh)
+{
+	if (mesh->GetActiveModelInfo() != nullptr) {
+		uint size = mesh->GetActiveModelInfo()->vaoInfos.size();
+		if (size > 0) {
+			float3 minPoint(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+			float3 maxPoint(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest());
+			for (uint i = 0; i < size; i++) {
+				std::vector<float3> vertices = mesh->GetActiveModelInfo()->vaoInfos.at(i).vertices;
+				for (uint j = 0; j < vertices.size(); j++) {
+					minPoint = minPoint.Min(vertices.at(j));
+					maxPoint = maxPoint.Max(vertices.at(j));
+				}
+			}
 
-	for (std::vector<GameObject*>::iterator it = children.begin(); it != children.end(); ++it) {
-		GameObject* go = *it;
-		ComponentTransform* t = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM);
-		if (t != nullptr)
-			t->UpdateBoundingBox();
+			transform->boundingBox.Enclose(minPoint, maxPoint);
+		}
 	}
 }
 
@@ -260,7 +318,7 @@ void ComponentTransform::OnEditor()
 				}
 			}
 		}
-		
+
 		if (DEBUG_MODE)
 			ImGui::Checkbox("Draw Bounding Box", &drawBoundingBox);
 		else if (drawBoundingBox)
@@ -285,14 +343,11 @@ float4x4& ComponentTransform::GetModelMatrix4x4()
 	worldModelMatrix = localModelMatrix;
 
 	GameObject* parent = gameObject->GetParent();
-	while (parent)
+	if (parent)
 	{
 		ComponentTransform* parentTransform = (ComponentTransform*)parent->GetComponent(ComponentType::TRANSFORM);
-		if (!parentTransform)
-			break;
-
-		worldModelMatrix = worldModelMatrix * parentTransform->GetModelMatrix4x4();
-		parent = parent->GetParent();
+		if (parentTransform)
+			worldModelMatrix = worldModelMatrix * parentTransform->GetModelMatrix4x4();
 	}
 
 	return worldModelMatrix;
@@ -307,10 +362,141 @@ float4x4& ComponentTransform::UpdateLocalModelMatrix()
 	return localModelMatrix;
 }
 
+void ComponentTransform::InitializeBaseBB()
+{
+	const float s = 0.5f;
+
+	baseBoundingBox.push_back(float3(-s, -s, s));
+	baseBoundingBox.push_back(float3(s, -s, s));
+	baseBoundingBox.push_back(float3(-s, s, s));
+	baseBoundingBox.push_back(float3(s, s, s));
+	baseBoundingBox.push_back(float3(-s, -s, -s));
+	baseBoundingBox.push_back(float3(s, -s, -s));
+	baseBoundingBox.push_back(float3(-s, s, -s));
+	baseBoundingBox.push_back(float3(s, s, -s));
+}
+
+void ComponentTransform::CreateBBVAO()
+{
+	/*
+	CUBE drawing
+	  G-----H
+	 /|    /|
+	C-----D |
+	| |   | |
+	| E---|-F
+	|/    |/
+	A-----B
+
+	ABDC is the front face
+	FEGH is the back face
+	*/
+
+	GLfloat vA[3];
+	GLfloat vB[3];
+	GLfloat vC[3];
+	GLfloat vD[3];
+	GLfloat vE[3];
+	GLfloat vF[3];
+	GLfloat vG[3];
+	GLfloat vH[3];
+
+	GLfloat cGreen[3];
+
+	int numCubeUniqueVertexes = 8;
+
+	/* Cube vertices */
+	{
+		vA[0] = baseBoundingBox.at(0).x;
+		vA[1] = baseBoundingBox.at(0).y;
+		vA[2] = baseBoundingBox.at(0).z;
+
+		vB[0] = baseBoundingBox.at(1).x;
+		vB[1] = baseBoundingBox.at(1).y;
+		vB[2] = baseBoundingBox.at(1).z;
+
+		vC[0] = baseBoundingBox.at(2).x;
+		vC[1] = baseBoundingBox.at(2).y;
+		vC[2] = baseBoundingBox.at(2).z;
+
+		vD[0] = baseBoundingBox.at(3).x;
+		vD[1] = baseBoundingBox.at(3).y;
+		vD[2] = baseBoundingBox.at(3).z;
+
+		vE[0] = baseBoundingBox.at(4).x;
+		vE[1] = baseBoundingBox.at(4).y;
+		vE[2] = baseBoundingBox.at(4).z;
+
+		vF[0] = baseBoundingBox.at(5).x;
+		vF[1] = baseBoundingBox.at(5).y;
+		vF[2] = baseBoundingBox.at(5).z;
+
+		vG[0] = baseBoundingBox.at(6).x;
+		vG[1] = baseBoundingBox.at(6).y;
+		vG[2] = baseBoundingBox.at(6).z;
+
+		vH[0] = baseBoundingBox.at(7).x;
+		vH[1] = baseBoundingBox.at(7).y;
+		vH[2] = baseBoundingBox.at(7).z;
+	}
+
+	{
+		cGreen[0] = 0.0f;
+		cGreen[1] = 1.0f;
+		cGreen[2] = 0.0f;
+	}
+
+	const uint allVertCount = 24;
+	const uint uniqueVertCount = 8;
+	GLfloat uniqueVertices[allVertCount] = { SP_ARR_3(vA), SP_ARR_3(vB), SP_ARR_3(vC), SP_ARR_3(vD), SP_ARR_3(vE), SP_ARR_3(vF), SP_ARR_3(vG), SP_ARR_3(vH) };
+	GLfloat uniqueColors[allVertCount] = { SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen) };
+	GLuint vertIndexes[] = {
+		0, 1,	0, 2,	2, 3,	3, 1,	/* front face */
+		4, 5,	4, 6,	6, 7,	7, 5,	/* back face */
+		0, 4,	1, 5,	2, 6,	3, 7	/* front-back links */
+
+	};
+	GLuint cornerIndexes[] = { 0, 1, 2, 3, 4, 5, 6, 7 }; /* Will use later */
+
+	for (int i = 0; i < uniqueVertCount * 6; ++i)
+	{
+		if (i % 6 == 0 || i % 6 == 1 || i % 6 == 2)
+		{
+			boundingBoxUniqueData[i] = uniqueVertices[(i / 6) * 3 + (i % 6)];
+		}
+		else
+		{
+			boundingBoxUniqueData[i] = uniqueColors[(i / 6) * 3 + ((i % 6) - 3)];
+		}
+	}
+
+	baseBoundingBoxVAO.name = "BaseBoundingBox";
+	baseBoundingBoxVAO.elementsCount = allVertCount;
+
+	glGenVertexArrays(1, &baseBoundingBoxVAO.vao);
+	glGenBuffers(1, &baseBoundingBoxVAO.vbo);
+	glGenBuffers(1, &baseBoundingBoxVAO.ebo);
+
+	glBindVertexArray(baseBoundingBoxVAO.vao);
+	glBindBuffer(GL_ARRAY_BUFFER, baseBoundingBoxVAO.vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uniqueVertCount * 6, boundingBoxUniqueData, GL_DYNAMIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, baseBoundingBoxVAO.ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * baseBoundingBoxVAO.elementsCount, vertIndexes, GL_STATIC_DRAW);
+
+	glBindVertexArray(GL_NONE);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
+}
+
 void ComponentTransform::ApplyWorldTransformationMatrix(const float4x4& worldTransformationMatrix)
 {
-    if (!isStatic) 
-    {		
+	if (!isStatic)
+	{
 		float4x4 inverseNewParentWorldMatrix;
 		GameObject* parent = gameObject->GetParent();
 		if (parent)
@@ -331,5 +517,7 @@ void ComponentTransform::ApplyWorldTransformationMatrix(const float4x4& worldTra
 		rotationDeg[0] = RadToDeg(rotEuler.x);
 		rotationDeg[1] = RadToDeg(rotEuler.y);
 		rotationDeg[2] = RadToDeg(rotEuler.z);
-    }
+
+		UpdateBoundingBox();
+	}
 }

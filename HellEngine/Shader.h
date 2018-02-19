@@ -18,6 +18,10 @@ public:
 
 	GLuint GetProgramId();
 
+public:
+	char vertexPath[256] = "";
+	char fragmentPath[256] = "";
+
 private:
 	enum class ShaderType
 	{

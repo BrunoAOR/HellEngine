@@ -5,6 +5,7 @@
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_sdl_gl3.h"
 #include "Application.h"
+#include "ComponentTransform.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleImGui.h"
 #include "ModuleRender.h"
@@ -80,6 +81,7 @@ UpdateStatus ModuleImGui::Update()
 	static bool showHierarchyWindow = true;
 	static bool showInspectorWindow = true;
 	static bool showQuadTreeWindow = false;
+	static bool showRaycastTestWindow = false;
 
 	static bool rendererWireFrame = false;
 	static bool rendererRotate = false;
@@ -110,6 +112,7 @@ UpdateStatus ModuleImGui::Update()
 			ImGui::Separator();
 
 			ImGui::MenuItem("QuadTree", nullptr, &showQuadTreeWindow);
+			ImGui::MenuItem("RayCastTest", nullptr, &showRaycastTestWindow);
 
 			ImGui::EndMenu();
 		}
@@ -138,6 +141,8 @@ UpdateStatus ModuleImGui::Update()
 
 		ImGui::EndMainMenuBar();
 	}
+
+	DrawGuizmo();
 
 	if (showDemoWindow)
 	{
@@ -179,7 +184,10 @@ UpdateStatus ModuleImGui::Update()
 		ShowQuadTreeWindow(mainMenuBarHeight, &showQuadTreeWindow);
 	}
 
-    DrawGuizmo();
+	if (showRaycastTestWindow)
+	{
+		ShowRaycastTestWindow(mainMenuBarHeight, &showRaycastTestWindow);
+	}
 
 	ImGui::Render();
 
@@ -547,6 +555,8 @@ void ModuleImGui::ShowQuadTreeWindow(float mainMenuBarHeight, bool * pOpen)
 	static int previousQuadTreeOption = -1;
 	static bool minMaxChanged = false;
 	
+	ImGui::Begin("QuadTree setup", pOpen);
+
 	ImGui::RadioButton("None", &quadTreeOption, 0);
 
 	ImGui::Separator();
@@ -598,6 +608,8 @@ void ModuleImGui::ShowQuadTreeWindow(float mainMenuBarHeight, bool * pOpen)
 		}
 	}
 
+	ImGui::End();
+
 	if (quadTreeOption != previousQuadTreeOption || minMaxChanged && quadTreeOption == 1)
 	{
 		previousQuadTreeOption = quadTreeOption;
@@ -628,9 +640,27 @@ void ModuleImGui::ShowQuadTreeWindow(float mainMenuBarHeight, bool * pOpen)
 	}
 }
 
+void ModuleImGui::ShowRaycastTestWindow(float mainmenuBarHeight, bool * pOpen)
+{
+	static float start[3];
+	static float end[3];
 
-#include "Component.h"
-#include "ComponentTransform.h"
+	ImGui::Begin("Raycast testing", pOpen);
+
+	ImGui::Text("Line segment range:");
+	ImGui::InputFloat3("Start", start, 1);
+	ImGui::InputFloat3("End", end, 1);
+
+	if (ImGui::Button("Cast Ray") && (start[0] != end[0] || start[1] != end[1] || start[2] != end[2]))
+	{
+		float3 startPoint(start[0], start[1], start[2]);
+		float3 endPoint(end[0], end[1], end[2]);
+
+		App->scene->TestLineSegmentChecks(startPoint, endPoint);
+	}
+
+	ImGui::End();
+}
 
 void ModuleImGui::DrawGuizmo() 
 {

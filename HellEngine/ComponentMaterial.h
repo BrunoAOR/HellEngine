@@ -8,9 +8,11 @@
 #include "TextureConfiguration.h"
 #include "TextureInfo.h"
 #include "globals.h"
+
 class ComponentMesh;
 class ComponentTransform;
 class Shader;
+struct ModelInfo;
 
 class ComponentMaterial :
 	public Component
@@ -21,7 +23,7 @@ public:
 	virtual ~ComponentMaterial() override;
 
 	virtual void Update() override;
-
+	
 	/* Recieves the vertex shader file path and tries to compile it */
 	bool SetVertexShaderPath(const std::string& sourcePath);
 
@@ -51,11 +53,8 @@ public:
 
 private:
 
-	/* Draws a certain model using the Material's shader and texture */
-	bool DrawArray(float* modelMatrix, uint vao, uint vertexCount);
-
 	/* Draws a certain model using the Material's shader and texture, from a Vertex Array Oject WITH indexes */
-	bool DrawElements(float* modelMatrix, uint vao, uint vertexCount, int indexesType);
+	bool DrawElements(float* modelMatrix, const ModelInfo* modelInfo);
 
 	uint CreateCheckeredTexture();
 
@@ -72,9 +71,12 @@ private:
 	void OnEditorTextureConfiguration();
 	void OnEditorShaderOptions();
 
+	Shader* ShaderAlreadyLinked();
+
 private:
 
 	/* General */
+	static uint materialsCount;
 	static uint checkeredPatternBufferId;
 
 	TextureConfigutaion textureConfiguration;
@@ -103,6 +105,10 @@ private:
 	std::vector<Uniform> publicUniforms;
 	std::map<std::string, uint> privateUniforms;
 
+	static std::vector<Shader*> loadedShaders;
+	static std::map<Shader*, uint> loadedShaderCount;
+
+	const ModelInfo* modelInfo = nullptr;
 };
 
 #endif // !__H_COMPONENT_MATERIAL__

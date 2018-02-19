@@ -1,6 +1,8 @@
 #include <math.h>
 #include "MathGeoLib/src/Math/Quat.h"
+#include "MathGeoLib\src\Geometry\LineSegment.h"
 #include "SDL/include/SDL_mouse.h"
+#include "ImGui\imgui.h"
 #include "Application.h"
 #include "ComponentType.h"
 #include "GameObject.h"
@@ -9,6 +11,7 @@
 #include "ModuleScene.h"
 #include "ModuleTime.h"
 #include "ModuleWindow.h"
+#include "physicsFunctions.h"
 #include "globals.h"
 
 
@@ -37,8 +40,10 @@ bool ModuleEditorCamera::Init()
 
 UpdateStatus ModuleEditorCamera::Update()
 {
+	BROFILER_CATEGORY("ModuleEditorCamera::Update", Profiler::Color::Beige);
 	HandleCameraMotion();
 	HandleCameraRotation();	
+	HandleCameraMousePicking();
 
 	return UpdateStatus::UPDATE_CONTINUE;
 }
@@ -58,7 +63,9 @@ void ModuleEditorCamera::OnWindowResize()
 
 void ModuleEditorCamera::HandleCameraMotion()
 {
+	BROFILER_CATEGORY("ModuleCamera::Motion", Profiler::Color::Black);
 	vec pos = camera->GetPosition3();
+	vec initialPos = pos;
 	int moveFactor = App->input->GetKey(SDL_SCANCODE_LSHIFT) == KeyState::KEY_REPEAT ? 3 : 1;
 
 	/* Handling Keyboard (Arrows) */
@@ -184,17 +191,27 @@ void ModuleEditorCamera::HandleCameraMotion()
 		DragCameraVerticalAxis(App->input->GetMouseWheel().y, pos, 5 * zoomSpeed);
 	}	
 
-	camera->SetPosition(pos.x, pos.y, pos.z);
+	if (!initialPos.Equals(pos))
+		camera->SetPosition(pos.x, pos.y, pos.z);
 }
 
 void ModuleEditorCamera::HandleCameraRotation()
 {
+	BROFILER_CATEGORY("ModuleCamera::Rotation", Profiler::Color::Black);
 	/*Handling Mouse*/
 	if (App->input->GetMouseButtonDown(SDL_BUTTON_RIGHT) == KeyState::KEY_REPEAT)
 	{
+		BROFILER_CATEGORY("ModuleCamera::Input", Profiler::Color::Black);
 		int xMotion = App->input->GetMouseMotion().x;
 		int yMotion = App->input->GetMouseMotion().y;
 
+		if (xMotion > 50)
+			xMotion = 50;
+
+		if (yMotion > 50)
+			yMotion = 50;
+
+		BROFILER_CATEGORY("ModuleCamera::Pitch", Profiler::Color::Black);
 		/* Camera rotate upwards and downwards */
 		if (yMotion != 0
 			&& !currentlyMovingCamera
@@ -202,7 +219,8 @@ void ModuleEditorCamera::HandleCameraRotation()
 		{
 			RotatePitch(yMotion);
 		}
-		
+
+		BROFILER_CATEGORY("ModuleCamera::Yaw", Profiler::Color::Black);
 		/* Camera rotate leftwards and rightwards */
 		if (xMotion != 0
 			&& !currentlyMovingCamera
@@ -213,14 +231,27 @@ void ModuleEditorCamera::HandleCameraRotation()
 	}
 }
 
+void ModuleEditorCamera::HandleCameraMousePicking()
+{
+	LineSegment lineSegmentFromMousePicking;
+	
+	if (!ImGui::IsMouseHoveringAnyWindow()) {
+		if (App->input->GetMouseButtonDown(SDL_BUTTON_LEFT) == KeyState::KEY_DOWN) {
+			lineSegmentFromMousePicking = GetRayFromMouse();
+			GameObject* collidedGO = CalculateRaycast(lineSegmentFromMousePicking);
+			App->scene->SetSelectedGameObject(collidedGO);
+			LOGGER("The mouse ray collided with GameObject: %s", collidedGO ? collidedGO->name.c_str() : "none");
+		}
+	}
+}
+
 void ModuleEditorCamera::RotateYaw(int mouseMotionX)
 {
 	/* mouseMotionX is <0 when moving to the left and >0 when moving to the right */
 	Quat rotation = Quat::FromEulerXYZ(0, -DegToRad(rotationSpeed * mouseMotionX) * App->time->DeltaTime(), 0);
-	float3 rot = rotation.Transform(camera->GetFront3());
-	camera->SetFront(rot.x, rot.y, rot.z);
-	rot = rotation.Transform(camera->GetUp3());
-	camera->SetUp(rot.x, rot.y, rot.z);
+	float3 newFront = rotation.Transform(camera->GetFront3());
+	float3 newUp = rotation.Transform(camera->GetUp3());
+	camera->SetFrontAndUp(newFront.x, newFront.y, newFront.z, newUp.x, newUp.y, newUp.z);
 }
 
 void ModuleEditorCamera::RotatePitch(int mouseMotionY)
@@ -228,11 +259,9 @@ void ModuleEditorCamera::RotatePitch(int mouseMotionY)
 	/* mouseMotionY is <0 when moving up and >0 when moving down */
 	Quat rotation = Quat::RotateAxisAngle(camera->GetRight3(), -DegToRad(rotationSpeed * mouseMotionY) * App->time->DeltaTime());
 	vec newUp = rotation.Transform(camera->GetUp3());
-	if (newUp.y >= 0)
-	{
-		float3 rot = rotation.Transform(camera->GetFront3());
-		camera->SetFront(rot.x, rot.y, rot.z);
-		camera->SetUp(newUp.x, newUp.y, newUp.z);
+	if (newUp.y >= 0)	{
+		float3 newFront = rotation.Transform(camera->GetFront3());
+		camera->SetFrontAndUp(newFront.x, newFront.y, newFront.z, newUp.x, newUp.y, newUp.z);
 	}
 }
 
@@ -248,4 +277,24 @@ void ModuleEditorCamera::DragCameraVerticalAxis(int direction, vec& frustumPos, 
 	frustumPos.x += camera->GetFront3().x * speed * App->time->DeltaTime() * direction;
 	frustumPos.y += camera->GetFront3().y * speed * App->time->DeltaTime() * direction;
 	frustumPos.z += camera->GetFront3().z * speed * App->time->DeltaTime() * direction;
+}
+
+
+LineSegment ModuleEditorCamera::GetRayFromMouse()
+{
+	LineSegment lineSegment;
+
+	float n = this->camera->GetNearPlaneDistance();
+	float f = this->camera->GetFarPlaneDistance();
+	float3 pos = this->camera->GetPosition3();
+
+	float2 windowsSize = float2((float)App->window->getWidth(), (float)App->window->getHeight());
+	float2 mouseOnWindowCoordinates = float2((float)App->input->GetMousePosition().x, (float)App->input->GetMousePosition().y);
+
+	float normalizedCoordinateX = -(1.0f - (float(mouseOnWindowCoordinates.x) * 2.0f) / windowsSize.x);
+	float normalizedCoordinateY = 1.0f - (float(mouseOnWindowCoordinates.y) * 2.0f) / windowsSize.y;
+
+	lineSegment = this->camera->GetFrustum().UnProjectLineSegment(normalizedCoordinateX, normalizedCoordinateY);
+
+	return lineSegment;
 }

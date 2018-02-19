@@ -34,6 +34,9 @@ public:
 	/* Method to be called when the window is resized */
 	void onWindowResize();
 
+	/* Returns whether or not backface culling is active */
+	bool isBackFaceCullActive();
+
 	/* Enables or disables an OpenGL capability */
 	void ToggleOpenGLCapability(bool state, GLenum cap);
 
