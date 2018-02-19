@@ -307,22 +307,29 @@ float4x4& ComponentTransform::UpdateLocalModelMatrix()
 	return localModelMatrix;
 }
 
-void ComponentTransform::ApplyGuizmo(const float4x4& modelMatrix, const float3& newPosition, const float newRotation[], const float3& newScale) 
+void ComponentTransform::ApplyWorldTransformationMatrix(const float4x4& worldTransformationMatrix)
 {
     if (!isStatic) 
-    {
-        localModelMatrix = modelMatrix;
+    {		
+		float4x4 inverseNewParentWorldMatrix;
+		GameObject* parent = gameObject->GetParent();
+		if (parent)
+		{
+			ComponentTransform* transform = (ComponentTransform*)gameObject->GetParent()->GetComponent(ComponentType::TRANSFORM);
+			if (transform)
+				inverseNewParentWorldMatrix = transform->GetModelMatrix4x4();
+		}
+		else
+			inverseNewParentWorldMatrix = float4x4::identity;
 
-        position = newPosition;
+		inverseNewParentWorldMatrix.Inverse();
 
-        rotationDeg[0] = newRotation[0];
-        rotationDeg[1] = newRotation[1];
-        rotationDeg[2] = newRotation[2];
+		float4x4 newLocalModelMatrix = worldTransformationMatrix * inverseNewParentWorldMatrix;
 
-        float3 radAngles = DegToRad((float3)newRotation);
-
-        rotation = Quat::FromEulerXYZ(radAngles.x, radAngles.y, radAngles.z);
-
-        scale = newScale;
+		DecomposeMatrix(newLocalModelMatrix, position, rotation, scale);
+		float3 rotEuler = rotation.ToEulerXYZ();
+		rotationDeg[0] = RadToDeg(rotEuler.x);
+		rotationDeg[1] = RadToDeg(rotEuler.y);
+		rotationDeg[2] = RadToDeg(rotEuler.z);
     }
 }

@@ -652,25 +652,24 @@ void ModuleImGui::DrawGuizmo()
     if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
         mCurrentGizmoOperation = ImGuizmo::SCALE;  
 
-    ImGuizmo::SetRect(0, 0, App->window->getWidth(), App->window->getHeight());
+    ImGuizmo::SetRect(0, 0, (float)App->window->getWidth(), (float)App->window->getHeight());
+
 
     if (App->scene->editorInfo.selectedGameObject != nullptr)
     {
-		float translation[3];
-		float rotation[3];
-		float scale[3];
-
         ComponentTransform* transform = (ComponentTransform*)App->scene->editorInfo.selectedGameObject->GetComponent(ComponentType::TRANSFORM);
 
-        float4x4 modelMatrix = transform->GetModelMatrix4x4();
-        float* objectMatrix = (float*)modelMatrix.ptr();
+		if (transform)
+		{	
+			float4x4 modelMatrix = transform->GetModelMatrix4x4();
+			float* objectMatrix = modelMatrix.ptr();
 
-        ImGuizmo::Manipulate(App->editorCamera->camera->GetViewMatrix(), App->editorCamera->camera->GetProjectionMatrix(), mCurrentGizmoOperation, mCurrentGizmoMode, objectMatrix, nullptr);
-
-        if (ImGuizmo::IsUsing())
-        {
-            ImGuizmo::DecomposeMatrixToComponents(objectMatrix, translation, rotation, scale);
-            transform->ApplyGuizmo(modelMatrix, (float3)translation, rotation, (float3)scale);
-        }         
+			ImGuizmo::Manipulate(App->editorCamera->camera->GetViewMatrix(), App->editorCamera->camera->GetProjectionMatrix(), mCurrentGizmoOperation, mCurrentGizmoMode, objectMatrix);
+			
+			if (ImGuizmo::IsUsing())
+			{
+				transform->ApplyWorldTransformationMatrix(modelMatrix);
+			}
+		}
     }
 }

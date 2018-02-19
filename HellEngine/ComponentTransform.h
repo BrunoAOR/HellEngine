@@ -45,7 +45,7 @@ public:
 	virtual int MaxCountInGameObject() override;
 
     /* Aplies the transform from the Guizmo */
-    void ApplyGuizmo(const float4x4& modelMatrix, const float3& position, const float rotation[], const float3& scale);
+    void ApplyWorldTransformationMatrix(const float4x4& worldTransformationMatrix);
 
 private:
 
