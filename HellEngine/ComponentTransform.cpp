@@ -260,9 +260,9 @@ void ComponentTransform::SetParent(ComponentTransform* newParent)
 	/* Then turn into a Quat */
 	rotation = Quat(newLocalModelMatrix);
 	float3 rotEuler = rotation.ToEulerXYZ();
-	rotationDeg[0] = rotEuler.x;
-	rotationDeg[1] = rotEuler.y;
-	rotationDeg[2] = rotEuler.z;
+	rotationDeg[0] = RadToDeg(rotEuler.x);
+	rotationDeg[1] = RadToDeg(rotEuler.y);
+	rotationDeg[2] = RadToDeg(rotEuler.z);
 }
 
 void ComponentTransform::OnEditor()
