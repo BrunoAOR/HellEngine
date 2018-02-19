@@ -1,8 +1,8 @@
 #include <math.h>
 #include "MathGeoLib/src/Math/Quat.h"
-#include "MathGeoLib\src\Geometry\LineSegment.h"
+#include "MathGeoLib/src/Geometry/LineSegment.h"
 #include "SDL/include/SDL_mouse.h"
-#include "ImGui\imgui.h"
+#include "ImGui/imgui.h"
 #include "Application.h"
 #include "ComponentType.h"
 #include "GameObject.h"

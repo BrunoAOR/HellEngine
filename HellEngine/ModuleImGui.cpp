@@ -4,6 +4,7 @@
 #include "Glew/include/glew.h"
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_sdl_gl3.h"
+#include "ImGuizmo/ImGuizmo.h"
 #include "Application.h"
 #include "ComponentTransform.h"
 #include "ModuleEditorCamera.h"
@@ -13,8 +14,6 @@
 #include "ModuleWindow.h"
 #include "globals.h"
 
-
-#include "ImGuizmo\ImGuizmo.h"
 
 ModuleImGui::ModuleImGui()
 {
@@ -690,7 +689,7 @@ void ModuleImGui::DrawGuizmo()
         ComponentTransform* transform = (ComponentTransform*)App->scene->editorInfo.selectedGameObject->GetComponent(ComponentType::TRANSFORM);
 
 		if (transform)
-		{	
+		{
 			float4x4 modelMatrix = transform->GetModelMatrix4x4();
 			float* objectMatrix = modelMatrix.ptr();
 
