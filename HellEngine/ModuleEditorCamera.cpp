@@ -3,6 +3,7 @@
 #include "MathGeoLib/src/Geometry/LineSegment.h"
 #include "SDL/include/SDL_mouse.h"
 #include "ImGui/imgui.h"
+#include "ImGuizmo/ImGuizmo.h"
 #include "Application.h"
 #include "ComponentType.h"
 #include "GameObject.h"
@@ -235,7 +236,7 @@ void ModuleEditorCamera::HandleCameraMousePicking()
 {
 	LineSegment lineSegmentFromMousePicking;
 	
-	if (!ImGui::IsMouseHoveringAnyWindow()) {
+	if (!ImGui::IsMouseHoveringAnyWindow() && !ImGuizmo::IsOver()) {
 		if (App->input->GetMouseButtonDown(SDL_BUTTON_LEFT) == KeyState::KEY_DOWN) {
 			lineSegmentFromMousePicking = GetRayFromMouse();
 			GameObject* collidedGO = CalculateRaycast(lineSegmentFromMousePicking);
