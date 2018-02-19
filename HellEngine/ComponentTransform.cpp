@@ -493,8 +493,12 @@ void ComponentTransform::CreateBBVAO()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
 }
 
-void ComponentTransform::ApplyWorldTransformationMatrix(const float4x4& worldTransformationMatrix)
+void ComponentTransform::ApplyWorldTransformationMatrix(const float4x4& worldTransformationMatrix, bool excludePosition, bool excludeRotation, bool excludeScale)
 {
+	static float3 pos;
+	static Quat rot;
+	static float3 sca;
+
 	if (!isStatic)
 	{
 		float4x4 inverseNewParentWorldMatrix;
@@ -512,7 +516,11 @@ void ComponentTransform::ApplyWorldTransformationMatrix(const float4x4& worldTra
 
 		float4x4 newLocalModelMatrix = worldTransformationMatrix * inverseNewParentWorldMatrix;
 
-		DecomposeMatrix(newLocalModelMatrix, position, rotation, scale);
+		float3& outputPosition = excludePosition ? pos : position;
+		Quat& outputRotation = excludeRotation ? rot : rotation;
+		float3& outputScale = excludeScale ? sca : scale;
+		
+		DecomposeMatrix(newLocalModelMatrix, outputPosition, outputRotation, outputScale);
 		float3 rotEuler = rotation.ToEulerXYZ();
 		rotationDeg[0] = RadToDeg(rotEuler.x);
 		rotationDeg[1] = RadToDeg(rotEuler.y);

@@ -697,7 +697,7 @@ void ModuleImGui::DrawGuizmo()
 			
 			if (ImGuizmo::IsUsing())
 			{
-				transform->ApplyWorldTransformationMatrix(modelMatrix);
+				transform->ApplyWorldTransformationMatrix(modelMatrix, mCurrentGizmoOperation != ImGuizmo::TRANSLATE, mCurrentGizmoOperation != ImGuizmo::ROTATE, mCurrentGizmoOperation != ImGuizmo::SCALE);
 			}
 		}
     }
