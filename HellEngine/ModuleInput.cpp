@@ -96,8 +96,8 @@ UpdateStatus ModuleInput::PreUpdate()
 			switch (event.window.event)
 			{
 			case SDL_WINDOWEVENT_RESIZED:
-				App->window->onWindowResize();
-				App->renderer->onWindowResize();
+				App->window->OnWindowResize();
+				App->renderer->OnWindowResize();
 				App->editorCamera->OnWindowResize();
 				break;
 
@@ -131,6 +131,10 @@ UpdateStatus ModuleInput::PreUpdate()
 			mouseMotion.y += event.motion.yrel;
 			mouse.x = event.motion.x;
 			mouse.y = event.motion.y;
+			LOGGER("mouseX: %d", mouse.x);
+			if (mouse.x > App->window->GetWidth()) {
+				int a = 2;
+			}
 			break;
 
 		case SDL_MOUSEWHEEL:

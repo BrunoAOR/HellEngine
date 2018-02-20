@@ -62,7 +62,7 @@ void ModuleScene::OnEditorHierarchy(float mainMenuBarHeight, bool* pOpen)
 {
 	float windowWidth = 400;
 	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
-	ImGui::SetNextWindowSize(ImVec2(windowWidth, App->window->getHeight() - mainMenuBarHeight));
+	ImGui::SetNextWindowSize(ImVec2(windowWidth, App->window->GetHeight() - mainMenuBarHeight));
 	ImGui::Begin("Hierarchy", pOpen, ImGuiWindowFlags_NoCollapse);
 
 	root->OnEditorRootHierarchy();
@@ -73,8 +73,8 @@ void ModuleScene::OnEditorHierarchy(float mainMenuBarHeight, bool* pOpen)
 void ModuleScene::OnEditorInspector(float mainMenuBarHeight, bool * pOpen)
 {
 	float windowWidth = 400;
-	ImGui::SetNextWindowPos(ImVec2(App->window->getWidth() - windowWidth, mainMenuBarHeight));
-	ImGui::SetNextWindowSize(ImVec2(windowWidth, App->window->getHeight() - mainMenuBarHeight));
+	ImGui::SetNextWindowPos(ImVec2(App->window->GetWidth() - windowWidth, mainMenuBarHeight));
+	ImGui::SetNextWindowSize(ImVec2(windowWidth, App->window->GetHeight() - mainMenuBarHeight));
 	ImGui::Begin("Inspector", pOpen, ImGuiWindowFlags_NoCollapse);
 
 	if (editorInfo.selectedGameObject == nullptr)

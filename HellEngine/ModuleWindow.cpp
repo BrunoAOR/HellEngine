@@ -70,18 +70,18 @@ bool ModuleWindow::CleanUp()
 }
 
 /* Returns the window width */
-int ModuleWindow::getWidth() const
+int ModuleWindow::GetWidth() const
 {
 	return surface->w;
 }
 
 /* Returns the window height */
-int ModuleWindow::getHeight() const
+int ModuleWindow::GetHeight() const
 {
 	return surface->h;
 }
 
-void ModuleWindow::onWindowResize()
+void ModuleWindow::OnWindowResize()
 {
 	surface = SDL_GetWindowSurface(window);
 }

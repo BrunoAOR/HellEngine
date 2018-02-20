@@ -53,8 +53,8 @@ UpdateStatus ModuleEditorCamera::Update()
 /* Method to be called when the window is resized */
 void ModuleEditorCamera::OnWindowResize()
 {
-	int width = App->window->getWidth();
-	int height = App->window->getHeight();
+	int width = App->window->GetWidth();
+	int height = App->window->GetHeight();
 
 	float aspectRatio = (float)width / height;
 	camera->SetAspectRatio(aspectRatio);
@@ -289,7 +289,7 @@ LineSegment ModuleEditorCamera::GetRayFromMouse()
 	float f = this->camera->GetFarPlaneDistance();
 	float3 pos = this->camera->GetPosition3();
 
-	float2 windowsSize = float2((float)App->window->getWidth(), (float)App->window->getHeight());
+	float2 windowsSize = float2((float)App->window->GetWidth(), (float)App->window->GetHeight());
 	float2 mouseOnWindowCoordinates = float2((float)App->input->GetMousePosition().x, (float)App->input->GetMousePosition().y);
 
 	float normalizedCoordinateX = -(1.0f - (float(mouseOnWindowCoordinates.x) * 2.0f) / windowsSize.x);

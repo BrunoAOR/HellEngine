@@ -261,7 +261,7 @@ void ModuleImGui::ShowEditorCameraWindow(float mainMenuBarHeight, bool* pOpen)
 	static bool frustumCulling = false;
 	static bool isActiveCamera = true;
 
-	ImGui::SetNextWindowPos(ImVec2((float)App->window->getWidth() - 300, mainMenuBarHeight));
+	ImGui::SetNextWindowPos(ImVec2((float)App->window->GetWidth() - 300, mainMenuBarHeight));
 	ImGui::SetNextWindowSize(ImVec2(300, 600));
 	ImGui::Begin("Camera", pOpen, ImGuiWindowFlags_NoCollapse);
 
@@ -681,7 +681,7 @@ void ModuleImGui::DrawGuizmo()
     if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
         mCurrentGizmoOperation = ImGuizmo::SCALE;  
 
-    ImGuizmo::SetRect(0, 0, (float)App->window->getWidth(), (float)App->window->getHeight());
+    ImGuizmo::SetRect(0, 0, (float)App->window->GetWidth(), (float)App->window->GetHeight());
 
 
     if (App->scene->editorInfo.selectedGameObject != nullptr)
