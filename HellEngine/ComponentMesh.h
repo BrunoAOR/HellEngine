@@ -2,7 +2,7 @@
 #define __H_COMPONENT_MESH__
 
 #include <vector>
-#include "MathGeoLib\src\Math\float3.h"
+#include "MathGeoLib/src/Math/float3.h"
 #include "Component.h"
 #include "Model.h"
 #include "VAOInfo.h"

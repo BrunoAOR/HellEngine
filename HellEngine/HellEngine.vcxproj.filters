@@ -19,6 +19,9 @@
     <Filter Include="Scene Management">
       <UniqueIdentifier>{9a7413ac-ff5b-4904-bcf3-9d4e6810df3c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ImGuizmo">
+      <UniqueIdentifier>{5e52c346-c6f6-4462-9e71-e2628967add8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="memLeaks.h">
@@ -315,6 +318,9 @@
     <ClInclude Include="SpaceOctTree.h">
       <Filter>Scene Management</Filter>
     </ClInclude>
+    <ClInclude Include="ImGuizmo\ImGuizmo.h">
+      <Filter>ImGuizmo</Filter>
+    </ClInclude>
     <ClInclude Include="ModuleDebugDraw.h">
       <Filter>Engine Modules</Filter>
     </ClInclude>
@@ -520,6 +526,9 @@
     </ClCompile>
     <ClCompile Include="SpaceOctNode.cpp">
       <Filter>Scene Management</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGuizmo\ImGuizmo.cpp">
+      <Filter>ImGuizmo</Filter>
     </ClCompile>
     <ClCompile Include="ModuleDebugDraw.cpp">
       <Filter>Engine Modules</Filter>

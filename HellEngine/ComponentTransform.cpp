@@ -274,53 +274,11 @@ void ComponentTransform::SetParent(ComponentTransform* newParent)
 	float4x4 currentWorldMatrix = GetModelMatrix4x4();
 	float4x4 newLocalModelMatrix = currentWorldMatrix * inverseNewParentWorldMatrix;
 
-	/* Transpose to get the matrix in a shape when the bottom line is 0 0 0 1 */
-	newLocalModelMatrix.Transpose();
-
-	/* Extract the Translation, Scale and Rotation */
-	/*
-	Matrix shape
-
-	a  b  c  d
-	e  f  g  h
-	i  j  k  l
-	0  0  0  1
-	*/
-
-	/* Extract translation */
-	/* x from d, y from h, z from l*/
-	position.x = newLocalModelMatrix[0][3];
-	position.y = newLocalModelMatrix[1][3];
-	position.z = newLocalModelMatrix[2][3];
-	/* Zero out extracted positions */
-	newLocalModelMatrix[0][3] = 0;
-	newLocalModelMatrix[1][3] = 0;
-	newLocalModelMatrix[2][3] = 0;
-
-	/* Extract scale */
-	/* x from aei.Length, y from bfj.Length, z from cgh.Length */
-	scale.x = (float3(newLocalModelMatrix[0][0], newLocalModelMatrix[1][0], newLocalModelMatrix[2][0])).Length();
-	scale.y = (float3(newLocalModelMatrix[0][1], newLocalModelMatrix[1][1], newLocalModelMatrix[2][1])).Length();
-	scale.z = (float3(newLocalModelMatrix[0][2], newLocalModelMatrix[1][2], newLocalModelMatrix[2][2])).Length();
-
-	/* Extract rotation */
-	/* Divide each column by the corresponding scale value */
-	newLocalModelMatrix[0][0] /= scale.x;
-	newLocalModelMatrix[1][0] /= scale.x;
-	newLocalModelMatrix[2][0] /= scale.x;
-	newLocalModelMatrix[0][1] /= scale.y;
-	newLocalModelMatrix[1][1] /= scale.y;
-	newLocalModelMatrix[2][1] /= scale.y;
-	newLocalModelMatrix[0][2] /= scale.z;
-	newLocalModelMatrix[1][2] /= scale.z;
-	newLocalModelMatrix[2][2] /= scale.z;
-
-	/* Then turn into a Quat */
-	rotation = Quat(newLocalModelMatrix);
+	DecomposeMatrix(newLocalModelMatrix, position, rotation, scale);
 	float3 rotEuler = rotation.ToEulerXYZ();
-	rotationDeg[0] = rotEuler.x;
-	rotationDeg[1] = rotEuler.y;
-	rotationDeg[2] = rotEuler.z;
+	rotationDeg[0] = RadToDeg(rotEuler.x);
+	rotationDeg[1] = RadToDeg(rotEuler.y);
+	rotationDeg[2] = RadToDeg(rotEuler.z);
 }
 
 void ComponentTransform::OnEditor()
@@ -533,4 +491,41 @@ void ComponentTransform::CreateBBVAO()
 	glBindVertexArray(GL_NONE);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
+}
+
+void ComponentTransform::ApplyWorldTransformationMatrix(const float4x4& worldTransformationMatrix, bool excludePosition, bool excludeRotation, bool excludeScale)
+{
+	static float3 pos;
+	static Quat rot;
+	static float3 sca;
+
+	if (!isStatic)
+	{
+		float4x4 inverseNewParentWorldMatrix;
+		GameObject* parent = gameObject->GetParent();
+		if (parent)
+		{
+			ComponentTransform* transform = (ComponentTransform*)gameObject->GetParent()->GetComponent(ComponentType::TRANSFORM);
+			if (transform)
+				inverseNewParentWorldMatrix = transform->GetModelMatrix4x4();
+		}
+		else
+			inverseNewParentWorldMatrix = float4x4::identity;
+
+		inverseNewParentWorldMatrix.Inverse();
+
+		float4x4 newLocalModelMatrix = worldTransformationMatrix * inverseNewParentWorldMatrix;
+
+		float3& outputPosition = excludePosition ? pos : position;
+		Quat& outputRotation = excludeRotation ? rot : rotation;
+		float3& outputScale = excludeScale ? sca : scale;
+		
+		DecomposeMatrix(newLocalModelMatrix, outputPosition, outputRotation, outputScale);
+		float3 rotEuler = rotation.ToEulerXYZ();
+		rotationDeg[0] = RadToDeg(rotEuler.x);
+		rotationDeg[1] = RadToDeg(rotEuler.y);
+		rotationDeg[2] = RadToDeg(rotEuler.z);
+
+		UpdateBoundingBox();
+	}
 }

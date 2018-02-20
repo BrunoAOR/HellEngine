@@ -4,7 +4,7 @@
 #include "MathGeoLib/src/Math/float3.h"
 #include "MathGeoLib/src/Math/float4x4.h"
 #include "MathGeoLib/src/Math/Quat.h"
-#include "MathGeoLib\src\Geometry\AABB.h"
+#include "MathGeoLib/src/Geometry/AABB.h"
 #include "Component.h"
 #include "ComponentMesh.h"
 
@@ -46,6 +46,9 @@ public:
 
 	/* Returns the maximum number of times that this particular Type of Component can be added to a GameObject */
 	virtual int MaxCountInGameObject() override;
+
+    /* Aplies the transform from the Guizmo */
+    void ApplyWorldTransformationMatrix(const float4x4& worldTransformationMatrix, bool excludePosition = false, bool excludeRotation = false, bool excludeScale = false);
 
 private:
 

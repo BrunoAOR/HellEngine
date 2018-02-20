@@ -37,6 +37,15 @@
 #include <string>
 #include "Json/json.h"
 
+namespace math {
+	class float4x4;
+	class float3;
+	class Quat;
+}
+typedef math::float4x4 float4x4;
+typedef math::float3 float3;
+typedef math::Quat Quat;
+
 /* Useful typedefs */
 typedef nlohmann::json Json;
 typedef unsigned int uint;
@@ -48,5 +57,6 @@ Json LoadJson(const char* path);
 bool LoadTextFile(const std::string& path, std::string& outputString);
 bool SaveTextFile(const std::string& path, const std::string& content);
 bool IsEmptyString(const char* charString);
+void DecomposeMatrix(const float4x4& openGlStyleMatrix, float3& position, Quat& rotation, float3& scale);
 
 #endif /* __H_GLOBALS__ */

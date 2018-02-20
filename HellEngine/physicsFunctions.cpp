@@ -71,7 +71,7 @@ GameObject* CalculateCollisionsWithGameObjects(const std::vector<GameObject*>& g
 	/* Now iterate through the sorted GameObjects and calculate collision against every triangle in every GameObject's mesh (if available)
 	Discard backface-triangles if backface culling is in use
 	*/
-	bool backfaceCulling = App->renderer->isBackFaceCullActive();
+	bool backfaceCulling = App->renderer->IsBackFaceCullActive();
 	bool goHit = false;
 	TriangleDistanceInfo closestHitGameObject;
 	float maxQueryDistance = lineSegment.Length();
@@ -106,7 +106,7 @@ GameObject* CalculateCollisionsWithGameObjects(const std::vector<GameObject*>& g
 					Triangle triangle(vertices[indices[idx]], vertices[indices[idx + 1]], vertices[indices[idx + 2]]);
 
 					/* Discard triangle if back face culling is active and the triangle is back facing */
-					if (!backfaceCulling || Dot(triangle.NormalCCW(), lineSegment.b - lineSegment.a) < 0)
+					if (!backfaceCulling || Dot(triangle.NormalCCW(), localLineSegment.b - localLineSegment.a) < 0)
 					{
 						float hitDistance = 0;
 						if (localLineSegment.Intersects(triangle, &hitDistance, nullptr) && hitDistance < closestHitGameObject.hitDistance)
@@ -115,6 +115,10 @@ GameObject* CalculateCollisionsWithGameObjects(const std::vector<GameObject*>& g
 							closestHitGameObject.triangle = triangle;
 							closestHitGameObject.hitDistance = hitDistance;
 						}
+					}
+					else
+					{
+						int x = 0;
 					}
 				}
 			}

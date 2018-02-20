@@ -32,10 +32,10 @@ public:
 	bool CleanUp();
 
 	/* Method to be called when the window is resized */
-	void onWindowResize();
+	void OnWindowResize();
 
 	/* Returns whether or not backface culling is active */
-	bool isBackFaceCullActive();
+	bool IsBackFaceCullActive();
 
 	/* Enables or disables an OpenGL capability */
 	void ToggleOpenGLCapability(bool state, GLenum cap);

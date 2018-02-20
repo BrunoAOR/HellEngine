@@ -4,13 +4,19 @@
 #include "Glew/include/glew.h"
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_sdl_gl3.h"
+#include "ImGuizmo/ImGuizmo.h"
 #include "Application.h"
+#include "ComponentTransform.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleImGui.h"
+#include "ModuleInput.h"
 #include "ModuleRender.h"
 #include "ModuleScene.h"
 #include "ModuleWindow.h"
 #include "globals.h"
+
+ImGuizmo::OPERATION ModuleImGui::mCurrentGizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
+
 
 ModuleImGui::ModuleImGui()
 {
@@ -60,6 +66,8 @@ bool ModuleImGui::Init()
 UpdateStatus ModuleImGui::PreUpdate()
 {
 	ImGui_ImplSdlGL3_NewFrame(App->window->window);
+	ImGuizmo::BeginFrame();
+	ImGuizmo::Enable(true);
 	return UpdateStatus::UPDATE_CONTINUE;
 }
 
@@ -71,7 +79,7 @@ UpdateStatus ModuleImGui::Update()
 	static bool showAbout = false;
 	static bool showCameraWindow = false;
 	static bool showOpenGLWindow = false;
-    static bool showTextEditorWindow = false;
+	static bool showTextEditorWindow = false;
 	static bool showHierarchyWindow = true;
 	static bool showInspectorWindow = true;
 	static bool showQuadTreeWindow = false;
@@ -136,6 +144,8 @@ UpdateStatus ModuleImGui::Update()
 		ImGui::EndMainMenuBar();
 	}
 
+	DrawGuizmo();
+
 	if (showDemoWindow)
 	{
 		ImGui::ShowDemoWindow(&showDemoWindow);
@@ -156,10 +166,10 @@ UpdateStatus ModuleImGui::Update()
 		ShowOpenGLWindow(mainMenuBarHeight, &showOpenGLWindow);
 	}
 
-    if (showTextEditorWindow) 
-    {
-        ShowTextEditorWindow(mainMenuBarHeight, &showTextEditorWindow);
-    }
+	if (showTextEditorWindow)
+	{
+		ShowTextEditorWindow(mainMenuBarHeight, &showTextEditorWindow);
+	}
 
 	if (showHierarchyWindow)
 	{
@@ -254,7 +264,7 @@ void ModuleImGui::ShowEditorCameraWindow(float mainMenuBarHeight, bool* pOpen)
 	static bool frustumCulling = false;
 	static bool isActiveCamera = true;
 
-	ImGui::SetNextWindowPos(ImVec2((float)App->window->getWidth() - 300, mainMenuBarHeight));
+	ImGui::SetNextWindowPos(ImVec2((float)App->window->GetWidth() - 300, mainMenuBarHeight));
 	ImGui::SetNextWindowSize(ImVec2(300, 600));
 	ImGui::Begin("Camera", pOpen, ImGuiWindowFlags_NoCollapse);
 
@@ -466,7 +476,7 @@ void ModuleImGui::ShowOpenGLWindow(float mainMenuBarHeight, bool * pOpen)
 	ImGui::End();
 }
 
-void ModuleImGui::ShowTextEditorWindow(float mainMenuBarHeight, bool* pOpen) 
+void ModuleImGui::ShowTextEditorWindow(float mainMenuBarHeight, bool* pOpen)
 {
 	static char text[1024 * 16] = "";
 	static char fileName[256] = "";
@@ -474,19 +484,19 @@ void ModuleImGui::ShowTextEditorWindow(float mainMenuBarHeight, bool* pOpen)
 	static bool showExtendedSaveMenu = false;
 	static bool showExtendedLoadMenu = false;
 
-    ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
-    ImGui::SetNextWindowSize(ImVec2(450, 570));
-    ImGui::Begin("Visual Studio 2025", pOpen, ImGuiWindowFlags_NoCollapse);
-    ImGui::InputTextMultiline("", text, IM_ARRAYSIZE(text), ImVec2(430.f, ImGui::GetTextLineHeight() * 32), ImGuiInputTextFlags_AllowTabInput); 
-    
-    ImGui::InputText("File Name", fileName, IM_ARRAYSIZE(fileName));
+	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
+	ImGui::SetNextWindowSize(ImVec2(450, 570));
+	ImGui::Begin("Visual Studio 2025", pOpen, ImGuiWindowFlags_NoCollapse);
+	ImGui::InputTextMultiline("", text, IM_ARRAYSIZE(text), ImVec2(430.f, ImGui::GetTextLineHeight() * 32), ImGuiInputTextFlags_AllowTabInput);
+
+	ImGui::InputText("File Name", fileName, IM_ARRAYSIZE(fileName));
 	if (ImGui::Button("Save", ImVec2(125.0f, 25.0f)))
 	{
 		showExtendedSaveMenu = true;
 		showExtendedLoadMenu = false;
 	}
 
-    ImGui::SameLine(0.0f, 42.0f);
+	ImGui::SameLine(0.0f, 42.0f);
 
 	if (ImGui::Button("Load", ImVec2(125.0f, 25.0f)))
 	{
@@ -538,7 +548,7 @@ void ModuleImGui::ShowTextEditorWindow(float mainMenuBarHeight, bool* pOpen)
 	ImGui::SameLine();
 	ImGui::Text(lastLog.c_str());
 
-    ImGui::End();
+	ImGui::End();
 }
 
 void ModuleImGui::ShowQuadTreeWindow(float mainMenuBarHeight, bool * pOpen)
@@ -546,7 +556,7 @@ void ModuleImGui::ShowQuadTreeWindow(float mainMenuBarHeight, bool * pOpen)
 	static int quadTreeOption = 0;
 	static int previousQuadTreeOption = -1;
 	static bool minMaxChanged = false;
-	
+
 	ImGui::Begin("QuadTree setup", pOpen);
 
 	ImGui::RadioButton("None", &quadTreeOption, 0);
@@ -652,4 +662,55 @@ void ModuleImGui::ShowRaycastTestWindow(float mainmenuBarHeight, bool * pOpen)
 	}
 
 	ImGui::End();
+}
+
+void ModuleImGui::DrawGuizmo()
+{
+	static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
+
+	if (App->input->GetKey(SDL_SCANCODE_W) == KeyState::KEY_REPEAT)
+		mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+
+	if (App->input->GetKey(SDL_SCANCODE_E) == KeyState::KEY_REPEAT)
+		mCurrentGizmoOperation = ImGuizmo::ROTATE;
+
+	if (App->input->GetKey(SDL_SCANCODE_R) == KeyState::KEY_REPEAT)
+		mCurrentGizmoOperation = ImGuizmo::SCALE;
+
+
+	ImGui::SetNextWindowPos(ImVec2(400, 0));
+
+	if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
+		mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+
+	ImGui::SameLine();
+
+	if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE))
+		mCurrentGizmoOperation = ImGuizmo::ROTATE;
+
+	ImGui::SameLine();
+
+	if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
+		mCurrentGizmoOperation = ImGuizmo::SCALE;
+
+	ImGuizmo::SetRect(0, 0, (float)App->window->GetWidth(), (float)App->window->GetHeight());
+
+
+	if (App->scene->editorInfo.selectedGameObject != nullptr)
+	{
+		ComponentTransform* transform = (ComponentTransform*)App->scene->editorInfo.selectedGameObject->GetComponent(ComponentType::TRANSFORM);
+
+		if (transform)
+		{
+			float4x4 modelMatrix = transform->GetModelMatrix4x4();
+			float* objectMatrix = modelMatrix.ptr();
+
+			ImGuizmo::Manipulate(App->editorCamera->camera->GetViewMatrix(), App->editorCamera->camera->GetProjectionMatrix(), mCurrentGizmoOperation, mCurrentGizmoMode, objectMatrix);
+
+			if (ImGuizmo::IsUsing())
+			{
+				transform->ApplyWorldTransformationMatrix(modelMatrix, mCurrentGizmoOperation != ImGuizmo::TRANSLATE, mCurrentGizmoOperation != ImGuizmo::ROTATE, mCurrentGizmoOperation != ImGuizmo::SCALE);
+			}
+		}
+	}
 }

@@ -22,13 +22,13 @@ public:
 	bool CleanUp();
 
 	/* Returns the window width */
-	int getWidth() const;
+	int GetWidth() const;
 
 	/* Returns the window height */
-	int getHeight() const;
+	int GetHeight() const;
 
 	/* Method to be called when the window is resized */
-	void onWindowResize();
+	void OnWindowResize();
 
 public:
 

@@ -2,6 +2,7 @@
 #define __H_MODULE_IMGUI__
 
 #include <string>
+#include "ImGuizmo/ImGuizmo.h"
 #include "Module.h"
 
 class ModuleImGui :
@@ -26,6 +27,10 @@ public:
 	/* Called before quitting */
 	bool CleanUp();
 
+public:
+
+	static ImGuizmo::OPERATION mCurrentGizmoOperation;
+
 private:
 
 	/* Opens the browser to the provided link */
@@ -49,6 +54,9 @@ private:
 	/* Draws the Raycast testing window */
 	void ShowRaycastTestWindow(float mainmenuBarHeight, bool* pOpen);
 
+    /* Draws Guizmo */
+    void DrawGuizmo();
+	
 private:
 
 	std::string licenseString;

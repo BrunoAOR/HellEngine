@@ -110,12 +110,12 @@ bool ModuleRender::CleanUp()
 	return true;
 }
 
-void ModuleRender::onWindowResize()
+void ModuleRender::OnWindowResize()
 {
-	glViewport(0, 0, App->window->getWidth(), App->window->getHeight());
+	glViewport(0, 0, App->window->GetWidth(), App->window->GetHeight());
 }
 
-bool ModuleRender::isBackFaceCullActive()
+bool ModuleRender::IsBackFaceCullActive()
 {
 	if (glIsEnabled(GL_CULL_FACE))
 	{
