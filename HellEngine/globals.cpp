@@ -74,44 +74,54 @@ void DecomposeMatrix(const float4x4& openGlStyleMatrix, float3& position, Quat& 
 	float4x4 nonOpenGlStyleMatrix(openGlStyleMatrix);
 	nonOpenGlStyleMatrix.Transpose();
 
-	/* Extract the Translation, Scale and Rotation */
-	/*
-	Matrix shape
 
-	a  b  c  d
-	e  f  g  h
-	i  j  k  l
-	0  0  0  1
-	*/
+	bool validMatrix = true;
 
-	/* Extract translation */
-	/* x from d, y from h, z from l*/
-	position.x = nonOpenGlStyleMatrix[0][3];
-	position.y = nonOpenGlStyleMatrix[1][3];
-	position.z = nonOpenGlStyleMatrix[2][3];
-	/* Zero out extracted positions */
-	nonOpenGlStyleMatrix[0][3] = 0;
-	nonOpenGlStyleMatrix[1][3] = 0;
-	nonOpenGlStyleMatrix[2][3] = 0;
+	for (int i = 0; i < 16 && validMatrix; i++)
+		validMatrix = !isnan(nonOpenGlStyleMatrix.At(int(i / 4), i % 4));
 
-	/* Extract scale */
-	/* x from aei.Length, y from bfj.Length, z from cgh.Length */
-	scale.x = (float3(nonOpenGlStyleMatrix[0][0], nonOpenGlStyleMatrix[1][0], nonOpenGlStyleMatrix[2][0])).Length();
-	scale.y = (float3(nonOpenGlStyleMatrix[0][1], nonOpenGlStyleMatrix[1][1], nonOpenGlStyleMatrix[2][1])).Length();
-	scale.z = (float3(nonOpenGlStyleMatrix[0][2], nonOpenGlStyleMatrix[1][2], nonOpenGlStyleMatrix[2][2])).Length();
+	if (validMatrix) {
 
-	/* Extract rotation */
-	/* Divide each column by the corresponding scale value */
-	nonOpenGlStyleMatrix[0][0] /= scale.x;
-	nonOpenGlStyleMatrix[1][0] /= scale.x;
-	nonOpenGlStyleMatrix[2][0] /= scale.x;
-	nonOpenGlStyleMatrix[0][1] /= scale.y;
-	nonOpenGlStyleMatrix[1][1] /= scale.y;
-	nonOpenGlStyleMatrix[2][1] /= scale.y;
-	nonOpenGlStyleMatrix[0][2] /= scale.z;
-	nonOpenGlStyleMatrix[1][2] /= scale.z;
-	nonOpenGlStyleMatrix[2][2] /= scale.z;
+		/* Extract the Translation, Scale and Rotation */
+		/*
+		Matrix shape
 
-	/* Then turn into a Quat */
-	rotation = Quat(nonOpenGlStyleMatrix);
+		a  b  c  d
+		e  f  g  h
+		i  j  k  l
+		0  0  0  1
+		*/
+
+		/* Extract translation */
+		/* x from d, y from h, z from l*/
+		position.x = nonOpenGlStyleMatrix[0][3];
+		position.y = nonOpenGlStyleMatrix[1][3];
+		position.z = nonOpenGlStyleMatrix[2][3];
+		/* Zero out extracted positions */
+		nonOpenGlStyleMatrix[0][3] = 0;
+		nonOpenGlStyleMatrix[1][3] = 0;
+		nonOpenGlStyleMatrix[2][3] = 0;
+
+		/* Extract scale */
+		/* x from aei.Length, y from bfj.Length, z from cgh.Length */
+		scale.x = (float3(nonOpenGlStyleMatrix[0][0], nonOpenGlStyleMatrix[1][0], nonOpenGlStyleMatrix[2][0])).Length();
+		scale.y = (float3(nonOpenGlStyleMatrix[0][1], nonOpenGlStyleMatrix[1][1], nonOpenGlStyleMatrix[2][1])).Length();
+		scale.z = (float3(nonOpenGlStyleMatrix[0][2], nonOpenGlStyleMatrix[1][2], nonOpenGlStyleMatrix[2][2])).Length();
+
+		/* Extract rotation */
+		/* Divide each column by the corresponding scale value */
+		nonOpenGlStyleMatrix[0][0] /= scale.x;
+		nonOpenGlStyleMatrix[1][0] /= scale.x;
+		nonOpenGlStyleMatrix[2][0] /= scale.x;
+		nonOpenGlStyleMatrix[0][1] /= scale.y;
+		nonOpenGlStyleMatrix[1][1] /= scale.y;
+		nonOpenGlStyleMatrix[2][1] /= scale.y;
+		nonOpenGlStyleMatrix[0][2] /= scale.z;
+		nonOpenGlStyleMatrix[1][2] /= scale.z;
+		nonOpenGlStyleMatrix[2][2] /= scale.z;
+
+		/* Then turn into a Quat */
+
+		rotation = Quat(nonOpenGlStyleMatrix);
+	}
 }
