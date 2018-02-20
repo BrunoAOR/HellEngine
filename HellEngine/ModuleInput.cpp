@@ -93,15 +93,76 @@ UpdateStatus ModuleInput::PreUpdate()
 			break;
 
 		case SDL_WINDOWEVENT:
+			unsigned char c1;
 			switch (event.window.event)
 			{
+
 			case SDL_WINDOWEVENT_RESIZED:
 				App->window->OnWindowResize();
 				App->renderer->OnWindowResize();
 				App->editorCamera->OnWindowResize();
 				break;
 
-				/* case SDL_WINDOWEVENT_LEAVE: */
+			case SDL_WINDOWEVENT_LEAVE:
+				if (GetMouseButtonDown(SDL_BUTTON_LEFT) == KeyState::KEY_REPEAT || GetMouseButtonDown(SDL_BUTTON_RIGHT) == KeyState::KEY_REPEAT) {
+					c1 = '0';
+
+					if (mouseMotion.x > 0)
+						c1 += 1;
+
+					if (mouseMotion.y > 0)
+						c1 += 2;
+
+					float xNorm = (float)mouse.x / App->window->GetWidth();
+					float yNorm = (float)mouse.y / App->window->GetHeight();
+
+					switch (c1) {
+
+						/* Going Up-Left */
+					case '0':
+						/* Left*/
+						if (xNorm < yNorm) {
+							SDL_WarpMouseInWindow(App->window->window, App->window->GetWidth() - 1, mouse.y);
+						}
+						/* Up */
+						else {
+							SDL_WarpMouseInWindow(App->window->window, mouse.x, App->window->GetHeight() - 1);
+						}
+						break;
+
+						/* Going Up-Right */
+					case '1':
+						/* Right */
+						if ((1 - xNorm) < yNorm)
+							SDL_WarpMouseInWindow(App->window->window, 0, mouse.y);
+						/* Up */
+						else
+							SDL_WarpMouseInWindow(App->window->window, mouse.x, App->window->GetHeight() - 1);
+						break;
+
+						/* Going Down-Left */
+					case '2':
+						/* Left*/
+						if (xNorm < (1 - yNorm))
+							SDL_WarpMouseInWindow(App->window->window, App->window->GetWidth() - 1, mouse.y);
+						/* Down */
+						else
+							SDL_WarpMouseInWindow(App->window->window, mouse.x, 0);
+						break;
+
+						/* Going Down-Right */
+					case '3':
+						/* Right */
+						if (xNorm > yNorm)
+							SDL_WarpMouseInWindow(App->window->window, 0, mouse.y);
+						/* Down */
+						else
+							SDL_WarpMouseInWindow(App->window->window, mouse.x, 0);
+						break;
+					}
+				}
+				break;
+
 			case SDL_WINDOWEVENT_HIDDEN:
 			case SDL_WINDOWEVENT_MINIMIZED:
 			case SDL_WINDOWEVENT_FOCUS_LOST:
@@ -127,11 +188,12 @@ UpdateStatus ModuleInput::PreUpdate()
 			break;
 
 		case SDL_MOUSEMOTION:
+			/* When the relative motion is due to the WrapMouse event do not take it into account */
 			if ((event.motion.xrel < -App->window->GetWidth() + 10) || (event.motion.xrel > App->window->GetWidth() - 10))
 				mouseMotion.x += 0;
-			else 
-				mouseMotion.x += event.motion.xrel;		
-			
+			else
+				mouseMotion.x += event.motion.xrel;
+
 			if ((event.motion.yrel < -App->window->GetHeight() + 10) || (event.motion.yrel > App->window->GetHeight() - 10))
 				mouseMotion.y += 0;
 			else
@@ -147,21 +209,7 @@ UpdateStatus ModuleInput::PreUpdate()
 			break;
 		}
 	}
-
-	if (GetMouseButtonDown(SDL_BUTTON_LEFT) == KeyState::KEY_REPEAT || GetMouseButtonDown(SDL_BUTTON_RIGHT) == KeyState::KEY_REPEAT) {
-		if (mouse.x == App->window->GetWidth() - 1 && mouseMotion.x != 0)
-			SDL_WarpMouseInWindow(App->window->window, 0, mouse.y);
-
-		if (mouse.x == 0 && mouseMotion.x != 0)
-			SDL_WarpMouseInWindow(App->window->window, App->window->GetWidth() - 1, mouse.y);
-
-		if (mouse.y == App->window->GetHeight() - 1)
-			SDL_WarpMouseInWindow(App->window->window, mouse.x, 0);
-
-		if (mouse.y == 0)
-			SDL_WarpMouseInWindow(App->window->window, mouse.x, App->window->GetHeight() - 1);
-	}
-
+	
 	if (GetWindowEvent(EventWindow::WE_QUIT) == true || GetKey(SDL_SCANCODE_ESCAPE) == KeyState::KEY_DOWN)
 		return UpdateStatus::UPDATE_STOP;
 
