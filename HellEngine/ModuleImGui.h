@@ -2,6 +2,7 @@
 #define __H_MODULE_IMGUI__
 
 #include <string>
+#include "ImGuizmo/ImGuizmo.h"
 #include "Module.h"
 
 class ModuleImGui :
