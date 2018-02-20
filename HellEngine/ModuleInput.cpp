@@ -10,7 +10,7 @@
 #include "UpdateStatus.h"
 #include "globals.h"
 
-ModuleInput::ModuleInput() : Module(), mouse({0, 0}), mouseMotion({0,0})
+ModuleInput::ModuleInput() : Module(), mouse({ 0, 0 }), mouseMotion({ 0,0 })
 {
 	keyboard = new KeyState[MAX_KEYS];
 	memset(keyboard, (int)KeyState::KEY_IDLE, sizeof(KeyState) * MAX_KEYS);
@@ -30,7 +30,7 @@ bool ModuleInput::Init()
 	bool ret = true;
 	SDL_Init(0);
 
-	if(SDL_InitSubSystem(SDL_INIT_EVENTS) < 0)
+	if (SDL_InitSubSystem(SDL_INIT_EVENTS) < 0)
 	{
 		LOGGER("SDL_EVENTS could not initialize! SDL_Error: %s\n", SDL_GetError());
 		ret = false;
@@ -53,37 +53,37 @@ UpdateStatus ModuleInput::PreUpdate()
 	mouseMotion.SetToZero();
 	mouseWheel.SetToZero();
 	memset(windowEvents, false, (int)EventWindow::WE_COUNT * sizeof(bool));
-	
+
 	const Uint8* keys = SDL_GetKeyboardState(NULL);
 
-	for(int i = 0; i < MAX_KEYS; ++i)
+	for (int i = 0; i < MAX_KEYS; ++i)
 	{
-		if(keys[i] == 1)
+		if (keys[i] == 1)
 		{
-			if(keyboard[i] == KeyState::KEY_IDLE)
+			if (keyboard[i] == KeyState::KEY_IDLE)
 				keyboard[i] = KeyState::KEY_DOWN;
 			else
 				keyboard[i] = KeyState::KEY_REPEAT;
 		}
 		else
 		{
-			if(keyboard[i] == KeyState::KEY_REPEAT || keyboard[i] == KeyState::KEY_DOWN)
+			if (keyboard[i] == KeyState::KEY_REPEAT || keyboard[i] == KeyState::KEY_DOWN)
 				keyboard[i] = KeyState::KEY_UP;
 			else
 				keyboard[i] = KeyState::KEY_IDLE;
 		}
 	}
 
-	for(int i = 0; i < NUM_MOUSE_BUTTONS; ++i)
+	for (int i = 0; i < NUM_MOUSE_BUTTONS; ++i)
 	{
-		if(mouseButtons[i] == KeyState::KEY_DOWN)
+		if (mouseButtons[i] == KeyState::KEY_DOWN)
 			mouseButtons[i] = KeyState::KEY_REPEAT;
 
-		if(mouseButtons[i] == KeyState::KEY_UP)
+		if (mouseButtons[i] == KeyState::KEY_UP)
 			mouseButtons[i] = KeyState::KEY_IDLE;
 	}
 
-	while(SDL_PollEvent(&event) != 0)
+	while (SDL_PollEvent(&event) != 0)
 	{
 		ImGui_ImplSdlGL3_ProcessEvent(&event);
 		switch (event.type)
@@ -127,14 +127,18 @@ UpdateStatus ModuleInput::PreUpdate()
 			break;
 
 		case SDL_MOUSEMOTION:
-			mouseMotion.x += event.motion.xrel;
-			mouseMotion.y += event.motion.yrel;
+			if ((event.motion.xrel < -App->window->GetWidth() + 10) || (event.motion.xrel > App->window->GetWidth() - 10))
+				mouseMotion.x += 0;
+			else 
+				mouseMotion.x += event.motion.xrel;		
+			
+			if ((event.motion.yrel < -App->window->GetHeight() + 10) || (event.motion.yrel > App->window->GetHeight() - 10))
+				mouseMotion.y += 0;
+			else
+				mouseMotion.y += event.motion.yrel;
+
 			mouse.x = event.motion.x;
 			mouse.y = event.motion.y;
-			LOGGER("mouseX: %d", mouse.x);
-			if (mouse.x > App->window->GetWidth()) {
-				int a = 2;
-			}
 			break;
 
 		case SDL_MOUSEWHEEL:
@@ -144,7 +148,21 @@ UpdateStatus ModuleInput::PreUpdate()
 		}
 	}
 
-	if(GetWindowEvent(EventWindow::WE_QUIT) == true || GetKey(SDL_SCANCODE_ESCAPE) == KeyState::KEY_DOWN)
+	if (GetMouseButtonDown(SDL_BUTTON_LEFT) == KeyState::KEY_REPEAT || GetMouseButtonDown(SDL_BUTTON_RIGHT) == KeyState::KEY_REPEAT) {
+		if (mouse.x == App->window->GetWidth() - 1 && mouseMotion.x != 0)
+			SDL_WarpMouseInWindow(App->window->window, 0, mouse.y);
+
+		if (mouse.x == 0 && mouseMotion.x != 0)
+			SDL_WarpMouseInWindow(App->window->window, App->window->GetWidth() - 1, mouse.y);
+
+		if (mouse.y == App->window->GetHeight() - 1)
+			SDL_WarpMouseInWindow(App->window->window, mouse.x, 0);
+
+		if (mouse.y == 0)
+			SDL_WarpMouseInWindow(App->window->window, mouse.x, App->window->GetHeight() - 1);
+	}
+
+	if (GetWindowEvent(EventWindow::WE_QUIT) == true || GetKey(SDL_SCANCODE_ESCAPE) == KeyState::KEY_DOWN)
 		return UpdateStatus::UPDATE_STOP;
 
 	return UpdateStatus::UPDATE_CONTINUE;

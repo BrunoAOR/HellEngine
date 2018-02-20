@@ -209,8 +209,14 @@ void ModuleEditorCamera::HandleCameraRotation()
 		if (xMotion > 50)
 			xMotion = 50;
 
+		if (xMotion < -50)
+			xMotion = -50;
+
 		if (yMotion > 50)
 			yMotion = 50;
+
+		if (yMotion < -50)
+			yMotion = -50;
 
 		BROFILER_CATEGORY("ModuleCamera::Pitch", Profiler::Color::Black);
 		/* Camera rotate upwards and downwards */
