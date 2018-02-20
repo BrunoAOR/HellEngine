@@ -336,6 +336,9 @@
     <ClInclude Include="ModelInfo.h">
       <Filter>General</Filter>
     </ClInclude>
+    <ClInclude Include="ModuleTextureManager.h">
+      <Filter>Engine Modules</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -538,6 +541,9 @@
     </ClCompile>
     <ClCompile Include="Model.cpp">
       <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleTextureManager.cpp">
+      <Filter>Engine Modules</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
