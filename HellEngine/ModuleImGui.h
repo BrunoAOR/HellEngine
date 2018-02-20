@@ -26,6 +26,10 @@ public:
 	/* Called before quitting */
 	bool CleanUp();
 
+public:
+
+	static ImGuizmo::OPERATION mCurrentGizmoOperation;
+
 private:
 
 	/* Opens the browser to the provided link */
