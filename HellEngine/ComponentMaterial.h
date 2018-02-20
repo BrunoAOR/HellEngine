@@ -8,6 +8,7 @@
 #include "TextureConfiguration.h"
 #include "TextureInfo.h"
 #include "globals.h"
+#include "ModuleTextureManager.h"
 
 class ComponentMesh;
 class ComponentTransform;
@@ -109,6 +110,12 @@ private:
 	static std::map<Shader*, uint> loadedShaderCount;
 
 	const ModelInfo* modelInfo = nullptr;
+
+	/* TEMP TEST ModuleTextureManager */
+
+	ModuleTextureManager* moduleTextureManager;
+
+	/**********************************/
 };
 
 #endif // !__H_COMPONENT_MATERIAL__
