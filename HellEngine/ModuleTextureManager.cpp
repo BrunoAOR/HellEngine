@@ -43,6 +43,7 @@ void ModuleTextureManager::ReleaseTexture(const GLuint textureIndex)
 			if (it->second.numRefs == 0)
 			{
 				glDeleteTextures(1, &it->second.index);
+				textures.erase(it);
 			}
 
 			return;
