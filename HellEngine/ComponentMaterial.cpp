@@ -28,8 +28,7 @@ ComponentMaterial::ComponentMaterial(GameObject* owner) : Component(owner)
 		checkeredPatternBufferId = CreateCheckeredTexture();
 	}
 	materialsCount++;
-	
-	App->textureManager->GetTexture("assets/images/lenna.png");
+
 	//LOGGER("Component of type '%s'", GetString(type));
 }
 
@@ -427,7 +426,7 @@ bool ComponentMaterial::DrawElements(float * modelMatrix, const ModelInfo* model
 		if (textureBufferId == checkeredPatternBufferId && vaoInfo.textureID != 0)
 			textureId = vaoInfo.textureID;
 		
-		glBindTexture(GL_TEXTURE_2D, App->textureManager->textures.begin()->second.index);
+		glBindTexture(GL_TEXTURE_2D, textureId);
 		glBindVertexArray(vaoInfo.vao);
 		glDrawElements(GL_TRIANGLES, vaoInfo.elementsCount, GL_UNSIGNED_INT, nullptr);
 		glBindVertexArray(GL_NONE);
@@ -594,7 +593,7 @@ bool ComponentMaterial::LoadTexture()
 		textureInfo.Zero();
 	}
 	else
-		textureBufferId = App->renderer->LoadImageWithDevIL(texturePath, &textureInfo);
+		textureBufferId = App->textureManager->GetTexture(texturePath);
 
 	if (textureBufferId != 0)
 		ConfigureTexture();

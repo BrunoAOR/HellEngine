@@ -19,7 +19,7 @@ public:
 	~ModuleTextureManager();
 
 public:
-	void GetTexture(const std::string &texturePath);
+	GLuint GetTexture(const std::string &texturePath);
 	void ReleaseTexture(const std::string &texturePath);
 
 public:

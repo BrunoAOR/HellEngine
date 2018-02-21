@@ -10,7 +10,7 @@ ModuleTextureManager::~ModuleTextureManager()
 {
 }
 
-void ModuleTextureManager::GetTexture(const std::string &texturePath)
+GLuint ModuleTextureManager::GetTexture(const std::string &texturePath)
 {
 	for (std::map<std::string, TextureData>::iterator it = textures.begin(); it != textures.end(); ++it)
 	{
@@ -19,7 +19,7 @@ void ModuleTextureManager::GetTexture(const std::string &texturePath)
 			if (texturePath.compare(it->first))
 			{
 				it->second.numRefs++;
-				return;
+				return it->second.index;
 			}
 		}
 	}
@@ -28,6 +28,8 @@ void ModuleTextureManager::GetTexture(const std::string &texturePath)
 	temp.index = App->renderer->LoadImageWithDevIL(texturePath.c_str());
 	temp.numRefs = 1;
 	textures.insert(std::pair<std::string, TextureData>(texturePath, temp));
+
+	return temp.index;
 }
 
 void ModuleTextureManager::ReleaseTexture(const std::string &texturePath)
