@@ -20,7 +20,7 @@ public:
 
 public:
 	GLuint GetTexture(const std::string &texturePath);
-	void ReleaseTexture(const std::string &texturePath);
+	void ReleaseTexture(const GLuint textureIndex);
 
 public:
 	std::map<std::string, TextureData> textures;

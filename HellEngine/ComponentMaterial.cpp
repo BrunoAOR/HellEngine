@@ -44,7 +44,7 @@ ComponentMaterial::~ComponentMaterial()
 	}
 
 	if (textureBufferId != checkeredPatternBufferId)
-		glDeleteTextures(1, &textureBufferId);
+		App->textureManager->ReleaseTexture(textureBufferId);
 
 	textureBufferId = 0;
 	materialsCount--;

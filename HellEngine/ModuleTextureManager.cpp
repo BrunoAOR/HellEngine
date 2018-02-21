@@ -32,18 +32,20 @@ GLuint ModuleTextureManager::GetTexture(const std::string &texturePath)
 	return temp.index;
 }
 
-void ModuleTextureManager::ReleaseTexture(const std::string &texturePath)
+void ModuleTextureManager::ReleaseTexture(const GLuint textureIndex)
 {
 	for (std::map<std::string, TextureData>::iterator it = textures.begin(); it != textures.end(); ++it)
 	{
-		if (texturePath.size() == it->first.size())
+		if (it->second.index == textureIndex)
 		{
-			if (texturePath.compare(it->first))
+			it->second.numRefs--;
+
+			if (it->second.numRefs == 0)
 			{
-				it->second.numRefs--;
 				glDeleteTextures(1, &it->second.index);
-				return;
 			}
+
+			return;
 		}
 	}
 }
