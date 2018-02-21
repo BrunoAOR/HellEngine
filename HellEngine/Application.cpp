@@ -11,6 +11,7 @@
 #include "ModuleTime.h"
 #include "ModuleWindow.h"
 #include "UpdateStatus.h"
+#include "ModuleTextureManager.h"
 
 Application::Application()
 {
@@ -24,6 +25,7 @@ Application::Application()
 	modules.push_back(imgui = new ModuleImGui());
 	modules.push_back(audio = new ModuleAudio());
 	modules.push_back(debugDraw = new ModuleDebugDraw());
+	modules.push_back(textureManager = new ModuleTextureManager());
 }
 
 Application::~Application()

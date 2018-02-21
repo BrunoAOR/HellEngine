@@ -110,12 +110,6 @@ private:
 	static std::map<Shader*, uint> loadedShaderCount;
 
 	const ModelInfo* modelInfo = nullptr;
-
-	/* TEMP TEST ModuleTextureManager */
-
-	ModuleTextureManager* moduleTextureManager;
-
-	/**********************************/
 };
 
 #endif // !__H_COMPONENT_MATERIAL__

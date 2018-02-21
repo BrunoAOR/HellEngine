@@ -12,6 +12,7 @@ class ModuleRender;
 class ModuleScene;
 class ModuleTime;
 class ModuleWindow;
+class ModuleTextureManager;
 enum class UpdateStatus;
 
 class Application
@@ -34,6 +35,7 @@ public:
 	ModuleImGui* imgui = nullptr;
 	ModuleAudio* audio = nullptr;
 	ModuleDebugDraw* debugDraw = nullptr;
+	ModuleTextureManager* textureManager = nullptr;
 
 private:
 	std::list<Module*> modules;

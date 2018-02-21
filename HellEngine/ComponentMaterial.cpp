@@ -28,9 +28,8 @@ ComponentMaterial::ComponentMaterial(GameObject* owner) : Component(owner)
 		checkeredPatternBufferId = CreateCheckeredTexture();
 	}
 	materialsCount++;
-
-	moduleTextureManager = new ModuleTextureManager();
-	moduleTextureManager->GetTexture("assets/images/lenna.png");
+	
+	App->textureManager->GetTexture("assets/images/lenna.png");
 	//LOGGER("Component of type '%s'", GetString(type));
 }
 
@@ -428,7 +427,7 @@ bool ComponentMaterial::DrawElements(float * modelMatrix, const ModelInfo* model
 		if (textureBufferId == checkeredPatternBufferId && vaoInfo.textureID != 0)
 			textureId = vaoInfo.textureID;
 		
-		glBindTexture(GL_TEXTURE_2D, moduleTextureManager->textures.begin()->second.index);
+		glBindTexture(GL_TEXTURE_2D, App->textureManager->textures.begin()->second.index);
 		glBindVertexArray(vaoInfo.vao);
 		glDrawElements(GL_TRIANGLES, vaoInfo.elementsCount, GL_UNSIGNED_INT, nullptr);
 		glBindVertexArray(GL_NONE);
