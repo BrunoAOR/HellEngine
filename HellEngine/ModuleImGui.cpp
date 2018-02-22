@@ -681,22 +681,7 @@ void ModuleImGui::DrawGuizmo()
 		if (App->input->GetKey(SDL_SCANCODE_R) == KeyState::KEY_REPEAT)
 			mCurrentGizmoOperation = ImGuizmo::SCALE;
 	}
-
-	ImGui::SetNextWindowPos(ImVec2(400, 0));
-
-	if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
-		mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-
-	ImGui::SameLine();
-
-	if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE))
-		mCurrentGizmoOperation = ImGuizmo::ROTATE;
-
-	ImGui::SameLine();
-
-	if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
-		mCurrentGizmoOperation = ImGuizmo::SCALE;
-
+	
 	ImGuizmo::SetRect(0, 0, (float)App->window->GetWidth(), (float)App->window->GetHeight());
 
 
