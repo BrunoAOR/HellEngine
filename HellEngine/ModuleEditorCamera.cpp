@@ -41,7 +41,6 @@ bool ModuleEditorCamera::Init()
 
 UpdateStatus ModuleEditorCamera::Update()
 {
-	BROFILER_CATEGORY("ModuleEditorCamera::Update", Profiler::Color::Beige);
 	HandleCameraMotion();
 	HandleCameraRotation();	
 	HandleCameraMousePicking();
@@ -64,7 +63,6 @@ void ModuleEditorCamera::OnWindowResize()
 
 void ModuleEditorCamera::HandleCameraMotion()
 {
-	BROFILER_CATEGORY("ModuleCamera::Motion", Profiler::Color::Black);
 	vec pos = camera->GetPosition3();
 	vec initialPos = pos;
 	int moveFactor = App->input->GetKey(SDL_SCANCODE_LSHIFT) == KeyState::KEY_REPEAT ? 3 : 1;
@@ -198,11 +196,9 @@ void ModuleEditorCamera::HandleCameraMotion()
 
 void ModuleEditorCamera::HandleCameraRotation()
 {
-	BROFILER_CATEGORY("ModuleCamera::Rotation", Profiler::Color::Black);
 	/*Handling Mouse*/
 	if (App->input->GetMouseButtonDown(SDL_BUTTON_RIGHT) == KeyState::KEY_REPEAT)
 	{
-		BROFILER_CATEGORY("ModuleCamera::Input", Profiler::Color::Black);
 		int xMotion = App->input->GetMouseMotion().x;
 		int yMotion = App->input->GetMouseMotion().y;
 
@@ -218,7 +214,6 @@ void ModuleEditorCamera::HandleCameraRotation()
 		if (yMotion < -50)
 			yMotion = -50;
 
-		BROFILER_CATEGORY("ModuleCamera::Pitch", Profiler::Color::Black);
 		/* Camera rotate upwards and downwards */
 		if (yMotion != 0
 			&& !currentlyMovingCamera
@@ -227,7 +222,6 @@ void ModuleEditorCamera::HandleCameraRotation()
 			RotatePitch(yMotion);
 		}
 
-		BROFILER_CATEGORY("ModuleCamera::Yaw", Profiler::Color::Black);
 		/* Camera rotate leftwards and rightwards */
 		if (xMotion != 0
 			&& !currentlyMovingCamera

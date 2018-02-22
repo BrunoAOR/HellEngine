@@ -1,4 +1,5 @@
 #include <stack>
+#include "Brofiler/include/Brofiler.h"
 #include "ImGui/imgui.h"
 #include "MathGeoLib/src/Math/TransformOps.h"
 #include "Application.h"
@@ -211,6 +212,7 @@ void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 	while (!stack.empty()) {
 		go = stack.top();
 		stack.pop();
+		BROFILER_CATEGORY("ComponentTransform::GetComponents", Profiler::Color::PapayaWhip);
 		t = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM);
 		m = (ComponentMesh*)go->GetComponent(ComponentType::MESH);
 
@@ -218,12 +220,15 @@ void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 			t->boundingBox.SetNegativeInfinity();
 
 			if (m != nullptr) {
+				BROFILER_CATEGORY("ComponentTransform::EncloseNegative", Profiler::Color::PapayaWhip);
 				EncloseBoundingBox(t, m);				
 			}
 			else {
+				BROFILER_CATEGORY("ComponentTransform::EncloseVertex", Profiler::Color::PapayaWhip);
 				t->boundingBox.Enclose(baseBoundingBox.data(), baseBoundingBox.size());
 			}
-			
+
+			BROFILER_CATEGORY("ComponentTransform::TransformBB", Profiler::Color::PapayaWhip);
 			t->boundingBox.TransformBB(GetModelMatrix4x4().Transposed());
 
 			children = go->GetChildren();
@@ -519,13 +524,14 @@ void ComponentTransform::ApplyWorldTransformationMatrix(const float4x4& worldTra
 		float3& outputPosition = excludePosition ? pos : position;
 		Quat& outputRotation = excludeRotation ? rot : rotation;
 		float3& outputScale = excludeScale ? sca : scale;
-		
+
 		DecomposeMatrix(newLocalModelMatrix, outputPosition, outputRotation, outputScale);
 		float3 rotEuler = rotation.ToEulerXYZ();
 		rotationDeg[0] = RadToDeg(rotEuler.x);
 		rotationDeg[1] = RadToDeg(rotEuler.y);
 		rotationDeg[2] = RadToDeg(rotEuler.z);
 
+		BROFILER_CATEGORY("ComponentTransform::UpdateBoundingBox", Profiler::Color::PapayaWhip);
 		UpdateBoundingBox();
 	}
 }

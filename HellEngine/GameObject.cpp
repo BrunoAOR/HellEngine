@@ -1,5 +1,6 @@
 #include <stack>
 #include <assert.h>
+#include "Brofiler/include/Brofiler.h"
 #include "ImGui/imgui.h"
 #include "Application.h"
 #include "GameObject.h"

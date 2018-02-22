@@ -1,4 +1,5 @@
 #include <algorithm>
+#include "Brofiler/include/Brofiler.h"
 #include "ImGui/imgui.h"
 #include "MathGeoLib/src/Geometry/Plane.h"
 #include "Application.h"

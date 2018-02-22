@@ -2,7 +2,6 @@
 #define __H_MODULE_SCENE__
 
 #include <vector>
-#include "Brofiler/include/Brofiler.h"
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "GameObject.h"
@@ -80,7 +79,6 @@ inline void ModuleScene::Intersects(std::vector<GameObject*>& intersectedGameObj
 		staticTransforms.push_back((ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM));
 	}
 
-	BROFILER_CATEGORY("Brute Force check start", Profiler::Color::Brown);
 	int checksPerformed = 0;
 	for (std::vector<ComponentTransform*>::iterator it = staticTransforms.begin(); it != staticTransforms.end(); ++it)
 	{
@@ -88,7 +86,6 @@ inline void ModuleScene::Intersects(std::vector<GameObject*>& intersectedGameObj
 		if (primitive.Intersects((*it)->GetBoundingBox()))
 			intersectedGameObjects.push_back((*it)->gameObject);
 	}
-	BROFILER_CATEGORY("Brute Force check end", Profiler::Color::White);
 	LOGGER("Brute force checks: %i", checksPerformed);
 }
 
