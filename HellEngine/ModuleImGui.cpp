@@ -5,6 +5,7 @@
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_sdl_gl3.h"
 #include "ImGuizmo/ImGuizmo.h"
+#include "SDL/include/SDL_mouse.h"
 #include "Application.h"
 #include "ComponentTransform.h"
 #include "ModuleEditorCamera.h"
@@ -668,15 +669,18 @@ void ModuleImGui::DrawGuizmo()
 {
 	static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
 
-	if (App->input->GetKey(SDL_SCANCODE_W) == KeyState::KEY_REPEAT)
-		mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+	bool mousePressed = (App->input->GetMouseButtonDown(SDL_BUTTON_RIGHT) == KeyState::KEY_REPEAT || App->input->GetMouseButtonDown(SDL_BUTTON_LEFT) == KeyState::KEY_REPEAT);
 
-	if (App->input->GetKey(SDL_SCANCODE_E) == KeyState::KEY_REPEAT)
-		mCurrentGizmoOperation = ImGuizmo::ROTATE;
+	if (!mousePressed) {
+		if (App->input->GetKey(SDL_SCANCODE_W) == KeyState::KEY_REPEAT)
+			mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
 
-	if (App->input->GetKey(SDL_SCANCODE_R) == KeyState::KEY_REPEAT)
-		mCurrentGizmoOperation = ImGuizmo::SCALE;
+		if (App->input->GetKey(SDL_SCANCODE_E) == KeyState::KEY_REPEAT)
+			mCurrentGizmoOperation = ImGuizmo::ROTATE;
 
+		if (App->input->GetKey(SDL_SCANCODE_R) == KeyState::KEY_REPEAT)
+			mCurrentGizmoOperation = ImGuizmo::SCALE;
+	}
 
 	ImGui::SetNextWindowPos(ImVec2(400, 0));
 
