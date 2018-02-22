@@ -219,13 +219,9 @@ void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 		if (t != nullptr) {
 			t->boundingBox.SetNegativeInfinity();
 
-			if (m != nullptr) {
+			if (m != nullptr && m->activeVaoChanged) {
 				BROFILER_CATEGORY("ComponentTransform::EncloseNegative", Profiler::Color::PapayaWhip);
 				EncloseBoundingBox(t, m);				
-			}
-			else {
-				BROFILER_CATEGORY("ComponentTransform::EncloseVertex", Profiler::Color::PapayaWhip);
-				t->boundingBox.Enclose(baseBoundingBox.data(), baseBoundingBox.size());
 			}
 
 			BROFILER_CATEGORY("ComponentTransform::TransformBB", Profiler::Color::PapayaWhip);
@@ -242,22 +238,30 @@ void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 void ComponentTransform::EncloseBoundingBox(ComponentTransform* transform, ComponentMesh * mesh)
 {
 	if (mesh->GetActiveModelInfo() != nullptr) {
+		BROFILER_CATEGORY("ComponentTransform::GetModel", Profiler::Color::PapayaWhip);
 		uint size = mesh->GetActiveModelInfo()->vaoInfos.size();
 		if (size > 0) {
+			BROFILER_CATEGORY("ComponentTransform::Iteration", Profiler::Color::PapayaWhip);
 			float3 minPoint(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
 			float3 maxPoint(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest());
 			for (uint i = 0; i < size; i++) {
-				std::vector<float3> vertices = mesh->GetActiveModelInfo()->vaoInfos.at(i).vertices;
+				BROFILER_CATEGORY("ComponentTransform::GetVertices", Profiler::Color::PapayaWhip);
+				const std::vector<float3>& vertices = mesh->GetActiveModelInfo()->vaoInfos.at(i).vertices;
 				for (uint j = 0; j < vertices.size(); j++) {
-					minPoint = minPoint.Min(vertices.at(j));
-					maxPoint = maxPoint.Max(vertices.at(j));
+					BROFILER_CATEGORY("ComponentTransform::MinCalculation", Profiler::Color::PapayaWhip);
+					minPoint.ModifyToMin(vertices.at(j));
+					BROFILER_CATEGORY("ComponentTransform::MaxCalculation", Profiler::Color::PapayaWhip);
+					maxPoint.ModifyToMax(vertices.at(j));
 				}
 			}
 
+			BROFILER_CATEGORY("ComponentTransform::Enclose", Profiler::Color::PapayaWhip);
 			transform->boundingBox.Enclose(minPoint, maxPoint);
 		}
 	}
 }
+
+
 
 float* ComponentTransform::GetModelMatrix()
 {

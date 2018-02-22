@@ -443,6 +443,13 @@ float3 float3::Min(const float3 &ceil) const
 #endif
 }
 
+void float3::ModifyToMin(const float3 & ceil)
+{
+	x = x <= ceil.x ? x : ceil.x;
+	y = y <= ceil.y ? y : ceil.y;
+	z = z <= ceil.z ? z : ceil.z;
+}
+
 float3 float3::Max(float floor) const
 {
 #ifdef MATH_AUTOMATIC_SIMD_FLOAT3
@@ -463,6 +470,13 @@ float3 float3::Max(const float3 &floor) const
 #else
 	return float3(MATH_NS::Max(x, floor.x), MATH_NS::Max(y, floor.y), MATH_NS::Max(z, floor.z));
 #endif
+}
+
+void float3::ModifyToMax(const float3 & floor)
+{
+	x = x >= floor.x ? x : floor.x;
+	y = y >= floor.y ? y : floor.y;
+	z = z >= floor.z ? z : floor.z;
 }
 
 float3 float3::Clamp(const float3 &floor, const float3 &ceil) const
