@@ -2,9 +2,11 @@
 #include "ImGui/imgui.h"
 #include "MathGeoLib/src/Math/TransformOps.h"
 #include "Application.h"
+#include "ComponentMesh.h"
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "GameObject.h"
+#include "ModelInfo.h"
 #include "ModuleDebugDraw.h"
 #include "ModuleScene.h"
 #include "globals.h"
@@ -181,6 +183,14 @@ void ComponentTransform::SetScale(float x, float y, float z)
 	}
 }
 
+void ComponentTransform::SetRotation(Quat newRotation)
+{
+	if (!isStatic)
+	{
+		rotation = newRotation;
+	}
+}
+
 void ComponentTransform::SetRotationRad(float x, float y, float z)
 {
 	if (!isStatic)
@@ -237,12 +247,12 @@ void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 void ComponentTransform::EncloseBoundingBox(ComponentTransform* transform, ComponentMesh * mesh)
 {
 	if (mesh->GetActiveModelInfo() != nullptr) {
-		uint size = mesh->GetActiveModelInfo()->vaoInfos.size();
+		uint size = mesh->GetActiveModelInfo()->vaoInfosIndexes.size();
 		if (size > 0) {
 			float3 minPoint(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
 			float3 maxPoint(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest());
 			for (uint i = 0; i < size; i++) {
-				std::vector<float3> vertices = mesh->GetActiveModelInfo()->vaoInfos.at(i).vertices;
+				std::vector<float3> vertices = App->scene->meshes.at(mesh->GetActiveModelInfo()->vaoInfosIndexes.at(i))->vertices;
 				for (uint j = 0; j < vertices.size(); j++) {
 					minPoint = minPoint.Min(vertices.at(j));
 					maxPoint = maxPoint.Max(vertices.at(j));
@@ -259,7 +269,7 @@ float* ComponentTransform::GetModelMatrix()
 	return GetModelMatrix4x4().ptr();
 }
 
-void ComponentTransform::SetParent(ComponentTransform* newParent)
+void ComponentTransform::RecalculateLocalMatrix(ComponentTransform* newParent)
 {
 	/* Calculate the new local model matrix */
 	float4x4 newParentWorldMatrix;

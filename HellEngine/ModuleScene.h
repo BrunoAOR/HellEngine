@@ -11,6 +11,7 @@
 class ComponentCamera;
 class GameObject;
 
+#include "SceneLoader.h"
 class ModuleScene :
 	public Module
 {
@@ -43,6 +44,7 @@ public:
 	ComponentCamera* GetActiveGameCamera() const;
 	void SetSelectedGameObject(GameObject* go);
 
+	bool LoadModel(const char* modelPath, GameObject* parent);
 	GameObject* CreateGameObject();
 	void Destroy(GameObject* gameObject);
 	std::vector<GameObject*> FindByName(const std::string& name, GameObject* gameObject = nullptr);
@@ -50,6 +52,8 @@ public:
 public:
 
 	GameObject* root;
+	std::vector<VaoInfo*> meshes;
+
 	struct
 	{
 		GameObject* selectedGameObject = nullptr;
@@ -65,7 +69,8 @@ private:
 private:
 
 	ComponentCamera* activeGameCamera = nullptr;
-	SpaceQuadTree  quadTree;
+	SpaceQuadTree quadTree;
+	SceneLoader sceneLoader;
 
 };
 

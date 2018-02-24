@@ -29,9 +29,11 @@ public:
 	void AddDependingComponent();
 	void RemoveDependingComponent();
 
+	bool GetActive() const;
+	void SetActive(bool activeState);
+
 public:
 
-	bool isActive = true;
 	std::string name;
 
 private:
@@ -52,10 +54,12 @@ private:
 	void OnEditorHierarchyDragAndDrop();
 	void OnEditorHierarchyRightClick();
 	void OnEditorHierarchyCreateMenu();
+	void OnEditorHierarchyLoadModelMenu();
 
 private:
 
 	GameObject* parent = nullptr;
+	bool isActive = true;
 	std::vector<GameObject*> children;
 	std::vector<Component*> components;
 
