@@ -1,11 +1,11 @@
 #ifndef __H_SCENE_LOADER__
 #define __H_SCENE_LOADER__
 
-#include "VaoInfo.h"
 class GameObject;
 struct aiMesh;
 struct aiNode;
 struct aiScene;
+struct VaoInfo;
 
 class SceneLoader
 {

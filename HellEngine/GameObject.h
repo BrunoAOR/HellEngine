@@ -52,6 +52,7 @@ private:
 	void OnEditorHierarchyDragAndDrop();
 	void OnEditorHierarchyRightClick();
 	void OnEditorHierarchyCreateMenu();
+	void OnEditorHierarchyLoadModelMenu();
 
 private:
 

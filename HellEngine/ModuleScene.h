@@ -44,6 +44,7 @@ public:
 	ComponentCamera* GetActiveGameCamera() const;
 	void SetSelectedGameObject(GameObject* go);
 
+	bool LoadModel(const char* modelPath, GameObject* parent);
 	GameObject* CreateGameObject();
 	void Destroy(GameObject* gameObject);
 	std::vector<GameObject*> FindByName(const std::string& name, GameObject* gameObject = nullptr);
@@ -68,10 +69,7 @@ private:
 private:
 
 	ComponentCamera* activeGameCamera = nullptr;
-	SpaceQuadTree  quadTree;
-
-private:
-
+	SpaceQuadTree quadTree;
 	SceneLoader sceneLoader;
 
 };

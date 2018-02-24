@@ -138,6 +138,8 @@ void GameObject::OnEditorRootHierarchy()
 	if (ImGui::BeginPopupContextItem())
 	{
 		OnEditorHierarchyCreateMenu();
+		ImGui::Separator();
+		OnEditorHierarchyLoadModelMenu();
 		ImGui::EndPopup();
 	}
 	if (open)
@@ -233,6 +235,10 @@ void GameObject::OnEditorHierarchyRightClick()
 			if (ImGui::Selectable("Move down"))
 				SwapWithNextSibling();
 
+		ImGui::Separator();
+
+		OnEditorHierarchyLoadModelMenu();
+
 		ImGui::EndPopup();
 	}
 }
@@ -255,6 +261,25 @@ void GameObject::OnEditorHierarchyCreateMenu()
 		if (ImGui::Selectable("Create Sphere"))
 			AddSphereChild();
 
+		ImGui::EndMenu();
+	}
+}
+
+void GameObject::OnEditorHierarchyLoadModelMenu()
+{
+	static char modelPath[256]{ '\0' };
+	static bool error = false;
+
+	if (ImGui::BeginMenu("Load Model"))
+	{
+		ImGui::InputText("Model path", modelPath, 256);
+		ImGui::Separator();
+		if (ImGui::Selectable("Load"))
+			error = !App->scene->LoadModel(modelPath, this);
+		
+		if (error)
+			ImGui::Text("Could not load model from provided path!");
+		
 		ImGui::EndMenu();
 	}
 }

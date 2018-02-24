@@ -38,8 +38,6 @@ bool ModuleScene::Init()
 {
 	root = new GameObject("root", nullptr);
 	root->AddComponent(ComponentType::CAMERA);
-
-	sceneLoader.Load("assets/models/street/Street.obj", root);
 	return true;
 }
 
@@ -229,6 +227,11 @@ ComponentCamera * ModuleScene::GetActiveGameCamera() const
 void ModuleScene::SetSelectedGameObject(GameObject * go)
 {
 	editorInfo.selectedGameObject = go;
+}
+
+bool ModuleScene::LoadModel(const char* modelPath, GameObject* parent)
+{
+	return sceneLoader.Load(modelPath, parent);
 }
 
 GameObject* ModuleScene::CreateGameObject()
