@@ -65,55 +65,51 @@ void ComponentMaterial::Update()
 	ComponentMesh* mesh = (ComponentMesh*)gameObject->GetComponent(ComponentType::MESH);
 	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);;
 
-	if (!isValid || !mesh || !transform)
+	if (isValid && mesh && transform)
 	{
-		return;
-	}
+		bool insideFrustum = true;
 
-	bool insideFrustum = true;
-
-	ComponentCamera* editorCamera = App->editorCamera->camera;
-	if (editorCamera != nullptr)
-	{
-		if (App->scene->UsingQuadTree() && transform->GetIsStatic()) {
-			BROFILER_CATEGORY("Frustum culling using QuadTree", Profiler::Color::GreenYellow);
-			insideFrustum = editorCamera->IsInsideFrustum(gameObject);
-		}
-		else {
-			BROFILER_CATEGORY("Frustum culling without QuadTree", Profiler::Color::GreenYellow);
-			insideFrustum = transform->GetBoundingBox().Contains(editorCamera->GetFrustum());
-		}
-	}
-	if (insideFrustum) {
-
-		ComponentCamera* activeGameCamera = App->scene->GetActiveGameCamera();
-
-		if (activeGameCamera != nullptr && activeGameCamera->FrustumCulling())
+		ComponentCamera* editorCamera = App->editorCamera->camera;
+		if (editorCamera != nullptr)
 		{
 			if (App->scene->UsingQuadTree() && transform->GetIsStatic()) {
-				insideFrustum = activeGameCamera->IsInsideFrustum(gameObject);
+				BROFILER_CATEGORY("Frustum culling using QuadTree", Profiler::Color::GreenYellow);
+				insideFrustum = editorCamera->IsInsideFrustum(gameObject);
 			}
 			else {
-				insideFrustum = transform->GetBoundingBox().Contains(activeGameCamera->GetFrustum());
+				BROFILER_CATEGORY("Frustum culling without QuadTree", Profiler::Color::GreenYellow);
+				insideFrustum = transform->GetBoundingBox().Contains(editorCamera->GetFrustum());
 			}
 		}
-
 		if (insideFrustum) {
-			float* modelMatrix = transform->GetModelMatrix();
 
-			BROFILER_CATEGORY("ComponentMaterial::GetVao", Profiler::Color::Gold);
-			if (mesh->activeVaoChanged) {
-				modelInfo = mesh->GetActiveModelInfo();
-				mesh->activeVaoChanged = false;
-			}
-			BROFILER_CATEGORY("ComponentMaterial::ValidVao", Profiler::Color::Gold);
-			if (!modelInfo || modelInfo->vaoInfos.size() == 0)
+			ComponentCamera* activeGameCamera = App->scene->GetActiveGameCamera();
+
+			if (activeGameCamera != nullptr && activeGameCamera->FrustumCulling())
 			{
-				return;
+				if (App->scene->UsingQuadTree() && transform->GetIsStatic()) {
+					insideFrustum = activeGameCamera->IsInsideFrustum(gameObject);
+				}
+				else {
+					insideFrustum = transform->GetBoundingBox().Contains(activeGameCamera->GetFrustum());
+				}
 			}
 
-			BROFILER_CATEGORY("ComponentMaterial::DrawingCall", Profiler::Color::Gold);
-			DrawElements(modelMatrix, modelInfo);
+			if (insideFrustum) {
+				float* modelMatrix = transform->GetModelMatrix();
+
+				BROFILER_CATEGORY("ComponentMaterial::GetVao", Profiler::Color::Gold);
+				if (mesh->activeVaoChanged) {
+					modelInfo = mesh->GetActiveModelInfo();
+					mesh->activeVaoChanged = false;
+				}
+				BROFILER_CATEGORY("ComponentMaterial::ValidVao", Profiler::Color::Gold);
+				if (modelInfo && modelInfo->vaoInfosIndexes.size() > 0)
+				{
+					BROFILER_CATEGORY("ComponentMaterial::DrawingCall", Profiler::Color::Gold);
+					DrawElements(modelMatrix, modelInfo);
+				}
+			}
 		}
 	}
 }
@@ -409,32 +405,32 @@ Shader * ComponentMaterial::ShaderAlreadyLinked()
 
 bool ComponentMaterial::DrawElements(float * modelMatrix, const ModelInfo* modelInfo)
 {
-	if (!IsValid() || modelInfo == nullptr || modelInfo->vaoInfos.size() == 0)
-		return false;
-
-	shader->Activate();
-
-	glUniformMatrix4fv(privateUniforms["model_matrix"], 1, GL_FALSE, modelMatrix);
-	glUniformMatrix4fv(privateUniforms["view"], 1, GL_FALSE, App->editorCamera->camera->GetViewMatrix());
-	glUniformMatrix4fv(privateUniforms["projection"], 1, GL_FALSE, App->editorCamera->camera->GetProjectionMatrix());
-	UpdatePublicUniforms();
-
-	for (const VaoInfo& vaoInfo : modelInfo->vaoInfos)
+	if (IsValid() && modelInfo != nullptr && modelInfo->vaoInfosIndexes.size() > 0)
 	{
-		int textureId = textureBufferId;
-		if (textureBufferId == checkeredPatternBufferId && vaoInfo.textureID != 0)
-			textureId = vaoInfo.textureID;
-		
-		glBindTexture(GL_TEXTURE_2D, textureId);
-		glBindVertexArray(vaoInfo.vao);
-		glDrawElements(GL_TRIANGLES, vaoInfo.elementsCount, GL_UNSIGNED_INT, nullptr);
-		glBindVertexArray(GL_NONE);
-		glBindTexture(GL_TEXTURE_2D, 0);
+
+		shader->Activate();
+
+		glUniformMatrix4fv(privateUniforms["model_matrix"], 1, GL_FALSE, modelMatrix);
+		glUniformMatrix4fv(privateUniforms["view"], 1, GL_FALSE, App->editorCamera->camera->GetViewMatrix());
+		glUniformMatrix4fv(privateUniforms["projection"], 1, GL_FALSE, App->editorCamera->camera->GetProjectionMatrix());
+		UpdatePublicUniforms();
+
+		for (unsigned int vaoInfoIndex : modelInfo->vaoInfosIndexes)
+		{
+			const VaoInfo* vaoInfo = App->scene->meshes.at(vaoInfoIndex);
+
+			glBindTexture(GL_TEXTURE_2D, textureBufferId);
+			glBindVertexArray(vaoInfo->vao);
+			glDrawElements(GL_TRIANGLES, vaoInfo->elementsCount, GL_UNSIGNED_INT, nullptr);
+			glBindVertexArray(GL_NONE);
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
+
+
+		shader->Deactivate();
+		return true;
 	}
-
-
-	shader->Deactivate();
-	return true;
+	return false;
 }
 
 uint ComponentMaterial::CreateCheckeredTexture()

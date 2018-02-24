@@ -1,11 +1,13 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "ImGui/imgui.h"
+#include "Application.h"
 #include "ComponentMesh.h"
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "GameObject.h"
 #include "ModelInfo.h"
+#include "ModuleScene.h"
 #include "VAOInfo.h"
 #include "globals.h"
 #include "openGL.h"
@@ -19,6 +21,7 @@ ComponentMesh::ComponentMesh(GameObject* owner) : Component(owner)
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
 	if (meshesCount == 0)
 	{
+		App->scene->meshes.reserve(App->scene->meshes.size() + 2);
 		CreateCubeVAO();
 		CreateSphereVAO(32, 32);
 	}
@@ -33,15 +36,6 @@ ComponentMesh::~ComponentMesh()
 	--meshesCount;
 	if (meshesCount == 0)
 	{
-		for (ModelInfo& modelInfo : defaultModelInfos)
-		{
-			for (VaoInfo& vaoInfo : modelInfo.vaoInfos)
-			{
-				glDeleteVertexArrays(1, &vaoInfo.vao);
-				glDeleteBuffers(1, &vaoInfo.vbo);
-				glDeleteBuffers(1, &vaoInfo.ebo);
-			}
-		}
 		defaultModelInfos.clear();
 	}
 }
@@ -79,7 +73,7 @@ void ComponentMesh::OnEditor()
 		options += '\0';
 		for (const ModelInfo& modelInfo : defaultModelInfos)
 		{
-			options += modelInfo.vaoInfos[0].name;
+			options += App->scene->meshes.at(modelInfo.vaoInfosIndexes[0])->name;
 			options += '\0';
 		}
 		options += "Custom Model";
@@ -241,23 +235,23 @@ void ComponentMesh::CreateCubeVAO()
 		}
 	}
 
-	VaoInfo cubeVaoInfo;
-	cubeVaoInfo.name = "Cube";
-	cubeVaoInfo.elementsCount = allVertCount;
-	cubeVaoInfo.vertices = std::vector<float3>{ float3(vA[0], vA[1], vA[2]), float3(vB[0], vB[1], vB[2]), float3(vC[0], vC[1], vC[2]), float3(vD[0], vD[1], vD[2]), float3(vE[0], vE[1], vE[2]), float3(vF[0], vF[1], vF[2]), float3(vG[0], vG[1], vG[2]), float3(vH[0], vH[1], vH[2]) };
-	cubeVaoInfo.indices = { 0, 1, 2, 1, 3, 2,		/* Front face */
+	VaoInfo* cubeVaoInfo = new VaoInfo();
+	cubeVaoInfo->name = "Cube";
+	cubeVaoInfo->elementsCount = allVertCount;
+	cubeVaoInfo->vertices = std::vector<float3>{ float3(vA[0], vA[1], vA[2]), float3(vB[0], vB[1], vB[2]), float3(vC[0], vC[1], vC[2]), float3(vD[0], vD[1], vD[2]), float3(vE[0], vE[1], vE[2]), float3(vF[0], vF[1], vF[2]), float3(vG[0], vG[1], vG[2]), float3(vH[0], vH[1], vH[2]) };
+	cubeVaoInfo->indices = { 0, 1, 2, 1, 3, 2,		/* Front face */
 		1, 5, 3, 5, 7, 3,		/* Right face */
 		5, 4, 7, 4, 6, 7,		/* Back face */
 		4, 0, 6, 0, 2, 6,		/* Left face */
 		2, 3, 7, 2, 7, 6,	/* Top face */
 		0, 5, 1, 5, 0, 4 };		/* Botttom face */
 
-	glGenVertexArrays(1, &cubeVaoInfo.vao);
-	glGenBuffers(1, &cubeVaoInfo.vbo);
-	glGenBuffers(1, &cubeVaoInfo.ebo);
+	glGenVertexArrays(1, &cubeVaoInfo->vao);
+	glGenBuffers(1, &cubeVaoInfo->vbo);
+	glGenBuffers(1, &cubeVaoInfo->ebo);
 
-	glBindVertexArray(cubeVaoInfo.vao);
-	glBindBuffer(GL_ARRAY_BUFFER, cubeVaoInfo.vbo);
+	glBindVertexArray(cubeVaoInfo->vao);
+	glBindBuffer(GL_ARRAY_BUFFER, cubeVaoInfo->vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uniqueVertCount * 8, allUniqueData, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
@@ -267,21 +261,22 @@ void ComponentMesh::CreateCubeVAO()
 	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE); /* Can be unbound, since the vertex information is stored in the VAO throught the VertexAttribPointers */
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeVaoInfo.ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * cubeVaoInfo.elementsCount, verticesOrder, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeVaoInfo->ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * cubeVaoInfo->elementsCount, verticesOrder, GL_STATIC_DRAW);
 
 	glBindVertexArray(GL_NONE);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE); /* Can be unbound AFTER unbinding the VAO, since the VAO stores information about the bound EBO */
 
+	App->scene->meshes.push_back(cubeVaoInfo);
 	ModelInfo modelInfo;
-	modelInfo.vaoInfos.push_back(cubeVaoInfo);
+	modelInfo.vaoInfosIndexes.push_back(App->scene->meshes.size() - 1);
 	defaultModelInfos.push_back(modelInfo);
 }
 
 void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 {
-	VaoInfo sphereVaoInfo;
-	sphereVaoInfo.name = "Sphere";
+	VaoInfo* sphereVaoInfo = new VaoInfo();;
+	sphereVaoInfo->name = "Sphere";
 
 	float radius = 0.5f;
 	uint verticesCount = sections * (rings - 1) + 2;
@@ -302,7 +297,7 @@ void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 	*d++ = 0;
 	*d++ = radius;
 	*d++ = 0;
-	sphereVaoInfo.vertices.push_back(float3(0, radius, 0));
+	sphereVaoInfo->vertices.push_back(float3(0, radius, 0));
 
 	*d++ = 1.0f;
 	*d++ = 0;
@@ -330,7 +325,7 @@ void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 			*d++ = y;
 			*d++ = z;
 			float3 vertex(x, y, z);
-			sphereVaoInfo.vertices.push_back(vertex);
+			sphereVaoInfo->vertices.push_back(vertex);
 
 			float blue = blueStep * s;
 			if (blue > 1.0f)
@@ -349,7 +344,7 @@ void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 	*d++ = 0;
 	*d++ = -radius;
 	*d++ = 0;
-	sphereVaoInfo.vertices.push_back(float3(0, -radius, 0));
+	sphereVaoInfo->vertices.push_back(float3(0, -radius, 0));
 
 	*d++ = 0;
 	*d++ = 1.0f;
@@ -367,10 +362,10 @@ void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 	This is due to the fact that the topmost and bottommost rings all join in the same top or bottom vertex.
 	*/
 	uint trianglesCount = 2 * sections * (rings - 1);
-	sphereVaoInfo.elementsCount = 3 * trianglesCount;
+	sphereVaoInfo->elementsCount = 3 * trianglesCount;
 
 	std::vector<GLuint> indexes;
-	indexes.resize(sphereVaoInfo.elementsCount);
+	indexes.resize(sphereVaoInfo->elementsCount);
 	std::vector<GLuint>::iterator i = indexes.begin();
 
 	/* Reminder: each group of 3 indexes define a triangle */
@@ -384,11 +379,11 @@ void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 			if (*i > vRingMax)
 				*i = vRingMax;
 
-			sphereVaoInfo.indices.push_back(*i);
+			sphereVaoInfo->indices.push_back(*i);
 			++i;
 
 			*i = vNum - sections;
-			sphereVaoInfo.indices.push_back(*i);
+			sphereVaoInfo->indices.push_back(*i);
 			++i;
 
 			*i = vNum - sections - 1;
@@ -396,14 +391,14 @@ void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 			if (*i % sections == 0)
 				*i += sections;
 
-			sphereVaoInfo.indices.push_back(*i);
+			sphereVaoInfo->indices.push_back(*i);
 			++i;
 		}
 		/* Triangle going right and then up-left from the vertex */
 		if (vNum < vRingMax)
 		{
 			*i = vNum;
-			sphereVaoInfo.indices.push_back(*i);
+			sphereVaoInfo->indices.push_back(*i);
 			++i;
 
 			*i = vNum + 1;
@@ -411,7 +406,7 @@ void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 			if (vNum % sections == 0)
 				*i -= sections;
 
-			sphereVaoInfo.indices.push_back(*i);
+			sphereVaoInfo->indices.push_back(*i);
 			++i;
 
 			int idx = (int)vNum - sections;
@@ -421,7 +416,7 @@ void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 			else
 				*i = vNum - sections;
 
-			sphereVaoInfo.indices.push_back(*i);
+			sphereVaoInfo->indices.push_back(*i);
 			++i;
 		}
 	}
@@ -430,12 +425,12 @@ void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 	
 	/* Now we send the vertices and indexes to the VRAM */
 
-	glGenVertexArrays(1, &sphereVaoInfo.vao);
-	glGenBuffers(1, &sphereVaoInfo.vbo);
-	glGenBuffers(1, &sphereVaoInfo.ebo);
+	glGenVertexArrays(1, &sphereVaoInfo->vao);
+	glGenBuffers(1, &sphereVaoInfo->vbo);
+	glGenBuffers(1, &sphereVaoInfo->ebo);
 
-	glBindVertexArray(sphereVaoInfo.vao);
-	glBindBuffer(GL_ARRAY_BUFFER, sphereVaoInfo.vbo);
+	glBindVertexArray(sphereVaoInfo->vao);
+	glBindBuffer(GL_ARRAY_BUFFER, sphereVaoInfo->vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * verticesCount * 8, allData.data(), GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
@@ -445,14 +440,15 @@ void ComponentMesh::CreateSphereVAO(uint rings, uint sections)
 	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE); /* Can be unbound, since the vertex information is stored in the VAO throught the VertexAttribPointers */
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphereVaoInfo.ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * sphereVaoInfo.elementsCount, indexes.data(), GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphereVaoInfo->ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * sphereVaoInfo->elementsCount, indexes.data(), GL_STATIC_DRAW);
 
 	glBindVertexArray(GL_NONE);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE); /* Can be unbound AFTER unbinding the VAO, since the VAO stores information about the bound EBO */
 
+	App->scene->meshes.push_back(sphereVaoInfo);
 	ModelInfo modelInfo;
-	modelInfo.vaoInfos.push_back(sphereVaoInfo);
+	modelInfo.vaoInfosIndexes.push_back(App->scene->meshes.size() - 1);
 	defaultModelInfos.push_back(modelInfo);
 }
 

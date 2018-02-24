@@ -239,12 +239,12 @@ void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 void ComponentTransform::EncloseBoundingBox(ComponentTransform* transform, ComponentMesh * mesh)
 {
 	if (mesh->GetActiveModelInfo() != nullptr) {
-		uint size = mesh->GetActiveModelInfo()->vaoInfos.size();
+		uint size = mesh->GetActiveModelInfo()->vaoInfosIndexes.size();
 		if (size > 0) {
 			float3 minPoint(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
 			float3 maxPoint(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest());
 			for (uint i = 0; i < size; i++) {
-				std::vector<float3> vertices = mesh->GetActiveModelInfo()->vaoInfos.at(i).vertices;
+				std::vector<float3> vertices = App->scene->meshes.at(mesh->GetActiveModelInfo()->vaoInfosIndexes.at(i))->vertices;
 				for (uint j = 0; j < vertices.size(); j++) {
 					minPoint = minPoint.Min(vertices.at(j));
 					maxPoint = maxPoint.Max(vertices.at(j));

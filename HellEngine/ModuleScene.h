@@ -50,6 +50,8 @@ public:
 public:
 
 	GameObject* root;
+	std::vector<VaoInfo*> meshes;
+
 	struct
 	{
 		GameObject* selectedGameObject = nullptr;
