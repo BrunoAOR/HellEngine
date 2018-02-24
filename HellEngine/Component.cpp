@@ -24,6 +24,16 @@ ComponentType Component::GetType()
 void Component::Update()
 {}
 
+bool Component::GetActive() const
+{
+	return isActive && gameObject->GetActive();
+}
+
+void Component::SetActive(bool activeState)
+{
+	isActive = activeState;
+}
+
 bool Component::OnEditorDeleteComponent()
 {
 	static std::string label = "";

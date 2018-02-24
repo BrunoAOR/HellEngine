@@ -14,6 +14,7 @@
 #include "ComponentMaterial.h"
 /* For TestLineSegmentChecks */
 #include "MathGeoLib/src/Geometry/LineSegment.h"
+#include "openGL.h"
 #include "physicsFunctions.h"
 
 uint ModuleScene::gameObjectsCount = 0;
@@ -24,6 +25,14 @@ ModuleScene::ModuleScene()
 
 ModuleScene::~ModuleScene() 
 {
+	for (VaoInfo* vaoInfo : meshes)
+	{
+		glDeleteVertexArrays(1, &vaoInfo->vao);
+		glDeleteBuffers(1, &vaoInfo->vbo);
+		glDeleteBuffers(1, &vaoInfo->ebo);
+		delete vaoInfo;
+	}
+	meshes.clear();
 }
 
 bool ModuleScene::Init()
@@ -219,6 +228,11 @@ ComponentCamera * ModuleScene::GetActiveGameCamera() const
 void ModuleScene::SetSelectedGameObject(GameObject * go)
 {
 	editorInfo.selectedGameObject = go;
+}
+
+bool ModuleScene::LoadModel(const char* modelPath, GameObject* parent)
+{
+	return sceneLoader.Load(modelPath, parent);
 }
 
 GameObject* ModuleScene::CreateGameObject()

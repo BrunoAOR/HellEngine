@@ -93,32 +93,36 @@ GameObject* CalculateCollisionsWithGameObjects(const std::vector<GameObject*>& g
 			const ModelInfo* modelInfo = mesh->GetActiveModelInfo();
 			bool triangleHit = false;
 
-			for (const VaoInfo& vaoInfo : modelInfo->vaoInfos)
+			if (modelInfo)
 			{
-				/* Get vertices and indices */
-				const std::vector<float3>& vertices = vaoInfo.vertices;
-				const std::vector<uint>& indices = vaoInfo.indices;
-				assert(indices.size() % 3 == 0);
-
-				/* Iterate through triangles looking for the closest hit */
-				for (unsigned int idx = 0; idx < indices.size(); idx += 3)
+				for (unsigned int vaoInfoIndex : modelInfo->vaoInfosIndexes)
 				{
-					Triangle triangle(vertices[indices[idx]], vertices[indices[idx + 1]], vertices[indices[idx + 2]]);
+					const VaoInfo* vaoInfo = App->scene->meshes.at(vaoInfoIndex);
+					/* Get vertices and indices */
+					const std::vector<float3>& vertices = vaoInfo->vertices;
+					const std::vector<uint>& indices = vaoInfo->indices;
+					assert(indices.size() % 3 == 0);
 
-					/* Discard triangle if back face culling is active and the triangle is back facing */
-					if (!backfaceCulling || Dot(triangle.NormalCCW(), localLineSegment.b - localLineSegment.a) < 0)
+					/* Iterate through triangles looking for the closest hit */
+					for (unsigned int idx = 0; idx < indices.size(); idx += 3)
 					{
-						float hitDistance = 0;
-						if (localLineSegment.Intersects(triangle, &hitDistance, nullptr) && hitDistance < closestHitGameObject.hitDistance)
+						Triangle triangle(vertices[indices[idx]], vertices[indices[idx + 1]], vertices[indices[idx + 2]]);
+
+						/* Discard triangle if back face culling is active and the triangle is back facing */
+						if (!backfaceCulling || Dot(triangle.NormalCCW(), localLineSegment.b - localLineSegment.a) < 0)
 						{
-							triangleHit = true;
-							closestHitGameObject.triangle = triangle;
-							closestHitGameObject.hitDistance = hitDistance;
+							float hitDistance = 0;
+							if (localLineSegment.Intersects(triangle, &hitDistance, nullptr) && hitDistance < closestHitGameObject.hitDistance)
+							{
+								triangleHit = true;
+								closestHitGameObject.triangle = triangle;
+								closestHitGameObject.hitDistance = hitDistance;
+							}
 						}
-					}
-					else
-					{
-						int x = 0;
+						else
+						{
+							int x = 0;
+						}
 					}
 				}
 			}

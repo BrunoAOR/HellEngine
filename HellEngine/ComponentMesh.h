@@ -4,11 +4,10 @@
 #include <vector>
 #include "MathGeoLib/src/Math/float3.h"
 #include "Component.h"
-#include "Model.h"
+#include "ModelInfo.h"
 #include "VAOInfo.h"
 #include "globals.h"
 
-struct ModelInfo;
 typedef float GLfloat;
 
 class ComponentMesh :
@@ -21,6 +20,7 @@ public:
 
 	const ModelInfo* GetActiveModelInfo() const;
 	bool SetActiveModelInfo(int index);
+	void SetCustomModel(const ModelInfo& modelInfo);
 
 	virtual void OnEditor() override;
 
@@ -29,7 +29,7 @@ public:
 
 public:
 
-	bool activeVaoChanged = true;
+	bool activeModelInfoChanged = true;
 
 private:
 
@@ -37,17 +37,14 @@ private:
 	void CreateSphereVAO(uint rings, uint sections);
 
 	void UpdateBoundingBox();
-	bool LoadModel();
-	void UnloadModel();
 
 private:
 
 	static uint meshesCount;
 	static std::vector<ModelInfo> defaultModelInfos;
+	ModelInfo customModelInfo;
 	
-	int activeVao = -1;
-	Model model;
-	char modelPath[256] = "";
+	int activeModelInfo = -1;
 
 };
 
