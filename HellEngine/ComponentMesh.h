@@ -4,7 +4,6 @@
 #include <vector>
 #include "MathGeoLib/src/Math/float3.h"
 #include "Component.h"
-#include "Model.h"
 #include "VAOInfo.h"
 #include "globals.h"
 
@@ -37,8 +36,6 @@ private:
 	void CreateSphereVAO(uint rings, uint sections);
 
 	void UpdateBoundingBox();
-	bool LoadModel();
-	void UnloadModel();
 
 private:
 
@@ -46,8 +43,6 @@ private:
 	static std::vector<ModelInfo> defaultModelInfos;
 	
 	int activeVao = -1;
-	Model model;
-	char modelPath[256] = "";
 
 };
 

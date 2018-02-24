@@ -50,9 +50,6 @@ const ModelInfo* ComponentMesh::GetActiveModelInfo() const
 {
 	if (activeVao >= 0 && activeVao < (int)defaultModelInfos.size())
 		return &defaultModelInfos[activeVao];
-	
-	if (activeVao == (int)defaultModelInfos.size())
-		return model.GetModelInfo();
 
 	return nullptr;
 }
@@ -74,9 +71,6 @@ void ComponentMesh::OnEditor()
 	static bool optionsCreated = false;
 	static int selectedMeshOption = 0;
 	static std::string options = "";
-	static std::string buttonLabel = "Load Model##" + std::to_string(editorInfo.id);
-	static std::string loadModelMessage = "";
-	static bool inCustomModel = false;
 
 	if (!optionsCreated)
 	{
@@ -102,25 +96,6 @@ void ComponentMesh::OnEditor()
 		if (ImGui::Combo("Selected Mesh", &selectedMeshOption, options.c_str()))
 			SetActiveModelInfo(selectedMeshOption - 1);
 
-		if (activeVao >= (int)defaultModelInfos.size())
-		{
-			inCustomModel = true;
-			ImGui::InputText("Model path", modelPath, 256);
-			if (ImGui::Button(buttonLabel.c_str()))
-			{
-				if (LoadModel())
-					loadModelMessage = "Model loaded successfully!";
-				else
-					loadModelMessage = "Failed to load model!";
-			}
-			ImGui::Text(loadModelMessage.c_str());
-		}
-		else if (inCustomModel)
-		{
-			inCustomModel = false;
-			loadModelMessage = "";
-			UnloadModel();
-		}
 	}
 }
 
@@ -486,20 +461,4 @@ void ComponentMesh::UpdateBoundingBox()
 	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
 	if (transform)
 		transform->UpdateBoundingBox(this);
-}
-
-bool ComponentMesh::LoadModel()
-{
-	bool success = model.Load(modelPath);
-	if (success) {
-		activeVaoChanged = true;
-		UpdateBoundingBox();
-	}
-
-	return success;
-}
-
-void ComponentMesh::UnloadModel()
-{
-	model.Clear();
 }

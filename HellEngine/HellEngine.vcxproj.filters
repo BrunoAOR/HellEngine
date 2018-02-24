@@ -327,9 +327,6 @@
     <ClInclude Include="physicsFunctions.h">
       <Filter>General</Filter>
     </ClInclude>
-    <ClInclude Include="Model.h">
-      <Filter>General</Filter>
-    </ClInclude>
     <ClInclude Include="VaoInfo.h">
       <Filter>General</Filter>
     </ClInclude>
@@ -534,9 +531,6 @@
       <Filter>Engine Modules</Filter>
     </ClCompile>
     <ClCompile Include="physicsFunctions.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="Model.cpp">
       <Filter>General</Filter>
     </ClCompile>
   </ItemGroup>
