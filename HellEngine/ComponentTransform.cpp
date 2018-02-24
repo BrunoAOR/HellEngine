@@ -259,7 +259,7 @@ float* ComponentTransform::GetModelMatrix()
 	return GetModelMatrix4x4().ptr();
 }
 
-void ComponentTransform::SetParent(ComponentTransform* newParent)
+void ComponentTransform::RecalculateLocalMatrix(ComponentTransform* newParent)
 {
 	/* Calculate the new local model matrix */
 	float4x4 newParentWorldMatrix;

@@ -287,7 +287,7 @@ bool GameObject::SetParent(GameObject* newParent)
 		/* Inform the transform (if it exists) */
 		ComponentTransform* transform = (ComponentTransform*)GetComponent(ComponentType::TRANSFORM);
 		if (transform)
-			transform->SetParent(nullptr);
+			transform->RecalculateLocalMatrix(nullptr);
 
 		/* Remove from current parent. */
 		parent->RemoveChild(this);
@@ -315,8 +315,8 @@ bool GameObject::SetParent(GameObject* newParent)
 		{
 			ComponentTransform* parentTransform = (ComponentTransform*)newParent->GetComponent(ComponentType::TRANSFORM);
 
-			/* Note that parentTransform might be nullptr, but that is a case handled by the Transform::SetParent method */
-			transform->SetParent(parentTransform);
+			/* Note that parentTransform might be nullptr, but that is a case handled by the Transform::RecalculateLocalMatrix method */
+			transform->RecalculateLocalMatrix(parentTransform);
 		}
 
 		/* Remove from current parent. */

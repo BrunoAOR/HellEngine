@@ -40,7 +40,7 @@ public:
 	float* GetModelMatrix();
 	float4x4& GetModelMatrix4x4();
 
-	void SetParent(ComponentTransform* newParent);
+	void RecalculateLocalMatrix(ComponentTransform* newParent);
 
 	virtual void OnEditor() override;
 
