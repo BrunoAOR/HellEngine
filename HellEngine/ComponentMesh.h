@@ -4,10 +4,10 @@
 #include <vector>
 #include "MathGeoLib/src/Math/float3.h"
 #include "Component.h"
+#include "ModelInfo.h"
 #include "VAOInfo.h"
 #include "globals.h"
 
-struct ModelInfo;
 typedef float GLfloat;
 
 class ComponentMesh :
@@ -42,6 +42,7 @@ private:
 
 	static uint meshesCount;
 	static std::vector<ModelInfo> defaultModelInfos;
+	ModelInfo customModelInfo;
 	
 	int activeModelInfo = -1;
 

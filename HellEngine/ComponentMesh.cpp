@@ -45,6 +45,9 @@ const ModelInfo* ComponentMesh::GetActiveModelInfo() const
 	if (activeModelInfo >= 0 && activeModelInfo < (int)defaultModelInfos.size())
 		return &defaultModelInfos[activeModelInfo];
 
+	if (activeModelInfo == 2 && customModelInfo.vaoInfosIndexes.size() > 0)
+		return &customModelInfo;
+
 	return nullptr;
 }
 
@@ -62,32 +65,16 @@ bool ComponentMesh::SetActiveModelInfo(int index)
 
 void ComponentMesh::SetCustomModel(const ModelInfo& modelInfo)
 {
-	defaultModelInfos.push_back(modelInfo);
-	activeModelInfo = defaultModelInfos.size() - 1;
+	customModelInfo = modelInfo;
+	activeModelInfo = 2;
 	activeModelInfoChanged = true;
 	UpdateBoundingBox();
 }
 
 void ComponentMesh::OnEditor()
 {
-	static bool optionsCreated = false;
 	static int selectedMeshOption = 0;
-	static std::string options = "";
-
-	if (!optionsCreated)
-	{
-		optionsCreated = true;
-		options += "None";
-		options += '\0';
-		for (const ModelInfo& modelInfo : defaultModelInfos)
-		{
-			options += App->scene->meshes.at(modelInfo.vaoInfosIndexes[0])->name;
-			options += '\0';
-		}
-		options += "Custom Model";
-		options += '\0';
-		options += '\0';
-	}	
+	static const char* options = "None\0Cube\0Sphere\0Custom Model\0\0";
 
 	if (ImGui::CollapsingHeader(editorInfo.idLabel.c_str()))
 	{
@@ -95,9 +82,13 @@ void ComponentMesh::OnEditor()
 			return;
 
 		selectedMeshOption = activeModelInfo + 1;
-		if (ImGui::Combo("Selected Mesh", &selectedMeshOption, options.c_str()))
+		if (ImGui::Combo("Selected Mesh", &selectedMeshOption, options))
 			SetActiveModelInfo(selectedMeshOption - 1);
 
+		if (activeModelInfo == 2 && customModelInfo.vaoInfosIndexes.size() == 0)
+		{
+			ImGui::Text("No custom model found in this mesh!");
+		}
 	}
 }
 
