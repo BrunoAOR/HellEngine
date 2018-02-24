@@ -59,7 +59,7 @@ ComponentMaterial::~ComponentMaterial()
 void ComponentMaterial::Update()
 {
 	BROFILER_CATEGORY("ComponentMaterial::UpdateStart", Profiler::Color::Gold);
-	if (!isActive)
+	if (!GetActive())
 		return;
 
 	ComponentMesh* mesh = (ComponentMesh*)gameObject->GetComponent(ComponentType::MESH);

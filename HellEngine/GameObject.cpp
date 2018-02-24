@@ -473,6 +473,29 @@ void GameObject::RemoveDependingComponent()
 	}
 }
 
+bool GameObject::GetActive() const
+{
+	if (isActive)
+	{
+		GameObject* testParent = parent;
+		while (testParent)
+		{
+			if (!testParent->isActive)
+				return false;
+
+			testParent = testParent->parent;
+		}
+		return true;
+	}
+	else
+		return false;
+}
+
+void GameObject::SetActive(bool activeState)
+{
+	isActive = activeState;
+}
+
 bool GameObject::HasGameObjectInChildrenHierarchy(GameObject * testGameObject)
 {
 	for (GameObject* child : children)
