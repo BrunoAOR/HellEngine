@@ -38,6 +38,8 @@ bool ModuleScene::Init()
 {
 	root = new GameObject("root", nullptr);
 	root->AddComponent(ComponentType::CAMERA);
+
+	sceneLoader.Load("assets/models/street/Street.obj", root);
 	return true;
 }
 

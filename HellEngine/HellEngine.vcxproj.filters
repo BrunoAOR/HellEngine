@@ -333,6 +333,9 @@
     <ClInclude Include="ModelInfo.h">
       <Filter>General</Filter>
     </ClInclude>
+    <ClInclude Include="SceneLoader.h">
+      <Filter>Scene Management</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -532,6 +535,9 @@
     </ClCompile>
     <ClCompile Include="physicsFunctions.cpp">
       <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneLoader.cpp">
+      <Filter>Scene Management</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

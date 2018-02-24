@@ -99,9 +99,9 @@ void ComponentMaterial::Update()
 				float* modelMatrix = transform->GetModelMatrix();
 
 				BROFILER_CATEGORY("ComponentMaterial::GetVao", Profiler::Color::Gold);
-				if (mesh->activeVaoChanged) {
+				if (mesh->activeModelInfoChanged) {
 					modelInfo = mesh->GetActiveModelInfo();
-					mesh->activeVaoChanged = false;
+					mesh->activeModelInfoChanged = false;
 				}
 				BROFILER_CATEGORY("ComponentMaterial::ValidVao", Profiler::Color::Gold);
 				if (modelInfo && modelInfo->vaoInfosIndexes.size() > 0)

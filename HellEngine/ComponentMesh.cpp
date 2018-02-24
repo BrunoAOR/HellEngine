@@ -42,8 +42,8 @@ ComponentMesh::~ComponentMesh()
 
 const ModelInfo* ComponentMesh::GetActiveModelInfo() const
 {
-	if (activeVao >= 0 && activeVao < (int)defaultModelInfos.size())
-		return &defaultModelInfos[activeVao];
+	if (activeModelInfo >= 0 && activeModelInfo < (int)defaultModelInfos.size())
+		return &defaultModelInfos[activeModelInfo];
 
 	return nullptr;
 }
@@ -54,10 +54,18 @@ bool ComponentMesh::SetActiveModelInfo(int index)
 	if (index < -1 || index > (int)defaultModelInfos.size())
 		return false;
 
-	activeVao = index;
+	activeModelInfo = index;
 	UpdateBoundingBox();
-	activeVaoChanged = true;
+	activeModelInfoChanged = true;
 	return true;
+}
+
+void ComponentMesh::SetCustomModel(const ModelInfo& modelInfo)
+{
+	defaultModelInfos.push_back(modelInfo);
+	activeModelInfo = defaultModelInfos.size() - 1;
+	activeModelInfoChanged = true;
+	UpdateBoundingBox();
 }
 
 void ComponentMesh::OnEditor()
@@ -86,7 +94,7 @@ void ComponentMesh::OnEditor()
 		if (OnEditorDeleteComponent())
 			return;
 
-		selectedMeshOption = activeVao + 1;
+		selectedMeshOption = activeModelInfo + 1;
 		if (ImGui::Combo("Selected Mesh", &selectedMeshOption, options.c_str()))
 			SetActiveModelInfo(selectedMeshOption - 1);
 

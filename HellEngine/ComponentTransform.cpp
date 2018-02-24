@@ -183,6 +183,14 @@ void ComponentTransform::SetScale(float x, float y, float z)
 	}
 }
 
+void ComponentTransform::SetRotation(Quat newRotation)
+{
+	if (!isStatic)
+	{
+		rotation = newRotation;
+	}
+}
+
 void ComponentTransform::SetRotationRad(float x, float y, float z)
 {
 	if (!isStatic)

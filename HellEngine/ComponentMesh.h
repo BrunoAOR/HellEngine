@@ -20,6 +20,7 @@ public:
 
 	const ModelInfo* GetActiveModelInfo() const;
 	bool SetActiveModelInfo(int index);
+	void SetCustomModel(const ModelInfo& modelInfo);
 
 	virtual void OnEditor() override;
 
@@ -28,7 +29,7 @@ public:
 
 public:
 
-	bool activeVaoChanged = true;
+	bool activeModelInfoChanged = true;
 
 private:
 
@@ -42,7 +43,7 @@ private:
 	static uint meshesCount;
 	static std::vector<ModelInfo> defaultModelInfos;
 	
-	int activeVao = -1;
+	int activeModelInfo = -1;
 
 };
 

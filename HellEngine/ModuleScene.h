@@ -11,6 +11,7 @@
 class ComponentCamera;
 class GameObject;
 
+#include "SceneLoader.h"
 class ModuleScene :
 	public Module
 {
@@ -68,6 +69,10 @@ private:
 
 	ComponentCamera* activeGameCamera = nullptr;
 	SpaceQuadTree  quadTree;
+
+private:
+
+	SceneLoader sceneLoader;
 
 };
 
