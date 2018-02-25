@@ -16,6 +16,12 @@ ModuleTextureManager::ModuleTextureManager()
 
 ModuleTextureManager::~ModuleTextureManager()
 {
+	for (std::map<std::string, TextureData>::iterator it = textures.begin(); it != textures.end(); ++it)
+	{
+		LOGGER("There were %d %s textures to be released, they will be removed in ModuleTextureManager destructor", it->second.numRefs, it->first);
+		glDeleteTextures(1, &it->second.index);
+		textures.erase(it);
+	}
 }
 
 bool ModuleTextureManager::Init()
@@ -133,7 +139,7 @@ GLuint ModuleTextureManager::GetTexture(const std::string &texturePath)
 	{
 		if (texturePath.size() == it->first.size())
 		{
-			if (texturePath.compare(it->first))
+			if (texturePath.compare(it->first) == 0)
 			{
 				it->second.numRefs++;
 				return it->second.index;

@@ -4,15 +4,9 @@
 #include "Module.h"
 #include <map>
 #include <string>
-#include "openGL.h"
 
+typedef unsigned int GLuint;
 struct TextureInfo;
-
-struct TextureData
-{
-	GLuint index;
-	unsigned int numRefs;
-};
 
 class ModuleTextureManager : public Module
 {
@@ -32,6 +26,12 @@ private:
 	GLuint LoadImageWithDevIL(const char* theFileName, TextureInfo* textureInfo = nullptr);
 
 private:
+	struct TextureData
+	{
+		GLuint index;
+		unsigned int numRefs;
+	};
+
 	std::map<std::string, TextureData> textures;
 };
 #endif // !__H_MODULE_TEXTURE_MANAGER__

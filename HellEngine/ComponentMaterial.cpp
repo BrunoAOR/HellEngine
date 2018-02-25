@@ -581,7 +581,7 @@ bool ComponentMaterial::LoadShaderData()
 bool ComponentMaterial::LoadTexture()
 {
 	if (textureBufferId != checkeredPatternBufferId)
-		glDeleteTextures(1, &textureBufferId);
+		App->textureManager->ReleaseTexture(textureBufferId);
 
 	if (IsEmptyString(texturePath))
 	{
