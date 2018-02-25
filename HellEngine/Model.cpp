@@ -6,7 +6,7 @@
 #include "Application.h"
 #include "Model.h"
 #include "ModuleEditorCamera.h"
-#include "ModuleRender.h"
+#include "ModuleTextureManager.h"
 #include "Shader.h"
 #include "VAOInfo.h"
 #include "openGL.h"
@@ -135,7 +135,7 @@ void Model::CreateTextureBuffers(const char* modelPath)
 		memcpy_s(fullPath + rootPathSize, aiPath.length + 1, aiPath.data, aiPath.length);
 		fullPath[rootPathSize + aiPath.length] = '\0';
 
-		textureBufferIds[m] = App->renderer->LoadImageWithDevIL(fullPath);
+		textureBufferIds[m] = App->textureManager->GetTexture(fullPath);
 		delete[] fullPath;
 	}
 }

@@ -12,7 +12,6 @@ class Shader;
 struct SDL_Rect;
 struct SDL_Renderer;
 struct SDL_Texture;
-struct TextureInfo;
 typedef float GLfloat;
 typedef unsigned int GLenum;
 typedef unsigned int GLuint;
@@ -61,9 +60,6 @@ public:
 	/* Sets the polygon draw mode (drawMode must be GL_FILL, GL_LINE or GL_POINT */
 	void SetPolygonDrawMode(GLenum drawMode);
 
-	/* Loading image with DevIL. */
-	GLuint LoadImageWithDevIL(const char* theFileName, TextureInfo* textureInfo = nullptr);
-
 private:
 
 	/* Initializes the GLEW library */
@@ -71,9 +67,6 @@ private:
 
 	/* Initializes OpenGL */
 	bool InitOpenGL() const;
-
-	/* Initialize DevIL */
-	void InitDevIL();
 
 	/* Draw a grid on the ground */
 	void DrawGroundGrid(float xOffset = 0, float zOffet = 0, int halfSize = 20) const;

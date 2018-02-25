@@ -6,10 +6,12 @@
 #include <string>
 #include "openGL.h"
 
+struct TextureInfo;
+
 struct TextureData
 {
 	GLuint index;
-	GLuint numRefs;
+	uint numRefs;
 };
 
 class ModuleTextureManager : public Module
@@ -18,11 +20,18 @@ public:
 	ModuleTextureManager();
 	~ModuleTextureManager();
 
-public:
+	bool Init();
 	GLuint GetTexture(const std::string &texturePath);
 	void ReleaseTexture(const GLuint textureIndex);
 
-public:
+private:
+	/* Initialize DevIL */
+	void InitDevIL();
+
+	/* Loading image with DevIL. */
+	GLuint LoadImageWithDevIL(const char* theFileName, TextureInfo* textureInfo = nullptr);
+
+private:
 	std::map<std::string, TextureData> textures;
 };
 #endif // !__H_MODULE_TEXTURE_MANAGER__
