@@ -11,7 +11,7 @@ struct TextureInfo;
 struct TextureData
 {
 	GLuint index;
-	uint numRefs;
+	unsigned int numRefs;
 };
 
 class ModuleTextureManager : public Module
