@@ -2,6 +2,7 @@
 #define __H_SPACE_QUAD_NODE__
 
 #include <stack>
+#include "Brofiler/include/Brofiler.h"
 #include "MathGeoLib/src/Math/float3.h"
 #include "MathGeoLib/src/Geometry/AABB.h"
 class ComponentTransform;

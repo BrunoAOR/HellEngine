@@ -31,6 +31,7 @@ public:
 
 	void SetPosition(float x, float y, float z);
 	void SetScale(float x, float y, float z);
+	void SetRotation(Quat newRotation);
 	void SetRotationRad(float x, float y, float z);
 	void SetRotationDeg(float x, float y, float z);
 
@@ -40,7 +41,7 @@ public:
 	float* GetModelMatrix();
 	float4x4& GetModelMatrix4x4();
 
-	void SetParent(ComponentTransform* newParent);
+	void RecalculateLocalMatrix(ComponentTransform* newParent);
 
 	virtual void OnEditor() override;
 

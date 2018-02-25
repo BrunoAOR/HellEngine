@@ -327,17 +327,14 @@
     <ClInclude Include="physicsFunctions.h">
       <Filter>General</Filter>
     </ClInclude>
-    <ClInclude Include="Model.h">
-      <Filter>General</Filter>
-    </ClInclude>
     <ClInclude Include="VaoInfo.h">
       <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="ModelInfo.h">
       <Filter>General</Filter>
     </ClInclude>
-    <ClInclude Include="ModuleTextureManager.h">
-      <Filter>Engine Modules</Filter>
+    <ClInclude Include="SceneLoader.h">
+      <Filter>Scene Management</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -539,11 +536,8 @@
     <ClCompile Include="physicsFunctions.cpp">
       <Filter>General</Filter>
     </ClCompile>
-    <ClCompile Include="Model.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="ModuleTextureManager.cpp">
-      <Filter>Engine Modules</Filter>
+    <ClCompile Include="SceneLoader.cpp">
+      <Filter>Scene Management</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

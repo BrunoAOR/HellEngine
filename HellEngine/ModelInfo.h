@@ -2,11 +2,10 @@
 #define __H_MODEL_INFO__
 
 #include <vector>
-#include "VaoInfo.h"
 
 struct ModelInfo
 {
-	std::vector<VaoInfo> vaoInfos;
+	std::vector<unsigned int> vaoInfosIndexes;
 };
 #endif // !__H_MODEL_INFO__
 

@@ -74,7 +74,6 @@ void DecomposeMatrix(const float4x4& openGlStyleMatrix, float3& position, Quat& 
 	float4x4 nonOpenGlStyleMatrix(openGlStyleMatrix);
 	nonOpenGlStyleMatrix.Transpose();
 
-
 	bool validMatrix = true;
 
 	for (int i = 0; i < 16 && validMatrix; i++)

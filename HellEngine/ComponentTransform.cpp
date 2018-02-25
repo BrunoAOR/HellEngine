@@ -1,10 +1,13 @@
 #include <stack>
+#include "Brofiler/include/Brofiler.h"
 #include "ImGui/imgui.h"
 #include "MathGeoLib/src/Math/TransformOps.h"
 #include "Application.h"
+#include "ComponentMesh.h"
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "GameObject.h"
+#include "ModelInfo.h"
 #include "ModuleDebugDraw.h"
 #include "ModuleScene.h"
 #include "globals.h"
@@ -181,6 +184,14 @@ void ComponentTransform::SetScale(float x, float y, float z)
 	}
 }
 
+void ComponentTransform::SetRotation(Quat newRotation)
+{
+	if (!isStatic)
+	{
+		rotation = newRotation;
+	}
+}
+
 void ComponentTransform::SetRotationRad(float x, float y, float z)
 {
 	if (!isStatic)
@@ -211,19 +222,19 @@ void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 	while (!stack.empty()) {
 		go = stack.top();
 		stack.pop();
+		BROFILER_CATEGORY("ComponentTransform::GetComponents", Profiler::Color::PapayaWhip);
 		t = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM);
 		m = (ComponentMesh*)go->GetComponent(ComponentType::MESH);
 
 		if (t != nullptr) {
 			t->boundingBox.SetNegativeInfinity();
 
-			if (m != nullptr) {
+			if (m != nullptr && m->activeModelInfoChanged) {
+				BROFILER_CATEGORY("ComponentTransform::EncloseNegative", Profiler::Color::PapayaWhip);
 				EncloseBoundingBox(t, m);				
 			}
-			else {
-				t->boundingBox.Enclose(baseBoundingBox.data(), baseBoundingBox.size());
-			}
-			
+
+			BROFILER_CATEGORY("ComponentTransform::TransformBB", Profiler::Color::PapayaWhip);
 			t->boundingBox.TransformBB(GetModelMatrix4x4().Transposed());
 
 			children = go->GetChildren();
@@ -237,29 +248,40 @@ void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 void ComponentTransform::EncloseBoundingBox(ComponentTransform* transform, ComponentMesh * mesh)
 {
 	if (mesh->GetActiveModelInfo() != nullptr) {
-		uint size = mesh->GetActiveModelInfo()->vaoInfos.size();
+
+		BROFILER_CATEGORY("ComponentTransform::GetModel", Profiler::Color::PapayaWhip);
+		uint size = mesh->GetActiveModelInfo()->vaoInfosIndexes.size();
+
 		if (size > 0) {
+			BROFILER_CATEGORY("ComponentTransform::Iteration", Profiler::Color::PapayaWhip);
 			float3 minPoint(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
 			float3 maxPoint(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest());
 			for (uint i = 0; i < size; i++) {
-				std::vector<float3> vertices = mesh->GetActiveModelInfo()->vaoInfos.at(i).vertices;
+				BROFILER_CATEGORY("ComponentTransform::GetVertices", Profiler::Color::PapayaWhip);
+				std::vector<float3> vertices = App->scene->meshes.at(mesh->GetActiveModelInfo()->vaoInfosIndexes.at(i))->vertices;
+
 				for (uint j = 0; j < vertices.size(); j++) {
-					minPoint = minPoint.Min(vertices.at(j));
-					maxPoint = maxPoint.Max(vertices.at(j));
+					BROFILER_CATEGORY("ComponentTransform::MinCalculation", Profiler::Color::PapayaWhip);
+					minPoint.ModifyToMin(vertices.at(j));
+					BROFILER_CATEGORY("ComponentTransform::MaxCalculation", Profiler::Color::PapayaWhip);
+					maxPoint.ModifyToMax(vertices.at(j));
 				}
 			}
 
+			BROFILER_CATEGORY("ComponentTransform::Enclose", Profiler::Color::PapayaWhip);
 			transform->boundingBox.Enclose(minPoint, maxPoint);
 		}
 	}
 }
+
+
 
 float* ComponentTransform::GetModelMatrix()
 {
 	return GetModelMatrix4x4().ptr();
 }
 
-void ComponentTransform::SetParent(ComponentTransform* newParent)
+void ComponentTransform::RecalculateLocalMatrix(ComponentTransform* newParent)
 {
 	/* Calculate the new local model matrix */
 	float4x4 newParentWorldMatrix;
@@ -519,13 +541,14 @@ void ComponentTransform::ApplyWorldTransformationMatrix(const float4x4& worldTra
 		float3& outputPosition = excludePosition ? pos : position;
 		Quat& outputRotation = excludeRotation ? rot : rotation;
 		float3& outputScale = excludeScale ? sca : scale;
-		
+
 		DecomposeMatrix(newLocalModelMatrix, outputPosition, outputRotation, outputScale);
 		float3 rotEuler = rotation.ToEulerXYZ();
 		rotationDeg[0] = RadToDeg(rotEuler.x);
 		rotationDeg[1] = RadToDeg(rotEuler.y);
 		rotationDeg[2] = RadToDeg(rotEuler.z);
 
+		BROFILER_CATEGORY("ComponentTransform::UpdateBoundingBox", Profiler::Color::PapayaWhip);
 		UpdateBoundingBox();
 	}
 }

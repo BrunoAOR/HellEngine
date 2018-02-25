@@ -100,7 +100,6 @@
     <ClInclude Include="MathGeoLib\src\Time\Clock.h" />
     <ClInclude Include="memLeaks.h" />
     <ClInclude Include="ModelInfo.h" />
-    <ClInclude Include="Model.h" />
     <ClInclude Include="Module.h" />
     <ClInclude Include="ModuleAudio.h" />
     <ClInclude Include="ModuleDebugDraw.h" />
@@ -115,6 +114,7 @@
     <ClInclude Include="openGL.h" />
     <ClInclude Include="physicsFunctions.h" />
     <ClInclude Include="Point.h" />
+    <ClInclude Include="SceneLoader.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="SpaceOctNode.h" />
     <ClInclude Include="SpaceQuadNode.h" />
@@ -177,7 +177,6 @@
     <ClCompile Include="MathGeoLib\src\Math\SSEMath.cpp" />
     <ClCompile Include="MathGeoLib\src\Math\TransformOps.cpp" />
     <ClCompile Include="MathGeoLib\src\Time\Clock.cpp" />
-    <ClCompile Include="Model.cpp" />
     <ClCompile Include="ModuleAudio.cpp" />
     <ClCompile Include="ModuleDebugDraw.cpp" />
     <ClCompile Include="ModuleEditorCamera.cpp" />
@@ -189,6 +188,7 @@
     <ClCompile Include="ModuleTime.cpp" />
     <ClCompile Include="ModuleWindow.cpp" />
     <ClCompile Include="physicsFunctions.cpp" />
+    <ClCompile Include="SceneLoader.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="SpaceOctNode.cpp" />
     <ClCompile Include="SpaceQuadNode.cpp" />

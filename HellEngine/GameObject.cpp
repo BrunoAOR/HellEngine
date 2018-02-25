@@ -1,5 +1,6 @@
 #include <stack>
 #include <assert.h>
+#include "Brofiler/include/Brofiler.h"
 #include "ImGui/imgui.h"
 #include "Application.h"
 #include "GameObject.h"
@@ -138,6 +139,8 @@ void GameObject::OnEditorRootHierarchy()
 	if (ImGui::BeginPopupContextItem())
 	{
 		OnEditorHierarchyCreateMenu();
+		ImGui::Separator();
+		OnEditorHierarchyLoadModelMenu();
 		ImGui::EndPopup();
 	}
 	if (open)
@@ -233,6 +236,10 @@ void GameObject::OnEditorHierarchyRightClick()
 			if (ImGui::Selectable("Move down"))
 				SwapWithNextSibling();
 
+		ImGui::Separator();
+
+		OnEditorHierarchyLoadModelMenu();
+
 		ImGui::EndPopup();
 	}
 }
@@ -255,6 +262,25 @@ void GameObject::OnEditorHierarchyCreateMenu()
 		if (ImGui::Selectable("Create Sphere"))
 			AddSphereChild();
 
+		ImGui::EndMenu();
+	}
+}
+
+void GameObject::OnEditorHierarchyLoadModelMenu()
+{
+	static char modelPath[256]{ '\0' };
+	static bool error = false;
+
+	if (ImGui::BeginMenu("Load Model"))
+	{
+		ImGui::InputText("Model path", modelPath, 256);
+		ImGui::Separator();
+		if (ImGui::Selectable("Load"))
+			error = !App->scene->LoadModel(modelPath, this);
+		
+		if (error)
+			ImGui::Text("Could not load model from provided path!");
+		
 		ImGui::EndMenu();
 	}
 }
@@ -287,7 +313,7 @@ bool GameObject::SetParent(GameObject* newParent)
 		/* Inform the transform (if it exists) */
 		ComponentTransform* transform = (ComponentTransform*)GetComponent(ComponentType::TRANSFORM);
 		if (transform)
-			transform->SetParent(nullptr);
+			transform->RecalculateLocalMatrix(nullptr);
 
 		/* Remove from current parent. */
 		parent->RemoveChild(this);
@@ -315,8 +341,8 @@ bool GameObject::SetParent(GameObject* newParent)
 		{
 			ComponentTransform* parentTransform = (ComponentTransform*)newParent->GetComponent(ComponentType::TRANSFORM);
 
-			/* Note that parentTransform might be nullptr, but that is a case handled by the Transform::SetParent method */
-			transform->SetParent(parentTransform);
+			/* Note that parentTransform might be nullptr, but that is a case handled by the Transform::RecalculateLocalMatrix method */
+			transform->RecalculateLocalMatrix(parentTransform);
 		}
 
 		/* Remove from current parent. */
@@ -446,6 +472,29 @@ void GameObject::RemoveDependingComponent()
 			componentPendingToRemove = true;
 		}
 	}
+}
+
+bool GameObject::GetActive() const
+{
+	if (isActive)
+	{
+		GameObject* testParent = parent;
+		while (testParent)
+		{
+			if (!testParent->isActive)
+				return false;
+
+			testParent = testParent->parent;
+		}
+		return true;
+	}
+	else
+		return false;
+}
+
+void GameObject::SetActive(bool activeState)
+{
+	isActive = activeState;
 }
 
 bool GameObject::HasGameObjectInChildrenHierarchy(GameObject * testGameObject)

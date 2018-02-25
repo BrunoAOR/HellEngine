@@ -16,6 +16,9 @@ public:
 
 	virtual void Update();
 
+	bool GetActive() const;
+	void SetActive(bool activeState);
+
 	virtual void OnEditor() = 0;
 
 	/* Returns the maximum number of times that this particular Type of Component can be added to a GameObject */
@@ -25,13 +28,14 @@ public:
 
 public:
 
-	bool isActive = true;
 	GameObject* gameObject = nullptr;
 	bool toRemove = false;
 
 protected:
 
 	ComponentType type;
+	bool isActive = true;
+	
 	struct
 	{
 		int id;
@@ -39,6 +43,7 @@ protected:
 	} editorInfo;
 
 	static int nextId;
+
 };
 
 #endif // !__H_COMPONENT__

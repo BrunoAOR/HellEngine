@@ -465,6 +465,10 @@ public:
 	/** Each element that is larger than ceil is replaced by ceil.
 		@see Max(), Clamp(). */
 	float3 Min(const float3 &ceil) const;
+	/// Modify this float and the given vector to an element-wise minimum.
+	/** Each element that is larger than ceil is replaced by ceil.
+	@see Max(), Clamp(). */
+	void ModifyToMin(const float3 &ceil);
 	/// Returns an element-wise maximum of this and the vector (floor, floor, floor).
 	/** Each element that is smaller than floor is replaced by floor. */
 	float3 Max(float floor) const;
@@ -472,6 +476,10 @@ public:
 	/** Each element that is smaller than floor is replaced by floor.
 		@see Min(), Clamp(). */
 	float3 Max(const float3 &floor) const;
+	/// Returns an element-wise maximum of this and the given vector.
+	/** Each element that is smaller than floor is replaced by floor.
+	@see Min(), Clamp(). */
+	void ModifyToMax(const float3 &floor);
 	/// Returns a vector that has floor <= this[i] <= ceil for each element.
 	float3 Clamp(float floor, float ceil) const;
 	/// Limits each element of this vector between the corresponding elements in floor and ceil.

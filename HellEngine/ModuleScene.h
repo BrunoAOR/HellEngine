@@ -2,7 +2,6 @@
 #define __H_MODULE_SCENE__
 
 #include <vector>
-#include "Brofiler/include/Brofiler.h"
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "GameObject.h"
@@ -11,6 +10,7 @@
 class ComponentCamera;
 class GameObject;
 
+#include "SceneLoader.h"
 class ModuleScene :
 	public Module
 {
@@ -43,6 +43,7 @@ public:
 	ComponentCamera* GetActiveGameCamera() const;
 	void SetSelectedGameObject(GameObject* go);
 
+	bool LoadModel(const char* modelPath, GameObject* parent);
 	GameObject* CreateGameObject();
 	void Destroy(GameObject* gameObject);
 	std::vector<GameObject*> FindByName(const std::string& name, GameObject* gameObject = nullptr);
@@ -50,6 +51,8 @@ public:
 public:
 
 	GameObject* root;
+	std::vector<VaoInfo*> meshes;
+
 	struct
 	{
 		GameObject* selectedGameObject = nullptr;
@@ -65,7 +68,8 @@ private:
 private:
 
 	ComponentCamera* activeGameCamera = nullptr;
-	SpaceQuadTree  quadTree;
+	SpaceQuadTree quadTree;
+	SceneLoader sceneLoader;
 
 };
 
@@ -80,7 +84,6 @@ inline void ModuleScene::Intersects(std::vector<GameObject*>& intersectedGameObj
 		staticTransforms.push_back((ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM));
 	}
 
-	BROFILER_CATEGORY("Brute Force check start", Profiler::Color::Brown);
 	int checksPerformed = 0;
 	for (std::vector<ComponentTransform*>::iterator it = staticTransforms.begin(); it != staticTransforms.end(); ++it)
 	{
@@ -88,7 +91,6 @@ inline void ModuleScene::Intersects(std::vector<GameObject*>& intersectedGameObj
 		if (primitive.Intersects((*it)->GetBoundingBox()))
 			intersectedGameObjects.push_back((*it)->gameObject);
 	}
-	BROFILER_CATEGORY("Brute Force check end", Profiler::Color::White);
 	LOGGER("Brute force checks: %i", checksPerformed);
 }
 
