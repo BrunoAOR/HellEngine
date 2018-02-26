@@ -64,6 +64,7 @@ private:
 
 	template<typename T>
 	void Intersects(std::vector<GameObject*>& intersectedGameObjects, const T& primitive);
+	void DrawHierarchy();
 
 private:
 
