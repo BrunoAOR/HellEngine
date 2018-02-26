@@ -58,5 +58,6 @@ bool LoadTextFile(const std::string& path, std::string& outputString);
 bool SaveTextFile(const std::string& path, const std::string& content);
 bool IsEmptyString(const char* charString);
 void DecomposeMatrix(const float4x4& openGlStyleMatrix, float3& position, Quat& rotation, float3& scale);
+void DecomposeMatrixPosition(const float4x4& openGlStyleMatrix, float3& position);
 
 #endif /* __H_GLOBALS__ */
