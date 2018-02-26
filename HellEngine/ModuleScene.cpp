@@ -113,7 +113,7 @@ void ModuleScene::GenerateSceneFixedQuadTree(float* minPoint, float* maxPoint)
 		vec vecMaxPoint(maxPoint[0], maxPoint[1], maxPoint[2]);
 		quadTree.Create(vecMinPoint, vecMaxPoint);
 		std::vector<GameObject*> staticGOs;
-		FindAllStaticGameObjects(staticGOs, root);
+		FindAllStaticGameObjects(staticGOs);
 		quadTree.Insert(staticGOs);
 	}
 	return;
@@ -124,7 +124,7 @@ void ModuleScene::GenerateSceneAdaptiveQuadTree()
 	if (quadTree.GetType() != SpaceQuadTree::QuadTreeType::ADAPTIVE)
 	{
 		std::vector<GameObject*> staticGOs;
-		FindAllStaticGameObjects(staticGOs, root);
+		FindAllStaticGameObjects(staticGOs);
 		quadTree.Create(staticGOs);
 	}
 }
@@ -286,38 +286,54 @@ const SpaceQuadTree& ModuleScene::GetQuadTree()
 	return quadTree;
 }
 
-void ModuleScene::FindAllStaticGameObjects(std::vector<GameObject*>& staticGameObjects, GameObject* go)
+void ModuleScene::FindAllStaticGameObjects(std::vector<GameObject*>& staticGameObjects)
 {
-	if (go == nullptr)
-		go = root;
+	std::stack<GameObject*> stack;
 
-	for (GameObject* child : go->GetChildren())
-	{
-		ComponentTransform* transform = (ComponentTransform*)child->GetComponent(ComponentType::TRANSFORM);
-		if (transform && transform->GetIsStatic())
-			staticGameObjects.push_back(child);
+	GameObject* go = root;
 
-		if (child->GetChildren().size() != 0)
+	stack.push(go);
+
+	while (!stack.empty()) {
+		go = stack.top();
+		stack.pop();
+
+		for (GameObject* child : go->GetChildren())
 		{
-			FindAllStaticGameObjects(staticGameObjects, child);
+			ComponentTransform* transform = (ComponentTransform*)child->GetComponent(ComponentType::TRANSFORM);
+			if (transform && transform->GetIsStatic())
+				staticGameObjects.push_back(child);
+
+			if (child->GetChildren().size() != 0)
+			{
+				stack.push(child);
+			}
 		}
-	}
+	}	
 }
 
-void ModuleScene::FindAllDynamicGameObjects(std::vector<GameObject*>& dynamicGameObjects, GameObject* go)
+void ModuleScene::FindAllDynamicGameObjects(std::vector<GameObject*>& dynamicGameObjects)
 {
-	if (go == nullptr)
-		go = root;
+	std::stack<GameObject*> stack;
 
-	for (GameObject* child : go->GetChildren())
-	{
-		ComponentTransform* transform = (ComponentTransform*)child->GetComponent(ComponentType::TRANSFORM);
-		if (transform && !transform->GetIsStatic())
-			dynamicGameObjects.push_back(child);
+	GameObject* go = root;
 
-		if (child->GetChildren().size() != 0)
+	stack.push(go);
+
+	while (!stack.empty()) {
+		go = stack.top();
+		stack.pop();
+
+		for (GameObject* child : go->GetChildren())
 		{
-			FindAllDynamicGameObjects(dynamicGameObjects, child);
+			ComponentTransform* transform = (ComponentTransform*)child->GetComponent(ComponentType::TRANSFORM);
+			if (transform && !transform->GetIsStatic())
+				dynamicGameObjects.push_back(child);
+
+			if (child->GetChildren().size() != 0)
+			{
+				stack.push(child);
+			}
 		}
 	}
 }

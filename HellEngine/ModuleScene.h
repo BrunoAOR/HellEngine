@@ -34,8 +34,8 @@ public:
 	void QuadTreeFrustumCulling(std::vector<GameObject*> &insideFrustum, Frustum frustum);
 	bool UsingQuadTree();
 	const SpaceQuadTree& GetQuadTree();
-	void FindAllStaticGameObjects(std::vector<GameObject*>& staticGameObjects, GameObject* go = nullptr);
-	void FindAllDynamicGameObjects(std::vector<GameObject*>& dynamicGameObjects, GameObject* go = nullptr);
+	void FindAllStaticGameObjects(std::vector<GameObject*>& staticGameObjects);
+	void FindAllDynamicGameObjects(std::vector<GameObject*>& dynamicGameObjects);
 
 	void TestLineSegmentChecks(float3 lineStartPoint, float3 lineEndPoint);
 
