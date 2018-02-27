@@ -124,3 +124,34 @@ void DecomposeMatrix(const float4x4& openGlStyleMatrix, float3& position, Quat& 
 		rotation = Quat(nonOpenGlStyleMatrix);
 	}
 }
+
+void DecomposeMatrixPosition(const float4x4 & openGlStyleMatrix, float3 & position)
+{
+	/* Transpose to get the matrix in a shape when the bottom line is 0 0 0 1 */
+	float4x4 nonOpenGlStyleMatrix(openGlStyleMatrix);
+	nonOpenGlStyleMatrix.Transpose();
+
+	bool validMatrix = true;
+
+	for (int i = 0; i < 16 && validMatrix; i++)
+		validMatrix = !isnan(nonOpenGlStyleMatrix.At(int(i / 4), i % 4));
+
+	if (validMatrix) {
+
+		/* Extract the Translation, Scale and Rotation */
+		/*
+		Matrix shape
+
+		a  b  c  d
+		e  f  g  h
+		i  j  k  l
+		0  0  0  1
+		*/
+
+		/* Extract translation */
+		/* x from d, y from h, z from l*/
+		position.x = nonOpenGlStyleMatrix[0][3];
+		position.y = nonOpenGlStyleMatrix[1][3];
+		position.z = nonOpenGlStyleMatrix[2][3];
+	}
+}

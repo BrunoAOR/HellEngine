@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stack>
 #include "Brofiler/include/Brofiler.h"
 #include "ImGui/imgui.h"
 #include "Application.h"
@@ -62,6 +63,7 @@ UpdateStatus ModuleScene::Update()
 		quadTree.DrawTree(); 
 	}
 	BROFILER_CATEGORY("ModuleScene::Update", Profiler::Color::PapayaWhip);
+	DrawHierarchy();
 	root->Update();
 	BROFILER_CATEGORY("ModuleScene::UpdateEnd", Profiler::Color::PapayaWhip);
 
@@ -274,6 +276,51 @@ std::vector<GameObject*> ModuleScene::FindByName(const std::string& name, GameOb
         ret.insert(std::end(ret), std::begin(temp), std::end(temp));
     }
     return ret;
+}
+
+void ModuleScene::DrawHierarchy()
+{
+
+	std::stack<GameObject*> goStack;
+	GameObject* go = root;
+	goStack.push(go);
+
+	float currentColor[4];
+	glGetFloatv(GL_CURRENT_COLOR, currentColor);
+	float blue[4]{ 0, 0, 1, 1 };
+	glColor4fv(blue);
+
+	while (!goStack.empty())
+	{
+		go = goStack.top();
+		goStack.pop();
+
+		ComponentTransform* parentTransform = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM);
+		float3 parentPosition;
+		if (parentTransform)
+		{
+			DecomposeMatrixPosition(parentTransform->GetModelMatrix4x4(), parentPosition);
+		}
+
+		for (GameObject* child : go->GetChildren())
+		{
+			goStack.push(child);
+
+			ComponentTransform* childTransform = (ComponentTransform*)child->GetComponent(ComponentType::TRANSFORM);
+			if (parentTransform && childTransform)
+			{
+				float3 childPosition;
+				DecomposeMatrixPosition(childTransform->GetModelMatrix4x4(), childPosition);
+
+				glBegin(GL_LINES);
+				glVertex3f(parentPosition.x, parentPosition.y, parentPosition.z);
+				glVertex3f(childPosition.x, childPosition.y, childPosition.z);
+				glEnd();
+			}
+
+		}
+	}
+	glColor4fv(currentColor);
 }
 
 bool ModuleScene::UsingQuadTree()

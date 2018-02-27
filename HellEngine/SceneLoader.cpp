@@ -50,6 +50,7 @@ void SceneLoader::LoadNode(const aiNode* node, GameObject* parent)
 {
 	GameObject* go = App->scene->CreateGameObject();
 	go->name = node->mName.data;
+	go->SetParent(parent);
 
 	/* Add Transform */
 	ComponentTransform* transform = (ComponentTransform*)go->AddComponent(ComponentType::TRANSFORM);
@@ -64,8 +65,6 @@ void SceneLoader::LoadNode(const aiNode* node, GameObject* parent)
 	transform->SetPosition(position.x, position.y, position.z);
 	transform->SetRotation(rotation);
 	transform->SetScale(scale.x, scale.y, scale.z);
-
-	go->SetParent(parent);
 
 	/* Add Material and Mesh if the node has mesh */
 	if (node->mNumMeshes > 0)
