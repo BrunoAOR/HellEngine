@@ -23,6 +23,7 @@ public:
 	float3 GetScale();
 	float3 GetRotationRad();
 	float3 GetRotationDeg();
+	Quat GetRotationQuat();
 
 	AABB GetBoundingBox();
 

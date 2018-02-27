@@ -3,6 +3,7 @@
 
 #include <list>
 class Module;
+class ModuleAnimation;
 class ModuleAudio; 
 class ModuleDebugDraw;
 class ModuleEditorCamera;
@@ -32,6 +33,7 @@ public:
 	ModuleEditorCamera* editorCamera = nullptr;
 	ModuleRender* renderer = nullptr;
 	ModuleScene* scene = nullptr;
+	ModuleAnimation* animation = nullptr;
 	ModuleImGui* imgui = nullptr;
 	ModuleAudio* audio = nullptr;
 	ModuleDebugDraw* debugDraw = nullptr;

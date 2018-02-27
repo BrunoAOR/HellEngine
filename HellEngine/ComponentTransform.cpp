@@ -159,6 +159,11 @@ float3 ComponentTransform::GetRotationDeg()
 	return float3(RadToDeg(rotationRad.x), RadToDeg(rotationRad.y), RadToDeg(rotationRad.z));
 }
 
+Quat ComponentTransform::GetRotationQuat()
+{
+	return rotation;
+}
+
 AABB ComponentTransform::GetBoundingBox()
 {
 	return boundingBox;

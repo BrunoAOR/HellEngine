@@ -5,6 +5,7 @@
 #include "Application.h"
 #include "GameObject.h"
 #include "Component.h"
+#include "ComponentAnimation.h"
 #include "ComponentCamera.h"
 #include "ComponentMaterial.h"
 #include "ComponentMesh.h"
@@ -418,6 +419,8 @@ Component* GameObject::AddComponent(ComponentType type)
 	case ComponentType::CAMERA:
 		component = new ComponentCamera(this);
 		break;
+	case ComponentType::ANIMATION:
+		component = new ComponentAnimation(this);
 	}
 
 	if (component != nullptr)

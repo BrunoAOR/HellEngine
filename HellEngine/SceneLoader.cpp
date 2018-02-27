@@ -14,6 +14,9 @@
 #include "SceneLoader.h"
 #include "VaoInfo.h"
 
+/* Temporary */
+#include "ComponentAnimation.h"
+
 SceneLoader::SceneLoader()
 {
 }
@@ -51,6 +54,10 @@ void SceneLoader::LoadNode(const aiNode* node, GameObject* parent)
 	GameObject* go = App->scene->CreateGameObject();
 	go->name = node->mName.data;
 	go->SetParent(parent);
+
+	if (go->name.compare("RootFrame") == 0) {
+		ComponentAnimation* animation = (ComponentAnimation*)go->AddComponent(ComponentType::ANIMATION);
+	}
 
 	/* Add Transform */
 	ComponentTransform* transform = (ComponentTransform*)go->AddComponent(ComponentType::TRANSFORM);

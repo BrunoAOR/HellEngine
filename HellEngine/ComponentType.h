@@ -6,10 +6,11 @@ enum class ComponentType
 	MATERIAL,
 	MESH,
 	TRANSFORM,
-	CAMERA
+	CAMERA,
+	ANIMATION
 };
 
-extern const ComponentType COMPONENT_TYPES[4];
+extern const ComponentType COMPONENT_TYPES[5];
 const char* GetString(ComponentType componentType);
 
 #endif // !__H_COMPONENT_TYPE__
