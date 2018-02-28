@@ -218,6 +218,7 @@ public:
 		const float3 &sourceDirection2, const float3 &targetDirection2);
 
 	/// Creates a new float4x4 that performs the rotation expressed by the given quaternion.
+	static float4x4 QuatToRotation(const Quat& orientation);
 	static float4x4 FromQuat(const Quat &orientation);
 	/** param pointOnAxis If specified, the rotation is performed using this point as the center point. */
 	static float4x4 FromQuat(const Quat &orientation, const float3 &pointOnAxis);
