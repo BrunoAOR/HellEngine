@@ -156,6 +156,7 @@ public:
 
 	/// Creates a new transformation matrix that translates by the given offset.
 	static TranslateOp Translate(float tx, float ty, float tz);
+	static float4x4 TranslationToRotation(float x, float y, float z);
 	static TranslateOp Translate(const float3 &offset);
 
 	/// Creates a new float4x4 that rotates about one of the principal axes. [indexTitle: RotateX/Y/Z]

@@ -126,6 +126,11 @@ TranslateOp float4x4::Translate(float tx, float ty, float tz)
 	return TranslateOp(tx, ty, tz);
 }
 
+float4x4 float4x4::TranslationToRotation(float x, float y, float z) {
+	float4x4 m(1, 0, 0, x, 0, 1, 0, y, 0, 0, 1, z, 0, 0, 0, 1);
+	return m;
+}
+
 TranslateOp float4x4::Translate(const float3 &offset)
 {
 	return TranslateOp(offset);
