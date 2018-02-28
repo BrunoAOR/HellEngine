@@ -388,7 +388,7 @@ float4x4& ComponentTransform::UpdateLocalModelMatrix()
 	//float4x4 rotationMatrix = float4x4::FromQuat(rotation);
 	float4x4 rotationMatrix = float4x4::QuatToRotation(rotation);
 	BROFILER_CATEGORY("ModuleScene::Translation", Profiler::Color::PapayaWhip);
-	float4x4 translationMatrix = float4x4::Translate(position.x, position.y, position.z).ToFloat4x4();
+	float4x4 translationMatrix = float4x4::TranslationToRotation(position.x, position.y, position.z);
 	BROFILER_CATEGORY("ModuleScene::Memcpy", Profiler::Color::PapayaWhip);
 	memcpy_s(localModelMatrix.ptr(), sizeof(float) * 16, (translationMatrix * rotationMatrix * scaleMatrix).Transposed().ptr(), sizeof(float) * 16);
 	return localModelMatrix;

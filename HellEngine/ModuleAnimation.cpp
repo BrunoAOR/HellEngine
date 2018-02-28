@@ -40,26 +40,35 @@ bool ModuleAnimation::Load(const char * name, const char * file)
 				*/
 				AnimationNode* node = new AnimationNode();
 
-				const char* channelName = anim->mChannels[j]->mNodeName.C_Str();
+				uint length = anim->mChannels[j]->mNodeName.length;
+				char* auxName = new char[length - 1];
+				memcpy_s(auxName, length, anim->mChannels[j]->mNodeName.C_Str(), length);
+				auxName[length] = '\0';
+				const char* channelName = auxName;
 
-				for (uint i = 0; i < anim->mChannels[j]->mNumPositionKeys; i++) {
-					aiVectorKey key = *(anim->mChannels[j]->mPositionKeys + i);
-					aiVector3D* test = &key.mValue;
-					int a = 2;
-				}
-				//memcpy_s(node->positions, anim->mNumChannels * sizeof(aiVector3D*), &anim->mChannels[j]->mPositionKeys->mValue, anim->mNumChannels * sizeof(aiNodeAnim*));
-				node->positions = &anim->mChannels[j]->mPositionKeys->mValue;
 				node->numPositions = anim->mChannels[j]->mNumPositionKeys;
-				node->rotations = &anim->mChannels[j]->mRotationKeys->mValue;
 				node->numRotations = anim->mChannels[j]->mNumRotationKeys;
+
+				node->positions = new aiVector3D[node->numPositions];
+				node->rotations = new aiQuaternion[node->numRotations];
+
+				for (uint n = 0; n < node->numPositions; n++) {
+					node->positions[n] = anim->mChannels[j]->mPositionKeys[n].mValue;
+					node->rotations[n] = anim->mChannels[j]->mRotationKeys[n].mValue;
+				}
+
 				a->channels.insert(std::make_pair(channelName, node));
 			}
 
 			animations.insert(std::make_pair(name, a));
 		}
 
+		aiReleaseImport(assimpScene);
+
 		return true;
 	}
+
+	aiReleaseImport(assimpScene);
 
 	return false;
 }
@@ -67,8 +76,11 @@ bool ModuleAnimation::Load(const char * name, const char * file)
 bool ModuleAnimation::CleanUp()
 {
 	for (std::map<const char*, Animation*>::iterator it = animations.begin(); it != animations.end(); ++it) {
-		for (std::map<const char*, AnimationNode*>::iterator it2 = (*it).second->channels.begin(); it2 != (*it).second->channels.end(); ++it)
+		for (std::map<const char*, AnimationNode*>::iterator it2 = (*it).second->channels.begin(); it2 != (*it).second->channels.end(); ++it2) {
+			delete it2->second->positions;
+			delete it2->second->rotations;
 			delete it2->second;
+		}
 
 		delete it->second;
 	}
@@ -135,6 +147,10 @@ bool ModuleAnimation::GetTransform(uint id, const char * channel, float3 & posit
 	if (node) {
 		uint duration = animation->duration;
 		uint time = instance->time;
+
+		if (time > duration)
+			int a = 2;
+
 		float timeFraction = (float)fmod(time, duration) / duration;
 
 		uint numPositions = node->numPositions;
