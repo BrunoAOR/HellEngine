@@ -1,5 +1,6 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+#include "Brofiler/include/Brofiler.h"
 #include "MathGeoLib/src/Math/float3.h"
 #include "MathGeoLib/src/Math/Quat.h"
 #include "Application.h"
@@ -24,16 +25,34 @@ bool ModuleAnimation::Load(const char * name, const char * file)
 			aiAnimation* anim = assimpScene->mAnimations[i];
 
 			Animation* a = new Animation();
-			a->duration = uint(anim->mDuration);
+			a->duration = uint(anim->mDuration / anim->mTicksPerSecond) * 1000;
+			/*
 			a->numChannels = anim->mNumChannels;
 			a->channels = new AnimationNode[a->numChannels];
-
+			*/
 			for (uint j = 0; j < anim->mNumChannels; j++) {
+				/*
 				a->channels[j].name = anim->mChannels[j]->mNodeName.C_Str();
 				a->channels[j].positions = &anim->mChannels[j]->mPositionKeys->mValue;
 				a->channels[j].numPositions = anim->mChannels[j]->mNumPositionKeys;
 				a->channels[j].rotations = &anim->mChannels[j]->mRotationKeys->mValue;
 				a->channels[j].numRotations = anim->mChannels[j]->mNumRotationKeys;
+				*/
+				AnimationNode* node = new AnimationNode();
+
+				const char* channelName = anim->mChannels[j]->mNodeName.C_Str();
+
+				for (uint i = 0; i < anim->mChannels[j]->mNumPositionKeys; i++) {
+					aiVectorKey key = *(anim->mChannels[j]->mPositionKeys + i);
+					aiVector3D* test = &key.mValue;
+					int a = 2;
+				}
+				//memcpy_s(node->positions, anim->mNumChannels * sizeof(aiVector3D*), &anim->mChannels[j]->mPositionKeys->mValue, anim->mNumChannels * sizeof(aiNodeAnim*));
+				node->positions = &anim->mChannels[j]->mPositionKeys->mValue;
+				node->numPositions = anim->mChannels[j]->mNumPositionKeys;
+				node->rotations = &anim->mChannels[j]->mRotationKeys->mValue;
+				node->numRotations = anim->mChannels[j]->mNumRotationKeys;
+				a->channels.insert(std::make_pair(channelName, node));
 			}
 
 			animations.insert(std::make_pair(name, a));
@@ -47,8 +66,12 @@ bool ModuleAnimation::Load(const char * name, const char * file)
 
 bool ModuleAnimation::CleanUp()
 {
-	for (std::map<const char*, Animation*>::iterator it = animations.begin(); it != animations.end(); ++it)
+	for (std::map<const char*, Animation*>::iterator it = animations.begin(); it != animations.end(); ++it) {
+		for (std::map<const char*, AnimationNode*>::iterator it2 = (*it).second->channels.begin(); it2 != (*it).second->channels.end(); ++it)
+			delete it2->second;
+
 		delete it->second;
+	}
 
 	for (uint i = 0; i < instances.size(); i++)
 		delete instances.at(i);
@@ -69,7 +92,7 @@ uint ModuleAnimation::Play(const char * name, bool loop)
 {
 	Animation* anim = animations.at(name);
 
-	AnimationInstance* instance = new AnimationInstance	{ anim, 0, loop, nullptr, 0, 0 };
+	AnimationInstance* instance = new AnimationInstance{ anim, 0, loop, nullptr, 0, 0 };
 
 	if (holes.size() == 0) {
 		instances.push_back(instance);
@@ -96,17 +119,23 @@ bool ModuleAnimation::GetTransform(uint id, const char * channel, float3 & posit
 	AnimationInstance* instance = instances.at(id);
 	Animation* animation = instance->anim;
 	AnimationNode* node = nullptr;
+
+	if (animation->channels.count(channel))
+		node = animation->channels.at(channel);
+
+	/*
 	for (uint i = 0; i < animation->numChannels; i++) {
 		if (strcmp(animation->channels[i].name, channel) == 0) {
 			node = &animation->channels[i];
 			break;
 		}
 	}
+	*/
 
 	if (node) {
 		uint duration = animation->duration;
 		uint time = instance->time;
-		float timeFraction = (float)time / duration;
+		float timeFraction = (float)fmod(time, duration) / duration;
 
 		uint numPositions = node->numPositions;
 		uint numRotations = node->numRotations;
@@ -117,19 +146,18 @@ bool ModuleAnimation::GetTransform(uint id, const char * channel, float3 & posit
 		const aiVector3D& pos = node->positions[positionID];
 		const aiQuaternion& rot = node->rotations[rotationID];
 
-		position.x = pos.x;
-		position.y = pos.y;
-		position.z = pos.z;
+		position.x = (float)pos.x;
+		position.y = (float)pos.y;
+		position.z = (float)pos.z;
 
-		rotation.x = rot.x; 
-		rotation.y = rot.y;
-		rotation.z = rot.z;
-		rotation.w = rot.w;
+		rotation.x = (float)rot.x;
+		rotation.y = (float)rot.y;
+		rotation.z = (float)rot.z;
+		rotation.w = (float)rot.w;
 
 		return true;
 	}
 	else {
-		LOGGER("Channel %s not found", channel);
 		return false;
 	}
 }

@@ -7,8 +7,16 @@
 #include "Module.h"
 #include "globals.h"
 
+struct LessString
+{
+	bool operator() (char const *a, char const *b) const
+	{
+		return std::strcmp(a, b) < 0;
+	}
+};
+
 struct AnimationNode {
-	const char* name;
+	//const char* name;
 	/* No vector because sizes will not change */
 	aiVector3D* positions = nullptr;
 	uint numPositions = 0;
@@ -18,8 +26,11 @@ struct AnimationNode {
 
 struct Animation {
 	uint duration = 0;
+	/* Pending questioning Carlos
 	AnimationNode* channels = nullptr;
 	uint numChannels = 0;
+	*/
+	std::map<const char*, AnimationNode*, LessString> channels;
 };
 
 struct AnimationInstance {
@@ -34,7 +45,7 @@ struct AnimationInstance {
 
 class ModuleAnimation : public Module {
 
-	std::map<const char*, Animation*> animations;
+	std::map<const char*, Animation*, LessString> animations;
 	std::vector<AnimationInstance*> instances;
 	std::list<uint> holes;
 
