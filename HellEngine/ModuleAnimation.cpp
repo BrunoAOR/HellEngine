@@ -26,22 +26,12 @@ bool ModuleAnimation::Load(const char * name, const char * file)
 
 			Animation* a = new Animation();
 			a->duration = uint(anim->mDuration / anim->mTicksPerSecond) * 1000;
-			/*
-			a->numChannels = anim->mNumChannels;
-			a->channels = new AnimationNode[a->numChannels];
-			*/
+
 			for (uint j = 0; j < anim->mNumChannels; j++) {
-				/*
-				a->channels[j].name = anim->mChannels[j]->mNodeName.C_Str();
-				a->channels[j].positions = &anim->mChannels[j]->mPositionKeys->mValue;
-				a->channels[j].numPositions = anim->mChannels[j]->mNumPositionKeys;
-				a->channels[j].rotations = &anim->mChannels[j]->mRotationKeys->mValue;
-				a->channels[j].numRotations = anim->mChannels[j]->mNumRotationKeys;
-				*/
 				AnimationNode* node = new AnimationNode();
 
 				uint length = anim->mChannels[j]->mNodeName.length;
-				char* auxName = new char[length - 1];
+				char* auxName = new char[length + 1];
 				memcpy_s(auxName, length, anim->mChannels[j]->mNodeName.C_Str(), length);
 				auxName[length] = '\0';
 				const char* channelName = auxName;
@@ -53,8 +43,14 @@ bool ModuleAnimation::Load(const char * name, const char * file)
 				node->rotations = new aiQuaternion[node->numRotations];
 
 				for (uint n = 0; n < node->numPositions; n++) {
-					node->positions[n] = anim->mChannels[j]->mPositionKeys[n].mValue;
-					node->rotations[n] = anim->mChannels[j]->mRotationKeys[n].mValue;
+					node->positions[n].x = anim->mChannels[j]->mPositionKeys[n].mValue.x;
+					node->positions[n].y = anim->mChannels[j]->mPositionKeys[n].mValue.y;
+					node->positions[n].z = anim->mChannels[j]->mPositionKeys[n].mValue.z;
+
+					node->rotations[n].x = anim->mChannels[j]->mRotationKeys[n].mValue.x;
+					node->rotations[n].y = anim->mChannels[j]->mRotationKeys[n].mValue.y;
+					node->rotations[n].z = anim->mChannels[j]->mRotationKeys[n].mValue.z;
+					node->rotations[n].w = anim->mChannels[j]->mRotationKeys[n].mValue.w;
 				}
 
 				a->channels.insert(std::make_pair(channelName, node));
@@ -147,20 +143,33 @@ bool ModuleAnimation::GetTransform(uint id, const char * channel, float3 & posit
 	if (node) {
 		uint duration = animation->duration;
 		uint time = instance->time;
-
-		if (time > duration)
-			int a = 2;
-
-		float timeFraction = (float)fmod(time, duration) / duration;
-
 		uint numPositions = node->numPositions;
 		uint numRotations = node->numRotations;
 
-		uint positionID = uint(floor(timeFraction * numPositions));
-		uint rotationID = uint(floor(timeFraction * numRotations));
+		if (time > duration) {
+			if (instance->loop) {
+				instance->time = 0;
+				time = 0;
+			}
+			else {
+				time = duration;
+			}
+		}
 
-		const aiVector3D& pos = node->positions[positionID];
-		const aiQuaternion& rot = node->rotations[rotationID];
+		float posKey = float(time * (numPositions - 1) / duration);
+		float rotKey = float(time * (numRotations - 1) / duration);
+
+		uint positionID = uint(posKey);
+		uint rotationID = uint(rotKey);
+
+		uint nextPositionID = (positionID + 1) % numPositions;
+		uint nextRotationID = (positionID + 1) % numPositions;
+
+		float posLambda = posKey - float(positionID);
+		float rotLambda = rotKey - float(rotationID);
+
+		const aiVector3D& pos = InterpolateVector3D(node->positions[positionID], node->positions[nextPositionID], posLambda);
+		const aiQuaternion& rot = InterpolateQuaternion(node->rotations[rotationID], node->rotations[nextRotationID], rotLambda);
 
 		position.x = (float)pos.x;
 		position.y = (float)pos.y;
@@ -176,4 +185,33 @@ bool ModuleAnimation::GetTransform(uint id, const char * channel, float3 & posit
 	else {
 		return false;
 	}
+}
+
+aiVector3D ModuleAnimation::InterpolateVector3D(const aiVector3D & first, const aiVector3D & second, float lambda) const
+{
+	return first * (1.0f - lambda) + second * lambda;
+}
+
+aiQuaternion ModuleAnimation::InterpolateQuaternion(const aiQuaternion & first, const aiQuaternion & second, float lambda) const
+{
+	aiQuaternion result;
+
+	float dot = first.x * second.x + first.y * second.y + first.z * second.z + first.w * second.w;
+
+	if (dot >= 0.0f) {
+		result.x = first.x * (1.0f - lambda) + second.x * lambda;
+		result.y = first.y * (1.0f - lambda) + second.y * lambda;
+		result.z = first.z * (1.0f - lambda) + second.z * lambda;
+		result.w = first.w * (1.0f - lambda) + second.w * lambda;
+	}
+	else {
+		result.x = first.x * (1.0f - lambda) + second.x * -lambda;
+		result.y = first.y * (1.0f - lambda) + second.y * -lambda;
+		result.z = first.z * (1.0f - lambda) + second.z * -lambda;
+		result.w = first.w * (1.0f - lambda) + second.w * -lambda;
+	}
+
+	result.Normalize();
+
+	return result;
 }
