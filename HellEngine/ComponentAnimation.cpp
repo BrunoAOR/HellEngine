@@ -23,7 +23,6 @@ void ComponentAnimation::Update()
 		std::stack<GameObject*> stack;
 
 		GameObject* go = gameObject;
-		std::vector<GameObject*> children;
 
 		stack.push(go);
 
@@ -40,10 +39,9 @@ void ComponentAnimation::Update()
 			transform->SetPosition(position.x, position.y, position.z);
 			transform->SetRotation(rotation);
 
-			children = go->GetChildren();
-
-			for (int i = children.size(); i > 0; i--)
-				stack.push(children.at(i - 1));
+			for (GameObject* child : go->GetChildren()) {
+				stack.push(child);
+			}
 		}
 	}
 }
