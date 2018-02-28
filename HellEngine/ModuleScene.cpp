@@ -62,8 +62,9 @@ UpdateStatus ModuleScene::Update()
 	{
 		quadTree.DrawTree(); 
 	}
-	BROFILER_CATEGORY("ModuleScene::Update", Profiler::Color::PapayaWhip);
+	BROFILER_CATEGORY("ModuleScene::DrawHierarchy", Profiler::Color::PapayaWhip);
 	DrawHierarchy();
+	BROFILER_CATEGORY("ModuleScene::Update", Profiler::Color::PapayaWhip);
 	root->Update();
 	BROFILER_CATEGORY("ModuleScene::UpdateEnd", Profiler::Color::PapayaWhip);
 

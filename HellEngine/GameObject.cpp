@@ -375,6 +375,7 @@ std::vector<Component*> GameObject::GetComponents(ComponentType type)
 
 Component * GameObject::GetComponent(ComponentType type)
 {
+	BROFILER_CATEGORY("ModuleScene::GetComponent", Profiler::Color::PapayaWhip);
 	for (std::vector<Component*>::iterator it = components.begin(); it != components.end(); ++it)
 	{
 		if ((*it)->GetType() == type)
