@@ -62,7 +62,7 @@ public:
 
 	int Play(const char* name, bool loop = true);
 	void Stop(uint id);
-	void BlendTo(uint id, const char* name, uint blendTime);
+	bool BlendTo(uint id, const char* name, uint blendDuration);
 
 	void DeleteOldInstance(AnimationInstance* instance);
 	void ModifyAnimationLoop(uint instanceID, bool loop);

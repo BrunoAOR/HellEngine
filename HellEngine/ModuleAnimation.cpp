@@ -73,8 +73,10 @@ bool ModuleAnimation::Load(const char* name, const char* file)
 
 bool ModuleAnimation::CleanUp()
 {
-	for (std::map<const char*, Animation*>::iterator it = animations.begin(); it != animations.end(); ++it) {
-		for (std::map<const char*, AnimationNode*>::iterator it2 = (*it).second->channels.begin(); it2 != (*it).second->channels.end(); ++it2) {
+	for (std::map<const char*, Animation*>::iterator it = animations.begin(); it != animations.end(); ++it) 
+	{
+		for (std::map<const char*, AnimationNode*>::iterator it2 = (*it).second->channels.begin(); it2 != (*it).second->channels.end(); ++it2) 
+		{
 			delete[] it2->first;
 			delete[] it2->second->positions;
 			delete[] it2->second->rotations;
@@ -86,7 +88,13 @@ bool ModuleAnimation::CleanUp()
 	}
 
 	for (uint i = 0; i < instances.size(); i++)
-		delete instances.at(i);
+	{
+		AnimationInstance* instance = instances.at(i);
+	
+		delete instance->next;
+
+		delete instance;
+	}
 
 	return true;
 }
@@ -100,6 +108,7 @@ UpdateStatus ModuleAnimation::Update()
 			(*it)->time += App->time->DeltaTimeMS();
 			if ((*it)->next)
 			{
+				(*it)->next->time += App->time->DeltaTimeMS();
 				(*it)->blendTime += App->time->DeltaTimeMS();
 				if ((*it)->blendTime >= (*it)->blendDuration)
 					DeleteOldInstance(*it);
@@ -136,12 +145,13 @@ int ModuleAnimation::Play(const char* name, bool loop)
 
 void ModuleAnimation::Stop(uint id)
 {
+	delete instances.at(id)->next;
 	delete instances.at(id);
 	instances.at(id) = nullptr;
 	holes.push(id);
 }
 
-void ModuleAnimation::BlendTo(uint id, const char* name, uint blendTime)
+bool ModuleAnimation::BlendTo(uint id, const char* name, uint blendDuration)
 {
 	AnimationInstance* instance = instances.at(id);
 
@@ -150,10 +160,14 @@ void ModuleAnimation::BlendTo(uint id, const char* name, uint blendTime)
 
 		AnimationInstance* nextInstance = new AnimationInstance{ anim, 0, instance->loop, true, nullptr, 0, 0 };
 
+		delete instance->next;
 		instance->next = nextInstance;
-		instance->blendDuration = blendTime;
+		instance->blendDuration = blendDuration;
+
+		return true;
 	}
 
+	return false;
 }
 
 void ModuleAnimation::DeleteOldInstance(AnimationInstance* instance)
@@ -161,7 +175,9 @@ void ModuleAnimation::DeleteOldInstance(AnimationInstance* instance)
 	instance->anim = instance->next->anim;
 	instance->time = instance->next->time;
 	instance->loop = instance->next->loop;
+
 	delete instance->next;
+
 	instance->next = nullptr;
 	instance->blendDuration = 0;
 	instance->blendTime = 0;
@@ -171,6 +187,8 @@ void ModuleAnimation::ModifyAnimationLoop(uint instanceID, bool loop)
 {
 	AnimationInstance* instance = instances.at(instanceID);
 	instance->loop = loop;
+	if (instance->next)
+		instance->next->loop = loop;
 }
 
 void ModuleAnimation::ModifyAnimationActive(uint instanceID, bool active)
@@ -220,21 +238,56 @@ bool ModuleAnimation::GetTransform(uint id, const char* channel, float3 & positi
 		aiQuaternion& rot = InterpolateQuaternion(node->rotations[rotationID], node->rotations[nextRotationID], rotLambda);
 
 		if (instance->next && instance->blendTime < instance->blendDuration) {
-			AnimationInstance* nextInstance = instance->next;
-			Animation* nextAnimation = nextInstance->anim;
-			AnimationNode* nextNode = nullptr;
+			AnimationInstance* nextAnimationInstance = instance->next;
+			Animation* nextAnimationAnimation = nextAnimationInstance->anim;
+			AnimationNode* nextAnimationNode = nullptr;
 
-			if (nextAnimation->channels.count(channel))
-				nextNode = nextAnimation->channels.at(channel);
+			if (nextAnimationAnimation->channels.count(channel))
+				nextAnimationNode = nextAnimationAnimation->channels.at(channel);
 
-			if (nextNode) {
-				const aiVector3D& nextPos = nextNode->positions[0];
-				const aiQuaternion& nextRot = nextNode->rotations[0];
+			if (nextAnimationNode) {
+				uint nextAnimationDuration = nextAnimationAnimation->duration;
+				uint nextAnimationTime = nextAnimationInstance->time;
+				uint nextAnimationNumPositions = nextAnimationNode->numPositions;
+				uint nextAnimationNumRotations = nextAnimationNode->numRotations;
+
+				if (nextAnimationTime > nextAnimationDuration) {
+					if (nextAnimationInstance->loop) {
+						nextAnimationInstance->time -= nextAnimationDuration;
+						nextAnimationTime = nextAnimationInstance->time;
+					}
+					else {
+						nextAnimationTime = nextAnimationDuration;
+					}
+				}
+
+				float nextAnimationPosKey = float(nextAnimationTime * (nextAnimationNumPositions - 1)) / nextAnimationDuration;
+				float nextAnimationRotKey = float(nextAnimationTime * (nextAnimationNumRotations - 1)) / nextAnimationDuration;
+
+				uint nextAnimationPositionID = uint(nextAnimationPosKey);
+				uint nextAnimationRotationID = uint(nextAnimationRotKey);
+
+				uint nextAnimationNextPositionID = (nextAnimationPositionID + 1) % nextAnimationNumPositions;
+				uint nextAnimationNextRotationID = (nextAnimationRotationID + 1) % nextAnimationNumRotations;
+
+				float nextAnimationPosLambda = nextAnimationPosKey - float(nextAnimationPositionID);
+				float nextAnimationRotLambda = nextAnimationRotKey - float(nextAnimationRotationID);
+
+				const aiVector3D& nextAnimationPos = InterpolateVector3D(
+					nextAnimationNode->positions[nextAnimationPositionID], 
+					nextAnimationNode->positions[nextAnimationNextPositionID],
+					nextAnimationPosLambda
+				);
+
+				const aiQuaternion& nextAnimationRot = InterpolateQuaternion(
+					nextAnimationNode->rotations[nextAnimationRotationID],
+					nextAnimationNode->rotations[nextAnimationNextRotationID], 
+					nextAnimationRotLambda);
 
 				float blendLambda = float(instance->blendTime) / instance->blendDuration;
 
-				aiVector3D& finalPos = InterpolateVector3D(pos, nextPos, blendLambda);
-				aiQuaternion& finalRot = InterpolateQuaternion(rot, nextRot, blendLambda);
+				aiVector3D& finalPos = InterpolateVector3D(pos, nextAnimationPos, blendLambda);
+				aiQuaternion& finalRot = InterpolateQuaternion(rot, nextAnimationRot, blendLambda);
 
 				pos = finalPos;
 				rot = finalRot;

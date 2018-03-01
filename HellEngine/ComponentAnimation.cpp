@@ -19,14 +19,8 @@ ComponentAnimation::~ComponentAnimation()
 
 void ComponentAnimation::Update()
 {
-	if (App->input->GetKey((SDL_SCANCODE_P)) == KeyState::KEY_DOWN)
-	{
-		App->animation->BlendTo(instanceID, "runforwards", 500);
-	}
-
 	if (instanceID != -1)
 	{
-
 		std::stack<GameObject*> stack;
 
 		GameObject* go = gameObject;
@@ -86,9 +80,9 @@ void ComponentAnimation::OnEditor()
 		if (ImGui::Button("Apply"))
 		{
 			if (instanceID != -1)
-				UnsetAnimation();
-
-			SetAnimation();
+				App->animation->BlendTo(instanceID, animationName, 2000);
+			else
+				SetAnimation();
 		}
 
 		if (ImGui::Checkbox("Loop", &loop)) {
