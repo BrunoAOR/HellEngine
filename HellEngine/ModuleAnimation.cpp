@@ -9,7 +9,6 @@
 
 ModuleAnimation::ModuleAnimation()
 {
-	Load("Idle", "assets/models/ArmyPilot/Animations/ArmyPilot_Idle.fbx");
 }
 
 ModuleAnimation::~ModuleAnimation()
@@ -63,6 +62,8 @@ bool ModuleAnimation::Load(const char * name, const char * file)
 
 		return true;
 	}
+
+	LOGGER("File %s not found", file);
 
 	aiReleaseImport(assimpScene);
 
