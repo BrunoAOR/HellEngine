@@ -19,12 +19,13 @@ ComponentAnimation::~ComponentAnimation()
 
 void ComponentAnimation::Update()
 {
-	if (App->input->GetKey((SDL_SCANCODE_P)) == KeyState::KEY_DOWN) {
-		//App->animation->BlendTo(instanceID, "runforwards", 500);
+	if (App->input->GetKey((SDL_SCANCODE_P)) == KeyState::KEY_DOWN)
+	{
+		App->animation->BlendTo(instanceID, "runforwards", 500);
 	}
 
-
-	if (instanceID >= 0) {
+	if (instanceID != -1)
+	{
 
 		std::stack<GameObject*> stack;
 
@@ -32,20 +33,24 @@ void ComponentAnimation::Update()
 
 		stack.push(go);
 
-		while (!stack.empty()) {
+		while (!stack.empty())
+		{
 			go = stack.top();
 			stack.pop();
 
 			ComponentTransform* transform = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM);
+			assert(transform);
 			float3 position = transform->GetPosition();
 			Quat rotation = transform->GetRotationQuat();
 
-			App->animation->GetTransform(instanceID, go->name.c_str(), position, rotation);
+			if (App->animation->GetTransform(instanceID, go->name.c_str(), position, rotation))
+			{
+				transform->SetPosition(position.x, position.y, position.z);
+				transform->SetRotation(rotation);
+			}
 
-			transform->SetPosition(position.x, position.y, position.z);
-			transform->SetRotation(rotation);
-
-			for (GameObject* child : go->GetChildren()) {
+			for (GameObject* child : go->GetChildren())
+			{
 				stack.push(child);
 			}
 		}
@@ -55,6 +60,8 @@ void ComponentAnimation::Update()
 void ComponentAnimation::SetAnimation()
 {
 	instanceID = App->animation->Play(animationName, loop);
+	if (instanceID != -1)
+		App->animation->ModifyAnimationActive(instanceID, isActive);
 }
 
 void ComponentAnimation::UnsetAnimation()
@@ -70,22 +77,23 @@ void ComponentAnimation::OnEditor()
 		if (OnEditorDeleteComponent())
 			return;
 
-		if (ImGui::Checkbox("Active", &isActive)) {
-			if (!isActive)
-				UnsetAnimation();
-			else
-				SetAnimation();
-		}
+		if (ImGui::Checkbox("Active", &isActive) && instanceID != -1)
+			App->animation->ModifyAnimationActive(instanceID, isActive);
+
 
 		ImGui::InputText("Animation name", animationName, 256);
 
 		if (ImGui::Button("Apply"))
 		{
-			if (isActive)
-				SetAnimation();
+			if (instanceID != -1)
+				UnsetAnimation();
+
+			SetAnimation();
 		}
 
-		ImGui::Checkbox("Loop", &loop);
+		if (ImGui::Checkbox("Loop", &loop)) {
+			App->animation->ModifyAnimationLoop(instanceID, loop);
+		}
 
 	}
 }

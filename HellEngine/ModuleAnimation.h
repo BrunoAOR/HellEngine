@@ -1,15 +1,15 @@
 #ifndef __H_MODULE_ANIMATION__
 #define __H_MODULE_ANIMATION__
 
-#include <list>
 #include <map>
+#include <stack>
 #include "Assimp/include/assimp/cimport.h"
 #include "Module.h"
 #include "globals.h"
 
 struct LessString
 {
-	bool operator() (char const *a, char const *b) const
+	bool operator() (const char* a, const char* b) const
 	{
 		return std::strcmp(a, b) < 0;
 	}
@@ -38,6 +38,8 @@ struct AnimationInstance {
 	uint time = 0;
 	bool loop = true;
 
+	bool active = true;
+
 	AnimationInstance* next = nullptr;
 	uint blendDuration = 0;
 	uint blendTime = 0;
@@ -47,7 +49,7 @@ class ModuleAnimation : public Module {
 
 	std::map<const char*, Animation*, LessString> animations;
 	std::vector<AnimationInstance*> instances;
-	std::list<uint> holes;
+	std::stack<uint> holes;
 
 public:
 
@@ -63,6 +65,8 @@ public:
 	void BlendTo(uint id, const char* name, uint blendTime);
 
 	void DeleteOldInstance(AnimationInstance* instance);
+	void ModifyAnimationLoop(uint instanceID, bool loop);
+	void ModifyAnimationActive(uint instanceID, bool active);
 
 	bool GetTransform(uint id, const char* channel, float3& position, Quat& rotation) const;
 
