@@ -9,6 +9,7 @@
 
 ModuleAnimation::ModuleAnimation()
 {
+	Load("idle", "assets/models/armypilot/animations/armypilot_idle.fbx");
 }
 
 ModuleAnimation::~ModuleAnimation()
@@ -55,7 +56,10 @@ bool ModuleAnimation::Load(const char * name, const char * file)
 				a->channels.insert(std::make_pair(channelName, node));
 			}
 
-			animations.insert(std::make_pair(name, a));
+			char* animationName = new char[256];
+			strcpy_s(animationName, 256, name);
+
+			animations.insert(std::make_pair(animationName, a));
 		}
 
 		aiReleaseImport(assimpScene);
@@ -74,11 +78,13 @@ bool ModuleAnimation::CleanUp()
 {
 	for (std::map<const char*, Animation*>::iterator it = animations.begin(); it != animations.end(); ++it) {
 		for (std::map<const char*, AnimationNode*>::iterator it2 = (*it).second->channels.begin(); it2 != (*it).second->channels.end(); ++it2) {
+			delete it2->first;
 			delete it2->second->positions;
 			delete it2->second->rotations;
 			delete it2->second;
 		}
 
+		delete it->first;
 		delete it->second;
 	}
 
@@ -128,7 +134,6 @@ void ModuleAnimation::Stop(uint id)
 	delete instances.at(id);
 	instances.at(id) = nullptr;
 	holes.push_back(id);
-
 }
 
 bool ModuleAnimation::GetTransform(uint id, const char * channel, float3 & position, Quat & rotation) const

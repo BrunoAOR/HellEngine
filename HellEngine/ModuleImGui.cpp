@@ -346,7 +346,8 @@ void ModuleImGui::ShowAnimationWindow(float mainMenuBarHeight, bool * pOpen)
 	ImGui::InputText("Animation path", animationPath, 256); 
 	ImGui::InputText("Animation name", animationName, 256);
 
-	if (ImGui::Button("Load")) {
+	if (ImGui::Button("Load")) {	
+
 		loadedCorrectly = App->animation->Load(animationName, animationPath);
 		loadMessage = true;
 	}

@@ -5,6 +5,7 @@
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "GameObject.h"
+#include "ModuleInput.h"
 
 ComponentAnimation::ComponentAnimation(GameObject * owner) : Component(owner)
 {
@@ -18,6 +19,12 @@ ComponentAnimation::~ComponentAnimation()
 
 void ComponentAnimation::Update()
 {
+	if (App->input->GetKey((SDL_SCANCODE_P)) == KeyState::KEY_DOWN) {
+		App->animation->Stop(instanceID);
+		instanceID = App->animation->Play("runforwards");
+	}
+
+
 	if (instanceID >= 0) {
 
 		std::stack<GameObject*> stack;
