@@ -58,7 +58,7 @@ public:
 	bool CleanUp();
 	UpdateStatus Update();
 
-	uint Play(const char* name, bool loop = true);
+	int Play(const char* name, bool loop = true);
 	void Stop(uint id);
 	void BlendTo(uint id, const char* name, uint blendTime);
 

@@ -21,7 +21,8 @@ public:
 
 	virtual void Update() override;
 
-	void SetAnimation(const char* name, bool loop = true);
+	void SetAnimation();
+	void UnsetAnimation();
 
 	virtual void OnEditor() override;
 
@@ -29,8 +30,9 @@ public:
 	virtual int MaxCountInGameObject() override;
 private:
 
-	const char* animationName;
 	int instanceID = -1;
+	char animationName[256] = "";
+	bool loop = true;
 };
 
 #endif // !__H_COMPONENT_ANIMATION__

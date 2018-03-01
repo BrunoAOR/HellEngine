@@ -1,4 +1,5 @@
 #include <stack>
+#include "ImGui/imgui.h"
 #include "Application.h"
 #include "ComponentAnimation.h"
 #include "ComponentTransform.h"
@@ -9,7 +10,6 @@ ComponentAnimation::ComponentAnimation(GameObject * owner) : Component(owner)
 {
 	type = ComponentType::ANIMATION;
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
-	SetAnimation("Idle");
 }
 
 ComponentAnimation::~ComponentAnimation()
@@ -34,7 +34,7 @@ void ComponentAnimation::Update()
 			float3 position = transform->GetPosition();
 			Quat rotation = transform->GetRotationQuat();
 
-			App->animation->GetTransform(instanceID, go->name.c_str(), position, rotation);			
+			App->animation->GetTransform(instanceID, go->name.c_str(), position, rotation);
 
 			transform->SetPosition(position.x, position.y, position.z);
 			transform->SetRotation(rotation);
@@ -46,14 +46,42 @@ void ComponentAnimation::Update()
 	}
 }
 
-void ComponentAnimation::SetAnimation(const char * name, bool loop)
+void ComponentAnimation::SetAnimation()
 {
-	animationName = name;
-	instanceID = App->animation->Play(name, loop);
+	instanceID = App->animation->Play(animationName, loop);
+}
+
+void ComponentAnimation::UnsetAnimation()
+{
+	App->animation->Stop(instanceID);
+	instanceID = -1;
 }
 
 void ComponentAnimation::OnEditor()
 {
+	if (ImGui::CollapsingHeader(editorInfo.idLabel.c_str()))
+	{
+		if (OnEditorDeleteComponent())
+			return;
+
+		if (ImGui::Checkbox("Active", &isActive)) {
+			if (!isActive)
+				UnsetAnimation();
+			else
+				SetAnimation();
+		}
+
+		ImGui::InputText("Animation name", animationName, 256);
+
+		if (ImGui::Button("Apply"))
+		{
+			if (isActive)
+				SetAnimation();
+		}
+
+		ImGui::Checkbox("Loop", &loop);
+
+	}
 }
 
 int ComponentAnimation::MaxCountInGameObject()

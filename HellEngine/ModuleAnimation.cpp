@@ -89,29 +89,37 @@ bool ModuleAnimation::CleanUp()
 
 UpdateStatus ModuleAnimation::Update()
 {
-	for (std::vector<AnimationInstance*>::iterator it = instances.begin(); it != instances.end(); ++it)
-		(*it)->time += App->time->DeltaTimeMS();
+	for (std::vector<AnimationInstance*>::iterator it = instances.begin(); it != instances.end(); ++it) {
+		if (*it) {
+			(*it)->time += App->time->DeltaTimeMS();
+		}
+	}
 
 	return UpdateStatus::UPDATE_CONTINUE;
 }
 
 
-uint ModuleAnimation::Play(const char * name, bool loop)
+int ModuleAnimation::Play(const char * name, bool loop)
 {
-	Animation* anim = animations.at(name);
+	if (animations.count(name) > 0) {
+		Animation* anim = animations.at(name);
 
-	AnimationInstance* instance = new AnimationInstance{ anim, 0, loop, nullptr, 0, 0 };
+		AnimationInstance* instance = new AnimationInstance{ anim, 0, loop, nullptr, 0, 0 };
 
-	if (holes.size() == 0) {
-		instances.push_back(instance);
-		return instances.size() - 1;
+		if (holes.size() == 0) {
+			instances.push_back(instance);
+			return instances.size() - 1;
+		}
+		else {
+			uint id = holes.back();
+			holes.pop_back();
+			instances.at(id) = instance;
+			return id;
+		}
 	}
-	else {
-		uint id = holes.back();
-		holes.pop_back();
-		instances.at(id) = instance;
-		return id;
-	}
+
+	LOGGER("Animation with name %s not found", name);
+	return -1;
 }
 
 void ModuleAnimation::Stop(uint id)
