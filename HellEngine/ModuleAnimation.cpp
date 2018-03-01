@@ -99,6 +99,12 @@ UpdateStatus ModuleAnimation::Update()
 	for (std::vector<AnimationInstance*>::iterator it = instances.begin(); it != instances.end(); ++it) {
 		if (*it) {
 			(*it)->time += App->time->DeltaTimeMS();
+			if ((*it)->next) {
+				(*it)->blendTime += App->time->DeltaTimeMS();
+				if ((*it)->blendTime >= (*it)->blendDuration)
+					DeleteOldInstance(*it);
+
+			}
 		}
 	}
 
@@ -136,6 +142,32 @@ void ModuleAnimation::Stop(uint id)
 	holes.push_back(id);
 }
 
+void ModuleAnimation::BlendTo(uint id, const char * name, uint blendTime)
+{
+	AnimationInstance* instance = instances.at(id);
+
+	if (animations.count(name) > 0) {
+		Animation* anim = animations.at(name);
+
+		AnimationInstance* nextInstance = new AnimationInstance{ anim, 0, instance->loop, nullptr, 0, 0 };
+
+		instance->next = nextInstance;
+		instance->blendDuration = blendTime;
+	}
+
+}
+
+void ModuleAnimation::DeleteOldInstance(AnimationInstance * instance)
+{
+	instance->anim = instance->next->anim;
+	instance->time = instance->next->time;
+	instance->loop = instance->next->loop;
+	delete instance->next;
+	instance->next = nullptr;
+	instance->blendDuration = 0;
+	instance->blendTime = 0;
+}
+
 bool ModuleAnimation::GetTransform(uint id, const char * channel, float3 & position, Quat & rotation) const
 {
 	AnimationInstance* instance = instances.at(id);
@@ -144,15 +176,6 @@ bool ModuleAnimation::GetTransform(uint id, const char * channel, float3 & posit
 
 	if (animation->channels.count(channel))
 		node = animation->channels.at(channel);
-
-	/*
-	for (uint i = 0; i < animation->numChannels; i++) {
-		if (strcmp(animation->channels[i].name, channel) == 0) {
-			node = &animation->channels[i];
-			break;
-		}
-	}
-	*/
 
 	if (node) {
 		uint duration = animation->duration;
@@ -177,13 +200,35 @@ bool ModuleAnimation::GetTransform(uint id, const char * channel, float3 & posit
 		uint rotationID = uint(rotKey);
 
 		uint nextPositionID = (positionID + 1) % numPositions;
-		uint nextRotationID = (positionID + 1) % numPositions;
+		uint nextRotationID = (rotationID + 1) % numRotations;
 
 		float posLambda = posKey - float(positionID);
 		float rotLambda = rotKey - float(rotationID);
 
-		const aiVector3D& pos = InterpolateVector3D(node->positions[positionID], node->positions[nextPositionID], posLambda);
-		const aiQuaternion& rot = InterpolateQuaternion(node->rotations[rotationID], node->rotations[nextRotationID], rotLambda);
+		aiVector3D& pos = InterpolateVector3D(node->positions[positionID], node->positions[nextPositionID], posLambda);
+		aiQuaternion& rot = InterpolateQuaternion(node->rotations[rotationID], node->rotations[nextRotationID], rotLambda);
+
+		if (instance->next && instance->blendTime < instance->blendDuration) {
+			AnimationInstance* nextInstance = instance->next;
+			Animation* nextAnimation = nextInstance->anim;
+			AnimationNode* nextNode = nullptr;
+
+			if (nextAnimation->channels.count(channel))
+				nextNode = nextAnimation->channels.at(channel);
+
+			if (nextNode) {
+				const aiVector3D& nextPos = nextNode->positions[0];
+				const aiQuaternion& nextRot = nextNode->rotations[0];
+
+				float blendLambda = float(instance->blendTime) / instance->blendDuration;
+				
+				aiVector3D& finalPos = InterpolateVector3D(pos, nextPos, blendLambda);
+				aiQuaternion& finalRot = InterpolateQuaternion(rot, nextRot, blendLambda);
+
+				pos = finalPos;
+				rot = finalRot;
+			}
+		}
 
 		position.x = (float)pos.x;
 		position.y = (float)pos.y;

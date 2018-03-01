@@ -20,8 +20,7 @@ ComponentAnimation::~ComponentAnimation()
 void ComponentAnimation::Update()
 {
 	if (App->input->GetKey((SDL_SCANCODE_P)) == KeyState::KEY_DOWN) {
-		App->animation->Stop(instanceID);
-		instanceID = App->animation->Play("runforwards");
+		//App->animation->BlendTo(instanceID, "runforwards", 500);
 	}
 
 

@@ -62,6 +62,8 @@ public:
 	void Stop(uint id);
 	void BlendTo(uint id, const char* name, uint blendTime);
 
+	void DeleteOldInstance(AnimationInstance* instance);
+
 	bool GetTransform(uint id, const char* channel, float3& position, Quat& rotation) const;
 
 private:
