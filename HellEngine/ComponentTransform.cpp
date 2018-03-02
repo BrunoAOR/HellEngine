@@ -133,8 +133,36 @@ bool ComponentTransform::GetIsStatic()
 
 void ComponentTransform::SetIsStatic(bool isStatic)
 {
-	this->isStatic = isStatic;
-	App->scene->ChangeStaticStatus(this, isStatic);
+	std::stack<GameObject*> stack;
+	stack.push(gameObject);
+
+	GameObject* go;
+	while (!stack.empty())
+	{
+		go = stack.top();
+		stack.pop();
+
+		ComponentTransform* transform = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM);
+		if (transform)
+		{
+			transform->isStatic = isStatic;
+			App->scene->ChangeStaticStatus(transform, isStatic);
+		}
+
+		/* If setting a transform to static, all the parent hierarchy is also made static*/
+		if (isStatic)
+		{
+			GameObject* parent = go->GetParent();
+			if (parent)
+				stack.push(parent);
+		}
+		/* If setting a transform to NON-static, all the child hierarchy is also made NON-static*/
+		else
+		{
+			for (GameObject* child : go->GetChildren())
+				stack.push(child);
+		}
+	}
 }
 
 float3 ComponentTransform::GetPosition()
