@@ -256,8 +256,8 @@ int ComponentMaterial::MaxCountInGameObject()
 
 void ComponentMaterial::OnEditorMaterialConfiguration()
 {
-	static const std::string label = std::string("Material setup##MatSetup") + std::to_string(editorInfo.id);
-	if (ImGui::TreeNode(label.c_str()))
+	static const std::string baseLabel = std::string("Material setup##MatSetup");
+	if (ImGui::TreeNode((baseLabel + std::to_string(editorInfo.id)).c_str()))
 	{
 		if (ImGui::Button("Use defaults"))
 			SetDefaultMaterialConfiguration();
@@ -277,8 +277,8 @@ void ComponentMaterial::OnEditorMaterialConfiguration()
 
 void ComponentMaterial::OnEditorTextureInformation()
 {
-	static const std::string label = std::string("Textures information##TextureInfo") + std::to_string(editorInfo.id);
-	if (ImGui::TreeNode(label.c_str()))
+	static const std::string baseLabel = std::string("Textures information##TextureInfo");
+	if (ImGui::TreeNode((baseLabel + std::to_string(editorInfo.id)).c_str()))
 	{
 		uint w = textureInfo.width;
 		uint h = textureInfo.height;
@@ -329,8 +329,8 @@ void ComponentMaterial::OnEditorTextureConfiguration()
 	static bool changed = false;
 	static char* minificationOptions;
 
-	static const std::string label = std::string("Textures configuration##TextureConfig") + std::to_string(editorInfo.id);
-	if (ImGui::TreeNode(label.c_str()))
+	static const std::string baseLabel = std::string("Textures configuration##TextureConfig");
+	if (ImGui::TreeNode((baseLabel + std::to_string(editorInfo.id)).c_str()))
 	{
 		if (ImGui::Combo("Wrap mode", &textureConfiguration.wrapMode, "GL_REPEAT\0GL_MIRRORED_REPEAT\0GL_CLAMP_TO_EDGE\0GL_CLAMP\0\0"))
 			changed = true;
@@ -364,8 +364,8 @@ void ComponentMaterial::OnEditorTextureConfiguration()
 
 void ComponentMaterial::OnEditorShaderOptions()
 {
-	static const std::string label = std::string("Shader options##ShaderOptions") + std::to_string(editorInfo.id);
-	if (ImGui::TreeNode(label.c_str()))
+	static const std::string baseLabel = std::string("Shader options##ShaderOptions");
+	if (ImGui::TreeNode((baseLabel + std::to_string(editorInfo.id)).c_str()))
 	{
 		if (publicUniforms.size() == 0)
 		{
