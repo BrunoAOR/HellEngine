@@ -229,9 +229,10 @@ void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 		if (t != nullptr) {
 			t->boundingBox.SetNegativeInfinity();
 
-			if (m != nullptr && m->activeModelInfoChanged) {
+			if (m != nullptr && activeModelInfoChanged) {
 				BROFILER_CATEGORY("ComponentTransform::EncloseNegative", Profiler::Color::PapayaWhip);
 				EncloseBoundingBox(t, m);				
+				activeModelInfoChanged = false;
 			}
 
 			BROFILER_CATEGORY("ComponentTransform::TransformBB", Profiler::Color::PapayaWhip);

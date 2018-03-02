@@ -59,7 +59,9 @@ bool ComponentMesh::SetActiveModelInfo(int index)
 
 	activeModelInfo = index;
 	UpdateBoundingBox();
-	activeModelInfoChanged = true;
+	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
+	assert(transform);
+	transform->activeModelInfoChanged = true;
 	return true;
 }
 
@@ -67,7 +69,9 @@ void ComponentMesh::SetCustomModel(const ModelInfo& modelInfo)
 {
 	customModelInfo = modelInfo;
 	activeModelInfo = 2;
-	activeModelInfoChanged = true;
+	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
+	assert(transform);
+	transform->activeModelInfoChanged = true;
 	UpdateBoundingBox();
 }
 

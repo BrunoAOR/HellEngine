@@ -100,16 +100,12 @@ void ComponentMaterial::Update()
 				float* modelMatrix = transform->GetModelMatrix();
 
 				BROFILER_CATEGORY("ComponentMaterial::GetVao", Profiler::Color::Gold);
-				const ModelInfo* modelInfo2 = mesh->GetActiveModelInfo();
-				/*if (mesh->activeModelInfoChanged) {
-					modelInfo = mesh->GetActiveModelInfo();
-					mesh->activeModelInfoChanged = false;
-				}*/
+				const ModelInfo* modelInfo = mesh->GetActiveModelInfo();
 				BROFILER_CATEGORY("ComponentMaterial::ValidVao", Profiler::Color::Gold);
-				if (modelInfo2 && modelInfo2->vaoInfosIndexes.size() > 0)
+				if (modelInfo && modelInfo->vaoInfosIndexes.size() > 0)
 				{
 					BROFILER_CATEGORY("ComponentMaterial::DrawingCall", Profiler::Color::Gold);
-					DrawElements(modelMatrix, modelInfo2);
+					DrawElements(modelMatrix, modelInfo);
 				}
 			}
 		}

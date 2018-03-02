@@ -51,6 +51,10 @@ public:
     /* Aplies the transform from the Guizmo */
     void ApplyWorldTransformationMatrix(const float4x4& worldTransformationMatrix, bool excludePosition = false, bool excludeRotation = false, bool excludeScale = false);
 
+public:
+
+	bool activeModelInfoChanged = false;
+
 private:
 
 	float4x4& UpdateLocalModelMatrix();
