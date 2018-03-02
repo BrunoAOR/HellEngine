@@ -100,15 +100,16 @@ void ComponentMaterial::Update()
 				float* modelMatrix = transform->GetModelMatrix();
 
 				BROFILER_CATEGORY("ComponentMaterial::GetVao", Profiler::Color::Gold);
-				if (mesh->activeModelInfoChanged) {
+				const ModelInfo* modelInfo2 = mesh->GetActiveModelInfo();
+				/*if (mesh->activeModelInfoChanged) {
 					modelInfo = mesh->GetActiveModelInfo();
 					mesh->activeModelInfoChanged = false;
-				}
+				}*/
 				BROFILER_CATEGORY("ComponentMaterial::ValidVao", Profiler::Color::Gold);
-				if (modelInfo && modelInfo->vaoInfosIndexes.size() > 0)
+				if (modelInfo2 && modelInfo2->vaoInfosIndexes.size() > 0)
 				{
 					BROFILER_CATEGORY("ComponentMaterial::DrawingCall", Profiler::Color::Gold);
-					DrawElements(modelMatrix, modelInfo);
+					DrawElements(modelMatrix, modelInfo2);
 				}
 			}
 		}
@@ -250,7 +251,7 @@ void ComponentMaterial::OnEditor()
 
 int ComponentMaterial::MaxCountInGameObject()
 {
-	return 1;
+	return -1;
 }
 
 void ComponentMaterial::OnEditorMaterialConfiguration()
@@ -416,22 +417,34 @@ bool ComponentMaterial::DrawElements(float * modelMatrix, const ModelInfo* model
 		glUniformMatrix4fv(privateUniforms["projection"], 1, GL_FALSE, App->editorCamera->camera->GetProjectionMatrix());
 		UpdatePublicUniforms();
 
-		for (unsigned int vaoInfoIndex : modelInfo->vaoInfosIndexes)
+		if (modelInfoVaoIndex >= 0 && modelInfoVaoIndex < (int)modelInfo->vaoInfosIndexes.size())
 		{
+			unsigned int vaoInfoIndex = modelInfo->vaoInfosIndexes.at(modelInfoVaoIndex);
 			const VaoInfo* vaoInfo = App->scene->meshes.at(vaoInfoIndex);
-
-			glBindTexture(GL_TEXTURE_2D, textureBufferId);
-			glBindVertexArray(vaoInfo->vao);
-			glDrawElements(GL_TRIANGLES, vaoInfo->elementsCount, GL_UNSIGNED_INT, nullptr);
-			glBindVertexArray(GL_NONE);
-			glBindTexture(GL_TEXTURE_2D, 0);
+			DrawVaoInfo(vaoInfo);
 		}
-
+		else if (modelInfoVaoIndex == -1)
+		{
+			for (unsigned int vaoInfoIndex : modelInfo->vaoInfosIndexes)
+			{
+				const VaoInfo* vaoInfo = App->scene->meshes.at(vaoInfoIndex);
+				DrawVaoInfo(vaoInfo);
+			}
+		}
 
 		shader->Deactivate();
 		return true;
 	}
 	return false;
+}
+
+void ComponentMaterial::DrawVaoInfo(const VaoInfo* vaoInfo)
+{
+	glBindTexture(GL_TEXTURE_2D, textureBufferId);
+	glBindVertexArray(vaoInfo->vao);
+	glDrawElements(GL_TRIANGLES, vaoInfo->elementsCount, GL_UNSIGNED_INT, nullptr);
+	glBindVertexArray(GL_NONE);
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 uint ComponentMaterial::CreateCheckeredTexture()

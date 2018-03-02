@@ -69,24 +69,29 @@ void SceneLoader::LoadNode(const aiNode* node, GameObject* parent)
 	/* Add Material and Mesh if the node has mesh */
 	if (node->mNumMeshes > 0)
 	{
-		ComponentMaterial* material = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
-		material->SetDefaultMaterialConfiguration();
-		
 		char* fullPath = new char[256];
-		/* NOTE: A GameObject will only have 1 texture in its ComponentMaterial. This texture is extracted from the FIRST sub mesh in the assimp aiNode */
-		unsigned int materialIndex = assimpScene->mMeshes[node->mMeshes[0]]->mMaterialIndex;
-		GetTextureFullPath(materialIndex, fullPath);
-		material->SetTexturePath(fullPath);
-		delete[] fullPath;
+		
+		
 
-		material->Apply();
-
+		/* NOTE: A GameObject will have as many materials as the number of sub-meshes (VaoInfo) contained in the aiNode (-> stored in ModelInfo)
+		Each material will identify the vaoInfo to draw by an index stored in ComponentMaterial:: */
 		ModelInfo modelInfo;
 		for (unsigned int i = 0; i < node->mNumMeshes; ++i)
 		{
 			unsigned int sceneMeshIndex = node->mMeshes[i];
 			modelInfo.vaoInfosIndexes.push_back(sceneMeshIndex + moduleSceneMeshesOffset);
+
+			ComponentMaterial* material = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
+			material->SetDefaultMaterialConfiguration();
+			unsigned int materialIndex = assimpScene->mMeshes[sceneMeshIndex]->mMaterialIndex;
+			GetTextureFullPath(materialIndex, fullPath);
+			material->SetTexturePath(fullPath);
+			material->modelInfoVaoIndex = i;
+			material->Apply();
 		}
+
+		delete[] fullPath;
+
 
 		ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
 		mesh->SetCustomModel(modelInfo);
@@ -217,7 +222,7 @@ void SceneLoader::LoadMeshes()
 	App->scene->meshes.reserve(moduleSceneMeshesOffset + assimpScene->mNumMeshes);
 	for (unsigned int i = 0; i < assimpScene->mNumMeshes; ++i)
 	{
-		aiMesh* assimpMesh = assimpScene->mMeshes[i];
+		const aiMesh* assimpMesh = assimpScene->mMeshes[i];
 		VaoInfo* vaoInfo = CreateVao(assimpMesh);
 		App->scene->meshes.push_back(vaoInfo);
 	}

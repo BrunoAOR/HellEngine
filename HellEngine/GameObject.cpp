@@ -393,6 +393,10 @@ Component* GameObject::AddComponent(ComponentType type)
 	{
 		if (component->GetType() == type)
 		{
+			/* If the maxCount is -1, that means there's no limit */
+			if (component->MaxCountInGameObject() == -1)
+				break;
+
 			++count;
 			if (count >= component->MaxCountInGameObject())
 			{

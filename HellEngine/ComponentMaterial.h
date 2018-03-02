@@ -14,6 +14,7 @@ class ComponentMesh;
 class ComponentTransform;
 class Shader;
 struct ModelInfo;
+struct VaoInfo;
 
 class ComponentMaterial :
 	public Component
@@ -52,10 +53,16 @@ public:
 	/* Returns the maximum number of times that this particular Type of Component can be added to a GameObject */
 	virtual int MaxCountInGameObject() override;
 
+public:
+	
+	/* Mesh related */
+	int modelInfoVaoIndex = -1;
+
 private:
 
 	/* Draws a certain model using the Material's shader and texture, from a Vertex Array Oject WITH indexes */
 	bool DrawElements(float* modelMatrix, const ModelInfo* modelInfo);
+	void DrawVaoInfo(const VaoInfo* vaoInfo);
 
 	uint CreateCheckeredTexture();
 
