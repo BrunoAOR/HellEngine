@@ -7,6 +7,7 @@
 #include "ImGuizmo/ImGuizmo.h"
 #include "SDL/include/SDL_mouse.h"
 #include "Application.h"
+#include "ComponentAnimation.h"
 #include "ComponentTransform.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleImGui.h"
@@ -78,6 +79,7 @@ UpdateStatus ModuleImGui::Update()
 	static bool shouldQuit = false;
 	static bool showDemoWindow = false;
 	static bool showAbout = false;
+	static bool showAnimationWindow = false;
 	static bool showCameraWindow = false;
 	static bool showOpenGLWindow = false;
 	static bool showTextEditorWindow = false;
@@ -109,6 +111,7 @@ UpdateStatus ModuleImGui::Update()
 
 			ImGui::Separator();
 
+			ImGui::MenuItem("Animation", nullptr, &showAnimationWindow);
 			ImGui::MenuItem("Camera", nullptr, &showCameraWindow);
 			ImGui::MenuItem("OpenGL", nullptr, &showOpenGLWindow);
 
@@ -155,6 +158,10 @@ UpdateStatus ModuleImGui::Update()
 	if (showAbout)
 	{
 		ShowAboutWindow(mainMenuBarHeight, &showAbout);
+	}
+
+	if (showAnimationWindow) {
+		ShowAnimationWindow(mainMenuBarHeight, &showAnimationWindow);
 	}
 
 	if (showCameraWindow)
@@ -322,6 +329,36 @@ void ModuleImGui::ShowEditorCameraWindow(float mainMenuBarHeight, bool* pOpen)
 
 	ImGui::Checkbox("Is Active Camera", &isActiveCamera);
 
+	ImGui::End();
+}
+
+void ModuleImGui::ShowAnimationWindow(float mainMenuBarHeight, bool * pOpen)
+{
+	static bool loadMessage = false;
+	static bool loadedCorrectly = false;
+	static char animationPath[256] = "";
+	static char animationName[256] = "";
+
+	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
+	ImGui::SetNextWindowSize(ImVec2(450, 600));
+	ImGui::Begin("Animation options", pOpen, ImGuiWindowFlags_NoCollapse);
+
+	ImGui::InputText("Animation path", animationPath, 256); 
+	ImGui::InputText("Animation name", animationName, 256);
+
+	if (ImGui::Button("Load")) {	
+
+		loadedCorrectly = App->animation->Load(animationName, animationPath);
+		loadMessage = true;
+	}
+
+	if (loadMessage) {
+		if (loadedCorrectly)
+			ImGui::Text("Animation loaded correctly.");
+		else
+			ImGui::Text("Animation not found.");
+	}
+	
 	ImGui::End();
 }
 

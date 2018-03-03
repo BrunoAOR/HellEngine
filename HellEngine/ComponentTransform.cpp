@@ -187,6 +187,11 @@ float3 ComponentTransform::GetRotationDeg()
 	return float3(RadToDeg(rotationRad.x), RadToDeg(rotationRad.y), RadToDeg(rotationRad.z));
 }
 
+Quat ComponentTransform::GetRotationQuat()
+{
+	return rotation;
+}
+
 AABB ComponentTransform::GetBoundingBox()
 {
 	return boundingBox;
@@ -406,9 +411,14 @@ float4x4& ComponentTransform::GetModelMatrix4x4()
 
 float4x4& ComponentTransform::UpdateLocalModelMatrix()
 {
+	BROFILER_CATEGORY("ModuleScene::Scale", Profiler::Color::PapayaWhip);
 	float4x4 scaleMatrix = float4x4::Scale(scale.x, scale.y, scale.z);
-	float4x4 rotationMatrix = float4x4::FromQuat(rotation);
-	float4x4 translationMatrix = float4x4::Translate(position.x, position.y, position.z);
+	BROFILER_CATEGORY("ModuleScene::Rotation", Profiler::Color::PapayaWhip);
+	//float4x4 rotationMatrix = float4x4::FromQuat(rotation);
+	float4x4 rotationMatrix = float4x4::QuatToRotation(rotation);
+	BROFILER_CATEGORY("ModuleScene::Translation", Profiler::Color::PapayaWhip);
+	float4x4 translationMatrix = float4x4::TranslationToRotation(position.x, position.y, position.z);
+	BROFILER_CATEGORY("ModuleScene::Memcpy", Profiler::Color::PapayaWhip);
 	memcpy_s(localModelMatrix.ptr(), sizeof(float) * 16, (translationMatrix * rotationMatrix * scaleMatrix).Transposed().ptr(), sizeof(float) * 16);
 	return localModelMatrix;
 }

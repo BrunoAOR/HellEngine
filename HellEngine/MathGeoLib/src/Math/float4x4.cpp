@@ -126,6 +126,11 @@ TranslateOp float4x4::Translate(float tx, float ty, float tz)
 	return TranslateOp(tx, ty, tz);
 }
 
+float4x4 float4x4::TranslationToRotation(float x, float y, float z) {
+	float4x4 m(1, 0, 0, x, 0, 1, 0, y, 0, 0, 1, z, 0, 0, 0, 1);
+	return m;
+}
+
 TranslateOp float4x4::Translate(const float3 &offset)
 {
 	return TranslateOp(offset);
@@ -218,6 +223,37 @@ float4x4 float4x4::RandomGeneral(LCG &lcg, float minElem, float maxElem)
 		for(int x = 0; x < 4; ++x)
 			m[y][x] = lcg.Float(minElem, maxElem);
 	return m;
+}
+
+float4x4 float4x4::QuatToRotation(const Quat& q) {
+	float sqw = q.w*q.w;
+	float sqx = q.x*q.x;
+	float sqy = q.y*q.y;
+	float sqz = q.z*q.z;
+
+	float4x4 rotation(identity);
+
+	if (q.IsNormalized()) {
+		rotation[0][0] = (sqx - sqy - sqz + sqw);
+		rotation[1][1] = (-sqx + sqy - sqz + sqw);
+		rotation[2][2] = (-sqx - sqy + sqz + sqw);
+
+		float tmp1 = q.x*q.y;
+		float tmp2 = q.z*q.w;
+		rotation[1][0] = 2.0f * (tmp1 + tmp2);
+		rotation[0][1] = 2.0f * (tmp1 - tmp2);
+
+		tmp1 = q.x*q.z;
+		tmp2 = q.y*q.w;
+		rotation[2][0] = 2.0f * (tmp1 - tmp2);
+		rotation[0][2] = 2.0f * (tmp1 + tmp2);
+		tmp1 = q.y*q.z;
+		tmp2 = q.x*q.w;
+		rotation[2][1] = 2.0f * (tmp1 + tmp2);
+		rotation[1][2] = 2.0f * (tmp1 - tmp2);
+	}
+
+	return rotation;
 }
 
 float4x4 float4x4::FromQuat(const Quat &orientation)

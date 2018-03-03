@@ -5,6 +5,7 @@
 #include "Application.h"
 #include "GameObject.h"
 #include "Component.h"
+#include "ComponentAnimation.h"
 #include "ComponentCamera.h"
 #include "ComponentMaterial.h"
 #include "ComponentMesh.h"
@@ -374,6 +375,7 @@ std::vector<Component*> GameObject::GetComponents(ComponentType type)
 
 Component * GameObject::GetComponent(ComponentType type)
 {
+	BROFILER_CATEGORY("ModuleScene::GetComponent", Profiler::Color::PapayaWhip);
 	for (std::vector<Component*>::iterator it = components.begin(); it != components.end(); ++it)
 	{
 		if ((*it)->GetType() == type)
@@ -422,6 +424,8 @@ Component* GameObject::AddComponent(ComponentType type)
 	case ComponentType::CAMERA:
 		component = new ComponentCamera(this);
 		break;
+	case ComponentType::ANIMATION:
+		component = new ComponentAnimation(this);
 	}
 
 	if (component != nullptr)

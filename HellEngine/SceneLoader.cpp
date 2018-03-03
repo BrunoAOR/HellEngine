@@ -14,6 +14,9 @@
 #include "SceneLoader.h"
 #include "VaoInfo.h"
 
+/* Temporary */
+#include "ComponentAnimation.h"
+
 SceneLoader::SceneLoader()
 {
 }

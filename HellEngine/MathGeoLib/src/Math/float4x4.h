@@ -156,6 +156,7 @@ public:
 
 	/// Creates a new transformation matrix that translates by the given offset.
 	static TranslateOp Translate(float tx, float ty, float tz);
+	static float4x4 TranslationToRotation(float x, float y, float z);
 	static TranslateOp Translate(const float3 &offset);
 
 	/// Creates a new float4x4 that rotates about one of the principal axes. [indexTitle: RotateX/Y/Z]
@@ -218,6 +219,7 @@ public:
 		const float3 &sourceDirection2, const float3 &targetDirection2);
 
 	/// Creates a new float4x4 that performs the rotation expressed by the given quaternion.
+	static float4x4 QuatToRotation(const Quat& orientation);
 	static float4x4 FromQuat(const Quat &orientation);
 	/** param pointOnAxis If specified, the rotation is performed using this point as the center point. */
 	static float4x4 FromQuat(const Quat &orientation, const float3 &pointOnAxis);
