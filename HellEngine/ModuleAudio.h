@@ -13,10 +13,11 @@ public:
 
 	bool Init();
 	bool CleanUp();
+	UpdateStatus Update();
 
 private:
+	const char * ParseBassErrorCode(const int& bassErrorCode);
 
-	
 };
 
 #endif /* __H_MODULEAUDIO__ */
