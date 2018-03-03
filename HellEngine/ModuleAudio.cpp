@@ -24,6 +24,27 @@ bool ModuleAudio::Init()
 		LOGGER("BASS_Init() error: %s", ParseBassErrorCode(BASS_ErrorGetCode()));
 		ret = false;
 	}
+	else
+	{
+		LOGGER("Using Bass %s", BASSVERSIONTEXT);
+
+		int a, count = 0;
+		BASS_DEVICEINFO info;
+		if (BASS_GetDevice()!=-1) {
+			for (a = 0; BASS_GetDeviceInfo(a, &info); a++)
+			{
+				if (info.flags & BASS_DEVICE_ENABLED)
+				{
+					LOGGER("Audio device detected: %s", info.name);
+				}
+			}
+		}
+		else
+		{
+			LOGGER("No audio device detected");
+		}
+		
+	}
 	return ret;
 }
 
@@ -114,7 +135,9 @@ const char* ModuleAudio::ParseBassErrorCode(const int& bassErrorCode)
 /* Called before quitting */
 bool ModuleAudio::CleanUp()
 {
-	LOGGER("Freeing sound FX, closing Mixer and Audio subsystem");
+	LOGGER("Freeing Bass system");
+
+	BASS_Free();
 
 	return true;
 }
