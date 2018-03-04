@@ -45,6 +45,9 @@ private:
 	/* Draws the Animation loading window */
 	void ShowAnimationWindow(float mainMenuBarHeight, bool* pOpen);
 
+	/* Draws the Audio loading window */
+	void ShowAudioWindow(float mainMenuBarHeight, bool* pOpen);
+
 	/* Draws the OpenGL options window */
 	void ShowOpenGLWindow(float mainMenuBarHeight, bool* pOpen);
 

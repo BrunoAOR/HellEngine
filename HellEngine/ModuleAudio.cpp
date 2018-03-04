@@ -3,6 +3,7 @@
 #include "globals.h"
 #include <string>
 #include "Bass/include/bass.h"
+#include "SDL_mixer/include/SDL_mixer.h"
 
 #pragma comment (lib,"Bass/libx86/bass.lib")
 
@@ -46,6 +47,51 @@ bool ModuleAudio::Init()
 		
 	}
 	return ret;
+}
+
+bool ModuleAudio::Load(const char *audioPath)
+{
+	bool loadIsCorrect;
+	audioInfo = new AudioInfo();
+
+	if (audioPath != nullptr) {
+
+		uint basStreamID = 0;
+		std::string extension = ObtainAudioExtension(audioPath);
+
+		if (extension != " ") {
+
+			if (extension == "ogg")
+			{
+				// OGG files will be streams
+				basStreamID = BASS_StreamCreateFile(FALSE, audioPath, 0, 0, BASS_SAMPLE_LOOP | BASS_STREAM_AUTOFREE);
+				audioInfo->audioFormat = AudioFormat::OGG;
+			}
+			else if (extension == "wav")
+			{
+				basStreamID = BASS_SampleLoad(TRUE, audioPath, 0, 0, 0, 0);
+				audioInfo->audioFormat = AudioFormat::WAV;
+			}
+
+			if (basStreamID != 0)
+			{
+				audioInfo->audioID = basStreamID;
+				loadIsCorrect = true;
+			}
+			else
+			{
+				LOGGER("BASS_StreamCreateFile() error: %s", ParseBassErrorCode(BASS_ErrorGetCode()));
+				loadIsCorrect = false;
+			}
+		}
+		else
+		{
+			LOGGER("Audio file has no valid extension");
+			loadIsCorrect = false;
+		}
+		
+	}
+	return loadIsCorrect;
 }
 
 const char* ModuleAudio::ParseBassErrorCode(const int& bassErrorCode) 
@@ -130,6 +176,21 @@ const char* ModuleAudio::ParseBassErrorCode(const int& bassErrorCode)
 			charErrorCode = "some other mystery problem";
 	}
 	return charErrorCode;
+}
+
+std::string ModuleAudio::ObtainAudioExtension(const char * audioPath)
+{
+	std::string audioFilePath(audioPath);
+	int lastPeriod = 0;
+	lastPeriod = audioFilePath.find_last_of(".");
+
+	std::string audioExtension = " ";
+	if (lastPeriod != 0) {
+		audioExtension = audioFilePath.substr(lastPeriod + 1);
+	}
+
+	return audioExtension;
+
 }
 
 /* Called before quitting */

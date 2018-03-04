@@ -15,6 +15,7 @@
 #include "ModuleRender.h"
 #include "ModuleScene.h"
 #include "ModuleWindow.h"
+#include "ModuleAudio.h"
 #include "globals.h"
 
 ImGuizmo::OPERATION ModuleImGui::mCurrentGizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
@@ -80,6 +81,7 @@ UpdateStatus ModuleImGui::Update()
 	static bool showDemoWindow = false;
 	static bool showAbout = false;
 	static bool showAnimationWindow = false;
+	static bool showAudioWindow = false;
 	static bool showCameraWindow = false;
 	static bool showOpenGLWindow = false;
 	static bool showTextEditorWindow = false;
@@ -112,6 +114,7 @@ UpdateStatus ModuleImGui::Update()
 			ImGui::Separator();
 
 			ImGui::MenuItem("Animation", nullptr, &showAnimationWindow);
+			ImGui::MenuItem("Audio", nullptr, &showAudioWindow);
 			ImGui::MenuItem("Camera", nullptr, &showCameraWindow);
 			ImGui::MenuItem("OpenGL", nullptr, &showOpenGLWindow);
 
@@ -160,8 +163,14 @@ UpdateStatus ModuleImGui::Update()
 		ShowAboutWindow(mainMenuBarHeight, &showAbout);
 	}
 
-	if (showAnimationWindow) {
+	if (showAnimationWindow) 
+	{
 		ShowAnimationWindow(mainMenuBarHeight, &showAnimationWindow);
+	}
+
+	if (showAudioWindow) 
+	{
+		ShowAudioWindow(mainMenuBarHeight, &showAudioWindow);
 	}
 
 	if (showCameraWindow)
@@ -359,6 +368,36 @@ void ModuleImGui::ShowAnimationWindow(float mainMenuBarHeight, bool * pOpen)
 			ImGui::Text("Animation not found.");
 	}
 	
+	ImGui::End();
+}
+
+void ModuleImGui::ShowAudioWindow(float mainMenuBarHeight, bool * pOpen)
+{
+	static bool loadMessage = false;
+	static bool loadedCorrectly = false;
+	static char audioPath[256] = "";
+	static char audioName[256] = "";
+
+	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
+	ImGui::SetNextWindowSize(ImVec2(450, 600));
+	ImGui::Begin("Load audio options", pOpen, ImGuiWindowFlags_NoCollapse);
+
+	ImGui::InputText("Audio path", audioPath, 256);
+	ImGui::InputText("Audio name", audioName, 256);
+
+	if (ImGui::Button("Load")) {
+
+		loadedCorrectly = App->audio->Load(audioPath);
+		loadMessage = true;
+	}
+
+	if (loadMessage) {
+		if (loadedCorrectly)
+			ImGui::Text("Audio loaded correctly.");
+		else
+			ImGui::Text("Audio not found.");
+	}
+
 	ImGui::End();
 }
 
