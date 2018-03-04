@@ -49,33 +49,29 @@ bool ModuleAudio::Init()
 	return ret;
 }
 
-bool ModuleAudio::Load(const char *audioPath)
+bool ModuleAudio::Load(const char *audioPath, ComponentAudioSource* source)
 {
 	bool loadIsCorrect;
-	audioInfo = new AudioInfo();
 
 	if (audioPath != nullptr) {
 
-		uint basStreamID = 0;
+		uint bassID = 0;
 		std::string extension = ObtainAudioExtension(audioPath);
 
 		if (extension != " ") {
 
-			if (extension == "ogg")
+			if (extension == "ogg") //effect
 			{
-				// OGG files will be streams
-				basStreamID = BASS_StreamCreateFile(FALSE, audioPath, 0, 0, BASS_SAMPLE_LOOP | BASS_STREAM_AUTOFREE);
-				audioInfo->audioFormat = AudioFormat::OGG;
+				bassID = BASS_StreamCreateFile(FALSE, audioPath, 0, 0, BASS_SAMPLE_LOOP | BASS_STREAM_AUTOFREE);
 			}
-			else if (extension == "wav")
+			else if (extension == "wav") //music
 			{
-				basStreamID = BASS_SampleLoad(TRUE, audioPath, 0, 0, 0, 0);
-				audioInfo->audioFormat = AudioFormat::WAV;
+				bassID = BASS_SampleLoad(FALSE, audioPath, 0, 0, 7, BASS_SAMPLE_3D || BASS_SAMPLE_OVER_VOL);
+				
 			}
 
-			if (basStreamID != 0)
+			if (bassID != 0)
 			{
-				audioInfo->audioID = basStreamID;
 				loadIsCorrect = true;
 			}
 			else
@@ -203,9 +199,22 @@ bool ModuleAudio::CleanUp()
 	return true;
 }
 
-UpdateStatus ModuleAudio::Update()
+UpdateStatus ModuleAudio::PostUpdate()
 {
+	//starting from the gameobject root, go through the rest of gameObjects and call the listenerUpdate or sourceUpdate if have it
 	return UpdateStatus::UPDATE_CONTINUE;
+}
+
+void ModuleAudio::StoreAudioSource(const ComponentAudioSource & source)
+{
+}
+
+void ModuleAudio::UnloadAudioSource(ComponentAudioSource & source)
+{
+}
+
+void ModuleAudio::UpdateActiveAudioListener(ComponentAudioListener & listener)
+{
 }
 
 

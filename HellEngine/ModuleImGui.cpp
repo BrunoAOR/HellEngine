@@ -387,7 +387,7 @@ void ModuleImGui::ShowAudioWindow(float mainMenuBarHeight, bool * pOpen)
 
 	if (ImGui::Button("Load")) {
 
-		loadedCorrectly = App->audio->Load(audioPath);
+		//loadedCorrectly = App->audio->Load(audioPath);
 		loadMessage = true;
 	}
 
