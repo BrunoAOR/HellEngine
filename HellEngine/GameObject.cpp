@@ -10,6 +10,8 @@
 #include "ComponentMaterial.h"
 #include "ComponentMesh.h"
 #include "ComponentTransform.h"
+#include "ComponentAudioListener.h"
+#include "ComponentAudioSource.h"
 #include "ComponentType.h"
 #include "ModuleScene.h"
 #include "globals.h"
@@ -426,6 +428,13 @@ Component* GameObject::AddComponent(ComponentType type)
 		break;
 	case ComponentType::ANIMATION:
 		component = new ComponentAnimation(this);
+		break;
+	case ComponentType::AUDIOSOURCE:
+		component = new ComponentAudioSource(this);
+		break;
+	case ComponentType::AUDIOLISTENER:
+		component = new ComponentAudioListener(this);
+		break;
 	}
 
 	if (component != nullptr)

@@ -18,8 +18,8 @@ public:
 	bool CleanUp();
 	UpdateStatus PostUpdate();
 
-	void StoreAudioSource(const ComponentAudioSource &source);
-	void UnloadAudioSource(ComponentAudioSource &source);
+	void StoreAudioSource(ComponentAudioSource *source );
+	void UnloadAudioSource(const ComponentAudioSource &source);
 	void UpdateActiveAudioListener(ComponentAudioListener &listener);
 
 private:
@@ -27,7 +27,7 @@ private:
 	std::string ObtainAudioExtension(const char *audioPath);
 
 	std::vector<ComponentAudioSource*> storedAudioSources;
-	ComponentAudioListener* activeAudioListener;
+	ComponentAudioListener* activeAudioListener = nullptr;
 
 };
 

@@ -66,13 +66,20 @@ bool ModuleAudio::Load(const char *audioPath, ComponentAudioSource* source)
 			}
 			else if (extension == "wav") //music
 			{
-				bassID = BASS_SampleLoad(FALSE, audioPath, 0, 0, 7, BASS_SAMPLE_3D || BASS_SAMPLE_OVER_VOL);
-				
+				bassID = BASS_SampleLoad(FALSE, audioPath, 0, 0, 7, BASS_SAMPLE_3D || BASS_SAMPLE_OVER_VOL);	
 			}
 
 			if (bassID != 0)
 			{
 				loadIsCorrect = true;
+
+				source->audioInfo->audioID = bassID;
+				source->audioInfo->audioType = extension == "wav" ? AudioType::MUSIC : AudioType::EFFECT;
+
+				HCHANNEL channel = BASS_SampleGetChannel(source->audioInfo->audioID, false);
+				BASS_ChannelPlay(channel, false);
+
+				StoreAudioSource(source);
 			}
 			else
 			{
@@ -205,12 +212,24 @@ UpdateStatus ModuleAudio::PostUpdate()
 	return UpdateStatus::UPDATE_CONTINUE;
 }
 
-void ModuleAudio::StoreAudioSource(const ComponentAudioSource & source)
+void ModuleAudio::StoreAudioSource(ComponentAudioSource *source)
 {
+	storedAudioSources.push_back(source);
 }
 
-void ModuleAudio::UnloadAudioSource(ComponentAudioSource & source)
+void ModuleAudio::UnloadAudioSource(const ComponentAudioSource &source)
 {
+	
+	for (std::vector<ComponentAudioSource*>::iterator it = storedAudioSources.begin(); it != storedAudioSources.end(); ) {
+		if (*it == &source) {
+			//TODO call BASS_ChannelStop if needed
+			it = storedAudioSources.erase(it);
+			break;
+		}
+		else {
+			++it;
+		}
+	}
 }
 
 void ModuleAudio::UpdateActiveAudioListener(ComponentAudioListener & listener)

@@ -11,7 +11,7 @@ struct AudioInfo
 	AudioType audioType;
 };
 
-class ComponentAudioSource : Component
+class ComponentAudioSource : public Component
 {
 public:
 	ComponentAudioSource(GameObject * owner);
@@ -20,7 +20,16 @@ public:
 	virtual void Update() override;
 	virtual void OnEditor() override;
 
+	/* Returns the maximum number of times that this particular Type of Component can be added to a GameObject */
+	virtual int MaxCountInGameObject() override;
+
 	AudioInfo *audioInfo = nullptr;
+private:
+
+	float volume;
+	float pitch;
+	float stereoPan;
+	bool isMusicLoop;
 };
 #endif
 

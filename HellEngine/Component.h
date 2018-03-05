@@ -3,6 +3,7 @@
 
 #include <string>
 class GameObject;
+class Application;
 enum class ComponentType;
 
 class Component
