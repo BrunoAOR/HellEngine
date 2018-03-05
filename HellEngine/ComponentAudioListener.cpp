@@ -17,5 +17,5 @@ void ComponentAudioListener::OnEditor()
 
 int ComponentAudioListener::MaxCountInGameObject()
 {
-	return 0;
+	return 1;
 }

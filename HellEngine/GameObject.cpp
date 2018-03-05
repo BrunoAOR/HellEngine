@@ -433,8 +433,14 @@ Component* GameObject::AddComponent(ComponentType type)
 		component = new ComponentAudioSource(this);
 		break;
 	case ComponentType::AUDIOLISTENER:
-		component = new ComponentAudioListener(this);
-		break;
+		Component * camera = this->GetComponent(ComponentType::CAMERA);
+		if (camera != nullptr) {
+			if (((ComponentCamera*)&camera)->isActiveCamera) {
+				component = new ComponentAudioListener(this);
+			
+			}
+		}
+		break;	
 	}
 
 	if (component != nullptr)
