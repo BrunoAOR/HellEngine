@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "ModuleAudio.h"
+#include "ModuleScene.h"
 #include "globals.h"
 #include <string>
 #include "Bass/include/bass.h"
@@ -208,8 +209,41 @@ bool ModuleAudio::CleanUp()
 
 UpdateStatus ModuleAudio::PostUpdate()
 {
-	//starting from the gameobject root, go through the rest of gameObjects and call the listenerUpdate or sourceUpdate if have it
+	GameObject *goRoot = App->scene->root;
+	UpdateAudio(goRoot);
+	
 	return UpdateStatus::UPDATE_CONTINUE;
+}
+
+void ModuleAudio::UpdateAudio(GameObject *go)
+{
+	//TODO improve this recursive call
+	if (!go->GetChildren().empty())
+	{
+		if (go->GetChildren().size() > 1)
+		{
+			for (std::vector<GameObject*>::iterator it = go->GetChildren().begin(); it != go->GetChildren().end(); it++)
+			{
+				UpdateAudio(*it);
+			}
+		}
+		else {
+			UpdateAudio(go->GetChildren().at(0));
+		}
+
+	}
+	ComponentAudioSource *audioSource = (ComponentAudioSource*)go->GetComponent(ComponentType::AUDIOSOURCE);
+	if (audioSource != nullptr)
+	{
+		UpdateAudioSource(audioSource);
+		return;
+	}
+
+	ComponentAudioListener *audioListener = (ComponentAudioListener*)go->GetComponent(ComponentType::AUDIOLISTENER);
+	if (audioListener != nullptr)
+	{
+		UpdateAudioListener(audioListener);
+	}
 }
 
 void ModuleAudio::StoreAudioSource(ComponentAudioSource *source)
@@ -232,8 +266,40 @@ void ModuleAudio::UnloadAudioSource(const ComponentAudioSource &source)
 	}
 }
 
+
+void ModuleAudio::UpdateAudioSource(ComponentAudioSource * audioSource)
+{
+	switch (audioSource->GetCurrentState())
+	{
+		case AudioState::CURRENTLY_PLAYED:
+			//BASS_ChannelSet3DAttributes
+			//BASS_ChannelSet3DPosition
+		case  AudioState::WAITING_TO_PLAY:
+			//BASS_ChannelPlay
+			break;
+		case AudioState::WAITING_TO_STOP:
+			//BASS_ChannelStop
+			break;
+		}
+}
+
+	void ModuleAudio::UpdateAudioListener(ComponentAudioListener * audioListener)
+	{
+		ComponentTransform *transformAudioListener = (ComponentTransform*)audioListener->gameObject->GetComponent(ComponentType::TRANSFORM);
+		//BASS_Set3DFactors(distance,rollof,doppler);
+
+		//BASS_Set3DPosition(
+		//	(BASS_3DVECTOR*)&transformAudioListener->GetPosition(),
+		//	nullptr, // speed
+		//	// front
+		//    // top);
+	}
+
 void ModuleAudio::UpdateActiveAudioListener(ComponentAudioListener & listener)
 {
+
 }
+
+
 
 

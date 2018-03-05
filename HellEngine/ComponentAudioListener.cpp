@@ -1,4 +1,5 @@
 #include "ComponentAudioListener.h"
+#include "ImGui/imgui.h"
 #include "ComponentType.h"
 
 ComponentAudioListener::ComponentAudioListener(GameObject * owner) : Component(owner)
@@ -11,8 +12,14 @@ ComponentAudioListener::~ComponentAudioListener()
 {
 }
 
+
 void ComponentAudioListener::OnEditor()
 {
+
+	if (ImGui::CollapsingHeader(editorInfo.idLabel.c_str()))
+	{
+		
+	}
 }
 
 int ComponentAudioListener::MaxCountInGameObject()

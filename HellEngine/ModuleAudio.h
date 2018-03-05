@@ -22,6 +22,10 @@ public:
 	void UnloadAudioSource(const ComponentAudioSource &source);
 	void UpdateActiveAudioListener(ComponentAudioListener &listener);
 
+	void UpdateAudio(GameObject *go);
+	void UpdateAudioSource(ComponentAudioSource *audioSource);
+	void UpdateAudioListener(ComponentAudioListener *audioListener);
+
 private:
 	const char * ParseBassErrorCode(const int& bassErrorCode);
 	std::string ObtainAudioExtension(const char *audioPath);
