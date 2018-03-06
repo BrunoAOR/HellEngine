@@ -214,35 +214,37 @@ UpdateStatus ModuleAudio::PostUpdate()
 	return UpdateStatus::UPDATE_CONTINUE;
 }
 
-void ModuleAudio::UpdateAudio(GameObject *go)
+void ModuleAudio::UpdateAudio(GameObject *gameObject)
 {
-	//TODO improve this recursive call
-	if (!go->GetChildren().empty())
-	{
-		if (go->GetChildren().size() > 1)
+	std::stack<GameObject*> stack;
+
+	GameObject* go = gameObject;
+	std::vector<GameObject*> children;
+
+	stack.push(go);
+
+	while (!stack.empty()) {
+		go = stack.top();
+		stack.pop();
+
+		ComponentAudioSource *audioSource = (ComponentAudioSource*)go->GetComponent(ComponentType::AUDIOSOURCE);
+		if (audioSource != nullptr)
 		{
-			for (std::vector<GameObject*>::iterator it = go->GetChildren().begin(); it != go->GetChildren().end(); it++)
-			{
-				UpdateAudio(*it);
-			}
-		}
-		else {
-			UpdateAudio(go->GetChildren().at(0));
+			UpdateAudioSource(audioSource);
+			return;
 		}
 
-	}
-	ComponentAudioSource *audioSource = (ComponentAudioSource*)go->GetComponent(ComponentType::AUDIOSOURCE);
-	if (audioSource != nullptr)
-	{
-		UpdateAudioSource(audioSource);
-		return;
-	}
+		ComponentAudioListener *audioListener = (ComponentAudioListener*)go->GetComponent(ComponentType::AUDIOLISTENER);
+		if (audioListener != nullptr)
+		{
+			UpdateAudioListener(audioListener);
+		}
 
-	ComponentAudioListener *audioListener = (ComponentAudioListener*)go->GetComponent(ComponentType::AUDIOLISTENER);
-	if (audioListener != nullptr)
-	{
-		UpdateAudioListener(audioListener);
-	}
+		for (GameObject* child : go->GetChildren())
+		{
+			stack.push(child);
+		}
+	}	
 }
 
 void ModuleAudio::StoreAudioSource(ComponentAudioSource *source)
@@ -276,6 +278,8 @@ void ModuleAudio::UpdateAudioSource(ComponentAudioSource * audioSource)
 		{
 			case AudioState::CURRENTLY_PLAYED:
 			{
+				BASS_ChannelSetAttribute(audioID, BASS_ATTRIB_VOL, audioSource->GetVolume());
+
 				float3 audioSourcePos;
 				BASS_3DVECTOR audioSourcePosBASS;
 

@@ -40,7 +40,6 @@ void ComponentAudioSource::OnEditor()
 
 		if (ImGui::Button("Load")) 
 		{
-
 			loadedCorrectly = App->audio->Load(audioPath,this);
 			loadMessage = true;
 		}
@@ -59,15 +58,24 @@ void ComponentAudioSource::OnEditor()
 		{
 			//enable Loop with ModuleMusic
 		}
-		ImGui::SliderFloat("Volume", &volume, 0.0f, 1.0f, "%.2f");
+		if (ImGui::SliderFloat("Volume", &volume, 0.0f, 1.0f, "%.2f")) 
+			SetVolume(volume);
+		
 		ImGui::SliderFloat("Stereo/Mono", &stereoMono, 0.0f, 1.0f, "%.2f");
-		ImGui::SliderFloat("Pitch", &pitch, -3.0f, 3.0f, "%.2f");
+		
+		if (ImGui::SliderFloat("Pitch", &pitch, -3.0f, 3.0f, "%.2f"))
+			SetPitch(pitch);
+
 		ImGui::SliderFloat("Stereo Pan", &stereoPan, -1.0f, 1.0f, "%.2f");
 		ImGui::SliderFloat("Reverb Zone", &reverbZone, 0.0f, 1.0f, "%.2f");
 		ImGui::SliderFloat("Doppler", &dopplerLevel, 0.0f, 5.0f, "%.2f");
 		ImGui::Combo("Rolloff", &rollOff, "Logarithmic\0Linear\0");
-		ImGui::InputFloat("Max Distance", &minDistance);
-		ImGui::InputFloat("Max Distance", &maxDistance);
+
+		if (ImGui::InputFloat("Min Distance", &minDistance))
+			SetMinDistance(minDistance);
+
+		if (ImGui::InputFloat("Max Distance", &maxDistance))
+			SetMaxDistance(maxDistance);
 
 		//Test
 		if (ImGui::Checkbox("Play", &playTest))
