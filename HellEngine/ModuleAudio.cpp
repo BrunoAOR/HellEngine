@@ -72,14 +72,13 @@ bool ModuleAudio::Load(const char *audioPath, ComponentAudioSource* source)
 
 			if (bassID != 0)
 			{
+				HCHANNEL bassChannelID = BASS_SampleGetChannel(bassID, false);
 				loadIsCorrect = true;
 
-				source->audioInfo->audioID = bassID;
+				source->audioInfo->audioID = bassChannelID;
 				source->audioInfo->audioType = extension == "wav" ? AudioType::MUSIC : AudioType::EFFECT;
 
-				HCHANNEL channel = BASS_SampleGetChannel(source->audioInfo->audioID, false);
-				BASS_ChannelPlay(channel, false);
-
+				source->SetCurrentState(AudioState::LOADED);
 				StoreAudioSource(source);
 			}
 			else
@@ -256,7 +255,7 @@ void ModuleAudio::UnloadAudioSource(const ComponentAudioSource &source)
 	
 	for (std::vector<ComponentAudioSource*>::iterator it = storedAudioSources.begin(); it != storedAudioSources.end(); ) {
 		if (*it == &source) {
-			//TODO call BASS_ChannelStop if needed
+			//TODO check if call BASS_ChannelStop is needed
 			it = storedAudioSources.erase(it);
 			break;
 		}
@@ -269,34 +268,110 @@ void ModuleAudio::UnloadAudioSource(const ComponentAudioSource &source)
 
 void ModuleAudio::UpdateAudioSource(ComponentAudioSource * audioSource)
 {
-	switch (audioSource->GetCurrentState())
+	int audioID = audioSource->audioInfo->audioID;
+
+	if (audioID != 0)
 	{
-		case AudioState::CURRENTLY_PLAYED:
-			//BASS_ChannelSet3DAttributes
-			//BASS_ChannelSet3DPosition
-		case  AudioState::WAITING_TO_PLAY:
-			//BASS_ChannelPlay
-			break;
-		case AudioState::WAITING_TO_STOP:
-			//BASS_ChannelStop
-			break;
+		switch (audioSource->GetCurrentState())
+		{
+			case AudioState::CURRENTLY_PLAYED:
+			{
+				float3 audioSourcePos;
+				BASS_3DVECTOR audioSourcePosBASS;
+
+				ComponentTransform *transformAudioSource = (ComponentTransform*)audioSource->gameObject->GetComponent(ComponentType::TRANSFORM);
+
+				DecomposeMatrixPosition(transformAudioSource->GetModelMatrix4x4(), audioSourcePos);
+				audioSourcePosBASS.x = audioSourcePos.x;
+				audioSourcePosBASS.y = audioSourcePos.y;
+				audioSourcePosBASS.z = audioSourcePos.z;
+
+				if (audioSource->GetStereoMono() == 0) //Means Stereo is Selected
+				{
+					BASS_ChannelSet3DAttributes(audioID, BASS_3DMODE_NORMAL,
+						audioSource->GetMinDistance(), audioSource->GetMaxDistance(),
+						-1, -1, -1);
+				}
+				else
+				{
+					BASS_ChannelSet3DAttributes(audioID, BASS_3DMODE_OFF,
+						audioSource->GetMinDistance(), audioSource->GetMaxDistance(),
+						-1, -1, -1);
+				}
+
+				if (BASS_ChannelSet3DPosition(audioID, &audioSourcePosBASS, NULL, NULL) != TRUE)
+				{
+					LOGGER("BASS_Init() error: %s", ParseBassErrorCode(BASS_ErrorGetCode()));
+					break;
+				}
+				break;
+			}
+			case AudioState::WAITING_TO_PLAY:
+			{
+				if (BASS_ChannelPlay(audioID, false) != TRUE)
+				{
+					LOGGER("BASS_Init() error: %s", ParseBassErrorCode(BASS_ErrorGetCode()));
+					break;
+				}
+				else
+				{
+					BASS_ChannelSetAttribute(audioID, BASS_ATTRIB_VOL, audioSource->GetVolume());
+					BASS_ChannelSetAttribute(audioID, BASS_ATTRIB_PAN, audioSource->GetStereoPan());
+					//BASS_ATTRIB_MUSIC_SPEED()
+				}
+				audioSource->SetCurrentState(AudioState::CURRENTLY_PLAYED);
+				break;
+			}
+			case AudioState::WAITING_TO_STOP:
+			{
+				if (BASS_ChannelStop(audioID) != TRUE)
+				{
+					LOGGER("BASS_Init() error: %s", ParseBassErrorCode(BASS_ErrorGetCode()));
+					break;
+				}
+				else {
+					audioSource->SetCurrentState(AudioState::CURRENTLY_STOPPED);
+				}
+				break;
+			}
 		}
+	}
+	
 }
 
-	void ModuleAudio::UpdateAudioListener(ComponentAudioListener * audioListener)
-	{
-		ComponentTransform *transformAudioListener = (ComponentTransform*)audioListener->gameObject->GetComponent(ComponentType::TRANSFORM);
-		//BASS_Set3DFactors(distance,rollof,doppler);
+void ModuleAudio::UpdateAudioListener(ComponentAudioListener * audioListener)
+{
+	float3 audioListenerPos;
+	BASS_3DVECTOR audioListenerPosBASS;
 
-		//BASS_Set3DPosition(
-		//	(BASS_3DVECTOR*)&transformAudioListener->GetPosition(),
-		//	nullptr, // speed
-		//	// front
-		//    // top);
+	ComponentTransform *transformAudioSource = (ComponentTransform*)audioListener->gameObject->GetComponent(ComponentType::TRANSFORM);
+	float4x4 listenerWorldMatrix = transformAudioSource->GetModelMatrix4x4();
+
+	float4 forwardFloat4;
+	float4 upFloat4;
+	float3 forward;
+	float3 up;
+
+	DecomposeMatrixPosition(listenerWorldMatrix, audioListenerPos);
+	audioListenerPosBASS.x = audioListenerPos.x;
+	audioListenerPosBASS.y = audioListenerPos.y;
+	audioListenerPosBASS.z = audioListenerPos.z;
+
+	upFloat4 = listenerWorldMatrix.Mul(float4::unitY).Normalized();
+	forwardFloat4 = listenerWorldMatrix.Mul(float4::unitZ).Normalized();
+	forward = FLOAT4_TO_POINT(forwardFloat4);
+	up = FLOAT4_TO_POINT(upFloat4);
+
+	if (BASS_Set3DPosition(&audioListenerPosBASS, NULL, (BASS_3DVECTOR*)&forward, 
+		(BASS_3DVECTOR*)&up) != TRUE) //still lacks go velocity
+	{
+		LOGGER("BASS_Init() error: %s", ParseBassErrorCode(BASS_ErrorGetCode()));
 	}
+}
 
 void ModuleAudio::UpdateActiveAudioListener(ComponentAudioListener & listener)
 {
+
 
 }
 

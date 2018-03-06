@@ -59,14 +59,21 @@ void ComponentAudioSource::OnEditor()
 		{
 			//enable Loop with ModuleMusic
 		}
-		ImGui::SliderFloat("Volume", &volume, 0.0f, 1.0f, "%1.0f");
-		ImGui::SliderFloat("Stereo/Mono", &stereoMono, 0.0f, 1.0f, "%1.0f");
-		ImGui::SliderFloat("Pitch", &pitch, -3.0f, 3.0f, "%1.0f");
-		ImGui::SliderFloat("Stereo Pan", &stereoPan, -1.0f, 1.0f, "%1.0f");
-		ImGui::SliderFloat("Reverb Zone", &reverbZone, 0.0f, 1.0f, "%1.0f");
-		ImGui::SliderFloat("Doppler", &dopplerLevel, 0.0f, 5.0f, "%1.0f");
+		ImGui::SliderFloat("Volume", &volume, 0.0f, 1.0f, "%.2f");
+		ImGui::SliderFloat("Stereo/Mono", &stereoMono, 0.0f, 1.0f, "%.2f");
+		ImGui::SliderFloat("Pitch", &pitch, -3.0f, 3.0f, "%.2f");
+		ImGui::SliderFloat("Stereo Pan", &stereoPan, -1.0f, 1.0f, "%.2f");
+		ImGui::SliderFloat("Reverb Zone", &reverbZone, 0.0f, 1.0f, "%.2f");
+		ImGui::SliderFloat("Doppler", &dopplerLevel, 0.0f, 5.0f, "%.2f");
 		ImGui::Combo("Rolloff", &rollOff, "Logarithmic\0Linear\0");
-		ImGui::InputInt("Max Distance", &maxDistance);
+		ImGui::InputFloat("Max Distance", &minDistance);
+		ImGui::InputFloat("Max Distance", &maxDistance);
+
+		//Test
+		if (ImGui::Checkbox("Play", &playTest))
+		{
+			Play();
+		}
 
 	}
 }
@@ -75,7 +82,7 @@ bool ComponentAudioSource::Play()
 {
 	bool willBePlayed = false;
 
-	if (currentAudioSourceState == AudioState::CURRENTLY_STOPPED) 
+	if (currentAudioSourceState == AudioState::CURRENTLY_STOPPED || currentAudioSourceState == AudioState::LOADED) 
 	{
 		currentAudioSourceState = AudioState::WAITING_TO_PLAY;
 		willBePlayed = true;
@@ -95,9 +102,84 @@ bool ComponentAudioSource::Stop()
 	return willBeStopped;
 }
 
+float ComponentAudioSource::GetVolume() const
+{
+	return volume;
+}
+
+float ComponentAudioSource::GetPitch() const
+{
+	return pitch;
+}
+
+float ComponentAudioSource::GetStereoPan() const
+{
+	return stereoPan;
+}
+
+float ComponentAudioSource::GetStereoMono() const
+{
+	return stereoMono;
+}
+
+float ComponentAudioSource::GetDopplerLevel() const
+{
+	return dopplerLevel;
+}
+
+float ComponentAudioSource::GetMinDistance() const
+{
+	return minDistance;
+}
+
+float ComponentAudioSource::GetMaxDistance() const
+{
+	return 0;
+}
+
+void ComponentAudioSource::SetVolume(float volumeValue)
+{
+	volume = volumeValue;
+}
+
+void ComponentAudioSource::SetPitch(float pitchValue)
+{
+	pitch = pitchValue;
+}
+
+void ComponentAudioSource::SetStereoMono(float stereoOrMonoValue)
+{
+	stereoMono = stereoOrMonoValue;
+}
+
+void ComponentAudioSource::SetStereoPan(float panValue)
+{
+	stereoPan = panValue;
+}
+
+void ComponentAudioSource::SetDopplerLevel(float dopplerLevelValue)
+{
+	dopplerLevel = dopplerLevelValue;
+}
+
+void ComponentAudioSource::SetMinDistance(float minDistanceValue)
+{
+	minDistance = minDistanceValue;
+}
+
+void ComponentAudioSource::SetMaxDistance(float maxDistanceValue)
+{
+	maxDistance = maxDistanceValue;
+}
+
 AudioState ComponentAudioSource::GetCurrentState() const
 {
 	return currentAudioSourceState;
+}
+
+void ComponentAudioSource::SetCurrentState(AudioState audioStateValue)
+{
+	currentAudioSourceState = audioStateValue;
 }
 
 int ComponentAudioSource::MaxCountInGameObject()
