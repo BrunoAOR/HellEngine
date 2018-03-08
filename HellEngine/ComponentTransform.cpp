@@ -97,6 +97,10 @@ void ComponentTransform::Update()
 
 			GLfloat uniqueVertices[24] = { SP_ARR_3(vA), SP_ARR_3(vB), SP_ARR_3(vC), SP_ARR_3(vD), SP_ARR_3(vE), SP_ARR_3(vF), SP_ARR_3(vG), SP_ARR_3(vH) };
 			GLfloat uniqueColors[24] = { SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen) };
+			
+			glBindVertexArray(baseBoundingBoxVAO.vao);
+			glBindBuffer(GL_ARRAY_BUFFER, baseBoundingBoxVAO.vbo);
+			float* oldBBData = (float*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 
 			for (int i = 0; i < 8 * 6; ++i)
 			{
@@ -104,11 +108,11 @@ void ComponentTransform::Update()
 					boundingBoxUniqueData[i] = uniqueVertices[(i / 6) * 3 + (i % 6)];
 				else
 					boundingBoxUniqueData[i] = uniqueColors[(i / 6) * 3 + ((i % 6) - 3)];
+				
+				oldBBData[i] = boundingBoxUniqueData[i];
 			}
 
-			glBindVertexArray(baseBoundingBoxVAO.vao);
-			glBindBuffer(GL_ARRAY_BUFFER, baseBoundingBoxVAO.vbo);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8 * 6, boundingBoxUniqueData, GL_DYNAMIC_DRAW);
+			glUnmapBuffer(GL_ARRAY_BUFFER);
 
 			glBindVertexArray(GL_NONE);
 			glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
