@@ -142,7 +142,12 @@ float ComponentAudioSource::GetMinDistance() const
 
 float ComponentAudioSource::GetMaxDistance() const
 {
-	return 0;
+	return maxDistance;
+}
+
+bool ComponentAudioSource::GetIsLopping() const
+{
+	return isMusicLoop;
 }
 
 void ComponentAudioSource::SetVolume(float volumeValue)

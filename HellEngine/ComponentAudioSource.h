@@ -8,7 +8,7 @@ enum class AudioState { NOT_LOADED, LOADED,WAITING_TO_PLAY, WAITING_TO_STOP, CUR
 
 struct AudioInfo
 {
-	unsigned int audioID = 0;
+	unsigned long audioID = 0;
 	AudioType audioType;
 };
 
@@ -31,6 +31,7 @@ public:
 	float GetDopplerLevel() const;
 	float GetMinDistance() const;
 	float GetMaxDistance() const;
+	bool GetIsLopping() const;
 
 	void SetVolume(float volumeValue);
 	void SetPitch(float pitchValue);

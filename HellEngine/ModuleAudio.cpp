@@ -56,14 +56,14 @@ bool ModuleAudio::Load(const char *audioPath, ComponentAudioSource* source)
 
 	if (audioPath != nullptr) {
 
-		uint bassID = 0;
+		unsigned long bassID = 0;
 		std::string extension = ObtainAudioExtension(audioPath);
 
 		if (extension != " ") {
 
 			if (extension == "ogg") //effect
 			{
-				bassID = BASS_StreamCreateFile(FALSE, audioPath, 0, 0, BASS_SAMPLE_LOOP | BASS_STREAM_AUTOFREE);
+				bassID = BASS_StreamCreateFile(FALSE, audioPath, 0, 0, BASS_STREAM_AUTOFREE);
 			}
 			else if (extension == "wav") //music
 			{
@@ -162,7 +162,7 @@ const char* ModuleAudio::ParseBassErrorCode(const int& bassErrorCode)
 		case 39:
 			charErrorCode = "a sufficient DirectX version is not installed";
 		case 40:
-			charErrorCode = "connection timedout";
+			charErrorCode = "connection timeout";
 		case 41:
 			charErrorCode = "unsupported file format";
 		case 42:
@@ -211,6 +211,7 @@ UpdateStatus ModuleAudio::PostUpdate()
 	GameObject *goRoot = App->scene->root;
 	UpdateAudio(goRoot);
 	
+	BASS_Apply3D();
 	return UpdateStatus::UPDATE_CONTINUE;
 }
 
@@ -231,7 +232,6 @@ void ModuleAudio::UpdateAudio(GameObject *gameObject)
 		if (audioSource != nullptr)
 		{
 			UpdateAudioSource(audioSource);
-			return;
 		}
 
 		ComponentAudioListener *audioListener = (ComponentAudioListener*)go->GetComponent(ComponentType::AUDIOLISTENER);
@@ -270,7 +270,7 @@ void ModuleAudio::UnloadAudioSource(const ComponentAudioSource &source)
 
 void ModuleAudio::UpdateAudioSource(ComponentAudioSource * audioSource)
 {
-	int audioID = audioSource->audioInfo->audioID;
+	unsigned long audioID = audioSource->audioInfo->audioID;
 
 	if (audioID != 0)
 	{
@@ -279,22 +279,25 @@ void ModuleAudio::UpdateAudioSource(ComponentAudioSource * audioSource)
 			case AudioState::CURRENTLY_PLAYED:
 			{
 				BASS_ChannelSetAttribute(audioID, BASS_ATTRIB_VOL, audioSource->GetVolume());
+				BASS_ChannelSetAttribute(audioID, BASS_SAMPLE_LOOP, audioSource->GetIsLopping());
 
 				float3 audioSourcePos;
-				BASS_3DVECTOR audioSourcePosBASS;
+				/*BASS_3DVECTOR audioSourcePosBASS(0,0,0);
+				BASS_3DVECTOR audioSourceOrBASS(0, 0, 0);
+				BASS_3DVECTOR audioSourceVelBASS(0, 0, 0);*/
 
 				ComponentTransform *transformAudioSource = (ComponentTransform*)audioSource->gameObject->GetComponent(ComponentType::TRANSFORM);
 
 				DecomposeMatrixPosition(transformAudioSource->GetModelMatrix4x4(), audioSourcePos);
-				audioSourcePosBASS.x = audioSourcePos.x;
+			/*	audioSourcePosBASS.x = audioSourcePos.x;
 				audioSourcePosBASS.y = audioSourcePos.y;
-				audioSourcePosBASS.z = audioSourcePos.z;
+				audioSourcePosBASS.z = audioSourcePos.z;*/
 
 				if (audioSource->GetStereoMono() == 0) //Means Stereo is Selected
 				{
 					BASS_ChannelSet3DAttributes(audioID, BASS_3DMODE_NORMAL,
 						audioSource->GetMinDistance(), audioSource->GetMaxDistance(),
-						-1, -1, -1);
+						360, 360, 1);
 				}
 				else
 				{
@@ -303,10 +306,17 @@ void ModuleAudio::UpdateAudioSource(ComponentAudioSource * audioSource)
 						-1, -1, -1);
 				}
 
-				if (BASS_ChannelSet3DPosition(audioID, &audioSourcePosBASS, NULL, NULL) != TRUE)
+				bool bassPlayResponse = BASS_ChannelSet3DPosition(audioID, NULL, NULL, NULL);
+				if (bassPlayResponse != TRUE)
 				{
-					LOGGER("BASS_Init() error: %s", ParseBassErrorCode(BASS_ErrorGetCode()));
-					break;
+					if(BASS_ErrorGetCode() == 45) {
+						audioSource->SetCurrentState(AudioState::WAITING_TO_STOP);
+					}
+					else
+					{
+						LOGGER("BASS_Init() error: %s", ParseBassErrorCode(BASS_ErrorGetCode()));
+						break;
+					}
 				}
 				break;
 			}
