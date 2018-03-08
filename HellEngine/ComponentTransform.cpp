@@ -252,20 +252,25 @@ void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 
 	stack.push(go);
 
-	while (!stack.empty()) {
+	while (!stack.empty()) 
+	{
 		go = stack.top();
 		stack.pop();
 		BROFILER_CATEGORY("ComponentTransform::GetComponents", Profiler::Color::PapayaWhip);
 		t = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM);
-		m = (ComponentMesh*)go->GetComponent(ComponentType::MESH);
 
-		if (t != nullptr) {
+		if (t) 
+		{
 			t->boundingBox.SetNegativeInfinity();
 
-			if (m != nullptr && activeModelInfoChanged) {
+			if (mesh) 
+			{
 				BROFILER_CATEGORY("ComponentTransform::EncloseNegative", Profiler::Color::PapayaWhip);
-				EncloseBoundingBox(t, m);				
-				activeModelInfoChanged = false;
+				EncloseBoundingBox(t, mesh);		
+			}
+			else 
+			{
+				t->boundingBox.Enclose(baseBoundingBox.data(), baseBoundingBox.size());
 			}
 
 			BROFILER_CATEGORY("ComponentTransform::TransformBB", Profiler::Color::PapayaWhip);
@@ -279,7 +284,7 @@ void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 	}
 }
 
-void ComponentTransform::EncloseBoundingBox(ComponentTransform* transform, ComponentMesh * mesh)
+void ComponentTransform::EncloseBoundingBox(ComponentTransform* transform, ComponentMesh* mesh)
 {
 	if (mesh->GetActiveModelInfo() != nullptr) {
 
