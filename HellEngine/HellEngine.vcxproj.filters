@@ -327,9 +327,6 @@
     <ClInclude Include="physicsFunctions.h">
       <Filter>General</Filter>
     </ClInclude>
-    <ClInclude Include="VaoInfo.h">
-      <Filter>General</Filter>
-    </ClInclude>
     <ClInclude Include="ModelInfo.h">
       <Filter>General</Filter>
     </ClInclude>
@@ -344,6 +341,9 @@
     </ClInclude>
     <ClInclude Include="ComponentAnimation.h">
       <Filter>Scene Management</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshInfo.h">
+      <Filter>General</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

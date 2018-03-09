@@ -34,7 +34,7 @@ private:
 	const int childrenCount = 0;
 	SpaceQuadNode* childNodes[4] = { nullptr, nullptr, nullptr, nullptr };
 	std::vector<ComponentTransform*> containedTransforms;
-	VaoInfo quadVao;
+	MeshInfo quadMeshInfo;
 };
 
 template<typename T>

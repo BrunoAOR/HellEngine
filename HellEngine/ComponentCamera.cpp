@@ -97,8 +97,8 @@ void ComponentCamera::Update()
 				}
 			}
 
-			glBindVertexArray(frustumVAO.vao);
-			glBindBuffer(GL_ARRAY_BUFFER, frustumVAO.vbo);
+			glBindVertexArray(frustumMeshInfo.vao);
+			glBindBuffer(GL_ARRAY_BUFFER, frustumMeshInfo.vbo);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8 * 6, frustumVertData, GL_DYNAMIC_DRAW);
 
 			glBindVertexArray(GL_NONE);
@@ -361,12 +361,12 @@ float ComponentCamera::GetHorizontalFOVrad() const
 
 void ComponentCamera::DrawFrustum()
 {
-	if (frustumVAO.vao == 0) 
+	if (frustumMeshInfo.vao == 0) 
 		CreateFrustumVAO();
 
 	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
 	if (transform != nullptr)
-		App->debugDraw->DrawElements(transform->GetModelMatrix(), frustumVAO.vao, frustumVAO.elementsCount);
+		App->debugDraw->DrawElements(transform->GetModelMatrix(), frustumMeshInfo.vao, frustumMeshInfo.elementsCount);
 }
 
 void ComponentCamera::CreateFrustumVAO()
@@ -421,23 +421,23 @@ void ComponentCamera::CreateFrustumVAO()
 			}
 		}
 
-		frustumVAO.name = "BaseBoundingBox";
-		frustumVAO.elementsCount = uniqueVertCount * 3;
+		frustumMeshInfo.name = "BaseBoundingBox";
+		frustumMeshInfo.elementsCount = uniqueVertCount * 3;
 
-		glGenVertexArrays(1, &frustumVAO.vao);
-		glGenBuffers(1, &frustumVAO.vbo);
-		glGenBuffers(1, &frustumVAO.ebo);
+		glGenVertexArrays(1, &frustumMeshInfo.vao);
+		glGenBuffers(1, &frustumMeshInfo.vbo);
+		glGenBuffers(1, &frustumMeshInfo.ebo);
 
-		glBindVertexArray(frustumVAO.vao);
-		glBindBuffer(GL_ARRAY_BUFFER, frustumVAO.vbo);
+		glBindVertexArray(frustumMeshInfo.vao);
+		glBindBuffer(GL_ARRAY_BUFFER, frustumMeshInfo.vbo);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uniqueVertCount * 6, frustumVertData, GL_DYNAMIC_DRAW);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, frustumVAO.ebo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * frustumVAO.elementsCount, indices, GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, frustumMeshInfo.ebo);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * frustumMeshInfo.elementsCount, indices, GL_STATIC_DRAW);
 
 		glBindVertexArray(GL_NONE);
 		glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);

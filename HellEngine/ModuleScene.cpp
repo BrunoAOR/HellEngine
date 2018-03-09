@@ -26,12 +26,12 @@ ModuleScene::ModuleScene()
 
 ModuleScene::~ModuleScene() 
 {
-	for (VaoInfo* vaoInfo : meshes)
+	for (MeshInfo* meshInfo : meshes)
 	{
-		glDeleteVertexArrays(1, &vaoInfo->vao);
-		glDeleteBuffers(1, &vaoInfo->vbo);
-		glDeleteBuffers(1, &vaoInfo->ebo);
-		delete vaoInfo;
+		glDeleteVertexArrays(1, &meshInfo->vao);
+		glDeleteBuffers(1, &meshInfo->vbo);
+		glDeleteBuffers(1, &meshInfo->ebo);
+		delete meshInfo;
 	}
 	meshes.clear();
 }

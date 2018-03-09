@@ -5,7 +5,7 @@
 #include "MathGeoLib/src/Math/float3.h"
 #include "Component.h"
 #include "ModelInfo.h"
-#include "VAOInfo.h"
+#include "MeshInfo.h"
 #include "globals.h"
 
 typedef float GLfloat;
@@ -29,8 +29,8 @@ public:
 
 private:
 
-	void CreateCubeVAO();
-	void CreateSphereVAO(uint rings, uint sections);
+	void CreateCubeMeshInfo();
+	void CreateSphereMeshInfo(uint rings, uint sections);
 
 	void UpdateBoundingBox();
 

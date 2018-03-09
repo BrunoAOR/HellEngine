@@ -20,15 +20,15 @@ SpaceQuadNode::SpaceQuadNode(float3 minPoint, float3 maxPoint, SpaceQuadTree* aQ
 
 SpaceQuadNode::~SpaceQuadNode()
 {
-	glDeleteVertexArrays(1, &quadVao.vao);
-	quadVao.vao = 0;
-	glDeleteBuffers(1, &quadVao.vbo);
-	quadVao.vbo = 0;
-	glDeleteBuffers(1, &quadVao.ebo);
-	quadVao.ebo = 0;
-	quadVao.vertices.clear();
-	quadVao.indices.clear();
-	quadVao.elementsCount = 0;
+	glDeleteVertexArrays(1, &quadMeshInfo.vao);
+	quadMeshInfo.vao = 0;
+	glDeleteBuffers(1, &quadMeshInfo.vbo);
+	quadMeshInfo.vbo = 0;
+	glDeleteBuffers(1, &quadMeshInfo.ebo);
+	quadMeshInfo.ebo = 0;
+	quadMeshInfo.vertices.clear();
+	quadMeshInfo.indices.clear();
+	quadMeshInfo.elementsCount = 0;
 
 	for (int i = 0; i < childrenCount; ++i)
 	{
@@ -172,10 +172,10 @@ void SpaceQuadNode::DrawNode()
 		stack.pop();
 
 		if (root->isLeaf) {
-			if (root->quadVao.vao != 0)
+			if (root->quadMeshInfo.vao != 0)
 			{
 				float identity[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
-				App->debugDraw->DrawElements(identity, root->quadVao.vao, root->quadVao.elementsCount);
+				App->debugDraw->DrawElements(identity, root->quadMeshInfo.vao, root->quadMeshInfo.elementsCount);
 			}
 		}
 		else {
@@ -332,23 +332,23 @@ void SpaceQuadNode::CreateVAO()
 		}
 	}
 
-	quadVao.name = "QuadNode";
-	quadVao.elementsCount = allVertCount;
+	quadMeshInfo.name = "QuadNode";
+	quadMeshInfo.elementsCount = allVertCount;
 
-	glGenVertexArrays(1, &quadVao.vao);
-	glGenBuffers(1, &quadVao.vbo);
-	glGenBuffers(1, &quadVao.ebo);
+	glGenVertexArrays(1, &quadMeshInfo.vao);
+	glGenBuffers(1, &quadMeshInfo.vbo);
+	glGenBuffers(1, &quadMeshInfo.ebo);
 
-	glBindVertexArray(quadVao.vao);
-	glBindBuffer(GL_ARRAY_BUFFER, quadVao.vbo);
+	glBindVertexArray(quadMeshInfo.vao);
+	glBindBuffer(GL_ARRAY_BUFFER, quadMeshInfo.vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uniqueVertCount * 6, allUniqueData, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadVao.ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * quadVao.elementsCount, vertIndexes, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadMeshInfo.ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * quadMeshInfo.elementsCount, vertIndexes, GL_STATIC_DRAW);
 
 	glBindVertexArray(GL_NONE);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);

@@ -5,7 +5,7 @@ class GameObject;
 struct aiMesh;
 struct aiNode;
 struct aiScene;
-struct VaoInfo;
+struct MeshInfo;
 
 class SceneLoader
 {
@@ -19,7 +19,7 @@ public:
 private:
 
 	void LoadNode(const aiNode* node, GameObject* parent);
-	VaoInfo* CreateVao(const aiMesh* assimpMesh);
+	MeshInfo* CreateMesh(const aiMesh* assimpMesh);
 	void GetTextureFullPath(unsigned int materialIndex, char* outputFullPath);
 
 	void LoadMeshes();

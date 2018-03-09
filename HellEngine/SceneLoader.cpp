@@ -12,7 +12,7 @@
 #include "ModuleRender.h"
 #include "ModuleScene.h"
 #include "SceneLoader.h"
-#include "VaoInfo.h"
+#include "MeshInfo.h"
 
 /* Temporary */
 #include "ComponentAnimation.h"
@@ -76,13 +76,13 @@ void SceneLoader::LoadNode(const aiNode* node, GameObject* parent)
 		
 		
 
-		/* NOTE: A GameObject will have as many materials as the number of sub-meshes (VaoInfo) contained in the aiNode (-> stored in ModelInfo)
-		Each material will identify the vaoInfo to draw by an index stored in ComponentMaterial:: */
+		/* NOTE: A GameObject will have as many materials as the number of sub-meshes (MeshInfo) contained in the aiNode (-> stored in ModelInfo)
+		Each material will identify the meshInfo to draw by an index stored in ComponentMaterial:: */
 		ModelInfo modelInfo;
 		for (unsigned int i = 0; i < node->mNumMeshes; ++i)
 		{
 			unsigned int sceneMeshIndex = node->mMeshes[i];
-			modelInfo.vaoInfosIndexes.push_back(sceneMeshIndex + moduleSceneMeshesOffset);
+			modelInfo.meshInfosIndexes.push_back(sceneMeshIndex + moduleSceneMeshesOffset);
 
 			ComponentMaterial* material = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
 			material->SetDefaultMaterialConfiguration();
@@ -106,11 +106,11 @@ void SceneLoader::LoadNode(const aiNode* node, GameObject* parent)
 	}
 }
 
-VaoInfo* SceneLoader::CreateVao(const aiMesh* assimpMesh)
+MeshInfo* SceneLoader::CreateMesh(const aiMesh* assimpMesh)
 {
 	assert(assimpMesh->HasPositions());
 
-	VaoInfo* vaoInfo = new VaoInfo();
+	MeshInfo* meshInfo = new MeshInfo();
 
 	/* Create temporary data buffers */
 	const unsigned int allDataSize = assimpMesh->mNumVertices * 8;
@@ -161,12 +161,12 @@ VaoInfo* SceneLoader::CreateVao(const aiMesh* assimpMesh)
 			allData[vertexIdx * 8 + 7] = 0;
 		}
 
-		/* Store vertex in vaoInfo (for raycasting calculations) */
-		vaoInfo->vertices.push_back(float3(vertex.x, vertex.y, vertex.z));
+		/* Store vertex in meshInfo (for raycasting calculations) */
+		meshInfo->vertices.push_back(float3(vertex.x, vertex.y, vertex.z));
 	}
 
 	/* Gather indexes */
-	vaoInfo->elementsCount = 0;
+	meshInfo->elementsCount = 0;
 	for (unsigned int faceIdx = 0; faceIdx < assimpMesh->mNumFaces; ++faceIdx)
 	{
 		const aiFace& face = assimpMesh->mFaces[faceIdx];
@@ -174,10 +174,10 @@ VaoInfo* SceneLoader::CreateVao(const aiMesh* assimpMesh)
 
 		for (unsigned int i = 0; i < 3; ++i)
 		{
-			++vaoInfo->elementsCount;
+			++meshInfo->elementsCount;
 			unsigned int index = face.mIndices[i];
-			/* Store indices in vaoInfo (for raycasting calculations) */
-			vaoInfo->indices.push_back(index);
+			/* Store indices in meshInfo (for raycasting calculations) */
+			meshInfo->indices.push_back(index);
 
 			/* Push index to temporary data buffer */
 			indexes[faceIdx * face.mNumIndices + i] = index;
@@ -186,12 +186,12 @@ VaoInfo* SceneLoader::CreateVao(const aiMesh* assimpMesh)
 	}
 
 	/* Transfer data from temporary buffers to VRAM */
-	glGenVertexArrays(1, &vaoInfo->vao);
-	glGenBuffers(1, &vaoInfo->vbo);
-	glGenBuffers(1, &vaoInfo->ebo);
+	glGenVertexArrays(1, &meshInfo->vao);
+	glGenBuffers(1, &meshInfo->vbo);
+	glGenBuffers(1, &meshInfo->ebo);
 
-	glBindVertexArray(vaoInfo->vao);
-	glBindBuffer(GL_ARRAY_BUFFER, vaoInfo->vbo);
+	glBindVertexArray(meshInfo->vao);
+	glBindBuffer(GL_ARRAY_BUFFER, meshInfo->vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * allDataSize, allData, GL_STATIC_DRAW);
 	/* vertex */
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
@@ -204,7 +204,7 @@ VaoInfo* SceneLoader::CreateVao(const aiMesh* assimpMesh)
 	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE); /* Can be unbound before unbinding the VAO, because the glVertexAttribPointer preserves the VBO to VAO conection */
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vaoInfo->ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshInfo->ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indexesSize, indexes, GL_STATIC_DRAW);
 
 	glBindVertexArray(GL_NONE);
@@ -216,7 +216,7 @@ VaoInfo* SceneLoader::CreateVao(const aiMesh* assimpMesh)
 	delete[] indexes;
 	indexes = nullptr;
 
-	return vaoInfo;
+	return meshInfo;
 }
 
 void SceneLoader::LoadMeshes()
@@ -226,8 +226,8 @@ void SceneLoader::LoadMeshes()
 	for (unsigned int i = 0; i < assimpScene->mNumMeshes; ++i)
 	{
 		const aiMesh* assimpMesh = assimpScene->mMeshes[i];
-		VaoInfo* vaoInfo = CreateVao(assimpMesh);
-		App->scene->meshes.push_back(vaoInfo);
+		MeshInfo* meshInfo = CreateMesh(assimpMesh);
+		App->scene->meshes.push_back(meshInfo);
 	}
 }
 

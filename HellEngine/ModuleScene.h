@@ -51,7 +51,7 @@ public:
 public:
 
 	GameObject* root;
-	std::vector<VaoInfo*> meshes;
+	std::vector<MeshInfo*> meshes;
 
 	struct
 	{
