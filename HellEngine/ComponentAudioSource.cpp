@@ -80,7 +80,14 @@ void ComponentAudioSource::OnEditor()
 		//Test
 		if (ImGui::Checkbox("Play", &playTest))
 		{
-			Play();
+			if (playTest)
+			{
+				Play();
+			}
+			else
+			{
+				Stop();
+			}
 		}
 
 	}

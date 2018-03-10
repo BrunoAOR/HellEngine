@@ -19,9 +19,8 @@ ModuleAudio::~ModuleAudio()
 bool ModuleAudio::Init()
 {
 	bool ret = true;
-	LOGGER("Loading Audio Mixer");
 
-	if (BASS_Init(-1, 44000, BASS_DEVICE_3D, 0, NULL) != TRUE)
+	if (BASS_Init(-1, 44100, BASS_DEVICE_3D, 0, NULL) != TRUE) //default initialization to allow 3D sound
 	{
 		LOGGER("BASS_Init() error: %s", ParseBassErrorCode(BASS_ErrorGetCode()));
 		ret = false;
@@ -56,35 +55,48 @@ bool ModuleAudio::Load(const char *audioPath, ComponentAudioSource* source)
 
 	if (audioPath != nullptr) {
 
-		unsigned long bassID = 0;
 		std::string extension = ObtainAudioExtension(audioPath);
 
 		if (extension != " ") {
 
-			if (extension == "ogg") //effect
+			if (extension == "wav") //effect
 			{
-				bassID = BASS_StreamCreateFile(FALSE, audioPath, 0, 0, BASS_STREAM_AUTOFREE);
-			}
-			else if (extension == "wav") //music
-			{
-				bassID = BASS_SampleLoad(FALSE, audioPath, 0, 0, 7, BASS_SAMPLE_3D || BASS_SAMPLE_OVER_VOL);	
-			}
+				unsigned long stream_bassID = 0;
+				stream_bassID = BASS_StreamCreateFile(FALSE, audioPath, 0, 0, BASS_SAMPLE_3D | BASS_STREAM_AUTOFREE);
 
-			if (bassID != 0)
-			{
-				HCHANNEL bassChannelID = BASS_SampleGetChannel(bassID, false);
-				loadIsCorrect = true;
+				if (stream_bassID != 0)
+				{
+					loadIsCorrect = true;
 
-				source->audioInfo->audioID = bassChannelID;
-				source->audioInfo->audioType = extension == "wav" ? AudioType::MUSIC : AudioType::EFFECT;
+					source->audioInfo->audioID = stream_bassID;
+					source->audioInfo->audioType = AudioType::EFFECT;
+					source->SetCurrentState(AudioState::LOADED);
 
-				source->SetCurrentState(AudioState::LOADED);
-				StoreAudioSource(source);
+					StoreAudioSource(source);
+				}
+				else
+				{
+					LOGGER("BASS_StreamCreateFile() error: %s", ParseBassErrorCode(BASS_ErrorGetCode()));
+					loadIsCorrect = false;
+				}
 			}
-			else
+			else if (extension == "ogg") //music
 			{
-				LOGGER("BASS_StreamCreateFile() error: %s", ParseBassErrorCode(BASS_ErrorGetCode()));
-				loadIsCorrect = false;
+				unsigned long sample_bassID = 0;
+				sample_bassID = BASS_SampleLoad(FALSE, audioPath, 0, 0, 7, BASS_SAMPLE_3D | BASS_SAMPLE_OVER_VOL);
+
+				if (sample_bassID != 0)
+				{
+					HCHANNEL bassChannelID = BASS_SampleGetChannel(sample_bassID, false);
+
+					loadIsCorrect = true;
+
+					source->audioInfo->audioID = bassChannelID;
+					source->audioInfo->audioType = AudioType::MUSIC;
+					source->SetCurrentState(AudioState::LOADED);
+
+					StoreAudioSource(source);
+				}
 			}
 		}
 		else
@@ -208,10 +220,11 @@ bool ModuleAudio::CleanUp()
 
 UpdateStatus ModuleAudio::PostUpdate()
 {
+	BASS_Apply3D();
+	
 	GameObject *goRoot = App->scene->root;
 	UpdateAudio(goRoot);
 	
-	BASS_Apply3D();
 	return UpdateStatus::UPDATE_CONTINUE;
 }
 
@@ -278,26 +291,24 @@ void ModuleAudio::UpdateAudioSource(ComponentAudioSource * audioSource)
 		{
 			case AudioState::CURRENTLY_PLAYED:
 			{
-				BASS_ChannelSetAttribute(audioID, BASS_ATTRIB_VOL, audioSource->GetVolume());
-				BASS_ChannelSetAttribute(audioID, BASS_SAMPLE_LOOP, audioSource->GetIsLopping());
-
 				float3 audioSourcePos;
-				/*BASS_3DVECTOR audioSourcePosBASS(0,0,0);
-				BASS_3DVECTOR audioSourceOrBASS(0, 0, 0);
-				BASS_3DVECTOR audioSourceVelBASS(0, 0, 0);*/
+				BASS_3DVECTOR audioSourcePosBASS(0,0,0);
 
 				ComponentTransform *transformAudioSource = (ComponentTransform*)audioSource->gameObject->GetComponent(ComponentType::TRANSFORM);
 
 				DecomposeMatrixPosition(transformAudioSource->GetModelMatrix4x4(), audioSourcePos);
-			/*	audioSourcePosBASS.x = audioSourcePos.x;
+				audioSourcePosBASS.x = audioSourcePos.x;
 				audioSourcePosBASS.y = audioSourcePos.y;
-				audioSourcePosBASS.z = audioSourcePos.z;*/
+				audioSourcePosBASS.z = audioSourcePos.z;
 
+				BASS_ChannelSetAttribute(audioID, BASS_ATTRIB_VOL, audioSource->GetVolume());
+				BASS_ChannelSetAttribute(audioID, BASS_SAMPLE_LOOP, audioSource->GetIsLopping());
+				BASS_ChannelSetAttribute(audioID, BASS_ATTRIB_PAN, audioSource->GetStereoPan());
 				if (audioSource->GetStereoMono() == 0) //Means Stereo is Selected
 				{
 					BASS_ChannelSet3DAttributes(audioID, BASS_3DMODE_NORMAL,
 						audioSource->GetMinDistance(), audioSource->GetMaxDistance(),
-						360, 360, 1);
+						-1, -1, -1);
 				}
 				else
 				{
@@ -306,7 +317,7 @@ void ModuleAudio::UpdateAudioSource(ComponentAudioSource * audioSource)
 						-1, -1, -1);
 				}
 
-				bool bassPlayResponse = BASS_ChannelSet3DPosition(audioID, NULL, NULL, NULL);
+				bool bassPlayResponse = BASS_ChannelSet3DPosition(audioID, &audioSourcePosBASS, NULL, NULL);
 				if (bassPlayResponse != TRUE)
 				{
 					if(BASS_ErrorGetCode() == 45) {
@@ -329,12 +340,9 @@ void ModuleAudio::UpdateAudioSource(ComponentAudioSource * audioSource)
 				}
 				else
 				{
-					BASS_ChannelSetAttribute(audioID, BASS_ATTRIB_VOL, audioSource->GetVolume());
-					BASS_ChannelSetAttribute(audioID, BASS_ATTRIB_PAN, audioSource->GetStereoPan());
-					//BASS_ATTRIB_MUSIC_SPEED()
+					audioSource->SetCurrentState(AudioState::CURRENTLY_PLAYED);
+					break;
 				}
-				audioSource->SetCurrentState(AudioState::CURRENTLY_PLAYED);
-				break;
 			}
 			case AudioState::WAITING_TO_STOP:
 			{
