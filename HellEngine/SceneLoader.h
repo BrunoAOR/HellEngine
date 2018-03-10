@@ -19,10 +19,13 @@ public:
 private:
 
 	void LoadNode(const aiNode* node, GameObject* parent);
-	MeshInfo* CreateMesh(const aiMesh* assimpMesh);
+	void LoadMeshes();
+	MeshInfo* CreateMeshInfo(const aiMesh* assimpMesh);
+	void GatherVerticesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo);
+	void GatherBonesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo);
 	void GetTextureFullPath(unsigned int materialIndex, char* outputFullPath);
 
-	void LoadMeshes();
+	
 
 private:
 

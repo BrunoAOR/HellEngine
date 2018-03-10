@@ -106,12 +106,32 @@ void SceneLoader::LoadNode(const aiNode* node, GameObject* parent)
 	}
 }
 
-MeshInfo* SceneLoader::CreateMesh(const aiMesh* assimpMesh)
+void SceneLoader::LoadMeshes()
+{
+	moduleSceneMeshesOffset = App->scene->meshes.size();
+	App->scene->meshes.reserve(moduleSceneMeshesOffset + assimpScene->mNumMeshes);
+	for (unsigned int i = 0; i < assimpScene->mNumMeshes; ++i)
+	{
+		const aiMesh* assimpMesh = assimpScene->mMeshes[i];
+		MeshInfo* meshInfo = CreateMeshInfo(assimpMesh);
+		App->scene->meshes.push_back(meshInfo);
+	}
+}
+
+MeshInfo* SceneLoader::CreateMeshInfo(const aiMesh* assimpMesh)
 {
 	assert(assimpMesh->HasPositions());
 
 	MeshInfo* meshInfo = new MeshInfo();
+	
+	GatherVerticesInfo(assimpMesh, meshInfo);
+	GatherBonesInfo(assimpMesh, meshInfo);
 
+	return meshInfo;
+}
+
+void SceneLoader::GatherVerticesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo)
+{
 	/* Create temporary data buffers */
 	const unsigned int allDataSize = assimpMesh->mNumVertices * 8;
 	float* allData = new float[allDataSize];
@@ -215,19 +235,13 @@ MeshInfo* SceneLoader::CreateMesh(const aiMesh* assimpMesh)
 	allData = nullptr;
 	delete[] indexes;
 	indexes = nullptr;
-
-	return meshInfo;
 }
 
-void SceneLoader::LoadMeshes()
+void SceneLoader::GatherBonesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo)
 {
-	moduleSceneMeshesOffset = App->scene->meshes.size();
-	App->scene->meshes.reserve(moduleSceneMeshesOffset + assimpScene->mNumMeshes);
-	for (unsigned int i = 0; i < assimpScene->mNumMeshes; ++i)
+	if (assimpMesh->HasBones())
 	{
-		const aiMesh* assimpMesh = assimpScene->mMeshes[i];
-		MeshInfo* meshInfo = CreateMesh(assimpMesh);
-		App->scene->meshes.push_back(meshInfo);
+		/* Load Bones here */
 	}
 }
 
