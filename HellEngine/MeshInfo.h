@@ -2,7 +2,22 @@
 #define __H_MESH_INFO__
 
 #include "MathGeoLib/src/Math/float3.h"
+#include "MathGeoLib/src/Math/float4x4.h"
 #include "globals.h"
+
+struct BoneWeight
+{
+	uint vertexIndex = 0;
+	float weight = 0.0f;
+};
+
+struct Bone
+{
+	const char* name = "";
+	BoneWeight* weights = nullptr;
+	uint numWeights = 0;
+	float4x4 inverseBindMatrix;
+};
 
 struct MeshInfo
 {
@@ -13,6 +28,7 @@ struct MeshInfo
 	uint elementsCount = 0;
 	std::vector<float3> vertices;
 	std::vector<uint> indices;
+	std::vector<Bone> bones;
 };
 
 #endif // !__H_MESH_INFO__
