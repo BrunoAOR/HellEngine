@@ -212,7 +212,12 @@ void SceneLoader::GatherVerticesInfo(const aiMesh* assimpMesh, MeshInfo* meshInf
 
 	glBindVertexArray(meshInfo->vao);
 	glBindBuffer(GL_ARRAY_BUFFER, meshInfo->vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * allDataSize, allData, GL_STATIC_DRAW);
+	
+	if (assimpMesh->HasBones())
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * allDataSize, allData, GL_DYNAMIC_DRAW);
+	else
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * allDataSize, allData, GL_STATIC_DRAW);
+
 	/* vertex */
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
 	/* normal */
