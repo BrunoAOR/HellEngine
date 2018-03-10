@@ -241,7 +241,36 @@ void SceneLoader::GatherBonesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo)
 {
 	if (assimpMesh->HasBones())
 	{
-		/* Load Bones here */
+		for (uint i = 0; i < assimpMesh->mNumBones; ++i)
+		{
+			aiBone* assimpBone = assimpMesh->mBones[i];
+			Bone* bone = new Bone();
+
+			uint nameLength = assimpBone->mName.length;
+			char* auxName = new char[nameLength + 1];
+			memcpy_s(auxName, nameLength, assimpBone->mName.C_Str(), nameLength);
+			auxName[nameLength] = '\0';
+			bone->name = auxName;
+
+			bone->numWeights = assimpBone->mNumWeights;
+			bone->weights = new BoneWeight[bone->numWeights];
+
+			for (uint w = 0; w < bone->numWeights; ++w)
+			{
+				bone->weights[w].vertexIndex = assimpBone->mWeights[w].mVertexId;
+				bone->weights[w].weight = assimpBone->mWeights[w].mWeight;
+			}
+
+			aiMatrix4x4& abm = assimpBone->mOffsetMatrix;
+			bone->inverseBindMatrix = float4x4(
+				abm.a1, abm.a2, abm.a3, abm.a4,
+				abm.b1, abm.b2, abm.b3, abm.b4,
+				abm.c1, abm.c2, abm.c3, abm.c4,
+				abm.d1, abm.d2, abm.d3, abm.d4
+			);
+
+			meshInfo->bones.insert(std::make_pair(bone->name, bone));
+		}
 	}
 }
 

@@ -13,7 +13,7 @@ struct BoneWeight
 
 struct Bone
 {
-	const char* name = "";
+	const char* name = nullptr;
 	BoneWeight* weights = nullptr;
 	uint numWeights = 0;
 	float4x4 inverseBindMatrix;
@@ -21,14 +21,14 @@ struct Bone
 
 struct MeshInfo
 {
-	const char* name = "";
+	const char* name = nullptr;
 	uint vao = 0;
 	uint vbo = 0;
 	uint ebo = 0;
 	uint elementsCount = 0;
 	std::vector<float3> vertices;
 	std::vector<uint> indices;
-	std::vector<Bone> bones;
+	std::map<const char*, Bone*> bones;
 };
 
 #endif // !__H_MESH_INFO__
