@@ -347,6 +347,7 @@
     </ClInclude>
     <ClInclude Include="ModuleTrueFont.h" />
     <ClInclude Include="ModuleUI.h" />
+    <ClInclude Include="ComponentUIElement.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -561,6 +562,7 @@
     </ClCompile>
     <ClCompile Include="ModuleTrueFont.cpp" />
     <ClCompile Include="ModuleUI.cpp" />
+    <ClCompile Include="ComponentUIElement.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="MathGeoLib\src\Math\float2.inl">

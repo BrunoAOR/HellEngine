@@ -11,6 +11,7 @@
 #include "ComponentMesh.h"
 #include "ComponentTransform.h"
 #include "ComponentType.h"
+#include "ComponentUIElement.h"
 #include "ModuleScene.h"
 #include "globals.h"
 
@@ -96,9 +97,26 @@ void GameObject::OnEditorInspector()
 	{
 		for (ComponentType componentType : COMPONENT_TYPES)
 		{
-			if (ImGui::MenuItem(GetString(componentType), ""))
+			if (componentType != ComponentType::UIELEMENT) 
 			{
-				AddComponent(componentType);
+				if (ImGui::MenuItem(GetString(componentType), ""))
+				{
+					AddComponent(componentType);
+				}
+			}
+			else
+			{
+				if (ImGui::BeginMenu(GetString(componentType), ""))
+				{
+					for (UIElementType uiType : UI_TYPES)
+					{
+						if (ImGui::MenuItem(ComponentUIElement::GetUITypeString(uiType), ""))
+						{
+							AddComponent(componentType); //TODO Create UI specific element depending on UIElemenType Selected
+						}
+					}
+					ImGui::EndMenu();
+				}			
 			}
 		}
 		ImGui::EndMenu();
@@ -426,6 +444,10 @@ Component* GameObject::AddComponent(ComponentType type)
 		break;
 	case ComponentType::ANIMATION:
 		component = new ComponentAnimation(this);
+		break;
+	case ComponentType::UIELEMENT:
+		component = new ComponentUIElement(this);
+		break;
 	}
 
 	if (component != nullptr)

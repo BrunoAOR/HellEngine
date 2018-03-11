@@ -29,6 +29,7 @@
     <ClInclude Include="ComponentTransform.h" />
     <ClInclude Include="ComponentMaterial.h" />
     <ClInclude Include="ComponentType.h" />
+    <ClInclude Include="ComponentUIElement.h" />
     <ClInclude Include="EventWindow.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="globals.h" />
@@ -138,6 +139,7 @@
     <ClCompile Include="ComponentTransform.cpp" />
     <ClCompile Include="ComponentMaterial.cpp" />
     <ClCompile Include="ComponentType.cpp" />
+    <ClCompile Include="ComponentUIElement.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="globals.cpp" />
     <ClCompile Include="ImGuizmo\ImGuizmo.cpp" />
