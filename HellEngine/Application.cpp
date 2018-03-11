@@ -11,8 +11,11 @@
 #include "ModuleScene.h"
 #include "ModuleTime.h"
 #include "ModuleWindow.h"
+#include "ModuleTrueFont.h"
+#include "ModuleUI.h"
 #include "UpdateStatus.h"
 #include "ModuleTextureManager.h"
+
 
 Application::Application()
 {
@@ -28,6 +31,8 @@ Application::Application()
 	modules.push_back(audio = new ModuleAudio());
 	modules.push_back(debugDraw = new ModuleDebugDraw());
 	modules.push_back(textureManager = new ModuleTextureManager());
+	modules.push_back(font = new ModuleTrueFont());
+	modules.push_back(ui = new ModuleUI());
 }
 
 Application::~Application()

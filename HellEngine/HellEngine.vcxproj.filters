@@ -345,6 +345,8 @@
     <ClInclude Include="ComponentAnimation.h">
       <Filter>Scene Management</Filter>
     </ClInclude>
+    <ClInclude Include="ModuleTrueFont.h" />
+    <ClInclude Include="ModuleUI.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -557,6 +559,8 @@
     <ClCompile Include="ComponentAnimation.cpp">
       <Filter>Scene Management</Filter>
     </ClCompile>
+    <ClCompile Include="ModuleTrueFont.cpp" />
+    <ClCompile Include="ModuleUI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="MathGeoLib\src\Math\float2.inl">

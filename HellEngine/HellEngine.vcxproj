@@ -112,6 +112,8 @@
     <ClInclude Include="ModuleScene.h" />
     <ClInclude Include="ModuleTextureManager.h" />
     <ClInclude Include="ModuleTime.h" />
+    <ClInclude Include="ModuleTrueFont.h" />
+    <ClInclude Include="ModuleUI.h" />
     <ClInclude Include="ModuleWindow.h" />
     <ClInclude Include="openGL.h" />
     <ClInclude Include="physicsFunctions.h" />
@@ -190,6 +192,8 @@
     <ClCompile Include="ModuleScene.cpp" />
     <ClCompile Include="ModuleTextureManager.cpp" />
     <ClCompile Include="ModuleTime.cpp" />
+    <ClCompile Include="ModuleTrueFont.cpp" />
+    <ClCompile Include="ModuleUI.cpp" />
     <ClCompile Include="ModuleWindow.cpp" />
     <ClCompile Include="physicsFunctions.cpp" />
     <ClCompile Include="SceneLoader.cpp" />
@@ -261,9 +265,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>$(ProjectDir)Assimp\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)SDL_ttf\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)SDL\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(ProjectDir)Assimp\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)SDL_ttf\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)SDL\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -274,7 +282,8 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glu32.lib;SDL2_ttf.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\mrodm\source\repos\HellEngine\HellEngine\SDL\libx86;C:\Users\mrodm\source\repos\HellEngine\HellEngine\SDL_ttf\libx86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
