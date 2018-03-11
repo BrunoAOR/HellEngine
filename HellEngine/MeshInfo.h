@@ -28,7 +28,7 @@ struct MeshInfo
 	uint elementsCount = 0;
 	std::vector<float3> vertices;
 	std::vector<uint> indices;
-	std::map<const char*, Bone*> bones;
+	std::vector<Bone*> bones;
 };
 
 #endif // !__H_MESH_INFO__

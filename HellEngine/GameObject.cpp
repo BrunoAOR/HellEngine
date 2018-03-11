@@ -606,3 +606,29 @@ std::vector<GameObject*> GameObject::GetChildren()
 {
 	return children;
 }
+
+GameObject* GameObject::FindByName(const char * lookUpName)
+{
+	GameObject* go = this;
+	std::vector<GameObject*> children;
+
+	std::stack<GameObject*> stack;
+	stack.push(go);
+
+	while (!stack.empty())
+	{
+		go = stack.top();
+		stack.pop();
+
+		if (strcmp(lookUpName, go->name.c_str()) == 0)
+		{
+			return go;
+		}
+
+		children = go->GetChildren();
+		for (int i = children.size(); i > 0; i--)
+			stack.push(children.at(i - 1));
+	}
+
+	return nullptr;
+}

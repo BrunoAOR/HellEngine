@@ -34,10 +34,9 @@ ModuleScene::~ModuleScene()
 		glDeleteBuffers(1, &meshInfo->ebo);
 		
 		/* Delete Bones */
-		for (std::map<const char*, Bone*>::iterator it = meshInfo->bones.begin(); it != meshInfo->bones.end(); ++it)
+		for (Bone* bone : meshInfo->bones)
 		{
 			/* DO NOT delete it->first because it points to the same memLocation as bone->name which will be deleted next */
-			Bone* bone = it->second;
 			delete[] bone->name;
 			delete[] bone->weights;
 			delete bone;

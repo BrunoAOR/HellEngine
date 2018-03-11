@@ -22,6 +22,8 @@ public:
 	bool RemoveChild(GameObject* childToRemove);
     std::vector<GameObject*> GetChildren();
 
+	GameObject* FindByName(const char* lookUpName);
+
 	std::vector<Component*> GetComponents(ComponentType type);
 	Component* GetComponent(ComponentType type);
 	Component* AddComponent(ComponentType type);

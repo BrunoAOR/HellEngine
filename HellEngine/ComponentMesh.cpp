@@ -1,7 +1,9 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include "Brofiler/include/Brofiler.h"
 #include "ImGui/imgui.h"
 #include "Application.h"
+#include "ComponentAnimation.h"
 #include "ComponentMesh.h"
 #include "ComponentTransform.h"
 #include "ComponentType.h"
@@ -37,6 +39,22 @@ ComponentMesh::~ComponentMesh()
 	if (meshesCount == 0)
 	{
 		defaultModelInfos.clear();
+	}
+}
+
+void ComponentMesh::Update()
+{
+	const ModelInfo* modelInfo = GetActiveModelInfo();
+	if (modelInfo)
+	{
+		for (uint meshInfosIndex : modelInfo->meshInfosIndexes)
+		{
+			MeshInfo* meshInfo = App->scene->meshes[meshInfosIndex];
+			if (!meshInfo->bones.empty())
+			{
+				ApplyVertexSkinning(meshInfo);
+			}
+		}
 	}
 }
 
@@ -458,4 +476,111 @@ void ComponentMesh::UpdateBoundingBox()
 	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
 	if (transform)
 		transform->UpdateBoundingBox(this);
+}
+
+struct matrix {
+	matrix(float4x4 mgl) 
+		: a1(mgl[0][0]), a2(mgl[0][1]), a3(mgl[0][2]), a4(mgl[0][3])
+		, b1(mgl[1][0]), b2(mgl[1][1]), b3(mgl[1][2]), b4(mgl[1][3])
+		, c1(mgl[2][0]), c2(mgl[2][1]), c3(mgl[2][2]), c4(mgl[2][3])
+		, d1(mgl[3][0]), d2(mgl[3][1]), d3(mgl[3][2]), d4(mgl[3][3])
+	{}
+
+	float a1, a2, a3, a4;
+	float b1, b2, b3, b4;
+	float c1, c2, c3, c4;
+	float d1, d2, d3, d4;
+};
+
+void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
+{
+	/* Find the ComponentAnimation in the siblings to identify the Root Node of the animation */
+	std::vector<GameObject*> siblings = gameObject->GetParent()->GetChildren();
+	ComponentAnimation* animationComponent = nullptr;
+	BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Find animComponent", Profiler::Color::Crimson);
+	for (GameObject* sibling : siblings)
+	{
+		animationComponent = (ComponentAnimation*)sibling->GetComponent(ComponentType::ANIMATION);
+		if (animationComponent)
+			break;
+	}
+
+	if (animationComponent)
+	{
+		BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Get root inverse", Profiler::Color::Crimson);
+		GameObject* root = animationComponent->gameObject;
+
+		/* Get the rootToWorldInverse matrix because all bone inverse matrices are in model (Root) coordinate space */
+		ComponentTransform* rootTransform = (ComponentTransform*)root->GetComponent(ComponentType::TRANSFORM);
+		assert(rootTransform);
+		float4x4 rootToWorld = rootTransform->GetModelMatrix4x4().Transposed();
+		//rootToWorldInverse.Inverse();
+		float4x4 rootToWorldInverse = rootToWorld.Inverted();
+
+		/* Get the pointer to the data in VRAM (map buffer) */
+		glBindVertexArray(meshInfo->vao);
+		glBindBuffer(GL_ARRAY_BUFFER, meshInfo->vbo);
+		float* vramData = (float*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+
+		/* Reset all vertices in the VRAM to ZERO */
+		BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Reset VRAM to zero", Profiler::Color::Crimson);
+		uint verticesCount = meshInfo->vertices.size();
+		for (uint v = 0; v < verticesCount; ++v)
+		{
+			memset(vramData + (v * 8), 0, sizeof(float) * 3);
+			//vramData[v * 8 + 0] = 0;// meshInfo->vertices[v].x;// 0;
+			//vramData[v * 8 + 1] = 0;// meshInfo->vertices[v].y;// 0;
+			//vramData[v * 8 + 2] = 0;// meshInfo->vertices[v].z;// 0;
+
+			/* TODO: Reset normals here */
+
+			/* Leave UVcoords (positoins 6 & 7) untouched */
+		}
+
+		/* Iterate through bones and add their effect to the adecuate vertices */
+		BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Apply bone effects", Profiler::Color::Crimson);
+		for (Bone* bone : meshInfo->bones)
+		{	
+			/* Find the GameObject (former aiNode) with the same name */
+			GameObject* nodeGo = root->FindByName(bone->name);
+			assert(nodeGo);
+			/* Get the nodeGo transformation matrix in the coordinate space of the animation ROOT object */
+			ComponentTransform* nodeTransform = (ComponentTransform*)nodeGo->GetComponent(ComponentType::TRANSFORM);
+			assert(nodeTransform);
+			
+			float4x4 nodeTransformation = nodeTransform->GetModelMatrix4x4().Transposed();
+			nodeTransformation = rootToWorldInverse * nodeTransformation;
+
+			float4x4 matrixProduct = nodeTransformation * bone->inverseBindMatrix;
+
+			matrixProduct = matrixProduct;
+			matrix mat(matrixProduct);
+
+			/* Iterate through all Bone weights and apply their effects */
+			BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Apply individual weights", Profiler::Color::Crimson);
+			uint weightsCount = bone->numWeights;
+			uint vertexIndex = 0;
+			for (uint w = 0; w < weightsCount; ++w)
+			{
+				/* Calculate effect */
+				const BoneWeight& boneWeight = bone->weights[w];
+				vertexIndex = boneWeight.vertexIndex;
+				const float3& originalVertex = meshInfo->vertices[vertexIndex];
+				//float3 vertexEffect = boneWeight.weight * matrixProduct.TransformPos(originalVertex);
+
+				/* Apply effect */
+				vramData[vertexIndex * 8 + 0] += boneWeight.weight * (mat.a1 * originalVertex.x + mat.a2 * originalVertex.y + mat.a3 * originalVertex.z + mat.a4);
+				vramData[vertexIndex * 8 + 1] += boneWeight.weight * (mat.b1 * originalVertex.x + mat.b2 * originalVertex.y + mat.b3 * originalVertex.z + mat.b4);
+				vramData[vertexIndex * 8 + 2] += boneWeight.weight * (mat.c1 * originalVertex.x + mat.c2 * originalVertex.y + mat.c3 * originalVertex.z + mat.c4);
+				
+				//vramData[vertexIndex * 8 + 0] += vertexEffect.x;
+				//vramData[vertexIndex * 8 + 1] += vertexEffect.y;
+				//vramData[vertexIndex * 8 + 2] += vertexEffect.z;
+			}
+		}
+
+		/* Unmap buffer */
+		glUnmapBuffer(GL_ARRAY_BUFFER);
+		vramData = nullptr;
+	}
 }

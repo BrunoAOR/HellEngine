@@ -246,6 +246,7 @@ void SceneLoader::GatherBonesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo)
 {
 	if (assimpMesh->HasBones())
 	{
+		meshInfo->bones.reserve(assimpMesh->mNumBones);
 		for (uint i = 0; i < assimpMesh->mNumBones; ++i)
 		{
 			aiBone* assimpBone = assimpMesh->mBones[i];
@@ -274,7 +275,7 @@ void SceneLoader::GatherBonesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo)
 				abm.d1, abm.d2, abm.d3, abm.d4
 			);
 
-			meshInfo->bones.insert(std::make_pair(bone->name, bone));
+			meshInfo->bones.push_back(bone);
 		}
 	}
 }

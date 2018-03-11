@@ -18,6 +18,8 @@ public:
 	ComponentMesh(GameObject* owner);
 	virtual ~ComponentMesh() override;
 
+	void Update() override;
+
 	const ModelInfo* GetActiveModelInfo() const;
 	bool SetActiveModelInfo(int index);
 	void SetCustomModel(const ModelInfo& modelInfo);
@@ -33,6 +35,7 @@ private:
 	void CreateSphereMeshInfo(uint rings, uint sections);
 
 	void UpdateBoundingBox();
+	void ApplyVertexSkinning(const MeshInfo* meshInfo);
 
 private:
 
