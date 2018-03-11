@@ -43,3 +43,23 @@ const char * ComponentUIElement::GetUITypeString(UIElementType uiType)
 		return "";
 	}
 }
+
+SDL_Rect * ComponentUIElement::GetRect()
+{
+	return rect;
+}
+
+void ComponentUIElement::SetRect(SDL_Rect * rectValue)
+{
+	rect = rectValue;
+}
+
+bool ComponentUIElement::GetVisible()
+{
+	return visible;
+}
+
+void ComponentUIElement::SetVisible(bool visibleValue)
+{
+	visible = visibleValue;
+}

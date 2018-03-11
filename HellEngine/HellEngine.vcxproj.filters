@@ -348,6 +348,10 @@
     <ClInclude Include="ModuleTrueFont.h" />
     <ClInclude Include="ModuleUI.h" />
     <ClInclude Include="ComponentUIElement.h" />
+    <ClInclude Include="ComponentUiImage.h" />
+    <ClInclude Include="ComponentUiLabel.h" />
+    <ClInclude Include="ComponentUiInputText.h" />
+    <ClInclude Include="ComponentUiButton.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -563,6 +567,10 @@
     <ClCompile Include="ModuleTrueFont.cpp" />
     <ClCompile Include="ModuleUI.cpp" />
     <ClCompile Include="ComponentUIElement.cpp" />
+    <ClCompile Include="ComponentUiImage.cpp" />
+    <ClCompile Include="ComponentUiLabel.cpp" />
+    <ClCompile Include="ComponentUiInputText.cpp" />
+    <ClCompile Include="ComponentUiButton.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="MathGeoLib\src\Math\float2.inl">

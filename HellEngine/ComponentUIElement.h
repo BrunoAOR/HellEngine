@@ -2,6 +2,7 @@
 #define __H_COMPONENT_UI_ELEMENT__
 
 #include "Component.h"
+#include "SDL\include\SDL_rect.h"
 
 enum class UIElementType {IMG, LABEL, BUTTON, INPUT_TEXT};
 const UIElementType UI_TYPES[] = { UIElementType::IMG, UIElementType::LABEL, UIElementType::BUTTON, UIElementType::INPUT_TEXT };
@@ -20,8 +21,17 @@ public:
 
 	static const char* GetUITypeString(UIElementType uiType);
 	
+	SDL_Rect * GetRect();
+	void SetRect(SDL_Rect * rectValue);
+	bool GetVisible();
+	void SetVisible(bool visibleValue);
+
 private:
+
 	UIElementType uiType;
+
+	SDL_Rect* rect;
+	bool visible;
 };
 
 #endif __H_COMPONENT_UI_ELEMENT__
