@@ -20,6 +20,8 @@ private:
 
 	void LoadNode(const aiNode* node, GameObject* parent);
 	void LoadMeshes();
+	void StoreBoneToTransformLinks();
+
 	MeshInfo* CreateMeshInfo(const aiMesh* assimpMesh);
 	void GatherVerticesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo);
 	void GatherBonesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo);
@@ -32,6 +34,9 @@ private:
 	const aiScene* assimpScene = nullptr;
 	const char* currentModelPath = nullptr;
 	unsigned int moduleSceneMeshesOffset = 0;
+
+	std::vector<MeshInfo*> currentMeshInfos;
+	GameObject* rootNode = nullptr;
 
 };
 

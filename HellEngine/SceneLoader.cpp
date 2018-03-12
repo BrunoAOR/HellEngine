@@ -32,11 +32,16 @@ bool SceneLoader::Load(const char* modelPath, GameObject* parent)
 		currentModelPath = modelPath;
 		LoadMeshes();
 		LoadNode(assimpScene->mRootNode, parent);
+		StoreBoneToTransformLinks();
 
 		aiReleaseImport(assimpScene);
 		assimpScene = nullptr;
 		currentModelPath = nullptr;
 		moduleSceneMeshesOffset = 0;
+
+		currentMeshInfos.clear();
+		rootNode = nullptr;
+		
 		return true;
 	}
 	else
@@ -54,6 +59,10 @@ void SceneLoader::LoadNode(const aiNode* node, GameObject* parent)
 	GameObject* go = App->scene->CreateGameObject();
 	go->name = node->mName.data;
 	go->SetParent(parent);
+
+	/* Cache the root node */
+	if (!rootNode)
+		rootNode = go;
 
 	/* Add Transform */
 	ComponentTransform* transform = (ComponentTransform*)go->AddComponent(ComponentType::TRANSFORM);
@@ -114,7 +123,24 @@ void SceneLoader::LoadMeshes()
 	{
 		const aiMesh* assimpMesh = assimpScene->mMeshes[i];
 		MeshInfo* meshInfo = CreateMeshInfo(assimpMesh);
+		currentMeshInfos.push_back(meshInfo);
 		App->scene->meshes.push_back(meshInfo);
+	}
+}
+
+void SceneLoader::StoreBoneToTransformLinks()
+{
+	for (MeshInfo* meshInfo : currentMeshInfos)
+	{
+		for (Bone* bone : meshInfo->bones)
+		{
+			GameObject* go = rootNode->FindByName(bone->name);
+			assert(go);
+			ComponentTransform* transform = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM);
+			assert(transform);
+
+			bone->connectedTransform = transform;
+		}
 	}
 }
 
@@ -249,6 +275,8 @@ void SceneLoader::GatherBonesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo)
 		meshInfo->bones.reserve(assimpMesh->mNumBones);
 		for (uint i = 0; i < assimpMesh->mNumBones; ++i)
 		{
+			std::map<float, std::vector<uint>> boneWeightsGroup;
+
 			aiBone* assimpBone = assimpMesh->mBones[i];
 			Bone* bone = new Bone();
 
@@ -265,6 +293,7 @@ void SceneLoader::GatherBonesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo)
 			{
 				bone->weights[w].vertexIndex = assimpBone->mWeights[w].mVertexId;
 				bone->weights[w].weight = assimpBone->mWeights[w].mWeight;
+				boneWeightsGroup[bone->weights[w].weight].push_back(bone->weights[w].vertexIndex);
 			}
 
 			aiMatrix4x4& abm = assimpBone->mOffsetMatrix;
@@ -275,7 +304,16 @@ void SceneLoader::GatherBonesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo)
 				abm.d1, abm.d2, abm.d3, abm.d4
 			);
 
+
+
 			meshInfo->bones.push_back(bone);
+			
+			for (std::map<float, std::vector<uint>>::iterator it = boneWeightsGroup.begin(); it != boneWeightsGroup.end(); ++it)
+			{
+				VerticesGroup& verticesGroup = meshInfo->verticesGroups[it->second];
+				verticesGroup.bones.push_back(bone);
+				verticesGroup.weights.push_back(it->first);
+			}
 		}
 	}
 }
