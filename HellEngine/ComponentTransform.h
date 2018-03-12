@@ -19,15 +19,15 @@ public:
 
 	bool Equals(ComponentTransform* t);
 
-	float3 GetPosition();
-	float3 GetScale();
-	float3 GetRotationRad();
-	float3 GetRotationDeg();
-	Quat GetRotationQuat();
+	float3 GetPosition() const;
+	float3 GetScale() const;
+	float3 GetRotationRad() const;
+	float3 GetRotationDeg() const;
+	Quat GetRotationQuat() const;
 
-	AABB GetBoundingBox();
+	AABB GetBoundingBox() const;
 
-	bool GetIsStatic();
+	bool GetIsStatic() const;
 	void SetIsStatic(bool isStatic);
 
 	void SetPosition(float x, float y, float z);
@@ -39,8 +39,8 @@ public:
 	void UpdateBoundingBox(ComponentMesh* mesh = nullptr);
 	void EncloseBoundingBox(ComponentTransform* transform, ComponentMesh* mesh);
 
-	float* GetModelMatrix();
-	float4x4& GetModelMatrix4x4();
+	const float4x4& GetModelMatrix4x4() const;
+	const float* GetModelMatrix() const;
 
 	void RecalculateLocalMatrix(ComponentTransform* newParent);
 
@@ -54,7 +54,8 @@ public:
 
 private:
 
-	float4x4& UpdateLocalModelMatrix();
+	void UpdateLocalModelMatrix();
+	void UpdateWorldModelMatrix();
 	void InitializeBaseBB();
 	void CreateBBVAO();
 

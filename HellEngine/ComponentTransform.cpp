@@ -28,6 +28,7 @@ ComponentTransform::ComponentTransform(GameObject* owner) : Component(owner)
 		CreateBBVAO();
 	}
 	UpdateBoundingBox();
+	UpdateLocalModelMatrix();
 	//LOGGER("Component of type '%s'", GetString(type));
 }
 
@@ -126,7 +127,7 @@ bool ComponentTransform::Equals(ComponentTransform * t)
 	return position.Equals(t->position) && scale.Equals(t->scale) && rotation.Equals(t->rotation);
 }
 
-bool ComponentTransform::GetIsStatic()
+bool ComponentTransform::GetIsStatic() const
 {
 	return isStatic;
 }
@@ -165,34 +166,34 @@ void ComponentTransform::SetIsStatic(bool isStatic)
 	}
 }
 
-float3 ComponentTransform::GetPosition()
+float3 ComponentTransform::GetPosition() const
 {
 	return position;
 }
 
-float3 ComponentTransform::GetScale()
+float3 ComponentTransform::GetScale() const
 {
 	return scale;
 }
 
-float3 ComponentTransform::GetRotationRad()
+float3 ComponentTransform::GetRotationRad() const
 {
 	return rotation.ToEulerXYZ();
 }
 
-float3 ComponentTransform::GetRotationDeg()
+float3 ComponentTransform::GetRotationDeg() const
 {
 	float3 rotationRad = GetRotationRad();
 
 	return float3(RadToDeg(rotationRad.x), RadToDeg(rotationRad.y), RadToDeg(rotationRad.z));
 }
 
-Quat ComponentTransform::GetRotationQuat()
+Quat ComponentTransform::GetRotationQuat() const
 {
 	return rotation;
 }
 
-AABB ComponentTransform::GetBoundingBox()
+AABB ComponentTransform::GetBoundingBox() const
 {
 	return boundingBox;
 }
@@ -204,6 +205,7 @@ void ComponentTransform::SetPosition(float x, float y, float z)
 		position.x = x;
 		position.y = y;
 		position.z = z;
+		UpdateLocalModelMatrix();
 	}
 }
 
@@ -214,6 +216,7 @@ void ComponentTransform::SetScale(float x, float y, float z)
 		scale.x = x;
 		scale.y = y;
 		scale.z = z;
+		UpdateLocalModelMatrix();
 	}
 }
 
@@ -222,6 +225,7 @@ void ComponentTransform::SetRotation(Quat newRotation)
 	if (!isStatic)
 	{
 		rotation = newRotation;
+		UpdateLocalModelMatrix();
 	}
 }
 
@@ -230,6 +234,7 @@ void ComponentTransform::SetRotationRad(float x, float y, float z)
 	if (!isStatic)
 	{
 		rotation = Quat::FromEulerXYZ(x, y, z);
+		UpdateLocalModelMatrix();
 	}
 }
 
@@ -313,13 +318,6 @@ void ComponentTransform::EncloseBoundingBox(ComponentTransform* transform, Compo
 	}
 }
 
-
-
-float* ComponentTransform::GetModelMatrix()
-{
-	return GetModelMatrix4x4().ptr();
-}
-
 void ComponentTransform::RecalculateLocalMatrix(ComponentTransform* newParent)
 {
 	/* Calculate the new local model matrix */
@@ -340,6 +338,8 @@ void ComponentTransform::RecalculateLocalMatrix(ComponentTransform* newParent)
 	rotationDeg[0] = RadToDeg(rotEuler.x);
 	rotationDeg[1] = RadToDeg(rotEuler.y);
 	rotationDeg[2] = RadToDeg(rotEuler.z);
+	
+	UpdateLocalModelMatrix();
 }
 
 void ComponentTransform::OnEditor()
@@ -397,24 +397,17 @@ int ComponentTransform::MaxCountInGameObject()
 	return 1;
 }
 
-float4x4& ComponentTransform::GetModelMatrix4x4()
+const float4x4& ComponentTransform::GetModelMatrix4x4() const
 {
-	UpdateLocalModelMatrix();
-
-	worldModelMatrix = localModelMatrix;
-
-	GameObject* parent = gameObject->GetParent();
-	if (parent)
-	{
-		ComponentTransform* parentTransform = (ComponentTransform*)parent->GetComponent(ComponentType::TRANSFORM);
-		if (parentTransform)
-			worldModelMatrix = worldModelMatrix * parentTransform->GetModelMatrix4x4();
-	}
-
 	return worldModelMatrix;
 }
 
-float4x4& ComponentTransform::UpdateLocalModelMatrix()
+const float* ComponentTransform::GetModelMatrix() const
+{
+	return worldModelMatrix.ptr();
+}
+
+void ComponentTransform::UpdateLocalModelMatrix()
 {
 	BROFILER_CATEGORY("ModuleScene::Scale", Profiler::Color::PapayaWhip);
 	float4x4 scaleMatrix = float4x4::Scale(scale.x, scale.y, scale.z);
@@ -424,8 +417,35 @@ float4x4& ComponentTransform::UpdateLocalModelMatrix()
 	BROFILER_CATEGORY("ModuleScene::Translation", Profiler::Color::PapayaWhip);
 	float4x4 translationMatrix = float4x4::TranslationToRotation(position.x, position.y, position.z);
 	BROFILER_CATEGORY("ModuleScene::Memcpy", Profiler::Color::PapayaWhip);
-	memcpy_s(localModelMatrix.ptr(), sizeof(float) * 16, (translationMatrix * rotationMatrix * scaleMatrix).Transposed().ptr(), sizeof(float) * 16);
-	return localModelMatrix;
+	memcpy_s(localModelMatrix.ptr(), sizeof(float) * 16, (translationMatrix * rotationMatrix * scaleMatrix).Transposed().ptr(), sizeof(float) * 16);	
+	
+	UpdateWorldModelMatrix();
+}
+
+void ComponentTransform::UpdateWorldModelMatrix()
+{
+	worldModelMatrix = localModelMatrix;
+
+	/* Calculate world Matrix */
+	GameObject* parent = gameObject->GetParent();
+	if (parent)
+	{
+		ComponentTransform* parentTransform = (ComponentTransform*)parent->GetComponent(ComponentType::TRANSFORM);
+		if (parentTransform)
+			worldModelMatrix = worldModelMatrix * parentTransform->GetModelMatrix4x4();
+	}
+
+	/* Inform children of the change so they can update their worldMatrix */
+
+	std::vector<GameObject*> children = gameObject->GetChildren();
+	for (GameObject* child : children)
+	{
+		ComponentTransform* childTransform = (ComponentTransform*)child->GetComponent(ComponentType::TRANSFORM);
+		if (childTransform)
+		{
+			childTransform->UpdateWorldModelMatrix();
+		}
+	}
 }
 
 void ComponentTransform::InitializeBaseBB()
@@ -594,5 +614,6 @@ void ComponentTransform::ApplyWorldTransformationMatrix(const float4x4& worldTra
 
 		BROFILER_CATEGORY("ComponentTransform::UpdateBoundingBox", Profiler::Color::PapayaWhip);
 		UpdateBoundingBox();
+		UpdateLocalModelMatrix();
 	}
 }

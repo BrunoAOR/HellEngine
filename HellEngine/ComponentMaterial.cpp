@@ -97,7 +97,7 @@ void ComponentMaterial::Update()
 			}
 
 			if (insideFrustum) {
-				float* modelMatrix = transform->GetModelMatrix();
+				const float* modelMatrix = transform->GetModelMatrix();
 
 				BROFILER_CATEGORY("ComponentMaterial::GetVao", Profiler::Color::Gold);
 				const ModelInfo* modelInfo = mesh->GetActiveModelInfo();
@@ -401,7 +401,7 @@ Shader * ComponentMaterial::ShaderAlreadyLinked()
 	return s;
 }
 
-bool ComponentMaterial::DrawElements(float * modelMatrix, const ModelInfo* modelInfo)
+bool ComponentMaterial::DrawElements(const float* modelMatrix, const ModelInfo* modelInfo)
 {
 	if (IsValid() && modelInfo != nullptr && modelInfo->meshInfosIndexes.size() > 0)
 	{
