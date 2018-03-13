@@ -409,16 +409,14 @@ const float* ComponentTransform::GetModelMatrix() const
 
 void ComponentTransform::UpdateLocalModelMatrix()
 {
-	BROFILER_CATEGORY("ModuleScene::Scale", Profiler::Color::PapayaWhip);
 	float4x4 scaleMatrix = float4x4::Scale(scale.x, scale.y, scale.z);
-	BROFILER_CATEGORY("ModuleScene::Rotation", Profiler::Color::PapayaWhip);
-	//float4x4 rotationMatrix = float4x4::FromQuat(rotation);
 	float4x4 rotationMatrix = float4x4::QuatToRotation(rotation);
-	BROFILER_CATEGORY("ModuleScene::Translation", Profiler::Color::PapayaWhip);
 	float4x4 translationMatrix = float4x4::TranslationToRotation(position.x, position.y, position.z);
-	BROFILER_CATEGORY("ModuleScene::Memcpy", Profiler::Color::PapayaWhip);
-	memcpy_s(localModelMatrix.ptr(), sizeof(float) * 16, (translationMatrix * rotationMatrix * scaleMatrix).Transposed().ptr(), sizeof(float) * 16);	
+	translationMatrix.LeftMultiply(rotationMatrix);
+	translationMatrix.LeftMultiply(scaleMatrix);
+	memcpy_s(localModelMatrix.ptr(), sizeof(float) * 16, translationMatrix.Transposed().ptr(), sizeof(float) * 16);	
 	
+	BROFILER_CATEGORY("ComponentTransform::UpdateWorlMatrix", Profiler::Color::PapayaWhip);
 	UpdateWorldModelMatrix();
 }
 
@@ -432,7 +430,7 @@ void ComponentTransform::UpdateWorldModelMatrix()
 	{
 		ComponentTransform* parentTransform = (ComponentTransform*)parent->GetComponent(ComponentType::TRANSFORM);
 		if (parentTransform)
-			worldModelMatrix = worldModelMatrix * parentTransform->GetModelMatrix4x4();
+			worldModelMatrix.LeftMultiply(parentTransform->GetModelMatrix4x4());
 	}
 
 	/* Inform children of the change so they can update their worldMatrix */
