@@ -1,5 +1,4 @@
 #include <stack>
-#include "Brofiler/include/Brofiler.h"
 #include "ImGui/imgui.h"
 #include "MathGeoLib/src/Math/TransformOps.h"
 #include "Application.h"
@@ -28,7 +27,7 @@ ComponentTransform::ComponentTransform(GameObject* owner) : Component(owner)
 		CreateBBVAO();
 	}
 	UpdateBoundingBox();
-	UpdateLocalModelMatrix();
+	UpdateMatrices();
 	//LOGGER("Component of type '%s'", GetString(type));
 }
 
@@ -99,17 +98,24 @@ void ComponentTransform::Update()
 			GLfloat uniqueVertices[24] = { SP_ARR_3(vA), SP_ARR_3(vB), SP_ARR_3(vC), SP_ARR_3(vD), SP_ARR_3(vE), SP_ARR_3(vF), SP_ARR_3(vG), SP_ARR_3(vH) };
 			GLfloat uniqueColors[24] = { SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen), SP_ARR_3(cGreen) };
 
+			glBindVertexArray(baseBoundingBoxMeshInfo.vao);
+			glBindBuffer(GL_ARRAY_BUFFER, baseBoundingBoxMeshInfo.vbo);
+			float* oldBBData = (float*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+
 			for (int i = 0; i < 8 * 6; ++i)
 			{
 				if (i % 6 == 0 || i % 6 == 1 || i % 6 == 2)
 					boundingBoxUniqueData[i] = uniqueVertices[(i / 6) * 3 + (i % 6)];
 				else
 					boundingBoxUniqueData[i] = uniqueColors[(i / 6) * 3 + ((i % 6) - 3)];
+
+				oldBBData[i] = boundingBoxUniqueData[i];
 			}
 
 			glBindVertexArray(baseBoundingBoxMeshInfo.vao);
 			glBindBuffer(GL_ARRAY_BUFFER, baseBoundingBoxMeshInfo.vbo);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8 * 6, boundingBoxUniqueData, GL_DYNAMIC_DRAW);
+			glUnmapBuffer(GL_ARRAY_BUFFER);
 
 			glBindVertexArray(GL_NONE);
 			glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
@@ -205,7 +211,7 @@ void ComponentTransform::SetPosition(float x, float y, float z)
 		position.x = x;
 		position.y = y;
 		position.z = z;
-		UpdateLocalModelMatrix();
+		UpdateMatrices();
 	}
 }
 
@@ -216,7 +222,7 @@ void ComponentTransform::SetScale(float x, float y, float z)
 		scale.x = x;
 		scale.y = y;
 		scale.z = z;
-		UpdateLocalModelMatrix();
+		UpdateMatrices();
 	}
 }
 
@@ -225,7 +231,7 @@ void ComponentTransform::SetRotation(Quat newRotation)
 	if (!isStatic)
 	{
 		rotation = newRotation;
-		UpdateLocalModelMatrix();
+		UpdateMatrices();
 	}
 }
 
@@ -234,7 +240,7 @@ void ComponentTransform::SetRotationRad(float x, float y, float z)
 	if (!isStatic)
 	{
 		rotation = Quat::FromEulerXYZ(x, y, z);
-		UpdateLocalModelMatrix();
+		UpdateMatrices();
 	}
 }
 
@@ -248,72 +254,39 @@ void ComponentTransform::SetRotationDeg(float x, float y, float z)
 
 void ComponentTransform::UpdateBoundingBox(ComponentMesh* mesh)
 {
-	std::stack<GameObject*> stack;
+	boundingBox.SetNegativeInfinity();
 
-	GameObject* go = gameObject;
-	std::vector<GameObject*> children;
-	ComponentTransform* t = nullptr;
-	ComponentMesh* m = nullptr;
-
-	stack.push(go);
-
-	while (!stack.empty()) 
+	if (mesh)
 	{
-		go = stack.top();
-		stack.pop();
-		BROFILER_CATEGORY("ComponentTransform::GetComponents", Profiler::Color::PapayaWhip);
-		t = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM);
-
-		if (t) 
-		{
-			t->boundingBox.SetNegativeInfinity();
-
-			if (mesh) 
-			{
-				BROFILER_CATEGORY("ComponentTransform::EncloseNegative", Profiler::Color::PapayaWhip);
-				EncloseBoundingBox(t, mesh);		
-			}
-			else 
-			{
-				t->boundingBox.Enclose(baseBoundingBox.data(), baseBoundingBox.size());
-			}
-
-			BROFILER_CATEGORY("ComponentTransform::TransformBB", Profiler::Color::PapayaWhip);
-			t->boundingBox.TransformBB(GetModelMatrix4x4().Transposed());
-
-			children = go->GetChildren();
-
-			for (int i = children.size(); i > 0; i--)
-				stack.push(children.at(i - 1));
-		}
+		EncloseBoundingBox(mesh);
 	}
+	else
+	{
+		boundingBox.Enclose(baseBoundingBox.data(), baseBoundingBox.size());
+	}
+
+	boundingBox.TransformBB(GetModelMatrix4x4().Transposed());
 }
 
-void ComponentTransform::EncloseBoundingBox(ComponentTransform* transform, ComponentMesh* mesh)
+
+void ComponentTransform::EncloseBoundingBox(ComponentMesh* mesh)
 {
 	if (mesh->GetActiveModelInfo() != nullptr) {
-
-		BROFILER_CATEGORY("ComponentTransform::GetModel", Profiler::Color::PapayaWhip);
 		uint size = mesh->GetActiveModelInfo()->meshInfosIndexes.size();
 
 		if (size > 0) {
-			BROFILER_CATEGORY("ComponentTransform::Iteration", Profiler::Color::PapayaWhip);
 			float3 minPoint(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
 			float3 maxPoint(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest());
 			for (uint i = 0; i < size; i++) {
-				BROFILER_CATEGORY("ComponentTransform::GetVertices", Profiler::Color::PapayaWhip);
 				std::vector<float3> vertices = App->scene->meshes.at(mesh->GetActiveModelInfo()->meshInfosIndexes.at(i))->vertices;
 
 				for (uint j = 0; j < vertices.size(); j++) {
-					BROFILER_CATEGORY("ComponentTransform::MinCalculation", Profiler::Color::PapayaWhip);
 					minPoint.ModifyToMin(vertices.at(j));
-					BROFILER_CATEGORY("ComponentTransform::MaxCalculation", Profiler::Color::PapayaWhip);
 					maxPoint.ModifyToMax(vertices.at(j));
 				}
 			}
 
-			BROFILER_CATEGORY("ComponentTransform::Enclose", Profiler::Color::PapayaWhip);
-			transform->boundingBox.Enclose(minPoint, maxPoint);
+			boundingBox.Enclose(minPoint, maxPoint);
 		}
 	}
 }
@@ -338,8 +311,9 @@ void ComponentTransform::RecalculateLocalMatrix(ComponentTransform* newParent)
 	rotationDeg[0] = RadToDeg(rotEuler.x);
 	rotationDeg[1] = RadToDeg(rotEuler.y);
 	rotationDeg[2] = RadToDeg(rotEuler.z);
-	
-	UpdateLocalModelMatrix();
+
+	UpdateMatrices(&newParentWorldMatrix);
+	//UpdateBoundingBox();
 }
 
 void ComponentTransform::OnEditor()
@@ -407,33 +381,41 @@ const float* ComponentTransform::GetModelMatrix() const
 	return worldModelMatrix.ptr();
 }
 
-void ComponentTransform::UpdateLocalModelMatrix()
+void ComponentTransform::UpdateMatrices(const float4x4* newParentWorldMatrix)
 {
-	BROFILER_CATEGORY("ModuleScene::Scale", Profiler::Color::PapayaWhip);
-	float4x4 scaleMatrix = float4x4::Scale(scale.x, scale.y, scale.z);
-	BROFILER_CATEGORY("ModuleScene::Rotation", Profiler::Color::PapayaWhip);
-	//float4x4 rotationMatrix = float4x4::FromQuat(rotation);
-	float4x4 rotationMatrix = float4x4::QuatToRotation(rotation);
-	BROFILER_CATEGORY("ModuleScene::Translation", Profiler::Color::PapayaWhip);
-	float4x4 translationMatrix = float4x4::TranslationToRotation(position.x, position.y, position.z);
-	BROFILER_CATEGORY("ModuleScene::Memcpy", Profiler::Color::PapayaWhip);
-	memcpy_s(localModelMatrix.ptr(), sizeof(float) * 16, (translationMatrix * rotationMatrix * scaleMatrix).Transposed().ptr(), sizeof(float) * 16);	
-	
-	UpdateWorldModelMatrix();
+	UpdateLocalModelMatrix();
+	UpdateWorldModelMatrix(newParentWorldMatrix);
 }
 
-void ComponentTransform::UpdateWorldModelMatrix()
+void ComponentTransform::UpdateLocalModelMatrix()
+{
+	float4x4 scaleMatrix = float4x4::Scale(scale.x, scale.y, scale.z);
+	float4x4 rotationMatrix = float4x4::QuatToRotation(rotation);
+	float4x4 translationMatrix = float4x4::TranslationToRotation(position.x, position.y, position.z);
+	memcpy_s(localModelMatrix.ptr(), sizeof(float) * 16, (translationMatrix * rotationMatrix * scaleMatrix).Transposed().ptr(), sizeof(float) * 16);
+}
+
+void ComponentTransform::UpdateWorldModelMatrix(const float4x4* newParentWorldMatrix)
 {
 	worldModelMatrix = localModelMatrix;
 
 	/* Calculate world Matrix */
-	GameObject* parent = gameObject->GetParent();
-	if (parent)
+	if (newParentWorldMatrix == nullptr)
 	{
-		ComponentTransform* parentTransform = (ComponentTransform*)parent->GetComponent(ComponentType::TRANSFORM);
-		if (parentTransform)
-			worldModelMatrix = worldModelMatrix * parentTransform->GetModelMatrix4x4();
+		GameObject* parent = gameObject->GetParent();
+		if (parent)
+		{
+			ComponentTransform* parentTransform = (ComponentTransform*)parent->GetComponent(ComponentType::TRANSFORM);
+			if (parentTransform)
+				worldModelMatrix = worldModelMatrix * parentTransform->GetModelMatrix4x4();
+		}
 	}
+	else
+	{
+		worldModelMatrix = worldModelMatrix * (*newParentWorldMatrix);
+	}
+
+	UpdateBoundingBox();
 
 	/* Inform children of the change so they can update their worldMatrix */
 
@@ -614,6 +596,6 @@ void ComponentTransform::ApplyWorldTransformationMatrix(const float4x4& worldTra
 
 		BROFILER_CATEGORY("ComponentTransform::UpdateBoundingBox", Profiler::Color::PapayaWhip);
 		UpdateBoundingBox();
-		UpdateLocalModelMatrix();
+		UpdateMatrices();
 	}
 }
