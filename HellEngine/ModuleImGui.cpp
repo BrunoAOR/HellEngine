@@ -753,7 +753,7 @@ void ModuleImGui::DrawGuizmo()
 
 void ModuleImGui::SaveScene()
 {
-
+    App->scene->SaveScene();
 }
 
 void ModuleImGui::LoadScene()

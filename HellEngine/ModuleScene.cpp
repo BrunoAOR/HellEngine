@@ -9,6 +9,7 @@
 #include "ModuleScene.h"
 #include "ModuleWindow.h"
 #include "GameObject.h"
+#include "Json/json.h"
 /* For TestCollisionChecks */
 #include "ComponentTransform.h"
 #include "ComponentMesh.h"
@@ -17,6 +18,8 @@
 #include "MathGeoLib/src/Geometry/LineSegment.h"
 #include "openGL.h"
 #include "physicsFunctions.h"
+
+using json = nlohmann::json;
 
 uint ModuleScene::gameObjectsCount = 0;
 
@@ -404,4 +407,11 @@ void ModuleScene::TestLineSegmentChecks(float3 lineStartPoint, float3 lineEndPoi
 	LineSegment testSegment(lineStartPoint, lineEndPoint);
 	GameObject* collidedGO = CalculateRaycast(testSegment);
 	LOGGER("The line collided with GameObject: %s", collidedGO ? collidedGO->name.c_str() : "none");
+}
+
+void ModuleScene::SaveScene()
+{
+    json j;
+
+    j["pi"] = 3.14;
 }

@@ -47,6 +47,7 @@ public:
 	GameObject* CreateGameObject();
 	void Destroy(GameObject* gameObject);
 	std::vector<GameObject*> FindByName(const std::string& name, GameObject* gameObject = nullptr);
+    void SaveScene();
 
 public:
 
