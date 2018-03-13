@@ -13,6 +13,19 @@ ModuleUI::~ModuleUI()
 {
 }
 
+ComponentUIElement* ModuleUI::NewUIElement(const UIElementType &uiType, GameObject* goOwner)
+{
+	if (uiType == UIElementType::IMG)
+		return new ComponentUiImage(goOwner);
+	if (uiType == UIElementType::BUTTON)
+		return new ComponentUiButton(goOwner);
+	if (uiType == UIElementType::LABEL)
+		return new ComponentUiLabel(goOwner);
+	if (uiType == UIElementType::INPUT_TEXT)
+		return new ComponentUiInputText(goOwner);
+	return nullptr;
+}
+
 UpdateStatus ModuleUI::Update() 
 {
     if (canvas != nullptr)
