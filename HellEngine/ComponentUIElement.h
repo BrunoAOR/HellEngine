@@ -32,6 +32,7 @@ private:
 
 	SDL_Rect* rect;
 	bool visible;
+
 };
 
 #endif __H_COMPONENT_UI_ELEMENT__

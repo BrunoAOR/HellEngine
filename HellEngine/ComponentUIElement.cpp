@@ -7,6 +7,14 @@ ComponentUIElement::ComponentUIElement(GameObject * owner) : Component(owner)
 {
 	type = ComponentType::UIELEMENT;
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
+    if (rect == nullptr) {
+        SDL_Rect* rectTemp = new SDL_Rect;
+        rectTemp->h = 10;
+        rectTemp->w = 10;
+        rectTemp->x = 10;
+        rectTemp->y = 10;
+        SetRect(rectTemp);
+    }
 }
 
 ComponentUIElement::~ComponentUIElement()
@@ -17,6 +25,21 @@ void ComponentUIElement::OnEditor()
 {
 	if (ImGui::CollapsingHeader(editorInfo.idLabel.c_str()))
 	{
+        if (rect != nullptr) 
+        {
+            float pos[2] = { rect->x, rect->y };
+            float size[2] = {rect->w, rect->h};
+            if (ImGui::DragFloat2("Position", pos, 0.3f)) 
+            {
+                rect->x = pos[0];
+                rect->y = pos[1];
+            }
+            if (ImGui::DragFloat2("Size", size, 0.3f)) 
+            {
+                rect->w = size[0];
+                rect->h = size[1];
+            }
+        }
 		if (OnEditorDeleteComponent())
 			return;
 	}
