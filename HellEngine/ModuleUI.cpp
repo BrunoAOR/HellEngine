@@ -1,8 +1,10 @@
-#include "ModuleUI.h"
-#include "GameObject.h"
-
-#include "Glew/include/glew.h"
 #include "SDL/include/SDL.h"
+#include "Application.h"
+#include "ComponentUIElement.h"
+#include "GameObject.h"
+#include "ModuleUI.h"
+#include "ModuleScene.h"
+#include "openGl.h"
 
 ModuleUI::ModuleUI()
 {
@@ -26,7 +28,15 @@ ComponentUIElement* ModuleUI::NewUIElement(const UIElementType &uiType, GameObje
 	return nullptr;
 }
 
-UpdateStatus ModuleUI::Update() 
+bool ModuleUI::Init()
+{
+	canvas = App->scene->CreateGameObject();
+	canvas->name = "Canvas";
+	canvas->AddComponent(ComponentType::UIELEMENT);
+	return true;
+}
+
+UpdateStatus ModuleUI::Update()
 {
     if (canvas != nullptr)
     {

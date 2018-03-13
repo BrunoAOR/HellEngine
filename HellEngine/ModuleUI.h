@@ -15,7 +15,8 @@ class ModuleUI : public Module
 public:
 	ModuleUI();
 	virtual ~ModuleUI();
-
+	
+	bool Init();
     UpdateStatus Update();
 
     //UIElement Factory
