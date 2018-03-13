@@ -25,23 +25,25 @@ void ComponentUIElement::OnEditor()
 {
 	if (ImGui::CollapsingHeader(editorInfo.idLabel.c_str()))
 	{
-        if (rect != nullptr) 
+		if (OnEditorDeleteComponent())
+			return;
+
+		if (rect != nullptr) 
         {
-            float pos[2] = { rect->x, rect->y };
-            float size[2] = {rect->w, rect->h};
-            if (ImGui::DragFloat2("Position", pos, 0.3f)) 
+            int pos[2] = { rect->x, rect->y };
+            int size[2] = {rect->w, rect->h};
+            if (ImGui::DragInt2("Position", pos, 0.3f)) 
             {
                 rect->x = pos[0];
                 rect->y = pos[1];
             }
-            if (ImGui::DragFloat2("Size", size, 0.3f)) 
+            if (ImGui::DragInt2("Size", size, 0.3f))
             {
                 rect->w = size[0];
                 rect->h = size[1];
             }
         }
-		if (OnEditorDeleteComponent())
-			return;
+		
 	}
 }
 
