@@ -39,7 +39,6 @@ ComponentTransform::~ComponentTransform()
 
 void ComponentTransform::Update()
 {
-	BROFILER_CATEGORY("ComponentTransform::Update", Profiler::Color::PapayaWhip);
 	if (drawBoundingBox) {
 		if (boundingBox.IsFinite())
 		{
@@ -397,37 +396,53 @@ void ComponentTransform::UpdateLocalModelMatrix()
 
 void ComponentTransform::UpdateWorldModelMatrix(const float4x4* newParentWorldMatrix)
 {
-	worldModelMatrix = localModelMatrix;
+	std::stack<ComponentTransform*> stack;
+	
+	ComponentTransform* transform = this;
+	stack.push(transform);
 
-	/* Calculate world Matrix */
-	if (newParentWorldMatrix == nullptr)
+	std::vector<GameObject*> children;
+
+	while (!stack.empty()) 
 	{
-		GameObject* parent = gameObject->GetParent();
-		if (parent)
+		transform = stack.top();
+		stack.pop();
+				 
+		transform->worldModelMatrix = transform->localModelMatrix;
+
+		/* Calculate world Matrix */
+		if (newParentWorldMatrix == nullptr)
 		{
-			ComponentTransform* parentTransform = (ComponentTransform*)parent->GetComponent(ComponentType::TRANSFORM);
-			if (parentTransform)
-				worldModelMatrix = worldModelMatrix * parentTransform->GetModelMatrix4x4();
+			GameObject* parent = transform->gameObject->GetParent();
+			if (parent)
+			{
+				ComponentTransform* parentTransform = (ComponentTransform*)parent->GetComponent(ComponentType::TRANSFORM);
+				if (parentTransform)
+					transform->worldModelMatrix = transform->worldModelMatrix * parentTransform->GetModelMatrix4x4();
+			}
+		}
+		else
+		{
+			transform->worldModelMatrix = transform->worldModelMatrix * (*newParentWorldMatrix);
+			newParentWorldMatrix = nullptr;
+		}
+
+		transform->UpdateBoundingBox();
+
+		/* Inform children of the change so they can update their worldMatrix */
+
+		children = transform->gameObject->GetChildren();
+		for (GameObject* child : children)
+		{
+			ComponentTransform* childTransform = (ComponentTransform*)child->GetComponent(ComponentType::TRANSFORM);
+			if (childTransform)
+			{
+				stack.push(childTransform);
+			}
 		}
 	}
-	else
-	{
-		worldModelMatrix = worldModelMatrix * (*newParentWorldMatrix);
-	}
 
-	UpdateBoundingBox();
-
-	/* Inform children of the change so they can update their worldMatrix */
-
-	std::vector<GameObject*> children = gameObject->GetChildren();
-	for (GameObject* child : children)
-	{
-		ComponentTransform* childTransform = (ComponentTransform*)child->GetComponent(ComponentType::TRANSFORM);
-		if (childTransform)
-		{
-			childTransform->UpdateWorldModelMatrix();
-		}
-	}
+	
 }
 
 void ComponentTransform::InitializeBaseBB()
@@ -594,7 +609,6 @@ void ComponentTransform::ApplyWorldTransformationMatrix(const float4x4& worldTra
 		rotationDeg[1] = RadToDeg(rotEuler.y);
 		rotationDeg[2] = RadToDeg(rotEuler.z);
 
-		BROFILER_CATEGORY("ComponentTransform::UpdateBoundingBox", Profiler::Color::PapayaWhip);
 		UpdateBoundingBox();
 		UpdateMatrices();
 	}
