@@ -4,7 +4,7 @@
 #include "MathGeoLib/src/Geometry/Frustum.h"
 #include "Color.h"
 #include "Component.h"
-#include "VAOInfo.h"
+#include "MeshInfo.h"
 
 
 class ComponentCamera :
@@ -109,7 +109,7 @@ private:
 	float farClippingPlane;
 	bool frustumCulling;
 	std::vector<GameObject*> insideFrustum;
-	VaoInfo frustumVAO;
+	MeshInfo frustumMeshInfo;
 
 	float frustumVertData[48];
 };

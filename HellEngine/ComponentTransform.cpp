@@ -14,7 +14,7 @@
 #include "openGL.h"
 
 std::vector<float3> ComponentTransform::baseBoundingBox;
-VaoInfo ComponentTransform::baseBoundingBoxVAO;
+MeshInfo ComponentTransform::baseBoundingBoxMeshInfo;
 
 ComponentTransform::ComponentTransform(GameObject* owner) : Component(owner)
 {
@@ -106,16 +106,16 @@ void ComponentTransform::Update()
 					boundingBoxUniqueData[i] = uniqueColors[(i / 6) * 3 + ((i % 6) - 3)];
 			}
 
-			glBindVertexArray(baseBoundingBoxVAO.vao);
-			glBindBuffer(GL_ARRAY_BUFFER, baseBoundingBoxVAO.vbo);
+			glBindVertexArray(baseBoundingBoxMeshInfo.vao);
+			glBindBuffer(GL_ARRAY_BUFFER, baseBoundingBoxMeshInfo.vbo);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8 * 6, boundingBoxUniqueData, GL_DYNAMIC_DRAW);
 
 			glBindVertexArray(GL_NONE);
 			glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
-			if (baseBoundingBoxVAO.vao != 0) {
+			if (baseBoundingBoxMeshInfo.vao != 0) {
 				float identity[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
-				App->debugDraw->DrawElements(identity, baseBoundingBoxVAO.vao, baseBoundingBoxVAO.elementsCount);
+				App->debugDraw->DrawElements(identity, baseBoundingBoxMeshInfo.vao, baseBoundingBoxMeshInfo.elementsCount);
 			}
 		}
 	}
@@ -289,7 +289,7 @@ void ComponentTransform::EncloseBoundingBox(ComponentTransform* transform, Compo
 	if (mesh->GetActiveModelInfo() != nullptr) {
 
 		BROFILER_CATEGORY("ComponentTransform::GetModel", Profiler::Color::PapayaWhip);
-		uint size = mesh->GetActiveModelInfo()->vaoInfosIndexes.size();
+		uint size = mesh->GetActiveModelInfo()->meshInfosIndexes.size();
 
 		if (size > 0) {
 			BROFILER_CATEGORY("ComponentTransform::Iteration", Profiler::Color::PapayaWhip);
@@ -297,7 +297,7 @@ void ComponentTransform::EncloseBoundingBox(ComponentTransform* transform, Compo
 			float3 maxPoint(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest());
 			for (uint i = 0; i < size; i++) {
 				BROFILER_CATEGORY("ComponentTransform::GetVertices", Profiler::Color::PapayaWhip);
-				std::vector<float3> vertices = App->scene->meshes.at(mesh->GetActiveModelInfo()->vaoInfosIndexes.at(i))->vertices;
+				std::vector<float3> vertices = App->scene->meshes.at(mesh->GetActiveModelInfo()->meshInfosIndexes.at(i))->vertices;
 
 				for (uint j = 0; j < vertices.size(); j++) {
 					BROFILER_CATEGORY("ComponentTransform::MinCalculation", Profiler::Color::PapayaWhip);
@@ -536,23 +536,23 @@ void ComponentTransform::CreateBBVAO()
 		}
 	}
 
-	baseBoundingBoxVAO.name = "BaseBoundingBox";
-	baseBoundingBoxVAO.elementsCount = allVertCount;
+	baseBoundingBoxMeshInfo.name = "BaseBoundingBox";
+	baseBoundingBoxMeshInfo.elementsCount = allVertCount;
 
-	glGenVertexArrays(1, &baseBoundingBoxVAO.vao);
-	glGenBuffers(1, &baseBoundingBoxVAO.vbo);
-	glGenBuffers(1, &baseBoundingBoxVAO.ebo);
+	glGenVertexArrays(1, &baseBoundingBoxMeshInfo.vao);
+	glGenBuffers(1, &baseBoundingBoxMeshInfo.vbo);
+	glGenBuffers(1, &baseBoundingBoxMeshInfo.ebo);
 
-	glBindVertexArray(baseBoundingBoxVAO.vao);
-	glBindBuffer(GL_ARRAY_BUFFER, baseBoundingBoxVAO.vbo);
+	glBindVertexArray(baseBoundingBoxMeshInfo.vao);
+	glBindBuffer(GL_ARRAY_BUFFER, baseBoundingBoxMeshInfo.vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uniqueVertCount * 6, boundingBoxUniqueData, GL_DYNAMIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, baseBoundingBoxVAO.ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * baseBoundingBoxVAO.elementsCount, vertIndexes, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, baseBoundingBoxMeshInfo.ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * baseBoundingBoxMeshInfo.elementsCount, vertIndexes, GL_STATIC_DRAW);
 
 	glBindVertexArray(GL_NONE);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);

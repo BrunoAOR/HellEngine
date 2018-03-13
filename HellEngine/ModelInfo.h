@@ -5,7 +5,7 @@
 
 struct ModelInfo
 {
-	std::vector<unsigned int> vaoInfosIndexes;
+	std::vector<unsigned int> meshInfosIndexes;
 };
 #endif // !__H_MODEL_INFO__
 

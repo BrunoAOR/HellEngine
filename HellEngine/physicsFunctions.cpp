@@ -7,7 +7,7 @@
 #include "ModelInfo.h"
 #include "ModuleRender.h"
 #include "ModuleScene.h"
-#include "VaoInfo.h"
+#include "MeshInfo.h"
 #include "physicsFunctions.h"
 
 struct GameObjectDistanceInfo {
@@ -95,12 +95,12 @@ GameObject* CalculateCollisionsWithGameObjects(const std::vector<GameObject*>& g
 
 			if (modelInfo)
 			{
-				for (unsigned int vaoInfoIndex : modelInfo->vaoInfosIndexes)
+				for (unsigned int meshInfoIndex : modelInfo->meshInfosIndexes)
 				{
-					const VaoInfo* vaoInfo = App->scene->meshes.at(vaoInfoIndex);
+					const MeshInfo* meshInfo = App->scene->meshes.at(meshInfoIndex);
 					/* Get vertices and indices */
-					const std::vector<float3>& vertices = vaoInfo->vertices;
-					const std::vector<uint>& indices = vaoInfo->indices;
+					const std::vector<float3>& vertices = meshInfo->vertices;
+					const std::vector<uint>& indices = meshInfo->indices;
 					assert(indices.size() % 3 == 0);
 
 					/* Iterate through triangles looking for the closest hit */

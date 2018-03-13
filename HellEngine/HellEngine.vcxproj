@@ -132,7 +132,7 @@
     <ClInclude Include="TextureConfiguration.h" />
     <ClInclude Include="TextureInfo.h" />
     <ClInclude Include="UpdateStatus.h" />
-    <ClInclude Include="VaoInfo.h" />
+    <ClInclude Include="MeshInfo.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />

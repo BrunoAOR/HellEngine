@@ -75,8 +75,8 @@ private:
 	float boundingBoxUniqueData[8 * 6];
 
 	static std::vector<float3> baseBoundingBox;
-	static VaoInfo baseBoundingBoxVAO;
+	static MeshInfo baseBoundingBoxMeshInfo;
 
 };
 
-#endif
+#endif // !__H_COMPONENT_TRANSFORM__

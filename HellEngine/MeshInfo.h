@@ -1,10 +1,10 @@
-#ifndef __H_VAO_INFO__
-#define __H_VAO_INFO__
+#ifndef __H_MESH_INFO__
+#define __H_MESH_INFO__
 
 #include "MathGeoLib/src/Math/float3.h"
 #include "globals.h"
 
-struct VaoInfo
+struct MeshInfo
 {
 	const char* name = "";
 	uint vao = 0;
@@ -15,4 +15,4 @@ struct VaoInfo
 	std::vector<uint> indices;
 };
 
-#endif
+#endif // !__H_MESH_INFO__

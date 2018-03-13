@@ -9,9 +9,9 @@
 #include "ModuleEditorCamera.h"
 #include "ModuleRender.h"
 #include "ModuleScene.h"
-#include "Shader.h"
+#include "MeshInfo.h"
 #include "ModelInfo.h"
-#include "VAOInfo.h"
+#include "Shader.h"
 #include "globals.h"
 #include "openGL.h"
 
@@ -102,7 +102,7 @@ void ComponentMaterial::Update()
 				BROFILER_CATEGORY("ComponentMaterial::GetVao", Profiler::Color::Gold);
 				const ModelInfo* modelInfo = mesh->GetActiveModelInfo();
 				BROFILER_CATEGORY("ComponentMaterial::ValidVao", Profiler::Color::Gold);
-				if (modelInfo && modelInfo->vaoInfosIndexes.size() > 0)
+				if (modelInfo && modelInfo->meshInfosIndexes.size() > 0)
 				{
 					BROFILER_CATEGORY("ComponentMaterial::DrawingCall", Profiler::Color::Gold);
 					DrawElements(modelMatrix, modelInfo);
@@ -403,7 +403,7 @@ Shader * ComponentMaterial::ShaderAlreadyLinked()
 
 bool ComponentMaterial::DrawElements(float * modelMatrix, const ModelInfo* modelInfo)
 {
-	if (IsValid() && modelInfo != nullptr && modelInfo->vaoInfosIndexes.size() > 0)
+	if (IsValid() && modelInfo != nullptr && modelInfo->meshInfosIndexes.size() > 0)
 	{
 
 		shader->Activate();
@@ -413,18 +413,18 @@ bool ComponentMaterial::DrawElements(float * modelMatrix, const ModelInfo* model
 		glUniformMatrix4fv(privateUniforms["projection"], 1, GL_FALSE, App->editorCamera->camera->GetProjectionMatrix());
 		UpdatePublicUniforms();
 
-		if (modelInfoVaoIndex >= 0 && modelInfoVaoIndex < (int)modelInfo->vaoInfosIndexes.size())
+		if (modelInfoVaoIndex >= 0 && modelInfoVaoIndex < (int)modelInfo->meshInfosIndexes.size())
 		{
-			unsigned int vaoInfoIndex = modelInfo->vaoInfosIndexes.at(modelInfoVaoIndex);
-			const VaoInfo* vaoInfo = App->scene->meshes.at(vaoInfoIndex);
-			DrawVaoInfo(vaoInfo);
+			unsigned int meshInfoIndex = modelInfo->meshInfosIndexes.at(modelInfoVaoIndex);
+			const MeshInfo* meshInfo = App->scene->meshes.at(meshInfoIndex);
+			DrawMesh(meshInfo);
 		}
 		else if (modelInfoVaoIndex == -1)
 		{
-			for (unsigned int vaoInfoIndex : modelInfo->vaoInfosIndexes)
+			for (unsigned int meshInfoIndex : modelInfo->meshInfosIndexes)
 			{
-				const VaoInfo* vaoInfo = App->scene->meshes.at(vaoInfoIndex);
-				DrawVaoInfo(vaoInfo);
+				const MeshInfo* meshInfo = App->scene->meshes.at(meshInfoIndex);
+				DrawMesh(meshInfo);
 			}
 		}
 
@@ -434,11 +434,11 @@ bool ComponentMaterial::DrawElements(float * modelMatrix, const ModelInfo* model
 	return false;
 }
 
-void ComponentMaterial::DrawVaoInfo(const VaoInfo* vaoInfo)
+void ComponentMaterial::DrawMesh(const MeshInfo* meshInfo)
 {
 	glBindTexture(GL_TEXTURE_2D, textureBufferId);
-	glBindVertexArray(vaoInfo->vao);
-	glDrawElements(GL_TRIANGLES, vaoInfo->elementsCount, GL_UNSIGNED_INT, nullptr);
+	glBindVertexArray(meshInfo->vao);
+	glDrawElements(GL_TRIANGLES, meshInfo->elementsCount, GL_UNSIGNED_INT, nullptr);
 	glBindVertexArray(GL_NONE);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
