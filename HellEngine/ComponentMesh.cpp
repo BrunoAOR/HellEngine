@@ -513,9 +513,8 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 		/* Get the rootToWorldInverse matrix because all bone inverse matrices are in model (Root) coordinate space */
 		ComponentTransform* rootTransform = (ComponentTransform*)root->GetComponent(ComponentType::TRANSFORM);
 		assert(rootTransform);
-		float4x4 rootToWorld = rootTransform->GetModelMatrix4x4().Transposed();
-		//rootToWorldInverse.Inverse();
-		float4x4 rootToWorldInverse = rootToWorld.Inverted();
+		float4x4 rootToWorld = rootTransform->GetModelMatrix4x4();
+		float4x4 rootToWorldInverse = rootToWorld.Inverted().Transposed();
 
 		/* Get the pointer to the data in VRAM (map buffer) */
 		glBindVertexArray(meshInfo->vao);
@@ -550,45 +549,42 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 				assert(vectorSize == verticesGroup.weights.size());
 
 				float4x4 matrixSum = float4x4::zero;
-				BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Loop over VerticesGroups", Profiler::Color::Crimson);
+
+				//BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Loop over VerticesGroups", Profiler::Color::Crimson);
 				for (uint i = 0; i < vectorSize; ++i)
 				{
-					BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Part1", Profiler::Color::Crimson);
-
+					//BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Part1", Profiler::Color::Crimson);
 					Bone* bone = verticesGroup.bones[i];
 
-					///* Find the GameObject (former aiNode) with the same name */
-					//BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning FindByName", Profiler::Color::Crimson);
-					//GameObject* nodeGo = root->FindByName(bone->name);
-					//assert(nodeGo);
+					//BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning GetModelMatrix", Profiler::Color::Crimson);
+					//BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning MultiplyMatrices", Profiler::Color::Crimson);
+					//float4x4 nodeTransformation = bone->connectedTransform->GetModelMatrix4x4() * rootToWorldInverse;
+					float4x4 matrixProduct = bone->connectedTransform->GetModelMatrix4x4() * rootToWorldInverse;
 
-					//BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Part2", Profiler::Color::Crimson);
-					///* Get the nodeGo transformation matrix in the coordinate space of the animation ROOT object */
-					//ComponentTransform* nodeTransform = (ComponentTransform*)nodeGo->GetComponent(ComponentType::TRANSFORM);
-					//assert(nodeTransform);
+					matrixProduct.RightMultiply(bone->inverseBindMatrix);
+					//float4x4 matrixProduct = bone->inverseBindMatrix * nodeTransformation;
 
-					BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Part3", Profiler::Color::Crimson);
-					//float4x4 nodeTransformation = nodeTransform->GetModelMatrix4x4().Transposed();
-					float4x4 nodeTransformation = bone->connectedTransform->GetModelMatrix4x4().Transposed();
-					nodeTransformation = rootToWorldInverse * nodeTransformation;
-					
-					float4x4 matrixProduct = nodeTransformation * bone->inverseBindMatrix;
-					//float4x4 matrixProduct = nodeTransformation * bone->inverseBindMatrix;
-
+					//BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Multiply by weight", Profiler::Color::Crimson);
 					matrixProduct = matrixProduct * verticesGroup.weights[i];
+
+					//BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Add MatrixSum", Profiler::Color::Crimson);
 					matrixSum += matrixProduct;
 				}
 
+				matrixSum.Transpose();
 				matrix mat(matrixSum);
-				
+
 				for (uint vertexIndex : vertexIndices)
 				{
-					BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning COUNTER", Profiler::Color::Crimson);
+					BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning For optimized", Profiler::Color::Crimson);
+
+					//BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning COUNTER", Profiler::Color::Crimson);
 					const float3& originalVertex = meshInfo->vertices[vertexIndex];
 					vramData[vertexIndex * 8 + 0] += mat.a1 * originalVertex.x + mat.a2 * originalVertex.y + mat.a3 * originalVertex.z + mat.a4;
 					vramData[vertexIndex * 8 + 1] += mat.b1 * originalVertex.x + mat.b2 * originalVertex.y + mat.b3 * originalVertex.z + mat.b4;
 					vramData[vertexIndex * 8 + 2] += mat.c1 * originalVertex.x + mat.c2 * originalVertex.y + mat.c3 * originalVertex.z + mat.c4;
 				}
+				BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning End for optimized", Profiler::Color::Crimson);
 
 			}
 		}
@@ -603,19 +599,22 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 				//ComponentTransform* nodeTransform = (ComponentTransform*)nodeGo->GetComponent(ComponentType::TRANSFORM);
 				//assert(nodeTransform);
 
-				float4x4 nodeTransformation = bone->connectedTransform->GetModelMatrix4x4().Transposed();
-				nodeTransformation = rootToWorldInverse * nodeTransformation;
+				float4x4 nodeTransformation = bone->connectedTransform->GetModelMatrix4x4();
+				nodeTransformation = nodeTransformation * rootToWorldInverse;
 
-				float4x4 matrixProduct = nodeTransformation * bone->inverseBindMatrix;
+				float4x4 matrixProduct = bone->inverseBindMatrix * nodeTransformation;
+				matrixProduct.Transpose();
 
 				matrix mat(matrixProduct);
 
 				/* Iterate through all Bone weights and apply their effects */
-				BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Apply individual weights", Profiler::Color::Crimson);
+				//BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Apply individual weights", Profiler::Color::Crimson);
 				uint weightsCount = bone->numWeights;
 				uint vertexIndex = 0;
+
 				for (uint w = 0; w < weightsCount; ++w)
 				{
+					BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning For not optimized", Profiler::Color::Crimson);
 					/* Calculate effect */
 					const BoneWeight& boneWeight = bone->weights[w];
 					vertexIndex = boneWeight.vertexIndex;
@@ -623,6 +622,7 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 					//float3 vertexEffect = boneWeight.weight * matrixProduct.TransformPos(originalVertex);
 
 					/* Apply effect */
+					//BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning COUNTER", Profiler::Color::Crimson);
 					vramData[vertexIndex * 8 + 0] += boneWeight.weight * (mat.a1 * originalVertex.x + mat.a2 * originalVertex.y + mat.a3 * originalVertex.z + mat.a4);
 					vramData[vertexIndex * 8 + 1] += boneWeight.weight * (mat.b1 * originalVertex.x + mat.b2 * originalVertex.y + mat.b3 * originalVertex.z + mat.b4);
 					vramData[vertexIndex * 8 + 2] += boneWeight.weight * (mat.c1 * originalVertex.x + mat.c2 * originalVertex.y + mat.c3 * originalVertex.z + mat.c4);
@@ -631,8 +631,8 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 					//vramData[vertexIndex * 8 + 1] += vertexEffect.y;
 					//vramData[vertexIndex * 8 + 2] += vertexEffect.z;
 				}
-				BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Else", Profiler::Color::Crimson);
 
+				BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning End For not optimized", Profiler::Color::Crimson);
 			}
 		}
 

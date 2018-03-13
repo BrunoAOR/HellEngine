@@ -775,6 +775,9 @@ public:
 	void Transform(float4 *vectorArray, int numVectors) const;
 	void Transform(float4 *vectorArray, int numVectors, int strideBytes) const;
 
+	void LeftMultiply(const float4x4& rhs);
+	void RightMultiply(const float4x4& lhs);
+
 	/// Treats the float3x3 as a 4-by-4 matrix with the last row and column as identity, and multiplies the two matrices.
 	float4x4 operator *(const float3x3 &rhs) const;
 
