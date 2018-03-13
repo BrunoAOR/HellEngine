@@ -2,7 +2,9 @@
 #define __H_GAME_OBJECT__
 
 #include <vector>
+#include "MathGeoLib\src\Algorithm\Random\LCG.h"
 class Component;
+
 enum class ComponentType;
 
 class GameObject
@@ -37,7 +39,8 @@ public:
 public:
 
 	std::string name;
-
+    uint32_t uuid;
+    LCG lcg;
 private:
 
 	bool HasGameObjectInChildrenHierarchy(GameObject* testGameObject);

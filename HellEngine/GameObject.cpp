@@ -29,7 +29,7 @@ GameObject::GameObject(const char* name, GameObject* parentGameObject) : name(na
 		if (parentGameObject != nullptr && parentGameObject != App->scene->root)
 			SetParent(parentGameObject);
 	}
-
+    uuid = lcg.IntFast();
 	App->scene->gameObjectsCount++;
 }
 

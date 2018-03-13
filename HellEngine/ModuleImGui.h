@@ -59,6 +59,12 @@ private:
 
     /* Draws Guizmo */
     void DrawGuizmo();
+
+    /* Save scene */
+    void SaveScene();
+
+    /* Load Scene */
+    void LoadScene();
 	
 private:
 

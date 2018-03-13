@@ -98,6 +98,16 @@ UpdateStatus ModuleImGui::Update()
 		mainMenuBarHeight = ImGui::GetWindowHeight();
 		if (ImGui::BeginMenu("Main"))
 		{
+            if (ImGui::MenuItem("Save Scene", nullptr, nullptr))
+            {
+                SaveScene();
+            }
+            if (ImGui::MenuItem("Load Scene", nullptr, nullptr))
+            {
+                LoadScene();
+            }
+            ImGui::Separator();
+
 			ImGui::MenuItem("Show demo window", nullptr, &showDemoWindow);
 			ImGui::Separator();
 
@@ -739,4 +749,14 @@ void ModuleImGui::DrawGuizmo()
 			}
 		}
 	}
+}
+
+void ModuleImGui::SaveScene()
+{
+
+}
+
+void ModuleImGui::LoadScene()
+{
+
 }
