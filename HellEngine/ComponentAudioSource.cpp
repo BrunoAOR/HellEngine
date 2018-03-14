@@ -23,10 +23,6 @@ void ComponentAudioSource::Update()
 
 void ComponentAudioSource::OnEditor()
 {
-	static bool loadMessage = false;
-	static bool loadedCorrectly = false;
-	static char audioPath[256] = "";
-	static char audioName[256] = "";
 
 	if (ImGui::CollapsingHeader(editorInfo.idLabel.c_str()))
 	{
@@ -34,13 +30,20 @@ void ComponentAudioSource::OnEditor()
 			return;
 
 		ImGui::InputText("Audio Clip path", audioPath, 256);
-		if (audioName != "") {
-			ImGui::Text(audioPath, 256);
-		}
+
 
 		if (ImGui::Button("Load")) 
 		{
-			loadedCorrectly = App->audio->Load(audioPath,this);
+			if (App->audio->CheckLoadingAudioAlreadyUpload(audioPath) == 0)
+			{
+				loadedCorrectly = App->audio->Load(audioPath, this);
+				audioAlreadyExists = false;
+			}
+			else
+			{
+				audioAlreadyExists = true;
+				loadedCorrectly = false;
+			}
 			loadMessage = true;
 		}
 
@@ -49,10 +52,19 @@ void ComponentAudioSource::OnEditor()
 			if (loadedCorrectly)
 			{
 				ImGui::Text("Audio loaded correctly.");
-				*audioName = *audioPath;
 			}
 			else
-				ImGui::Text("Audio not found.");
+			{
+				if (audioAlreadyExists)
+				{
+					ImGui::Text("Already exists. Track has been linked to audio source.");
+				}
+				else
+				{
+					ImGui::Text("Audio not found.");
+				}
+			}
+				
 		}
 		if(ImGui::Checkbox("Loop", &isMusicLoop))
 		{
@@ -61,12 +73,12 @@ void ComponentAudioSource::OnEditor()
 		if (ImGui::SliderFloat("Volume", &volume, 0.0f, 1.0f, "%.2f")) 
 			SetVolume(volume);
 		
-		ImGui::SliderFloat("Stereo/Mono", &stereoMono, 0.0f, 1.0f, "%.2f");
+		ImGui::SliderFloat("Stereo/Mono", &stereoMono, 0.0f, 1.0f, "%.0f");
 		
 		if (ImGui::SliderFloat("Pitch", &pitch, -3.0f, 3.0f, "%.2f"))
 			SetPitch(pitch);
 
-		ImGui::SliderFloat("Stereo Pan", &stereoPan, -1.0f, 1.0f, "%.2f");
+		ImGui::SliderFloat("Stereo Pan", &stereoPan, -1.0f, 1.0f, "%.1f");
 		ImGui::SliderFloat("Reverb Zone", &reverbZone, 0.0f, 1.0f, "%.2f");
 		ImGui::SliderFloat("Doppler", &dopplerLevel, 0.0f, 5.0f, "%.2f");
 		ImGui::Combo("Rolloff", &rollOff, "Logarithmic\0Linear\0");
@@ -78,18 +90,23 @@ void ComponentAudioSource::OnEditor()
 			SetMaxDistance(maxDistance);
 
 		//Test
-		if (ImGui::Checkbox("Play", &playTest))
-		{
-			if (playTest)
-			{
-				Play();
-			}
-			else
-			{
-				Stop();
-			}
-		}
+		ImGui::RadioButton("Play", &playbackState, 0);
+		ImGui::RadioButton("Pause", &playbackState, 1);
+		ImGui::RadioButton("Stop", &playbackState, 2);
 
+		switch (playbackState)
+		{
+		case 0:
+			Play();
+			break;
+		case 1:
+			Pause();
+			break;
+		case 2:
+			Stop();
+			break;
+		}
+		
 	}
 }
 
@@ -97,7 +114,7 @@ bool ComponentAudioSource::Play()
 {
 	bool willBePlayed = false;
 
-	if (currentAudioSourceState == AudioState::CURRENTLY_STOPPED || currentAudioSourceState == AudioState::LOADED) 
+	if (currentAudioSourceState == AudioState::CURRENTLY_STOPPED || currentAudioSourceState == AudioState::LOADED || currentAudioSourceState == AudioState::CURRENTLY_PAUSED) 
 	{
 		currentAudioSourceState = AudioState::WAITING_TO_PLAY;
 		willBePlayed = true;
@@ -106,13 +123,26 @@ bool ComponentAudioSource::Play()
 	return willBePlayed;
 }
 
+bool ComponentAudioSource::Pause()
+{
+	bool willBePaused = false;
+	if (currentAudioSourceState == AudioState::CURRENTLY_PLAYED)
+	{
+		currentAudioSourceState = AudioState::WAITING_TO_PAUSE;
+		previousAudioSourceState = AudioState::CURRENTLY_PLAYED;
+		willBePaused =  true;
+	}
+	return willBePaused;
+}
+
 bool ComponentAudioSource::Stop()
 {
 	bool willBeStopped = false;
-	if (currentAudioSourceState == AudioState::CURRENTLY_PLAYED)
+	if (currentAudioSourceState == AudioState::CURRENTLY_PLAYED || currentAudioSourceState == AudioState::CURRENTLY_PAUSED)
 	{
 		currentAudioSourceState = AudioState::WAITING_TO_STOP;
-		willBeStopped =  true;
+		previousAudioSourceState = AudioState::CURRENTLY_PLAYED;
+		willBeStopped = true;
 	}
 	return willBeStopped;
 }
@@ -192,6 +222,11 @@ void ComponentAudioSource::SetMaxDistance(float maxDistanceValue)
 	maxDistance = maxDistanceValue;
 }
 
+void ComponentAudioSource::SetPlayBackState(int playBackStateValue)
+{
+	playbackState = playBackStateValue;
+}
+
 AudioState ComponentAudioSource::GetCurrentState() const
 {
 	return currentAudioSourceState;
@@ -200,6 +235,16 @@ AudioState ComponentAudioSource::GetCurrentState() const
 void ComponentAudioSource::SetCurrentState(AudioState audioStateValue)
 {
 	currentAudioSourceState = audioStateValue;
+}
+
+AudioState ComponentAudioSource::GetPreviousState() const
+{
+	return previousAudioSourceState;
+}
+
+void ComponentAudioSource::SetPreviousState(AudioState previousAudioSourceStateValue)
+{
+	previousAudioSourceState = previousAudioSourceStateValue;
 }
 
 int ComponentAudioSource::MaxCountInGameObject()

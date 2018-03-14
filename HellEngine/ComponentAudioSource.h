@@ -4,7 +4,7 @@
 #include "Component.h"
 
 enum class AudioType { EFFECT, MUSIC };
-enum class AudioState { NOT_LOADED, LOADED,WAITING_TO_PLAY, WAITING_TO_STOP, CURRENTLY_PLAYED, CURRENTLY_STOPPED};
+enum class AudioState { NOT_LOADED, LOADED, WAITING_TO_PLAY, WAITING_TO_STOP, WAITING_TO_PAUSE, CURRENTLY_PAUSED, CURRENTLY_PLAYED, CURRENTLY_STOPPED};
 
 struct AudioInfo
 {
@@ -22,6 +22,7 @@ public:
 	virtual void OnEditor() override;
 
 	bool Play();
+	bool Pause();
 	bool Stop();
 
 	float GetVolume() const;
@@ -41,8 +42,14 @@ public:
 	void SetMinDistance(float minDistanceValue);
 	void SetMaxDistance(float maxDistanceValue);
 
+	void SetPlayBackState(int playBackStateValue);
+
 	AudioState GetCurrentState() const;
 	void SetCurrentState(AudioState audioStateValue);
+
+	AudioState GetPreviousState() const;
+
+	void SetPreviousState(AudioState previousAudioSourceStateValue);
 
 	/* Returns the maximum number of times that this particular Type of Component can be added to a GameObject */
 	virtual int MaxCountInGameObject() override;
@@ -61,10 +68,16 @@ private:
 	float maxDistance = 500;
 	bool isMusicLoop;
 
+	bool loadMessage = false;
+	bool audioAlreadyExists = false;
+	bool loadedCorrectly = false;
+	char audioPath[256] = "";
+
 	//Test
-	bool playTest;
+	int playbackState;
 
 	AudioState currentAudioSourceState = AudioState::NOT_LOADED;
+	AudioState previousAudioSourceState = AudioState::NOT_LOADED;
 };
 #endif
 

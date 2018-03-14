@@ -2,6 +2,7 @@
 #define __H_MODULEAUDIO__
 
 #include <vector>
+#include <map>
 #include "Module.h"
 #include "ComponentAudioSource.h"
 #include "ComponentAudioListener.h"
@@ -20,7 +21,8 @@ public:
 
 	void StoreAudioSource(ComponentAudioSource *source );
 	void UnloadAudioSource(const ComponentAudioSource &source);
-	void UpdateActiveAudioListener(ComponentAudioListener &listener);
+	void StoreAudioFileWithBassID(const char * audioPath, unsigned long bassID);
+	const int CheckLoadingAudioAlreadyUpload(const char *audioPath);
 
 	void UpdateAudio(GameObject *go);
 	void UpdateAudioSource(ComponentAudioSource *audioSource);
@@ -31,6 +33,7 @@ private:
 	std::string ObtainAudioExtension(const char *audioPath);
 
 	std::vector<ComponentAudioSource*> storedAudioSources;
+	std::map<std::string, unsigned long> audioFilesByBassID;
 	ComponentAudioListener* activeAudioListener = nullptr;
 
 };
