@@ -296,15 +296,14 @@ void SceneLoader::GatherBonesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo)
 
 			aiMatrix4x4& abm = assimpBone->mOffsetMatrix;
 			
+			/* Save matrix transposed */
 			bone->inverseBindMatrix = float4x4(
-				abm.a1, abm.a2, abm.a3, abm.a4,
-				abm.b1, abm.b2, abm.b3, abm.b4,
-				abm.c1, abm.c2, abm.c3, abm.c4,
-				abm.d1, abm.d2, abm.d3, abm.d4
+				abm.a1, abm.b1, abm.c1, abm.d1,
+				abm.a2, abm.b2, abm.c2, abm.d2,
+				abm.a3, abm.b3, abm.c3, abm.d3,
+				abm.a4, abm.b4, abm.c4, abm.d4
 			);
 			
-			bone->inverseBindMatrix.Transpose();
-
 			meshInfo->bones.push_back(bone);
 			
 			for (std::map<float, std::vector<uint>>::iterator it = boneWeightsGroup.begin(); it != boneWeightsGroup.end(); ++it)

@@ -494,10 +494,10 @@ struct matrix {
 
 void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 {
+	BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning", Profiler::Color::Crimson);
 	/* Find the ComponentAnimation in the siblings to identify the Root Node of the animation */
 	std::vector<GameObject*> siblings = gameObject->GetParent()->GetChildren();
 	ComponentAnimation* animationComponent = nullptr;
-	BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Find animComponent", Profiler::Color::Crimson);
 	for (GameObject* sibling : siblings)
 	{
 		animationComponent = (ComponentAnimation*)sibling->GetComponent(ComponentType::ANIMATION);
@@ -507,29 +507,23 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 
 	if (animationComponent)
 	{
-		BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Get root inverse", Profiler::Color::Crimson);
 		GameObject* root = animationComponent->gameObject;
 		assert(root);
 
 		/* Get the rootToWorldInverse matrix because all bone inverse matrices are in model (Root) coordinate space */
 		ComponentTransform* rootTransform = (ComponentTransform*)root->GetComponent(ComponentType::TRANSFORM);
 		assert(rootTransform);
-		float4x4 rootToWorld = rootTransform->GetModelMatrix4x4();
-		float4x4 rootToWorldInverse = rootToWorld.Inverted().Transposed();
-
-		BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Map Vram Data", Profiler::Color::Crimson);
-		/* Get the pointer to the data in VRAM (map buffer) */
+		float4x4 rootToWorldInverse = rootTransform->GetModelMatrix4x4().Inverted().Transposed();
+		//float4x4 rootToWorldInverse = rootToWorld.Inverted().Transposed();
 
 		uint verticesCount = meshInfo->vertices.size();
-		
-		/* Reset all vertices in the VRAM to ZERO */
-		BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Reset VRAM to zero", Profiler::Color::Crimson);
 
+		/* Reset all vertices in the VRAM to ZERO */
 		float* vramData = new float[verticesCount * 8];
 		glBindVertexArray(meshInfo->vao);
 		glBindBuffer(GL_ARRAY_BUFFER, meshInfo->vbo);
 		glGetBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * verticesCount * 8, vramData);
-		
+
 		for (uint v = 0; v < verticesCount; ++v)
 		{
 			memset(vramData + (v * 8), 0, sizeof(float) * 3);
@@ -537,24 +531,23 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 			//vramData[v * 8 + 1] = 0;// meshInfo->vertices[v].y;// 0;
 			//vramData[v * 8 + 2] = 0;// meshInfo->vertices[v].z;// 0;
 		}
-	
+
 
 		/* Iterate through bones and add their effect to the adecuate vertices */
-		BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Apply bone effects", Profiler::Color::Crimson);
 		bool useVerticesGroupOptimization = true;
 		if (useVerticesGroupOptimization)
 		{
 			for (std::map<std::vector<uint>, VerticesGroup>::const_iterator it = meshInfo->verticesGroups.begin(); it != meshInfo->verticesGroups.cend(); ++it)
 			{
-				const std::vector<uint>& vertexIndices = it->first;
+				//const std::vector<uint>& vertexIndices = it->first;
 				const VerticesGroup& verticesGroup = it->second;
 				uint vectorSize = verticesGroup.bones.size();
-				assert(vectorSize == verticesGroup.bones.size());
+				assert(vectorSize == verticesGroup.weights.size());
 
 				float4x4 matrixSum = float4x4::zero;
 
 				//BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Loop over VerticesGroups", Profiler::Color::Crimson);
-				
+
 				for (uint i = 0; i < vectorSize; ++i)
 				{
 					Bone* bone = verticesGroup.bones[i];
@@ -564,14 +557,14 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 					matrixProduct.LeftMultiply(rootToWorldInverse);
 					matrixProduct.RightMultiply(bone->inverseBindMatrix);
 					matrixProduct *= verticesGroup.weights[i];
-					
+
 					//BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Add MatrixSum", Profiler::Color::Crimson);
 					matrixSum += matrixProduct;
 				}
-				
+
 				//matrix mat(matrixSum);
 
-				for (uint vertexIndex : vertexIndices)
+				for (uint vertexIndex : it->first)
 				{
 					const float3& originalVertex = meshInfo->vertices[vertexIndex];
 
@@ -583,7 +576,6 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 					vramData[vertexIndex * 8 + 1] += matrixSum.v[0][1] * originalVertex.x + matrixSum.v[1][1] * originalVertex.y + matrixSum.v[2][1] * originalVertex.z + matrixSum.v[3][1];
 					vramData[vertexIndex * 8 + 2] += matrixSum.v[0][2] * originalVertex.x + matrixSum.v[1][2] * originalVertex.y + matrixSum.v[2][2] * originalVertex.z + matrixSum.v[3][2];
 				}
-
 			}
 		}
 		else
@@ -611,7 +603,6 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 
 				for (uint w = 0; w < weightsCount; ++w)
 				{
-					BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning For not optimized", Profiler::Color::Crimson);
 					/* Calculate effect */
 					const BoneWeight& boneWeight = bone->weights[w];
 					vertexIndex = boneWeight.vertexIndex;
@@ -629,12 +620,10 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 					//vramData[vertexIndex * 8 + 2] += vertexEffect.z;
 				}
 
-				BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning End For not optimized", Profiler::Color::Crimson);
 			}
 		}
 
-		BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning BufferSubData", Profiler::Color::Crimson);
-		/* Unmap buffer */	
+		/* Unmap buffer */
 		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * verticesCount * 8, vramData);
 
 		delete vramData;

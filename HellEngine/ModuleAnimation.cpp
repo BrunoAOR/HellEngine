@@ -185,10 +185,13 @@ void ModuleAnimation::DeleteOldInstance(AnimationInstance* instance)
 
 void ModuleAnimation::ModifyAnimationLoop(uint instanceID, bool loop)
 {
-	AnimationInstance* instance = instances.at(instanceID);
-	instance->loop = loop;
-	if (instance->next)
-		instance->next->loop = loop;
+	if (instances.size() > 0)
+	{
+		AnimationInstance* instance = instances.at(instanceID);
+		instance->loop = loop;
+		if (instance->next)
+			instance->next->loop = loop;
+	}
 }
 
 void ModuleAnimation::ModifyAnimationActive(uint instanceID, bool active)
