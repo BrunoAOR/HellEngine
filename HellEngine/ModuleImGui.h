@@ -59,17 +59,10 @@ private:
 
     /* Draws Guizmo */
     void DrawGuizmo();
-
-    /* Save scene */
-    void SaveScene();
-
-    /* Load Scene */
-    void LoadScene();
 	
 private:
 
 	std::string licenseString;
-
 };
 
 #endif // !__H_MODULE_IMGUI__

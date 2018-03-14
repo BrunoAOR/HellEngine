@@ -36,6 +36,7 @@ public:
 	const SpaceQuadTree& GetQuadTree();
 	void FindAllStaticGameObjects(std::vector<GameObject*>& staticGameObjects);
 	void FindAllDynamicGameObjects(std::vector<GameObject*>& dynamicGameObjects);
+	void FindAllGameObjects(std::vector<GameObject*>& gameObjects);
 
 	void TestLineSegmentChecks(float3 lineStartPoint, float3 lineEndPoint);
 
@@ -47,7 +48,8 @@ public:
 	GameObject* CreateGameObject();
 	void Destroy(GameObject* gameObject);
 	std::vector<GameObject*> FindByName(const std::string& name, GameObject* gameObject = nullptr);
-    void SaveScene();
+    void SaveScene(const std::string sceneName);
+	void LoadScene(const std::string sceneName);
 
 public:
 

@@ -18,6 +18,7 @@
 #include "MathGeoLib/src/Geometry/LineSegment.h"
 #include "openGL.h"
 #include "physicsFunctions.h"
+#include <fstream>
 
 using json = nlohmann::json;
 
@@ -400,6 +401,31 @@ void ModuleScene::FindAllDynamicGameObjects(std::vector<GameObject*>& dynamicGam
 	}
 }
 
+void ModuleScene::FindAllGameObjects(std::vector<GameObject*>& gameObjects)
+{
+	std::stack<GameObject*> stack;
+
+	GameObject* go = root;
+
+	stack.push(go);
+
+	while (!stack.empty())
+	{
+		go = stack.top();
+		stack.pop();
+
+		for (GameObject* child : go->GetChildren())
+		{
+			gameObjects.push_back(child);
+
+			if (child->GetChildren().size() != 0)
+			{
+				stack.push(child);
+			}
+		}
+	}
+}
+
 void ModuleScene::TestLineSegmentChecks(float3 lineStartPoint, float3 lineEndPoint)
 {
 	assert(lineStartPoint.x != lineEndPoint.x || lineStartPoint.y != lineEndPoint.y || lineStartPoint.z != lineEndPoint.z);
@@ -409,9 +435,39 @@ void ModuleScene::TestLineSegmentChecks(float3 lineStartPoint, float3 lineEndPoi
 	LOGGER("The line collided with GameObject: %s", collidedGO ? collidedGO->name.c_str() : "none");
 }
 
-void ModuleScene::SaveScene()
+void ModuleScene::SaveScene(const std::string sceneName)
 {
-    json j;
+	std::vector<GameObject*> sceneGO;
+	FindAllGameObjects(sceneGO);
 
-    j["pi"] = 3.14;
+	json jsonfile;
+
+	for (GameObject* go : sceneGO)
+	{
+		jsonfile["UID"] = (uint)go->uuid;
+
+		if (go->GetParent() != NULL)
+		{
+			jsonfile["ParentUID"] = (uint)go->GetParent()->uuid;
+		}
+		
+		jsonfile["Name"] = go->name;
+
+		ComponentTransform* transform = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM);
+		if (transform != NULL)
+		{
+			jsonfile["Translation"] = { transform->GetPosition().x, transform->GetPosition().y, transform->GetPosition().z };
+			jsonfile["Scale"] = { transform->GetScale().x, transform->GetScale().y, transform->GetScale().z };
+			jsonfile["Rotation"] = { transform->GetRotationDeg().x, transform->GetRotationDeg().y, transform->GetRotationDeg().z };
+		}
+	}
+
+	std::ofstream file(sceneName + ".json");
+	file << jsonfile;
+	LOGGER("Scene %s saved", sceneName.c_str());
+}
+
+void ModuleScene::LoadScene(const std::string sceneName)
+{
+
 }

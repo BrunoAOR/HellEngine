@@ -100,11 +100,11 @@ UpdateStatus ModuleImGui::Update()
 		{
             if (ImGui::MenuItem("Save Scene", nullptr, nullptr))
             {
-                SaveScene();
+				App->scene->SaveScene("scene1");
             }
             if (ImGui::MenuItem("Load Scene", nullptr, nullptr))
             {
-                LoadScene();
+				App->scene->LoadScene("scene1");
             }
             ImGui::Separator();
 
@@ -749,14 +749,4 @@ void ModuleImGui::DrawGuizmo()
 			}
 		}
 	}
-}
-
-void ModuleImGui::SaveScene()
-{
-    App->scene->SaveScene();
-}
-
-void ModuleImGui::LoadScene()
-{
-
 }
