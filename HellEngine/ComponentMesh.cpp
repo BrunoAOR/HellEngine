@@ -520,15 +520,14 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 		BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Map Vram Data", Profiler::Color::Crimson);
 		/* Get the pointer to the data in VRAM (map buffer) */
 
-		glBindVertexArray(meshInfo->vao);
-		glBindBuffer(GL_ARRAY_BUFFER, meshInfo->vbo);
-		//float* vramData = (float*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-
+		uint verticesCount = meshInfo->vertices.size();
+		
 		/* Reset all vertices in the VRAM to ZERO */
 		BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Reset VRAM to zero", Profiler::Color::Crimson);
-		uint verticesCount = meshInfo->vertices.size();
 
 		float* vramData = new float[verticesCount * 8];
+		glBindVertexArray(meshInfo->vao);
+		glBindBuffer(GL_ARRAY_BUFFER, meshInfo->vbo);
 		glGetBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * verticesCount * 8, vramData);
 		
 		for (uint v = 0; v < verticesCount; ++v)
@@ -537,10 +536,6 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 			//vramData[v * 8 + 0] = 0;// meshInfo->vertices[v].x;// 0;
 			//vramData[v * 8 + 1] = 0;// meshInfo->vertices[v].y;// 0;
 			//vramData[v * 8 + 2] = 0;// meshInfo->vertices[v].z;// 0;
-
-			/* TODO: Reset normals here */
-
-			/* Leave UVcoords (positoins 6 & 7) untouched */
 		}
 	
 
@@ -554,36 +549,30 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 				const std::vector<uint>& vertexIndices = it->first;
 				const VerticesGroup& verticesGroup = it->second;
 				uint vectorSize = verticesGroup.bones.size();
-				assert(vectorSize == verticesGroup.weights.size());
+				assert(vectorSize == verticesGroup.bones.size());
 
 				float4x4 matrixSum = float4x4::zero;
 
 				//BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Loop over VerticesGroups", Profiler::Color::Crimson);
+				
 				for (uint i = 0; i < vectorSize; ++i)
 				{
-					BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning VerticeGroup For", Profiler::Color::Crimson);
 					Bone* bone = verticesGroup.bones[i];
 
-					//BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning GetModelMatrix", Profiler::Color::Crimson);
-					//BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning MultiplyMatrices", Profiler::Color::Crimson);
 					//float4x4 nodeTransformation = bone->connectedTransform->GetModelMatrix4x4() * rootToWorldInverse;
 					float4x4 matrixProduct = bone->connectedTransform->GetModelMatrix4x4();
 					matrixProduct.LeftMultiply(rootToWorldInverse);
 					matrixProduct.RightMultiply(bone->inverseBindMatrix);
 					matrixProduct *= verticesGroup.weights[i];
-
-					//BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Multiply by weight", Profiler::Color::Crimson);
-					//matrixProduct = matrixProduct * verticesGroup.weights[i];
-
+					
 					//BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Add MatrixSum", Profiler::Color::Crimson);
 					matrixSum += matrixProduct;
 				}
-
+				
 				//matrix mat(matrixSum);
 
 				for (uint vertexIndex : vertexIndices)
 				{
-					//BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning COUNTER", Profiler::Color::Crimson);
 					const float3& originalVertex = meshInfo->vertices[vertexIndex];
 
 					//vramData[vertexIndex * 8 + 0] += mat.a1 * originalVertex.x + mat.b1 * originalVertex.y + mat.c1 * originalVertex.z + mat.d1;
@@ -594,7 +583,6 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 					vramData[vertexIndex * 8 + 1] += matrixSum.v[0][1] * originalVertex.x + matrixSum.v[1][1] * originalVertex.y + matrixSum.v[2][1] * originalVertex.z + matrixSum.v[3][1];
 					vramData[vertexIndex * 8 + 2] += matrixSum.v[0][2] * originalVertex.x + matrixSum.v[1][2] * originalVertex.y + matrixSum.v[2][2] * originalVertex.z + matrixSum.v[3][2];
 				}
-				BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning End", Profiler::Color::Crimson);
 
 			}
 		}
