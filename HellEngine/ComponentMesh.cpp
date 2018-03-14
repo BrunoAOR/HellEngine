@@ -509,6 +509,7 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 	{
 		BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Get root inverse", Profiler::Color::Crimson);
 		GameObject* root = animationComponent->gameObject;
+		assert(root);
 
 		/* Get the rootToWorldInverse matrix because all bone inverse matrices are in model (Root) coordinate space */
 		ComponentTransform* rootTransform = (ComponentTransform*)root->GetComponent(ComponentType::TRANSFORM);
@@ -516,14 +517,20 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 		float4x4 rootToWorld = rootTransform->GetModelMatrix4x4();
 		float4x4 rootToWorldInverse = rootToWorld.Inverted().Transposed();
 
+		BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Map Vram Data", Profiler::Color::Crimson);
 		/* Get the pointer to the data in VRAM (map buffer) */
+
 		glBindVertexArray(meshInfo->vao);
 		glBindBuffer(GL_ARRAY_BUFFER, meshInfo->vbo);
-		float* vramData = (float*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+		//float* vramData = (float*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 
 		/* Reset all vertices in the VRAM to ZERO */
 		BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Reset VRAM to zero", Profiler::Color::Crimson);
 		uint verticesCount = meshInfo->vertices.size();
+
+		float* vramData = new float[verticesCount * 8];
+		glGetBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * verticesCount * 8, vramData);
+		
 		for (uint v = 0; v < verticesCount; ++v)
 		{
 			memset(vramData + (v * 8), 0, sizeof(float) * 3);
@@ -535,6 +542,7 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 
 			/* Leave UVcoords (positoins 6 & 7) untouched */
 		}
+	
 
 		/* Iterate through bones and add their effect to the adecuate vertices */
 		BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning Apply bone effects", Profiler::Color::Crimson);
@@ -637,8 +645,11 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 			}
 		}
 
-		/* Unmap buffer */
-		glUnmapBuffer(GL_ARRAY_BUFFER);
+		BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning BufferSubData", Profiler::Color::Crimson);
+		/* Unmap buffer */	
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * verticesCount * 8, vramData);
+
+		delete vramData;
 		vramData = nullptr;
 	}
 }

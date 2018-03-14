@@ -416,7 +416,6 @@ void ComponentTransform::UpdateLocalModelMatrix()
 	translationMatrix.LeftMultiply(scaleMatrix);
 	memcpy_s(localModelMatrix.ptr(), sizeof(float) * 16, translationMatrix.Transposed().ptr(), sizeof(float) * 16);	
 	
-	BROFILER_CATEGORY("ComponentTransform::UpdateWorlMatrix", Profiler::Color::PapayaWhip);
 	UpdateWorldModelMatrix();
 }
 
