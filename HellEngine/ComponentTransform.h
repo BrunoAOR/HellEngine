@@ -37,7 +37,7 @@ public:
 	void SetRotationDeg(float x, float y, float z);
 
 	void UpdateBoundingBox(ComponentMesh* mesh = nullptr);
-	void EncloseBoundingBox(ComponentTransform* transform, ComponentMesh* mesh);
+	void EncloseBoundingBox(ComponentMesh* mesh);
 
 	const float4x4& GetModelMatrix4x4() const;
 	const float* GetModelMatrix() const;
@@ -54,8 +54,9 @@ public:
 
 private:
 
+	void UpdateMatrices(const float4x4* newParentWorldMatrix = nullptr);
 	void UpdateLocalModelMatrix();
-	void UpdateWorldModelMatrix();
+	void UpdateWorldModelMatrix(const float4x4* newParentWorldMatrix = nullptr);
 	void InitializeBaseBB();
 	void CreateBBVAO();
 
@@ -74,8 +75,10 @@ private:
 	float4x4 worldModelMatrix;
 
 	float boundingBoxUniqueData[8 * 6];
-
-	static std::vector<float3> baseBoundingBox;
+	
+	AABB baseBoundingBox;
+	
+	static std::vector<float3> baseBoundingBoxVertices;
 	static MeshInfo baseBoundingBoxMeshInfo;
 
 };
