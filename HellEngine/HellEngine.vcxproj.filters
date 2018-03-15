@@ -345,6 +345,12 @@
     <ClInclude Include="MeshInfo.h">
       <Filter>General</Filter>
     </ClInclude>
+    <ClInclude Include="Billboard.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentGrass.h">
+      <Filter>Scene Management</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -555,6 +561,12 @@
       <Filter>Engine Modules</Filter>
     </ClCompile>
     <ClCompile Include="ComponentAnimation.cpp">
+      <Filter>Scene Management</Filter>
+    </ClCompile>
+    <ClCompile Include="Billboard.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentGrass.cpp">
       <Filter>Scene Management</Filter>
     </ClCompile>
   </ItemGroup>
