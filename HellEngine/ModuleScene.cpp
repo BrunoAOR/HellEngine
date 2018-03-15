@@ -28,9 +28,20 @@ ModuleScene::~ModuleScene()
 {
 	for (MeshInfo* meshInfo : meshes)
 	{
+		/* Delete VRAM buffers */
 		glDeleteVertexArrays(1, &meshInfo->vao);
 		glDeleteBuffers(1, &meshInfo->vbo);
 		glDeleteBuffers(1, &meshInfo->ebo);
+		
+		/* Delete Bones */
+		for (Bone* bone : meshInfo->bones)
+		{
+			/* DO NOT delete it->first because it points to the same memLocation as bone->name which will be deleted next */
+			delete[] bone->name;
+			delete[] bone->weights;
+			delete bone;
+		}
+
 		delete meshInfo;
 	}
 	meshes.clear();

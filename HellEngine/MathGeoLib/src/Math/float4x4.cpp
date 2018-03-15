@@ -1715,6 +1715,66 @@ void float4x4::Transform(float4 *vectorArray, int numVectors, int strideBytes) c
 	}
 }
 
+void float4x4::LeftMultiply(const float4x4 & rhs)
+{
+	float aux[Rows][Cols];
+
+	aux[0][0] = v[0][0] * rhs.v[0][0] + v[0][1] * rhs.v[1][0] + v[0][2] * rhs.v[2][0] + v[0][3] * rhs.v[3][0];
+	aux[0][1] = v[0][0] * rhs.v[0][1] + v[0][1] * rhs.v[1][1] + v[0][2] * rhs.v[2][1] + v[0][3] * rhs.v[3][1];
+	aux[0][2] = v[0][0] * rhs.v[0][2] + v[0][1] * rhs.v[1][2] + v[0][2] * rhs.v[2][2] + v[0][3] * rhs.v[3][2];
+	aux[0][3] = v[0][0] * rhs.v[0][3] + v[0][1] * rhs.v[1][3] + v[0][2] * rhs.v[2][3] + v[0][3] * rhs.v[3][3];
+
+
+	aux[1][0] = v[1][0] * rhs.v[0][0] + v[1][1] * rhs.v[1][0] + v[1][2] * rhs.v[2][0] + v[1][3] * rhs.v[3][0];
+	aux[1][1] = v[1][0] * rhs.v[0][1] + v[1][1] * rhs.v[1][1] + v[1][2] * rhs.v[2][1] + v[1][3] * rhs.v[3][1];
+	aux[1][2] = v[1][0] * rhs.v[0][2] + v[1][1] * rhs.v[1][2] + v[1][2] * rhs.v[2][2] + v[1][3] * rhs.v[3][2];
+	aux[1][3] = v[1][0] * rhs.v[0][3] + v[1][1] * rhs.v[1][3] + v[1][2] * rhs.v[2][3] + v[1][3] * rhs.v[3][3];
+
+
+	aux[2][0] = v[2][0] * rhs.v[0][0] + v[2][1] * rhs.v[1][0] + v[2][2] * rhs.v[2][0] + v[2][3] * rhs.v[3][0];
+	aux[2][1] = v[2][0] * rhs.v[0][1] + v[2][1] * rhs.v[1][1] + v[2][2] * rhs.v[2][1] + v[2][3] * rhs.v[3][1];
+	aux[2][2] = v[2][0] * rhs.v[0][2] + v[2][1] * rhs.v[1][2] + v[2][2] * rhs.v[2][2] + v[2][3] * rhs.v[3][2];
+	aux[2][3] = v[2][0] * rhs.v[0][3] + v[2][1] * rhs.v[1][3] + v[2][2] * rhs.v[2][3] + v[2][3] * rhs.v[3][3];
+
+
+	aux[3][0] = v[3][0] * rhs.v[0][0] + v[3][1] * rhs.v[1][0] + v[3][2] * rhs.v[2][0] + v[3][3] * rhs.v[3][0];
+	aux[3][1] = v[3][0] * rhs.v[0][1] + v[3][1] * rhs.v[1][1] + v[3][2] * rhs.v[2][1] + v[3][3] * rhs.v[3][1];
+	aux[3][2] = v[3][0] * rhs.v[0][2] + v[3][1] * rhs.v[1][2] + v[3][2] * rhs.v[2][2] + v[3][3] * rhs.v[3][2];
+	aux[3][3] = v[3][0] * rhs.v[0][3] + v[3][1] * rhs.v[1][3] + v[3][2] * rhs.v[2][3] + v[3][3] * rhs.v[3][3];
+
+	memcpy_s(v, sizeof(float) * Rows * Cols, aux, sizeof(float) * Rows * Cols);
+}
+
+void float4x4::RightMultiply(const float4x4 & lhs)
+{
+	float aux[Rows][Cols];
+
+	aux[0][0] = lhs.v[0][0] * v[0][0] + lhs.v[0][1] * v[1][0] + lhs.v[0][2] * v[2][0] + lhs.v[0][3] * v[3][0];
+	aux[0][1] = lhs.v[0][0] * v[0][1] + lhs.v[0][1] * v[1][1] + lhs.v[0][2] * v[2][1] + lhs.v[0][3] * v[3][1];
+	aux[0][2] = lhs.v[0][0] * v[0][2] + lhs.v[0][1] * v[1][2] + lhs.v[0][2] * v[2][2] + lhs.v[0][3] * v[3][2];
+	aux[0][3] = lhs.v[0][0] * v[0][3] + lhs.v[0][1] * v[1][3] + lhs.v[0][2] * v[2][3] + lhs.v[0][3] * v[3][3];
+
+
+	aux[1][0] = lhs.v[1][0] * v[0][0] + lhs.v[1][1] * v[1][0] + lhs.v[1][2] * v[2][0] + lhs.v[1][3] * v[3][0];
+	aux[1][1] = lhs.v[1][0] * v[0][1] + lhs.v[1][1] * v[1][1] + lhs.v[1][2] * v[2][1] + lhs.v[1][3] * v[3][1];
+	aux[1][2] = lhs.v[1][0] * v[0][2] + lhs.v[1][1] * v[1][2] + lhs.v[1][2] * v[2][2] + lhs.v[1][3] * v[3][2];
+	aux[1][3] = lhs.v[1][0] * v[0][3] + lhs.v[1][1] * v[1][3] + lhs.v[1][2] * v[2][3] + lhs.v[1][3] * v[3][3];
+
+
+	aux[2][0] = lhs.v[2][0] * v[0][0] + lhs.v[2][1] * v[1][0] + lhs.v[2][2] * v[2][0] + lhs.v[2][3] * v[3][0];
+	aux[2][1] = lhs.v[2][0] * v[0][1] + lhs.v[2][1] * v[1][1] + lhs.v[2][2] * v[2][1] + lhs.v[2][3] * v[3][1];
+	aux[2][2] = lhs.v[2][0] * v[0][2] + lhs.v[2][1] * v[1][2] + lhs.v[2][2] * v[2][2] + lhs.v[2][3] * v[3][2];
+	aux[2][3] = lhs.v[2][0] * v[0][3] + lhs.v[2][1] * v[1][3] + lhs.v[2][2] * v[2][3] + lhs.v[2][3] * v[3][3];
+
+
+	aux[3][0] = lhs.v[3][0] * v[0][0] + lhs.v[3][1] * v[1][0] + lhs.v[3][2] * v[2][0] + lhs.v[3][3] * v[3][0];
+	aux[3][1] = lhs.v[3][0] * v[0][1] + lhs.v[3][1] * v[1][1] + lhs.v[3][2] * v[2][1] + lhs.v[3][3] * v[3][1];
+	aux[3][2] = lhs.v[3][0] * v[0][2] + lhs.v[3][1] * v[1][2] + lhs.v[3][2] * v[2][2] + lhs.v[3][3] * v[3][2];
+	aux[3][3] = lhs.v[3][0] * v[0][3] + lhs.v[3][1] * v[1][3] + lhs.v[3][2] * v[2][3] + lhs.v[3][3] * v[3][3];
+
+	memcpy_s(v, sizeof(float) * Rows * Cols, aux, sizeof(float) * Rows * Cols);
+}
+
 float4x4 float4x4::operator *(const float3x3 &rhs) const
 {
 	float4x4 r;

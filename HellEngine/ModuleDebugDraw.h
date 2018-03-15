@@ -22,7 +22,7 @@ public:
 	bool CleanUp();
 	
 	/* Draws a certain model using the Material's shader and texture, from a Vertex Array Oject WITH indexes */
-	bool DrawElements(float* modelMatrix, uint vao, uint vertexCount);
+	bool DrawElements(const float* modelMatrix, uint vao, uint vertexCount);
 
 private:
 	/* Applies the default material configuration */

@@ -44,7 +44,7 @@ bool ModuleDebugDraw::CleanUp()
 }
 
 
-bool ModuleDebugDraw::DrawElements(float * modelMatrix, uint vao, uint vertexCount)
+bool ModuleDebugDraw::DrawElements(const float* modelMatrix, uint vao, uint vertexCount)
 {
 	shader->Activate();
 
