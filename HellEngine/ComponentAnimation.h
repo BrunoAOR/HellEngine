@@ -33,6 +33,7 @@ private:
 	int instanceID = -1;
 	char animationName[256] = "";
 	bool loop = true;
+	int blendTime = 2000;
 };
 
 #endif // !__H_COMPONENT_ANIMATION__

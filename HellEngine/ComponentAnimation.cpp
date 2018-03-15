@@ -80,15 +80,17 @@ void ComponentAnimation::OnEditor()
 		if (ImGui::Button("Apply"))
 		{
 			if (instanceID != -1)
-				App->animation->BlendTo(instanceID, animationName, 2000);
+				App->animation->BlendTo(instanceID, animationName, blendTime);
 			else
 				SetAnimation();
 		}
 
-		if (ImGui::Checkbox("Loop", &loop)) {
+		if (ImGui::Checkbox("Loop", &loop))
+		{
 			App->animation->ModifyAnimationLoop(instanceID, loop);
 		}
 
+		ImGui::InputInt("Blend time (ms)", &blendTime);
 	}
 }
 
