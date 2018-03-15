@@ -440,30 +440,39 @@ void ModuleScene::SaveScene(const std::string sceneName)
 	std::vector<GameObject*> sceneGO;
 	FindAllGameObjects(sceneGO);
 
-	json jsonfile;
+	json jsonFile;
+	std::string jsonContent = "{\"Game Objects\":[";
 
-	for (GameObject* go : sceneGO)
+	for (int i = 0; i < sceneGO.size(); i++)
 	{
-		jsonfile["UID"] = (uint)go->uuid;
+		jsonContent += "{ ";
+		jsonContent += "\"UID\":";
+		jsonContent += (uint)sceneGO.at(i)->uuid;
 
-		if (go->GetParent() != NULL)
+		if (sceneGO.at(i)->GetParent() != NULL)
 		{
-			jsonfile["ParentUID"] = (uint)go->GetParent()->uuid;
+			jsonContent += ", \"ParentUID\":";
+			jsonContent += (uint)sceneGO.at(i)->GetParent()->uuid;
 		}
 		
-		jsonfile["Name"] = go->name;
+		jsonContent += ", \"Name\": \"";
+		jsonContent += sceneGO.at(i)->name;
 
-		ComponentTransform* transform = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM);
+		ComponentTransform* transform = (ComponentTransform*)sceneGO.at(i)->GetComponent(ComponentType::TRANSFORM);
 		if (transform != NULL)
 		{
-			jsonfile["Translation"] = { transform->GetPosition().x, transform->GetPosition().y, transform->GetPosition().z };
-			jsonfile["Scale"] = { transform->GetScale().x, transform->GetScale().y, transform->GetScale().z };
-			jsonfile["Rotation"] = { transform->GetRotationDeg().x, transform->GetRotationDeg().y, transform->GetRotationDeg().z };
+			jsonContent += ", \"Translation: \"";
+			float3 translation =  {transform->GetPosition().x, transform->GetPosition().y, transform->GetPosition().z };
+			std::to_string(translation.x);
+			std::to_string(translation.y);
+			std::to_string(translation.z);
+			//jsonfile["Scale"] = { transform->GetScale().x, transform->GetScale().y, transform->GetScale().z };
+			//jsonfile["Rotation"] = { transform->GetRotationDeg().x, transform->GetRotationDeg().y, transform->GetRotationDeg().z };
 		}
-	}
 
+	}
 	std::ofstream file(sceneName + ".json");
-	file << jsonfile;
+	//file << jsonfile;
 	LOGGER("Scene %s saved", sceneName.c_str());
 }
 
