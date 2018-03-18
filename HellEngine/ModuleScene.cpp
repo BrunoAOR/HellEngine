@@ -435,51 +435,39 @@ void ModuleScene::TestLineSegmentChecks(float3 lineStartPoint, float3 lineEndPoi
 	LOGGER("The line collided with GameObject: %s", collidedGO ? collidedGO->name.c_str() : "none");
 }
 
-void ModuleScene::SaveScene(const std::string sceneName)
+void ModuleScene::SaveRecursive(GameObject* gameObject, nlohmann::json& data)
 {
-	std::vector<GameObject*> sceneGO;
-	FindAllGameObjects(sceneGO);
-
-	std::string jsonContent = "{\"Game Objects\":[";
-
-	for (int i = 0; i < sceneGO.size(); i++)
+	if (gameObject != root)
 	{
-		jsonContent += "{ ";
-		jsonContent += "\"UID\":";
-		jsonContent += std::to_string(sceneGO.at(i)->uuid);
+		json jsonGameObject;
+		gameObject->Save(jsonGameObject);
 
-		if (sceneGO.at(i)->GetParent() != NULL)
-		{
-			jsonContent += ",\"ParentUID\":";
-			jsonContent += std::to_string(sceneGO.at(i)->GetParent()->uuid);
-		}
-		
-		jsonContent += ",\"Name\": \"";
-		jsonContent += sceneGO.at(i)->name;
-		jsonContent += "\"";
-
-		ComponentTransform* transform = (ComponentTransform*)sceneGO.at(i)->GetComponent(ComponentType::TRANSFORM);
-		if (transform != NULL)
-		{
-			float3 translation = { transform->GetPosition().x, transform->GetPosition().y, transform->GetPosition().z };
-			float3 rotation = { transform->GetRotationDeg().x, transform->GetRotationDeg().y, transform->GetRotationDeg().z };
-			float3 scale = { transform->GetScale().x, transform->GetScale().y, transform->GetScale().z };
-
-			jsonContent += ",\"Translation\":[";
-			jsonContent += std::to_string(translation.x) + "," + std::to_string(translation.y) + "," + std::to_string(translation.z) + "],";
-			jsonContent += std::to_string(rotation.x) + "," + std::to_string(rotation.y) + "," + std::to_string(rotation.z) + "],";
-			jsonContent += std::to_string(scale.x) + "," + std::to_string(scale.y) + "," + std::to_string(scale.z) + "],";
-		}
+		data.push_back(jsonGameObject);
 	}
 
+	for (GameObject* child : gameObject->GetChildren())
+	{
+		SaveRecursive(child, data);
+	}
+}
+
+void ModuleScene::SaveScene(const std::string sceneName)
+{
+	jsonData.clear();
+
+	json jsonGameObjects;
+	SaveRecursive(root, jsonGameObjects);
+
+	jsonData["Game Objects"] = jsonGameObjects;
+
+	validJsonData = true;
+
 	std::ofstream file(sceneName + ".json");
-	json jsonfile;
-	jsonfile = jsonContent;
-	file << jsonfile;
-	LOGGER("Scene %s saved", sceneName.c_str());
+	file << jsonData;
+	LOGGER("Scene %s saved!", sceneName.c_str());
 }
 
 void ModuleScene::LoadScene(const std::string sceneName)
 {
-
+	
 }

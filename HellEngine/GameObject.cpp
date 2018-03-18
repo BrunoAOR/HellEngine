@@ -632,3 +632,23 @@ GameObject* GameObject::FindByName(const char * lookUpName)
 
 	return nullptr;
 }
+
+void GameObject::Save(nlohmann::json& json) const
+{
+	json["UUID"] = uuid;
+	json["ParentUID"] = parent != nullptr ? parent->uuid : -1;
+	json["Name"] = name;
+	json["isActive"] = isActive;
+
+	nlohmann::json jsonComponents;
+	
+	for (Component* component : components)
+	{
+		nlohmann::json jsonComponent;
+		component->Save(jsonComponent);
+
+		jsonComponents.push_back(jsonComponent);
+	}
+
+	json["components"] = jsonComponents;
+}

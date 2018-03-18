@@ -11,6 +11,7 @@
 #include "ModuleScene.h"
 #include "globals.h"
 #include "openGL.h"
+#include "json_serializer.h"
 
 std::vector<float3> ComponentTransform::baseBoundingBox;
 MeshInfo ComponentTransform::baseBoundingBoxMeshInfo;
@@ -598,4 +599,23 @@ void ComponentTransform::ApplyWorldTransformationMatrix(const float4x4& worldTra
 		UpdateBoundingBox();
 		UpdateMatrices();
 	}
+}
+
+void ComponentTransform::Save(nlohmann::json& json) const
+{
+	Component::Save(json);
+	nlohmann::json jsonPosition;
+	to_json(jsonPosition, position);
+
+	json["position"] = jsonPosition;
+
+	nlohmann::json jsonRotation;
+	to_json(jsonRotation, rotation);
+
+	json["rotation"] = jsonRotation;
+
+	nlohmann::json jsonScale;
+	to_json(jsonScale, scale);
+
+	json["scale"] = jsonScale;
 }

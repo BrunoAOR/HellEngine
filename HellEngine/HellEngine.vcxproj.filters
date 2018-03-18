@@ -345,6 +345,9 @@
     <ClInclude Include="MeshInfo.h">
       <Filter>General</Filter>
     </ClInclude>
+    <ClInclude Include="json_serializer.h">
+      <Filter>General</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -556,6 +559,9 @@
     </ClCompile>
     <ClCompile Include="ComponentAnimation.cpp">
       <Filter>Scene Management</Filter>
+    </ClCompile>
+    <ClCompile Include="json_serializer.cpp">
+      <Filter>General</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

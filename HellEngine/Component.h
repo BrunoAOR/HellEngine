@@ -2,6 +2,8 @@
 #define __H_COMPONENT__
 
 #include <string>
+#include "Json/json.h"
+
 class GameObject;
 enum class ComponentType;
 
@@ -25,11 +27,18 @@ public:
 	virtual int MaxCountInGameObject() = 0;
 
 	bool OnEditorDeleteComponent();
+	virtual void Save(nlohmann::json& json) const
+	{
+		json["type"] = type;
+		json["uuid"] = uuid;
+		json["isActive"] = isActive;
+	}
 
 public:
 
 	GameObject* gameObject = nullptr;
 	bool toRemove = false;
+	uint32_t uuid;
 
 protected:
 

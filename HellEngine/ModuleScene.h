@@ -7,6 +7,8 @@
 #include "GameObject.h"
 #include "Module.h"
 #include "SpaceQuadTree.h"
+#include "Json/json.h"
+
 class ComponentCamera;
 class GameObject;
 
@@ -68,13 +70,15 @@ private:
 	template<typename T>
 	void Intersects(std::vector<GameObject*>& intersectedGameObjects, const T& primitive);
 	void DrawHierarchy();
+	void SaveRecursive(GameObject* gameObject, nlohmann::json& data);
 
 private:
 
 	ComponentCamera* activeGameCamera = nullptr;
 	SpaceQuadTree quadTree;
 	SceneLoader sceneLoader;
-
+	nlohmann::json jsonData;
+	bool validJsonData = false;
 };
 
 template<typename T>
