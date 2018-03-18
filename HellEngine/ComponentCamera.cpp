@@ -12,6 +12,7 @@
 #include "ModuleScene.h"
 #include "globals.h"
 #include "openGL.h"
+#include "json_serializer.h"
 
 ComponentCamera::ComponentCamera(GameObject * owner) : Component(owner)
 {
@@ -445,4 +446,11 @@ void ComponentCamera::CreateFrustumVAO()
 	}
 }
 
+void ComponentCamera::Save(nlohmann::json& json) const
+{
+	Component::Save(json);
+	nlohmann::json jsonFrustum;
+	to_json(jsonFrustum, frustum);
 
+	json["Frustum"] = jsonFrustum;
+}

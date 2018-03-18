@@ -638,7 +638,7 @@ void GameObject::Save(nlohmann::json& json) const
 	json["UUID"] = uuid;
 	json["ParentUID"] = parent != nullptr ? parent->uuid : -1;
 	json["Name"] = name;
-	json["isActive"] = isActive;
+	json["IsActive"] = isActive;
 
 	nlohmann::json jsonComponents;
 	
@@ -650,5 +650,5 @@ void GameObject::Save(nlohmann::json& json) const
 		jsonComponents.push_back(jsonComponent);
 	}
 
-	json["components"] = jsonComponents;
+	json["Components"] = jsonComponents;
 }

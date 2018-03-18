@@ -87,6 +87,8 @@ public:
 
 	bool IsInsideFrustum(GameObject* go);
 
+	virtual void Save(nlohmann::json& json) const override;
+
 public:
 
 	bool isActiveCamera;
