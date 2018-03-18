@@ -37,8 +37,6 @@ public:
 	bool GetActive() const;
 	void SetActive(bool activeState);
 
-	void PreLoad(const nlohmann::json& json);
-	void Load(const nlohmann::json& json);
 	void Save(nlohmann::json& json) const;
 
 public:

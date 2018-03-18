@@ -604,6 +604,9 @@ void ComponentTransform::ApplyWorldTransformationMatrix(const float4x4& worldTra
 void ComponentTransform::Save(nlohmann::json& json) const
 {
 	Component::Save(json);
+
+	json["IsStatic"] = isStatic;
+
 	nlohmann::json jsonPosition;
 	to_json(jsonPosition, position);
 
