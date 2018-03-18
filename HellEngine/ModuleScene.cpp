@@ -440,39 +440,42 @@ void ModuleScene::SaveScene(const std::string sceneName)
 	std::vector<GameObject*> sceneGO;
 	FindAllGameObjects(sceneGO);
 
-	json jsonFile;
 	std::string jsonContent = "{\"Game Objects\":[";
 
 	for (int i = 0; i < sceneGO.size(); i++)
 	{
 		jsonContent += "{ ";
 		jsonContent += "\"UID\":";
-		jsonContent += (uint)sceneGO.at(i)->uuid;
+		jsonContent += std::to_string(sceneGO.at(i)->uuid);
 
 		if (sceneGO.at(i)->GetParent() != NULL)
 		{
-			jsonContent += ", \"ParentUID\":";
-			jsonContent += (uint)sceneGO.at(i)->GetParent()->uuid;
+			jsonContent += ",\"ParentUID\":";
+			jsonContent += std::to_string(sceneGO.at(i)->GetParent()->uuid);
 		}
 		
-		jsonContent += ", \"Name\": \"";
+		jsonContent += ",\"Name\": \"";
 		jsonContent += sceneGO.at(i)->name;
+		jsonContent += "\"";
 
 		ComponentTransform* transform = (ComponentTransform*)sceneGO.at(i)->GetComponent(ComponentType::TRANSFORM);
 		if (transform != NULL)
 		{
-			jsonContent += ", \"Translation: \"";
-			float3 translation =  {transform->GetPosition().x, transform->GetPosition().y, transform->GetPosition().z };
-			std::to_string(translation.x);
-			std::to_string(translation.y);
-			std::to_string(translation.z);
-			//jsonfile["Scale"] = { transform->GetScale().x, transform->GetScale().y, transform->GetScale().z };
-			//jsonfile["Rotation"] = { transform->GetRotationDeg().x, transform->GetRotationDeg().y, transform->GetRotationDeg().z };
-		}
+			float3 translation = { transform->GetPosition().x, transform->GetPosition().y, transform->GetPosition().z };
+			float3 rotation = { transform->GetRotationDeg().x, transform->GetRotationDeg().y, transform->GetRotationDeg().z };
+			float3 scale = { transform->GetScale().x, transform->GetScale().y, transform->GetScale().z };
 
+			jsonContent += ",\"Translation\":[";
+			jsonContent += std::to_string(translation.x) + "," + std::to_string(translation.y) + "," + std::to_string(translation.z) + "],";
+			jsonContent += std::to_string(rotation.x) + "," + std::to_string(rotation.y) + "," + std::to_string(rotation.z) + "],";
+			jsonContent += std::to_string(scale.x) + "," + std::to_string(scale.y) + "," + std::to_string(scale.z) + "],";
+		}
 	}
+
 	std::ofstream file(sceneName + ".json");
-	//file << jsonfile;
+	json jsonfile;
+	jsonfile = jsonContent;
+	file << jsonfile;
 	LOGGER("Scene %s saved", sceneName.c_str());
 }
 

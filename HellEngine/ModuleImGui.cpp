@@ -100,7 +100,7 @@ UpdateStatus ModuleImGui::Update()
 		{
             if (ImGui::MenuItem("Save Scene", nullptr, nullptr))
             {
-				App->scene->SaveScene("scene1");
+				App->scene->SaveScene("TestScene");
             }
             if (ImGui::MenuItem("Load Scene", nullptr, nullptr))
             {
