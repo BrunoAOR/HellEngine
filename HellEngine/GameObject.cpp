@@ -2,6 +2,7 @@
 #include <assert.h>
 #include "Brofiler/include/Brofiler.h"
 #include "ImGui/imgui.h"
+#include "MathGeoLib/src/Algorithm/Random/LCG.h"
 #include "Application.h"
 #include "GameObject.h"
 #include "Component.h"
@@ -12,8 +13,8 @@
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "ModuleScene.h"
+#include "SerializableObject.h"
 #include "globals.h"
-
 
 GameObject* GameObject::hierarchyActiveGameObject = nullptr;
 
@@ -30,6 +31,8 @@ GameObject::GameObject(const char* name, GameObject* parentGameObject) : name(na
 			SetParent(parentGameObject);
 	}
 
+	LCG lcg;
+	uuid = lcg.IntFast();
 	App->scene->gameObjectsCount++;
 }
 
@@ -503,6 +506,22 @@ bool GameObject::GetActive() const
 void GameObject::SetActive(bool activeState)
 {
 	isActive = activeState;
+}
+
+void GameObject::Save(SerializableObject & obj)
+{
+	obj.Addu32("UUID", uuid);
+	obj.Addu32("ParentUUID", GetParent()->uuid);
+	obj.AddString("Name", name);
+	obj.AddBool("Active", isActive);
+}
+
+void GameObject::Load(const SerializableObject & obj)
+{
+	uuid = obj.Getu32("UUID");
+	parentUuid = obj.Getu32("ParentUUID");
+	name = obj.GetString("Name");
+	isActive = obj.GetBool("Active");
 }
 
 bool GameObject::HasGameObjectInChildrenHierarchy(GameObject * testGameObject)

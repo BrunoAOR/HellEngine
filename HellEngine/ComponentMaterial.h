@@ -53,6 +53,9 @@ public:
 	/* Returns the maximum number of times that this particular Type of Component can be added to a GameObject */
 	virtual int MaxCountInGameObject() override;
 
+	virtual void Save(SerializableObject& obj) const override;
+	virtual void Load(const SerializableObject& obj) override;
+
 public:
 	
 	/* Mesh related */
@@ -87,7 +90,7 @@ private:
 	static uint materialsCount;
 	static uint checkeredPatternBufferId;
 
-	TextureConfigutaion textureConfiguration;
+	TextureConfiguration textureConfiguration;
 	TextureInfo textureInfo;
 
 	/* Shader related */

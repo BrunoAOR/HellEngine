@@ -11,6 +11,7 @@
 #include "ModuleScene.h"
 #include "MeshInfo.h"
 #include "ModelInfo.h"
+#include "SerializableObject.h"
 #include "Shader.h"
 #include "globals.h"
 #include "openGL.h"
@@ -248,6 +249,30 @@ void ComponentMaterial::OnEditor()
 int ComponentMaterial::MaxCountInGameObject()
 {
 	return -1;
+}
+
+void ComponentMaterial::Save(SerializableObject & obj) const
+{
+	obj.AddString("VertexShaderPath", vertexShaderPath);
+	obj.AddString("FragmentShaderPath", fragmentShaderPath);
+	obj.AddString("TexturePath", texturePath);
+	obj.AddString("ShaderDataPath", shaderDataPath);
+	obj.AddInt("WrapMode", textureConfiguration.wrapMode);
+	obj.AddBool("MipMaps", textureConfiguration.mipMaps);
+	obj.AddInt("MinificationMode", textureConfiguration.minificationMode);
+	obj.AddInt("MagnificationMode", textureConfiguration.magnificationMode);
+}
+
+void ComponentMaterial::Load(const SerializableObject & obj)
+{
+	memcpy_s(vertexShaderPath, 256, obj.GetString("VertexShaderPath").c_str(), obj.GetString("VertexShaderPath").length());
+	memcpy_s(fragmentShaderPath, 256, obj.GetString("FragmentShaderPath").c_str(), obj.GetString("FragmentShaderPath").length());
+	memcpy_s(texturePath, 256, obj.GetString("TexturePath").c_str(), obj.GetString("TexturePath").length());
+	memcpy_s(shaderDataPath, 256, obj.GetString("ShaderDataPath").c_str(), obj.GetString("ShaderDataPath").length());
+	textureConfiguration.wrapMode = obj.GetInt("WrapMode");
+	textureConfiguration.mipMaps = obj.GetBool("MipMaps");
+	textureConfiguration.minificationMode = obj.GetInt("MinificationMode");
+	textureConfiguration.magnificationMode = obj.GetInt("MagnificationMode");
 }
 
 void ComponentMaterial::OnEditorMaterialConfiguration()

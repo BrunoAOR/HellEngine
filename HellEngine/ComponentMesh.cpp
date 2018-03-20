@@ -11,6 +11,7 @@
 #include "ModelInfo.h"
 #include "ModuleScene.h"
 #include "MeshInfo.h"
+#include "SerializableObject.h"
 #include "globals.h"
 #include "openGL.h"
 
@@ -115,6 +116,16 @@ void ComponentMesh::OnEditor()
 int ComponentMesh::MaxCountInGameObject()
 {
 	return 1;
+}
+
+void ComponentMesh::Save(SerializableObject & obj) const
+{
+	obj.AddInt("ActiveModelInfo", activeModelInfo);
+}
+
+void ComponentMesh::Load(const SerializableObject & obj)
+{
+	activeModelInfo = obj.GetInt("ActiveModelInfo");
 }
 
 void ComponentMesh::CreateCubeMeshInfo()

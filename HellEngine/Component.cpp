@@ -1,12 +1,17 @@
 #include "ImGui/imgui.h"
+#include "MathGeoLib/src/Algorithm/Random/LCG.h"
 #include "Component.h"
+#include "ComponentType.h"
 #include "GameObject.h"
+#include "SerializableObject.h"
 #include "globals.h"
 
 int Component::nextId = 0;
 
 Component::Component(GameObject* owner) : gameObject(owner)
 {
+	LCG lcg;
+	uuid = lcg.IntFast();
 	editorInfo.id = nextId++;
 	//LOGGER("Constructing Component for GameObject '%s'", gameObject->name.c_str());
 }
@@ -32,6 +37,19 @@ bool Component::GetActive() const
 void Component::SetActive(bool activeState)
 {
 	isActive = activeState;
+}
+
+void Component::Save(SerializableObject& obj) const
+{
+	obj.Addu32("UUID", uuid);
+	obj.AddString("Type", GetString(type));
+	obj.AddBool("Active", isActive);
+}
+
+void Component::Load(const SerializableObject& obj)
+{
+	uuid = obj.Getu32("UUID");
+	isActive = obj.GetBool("Active");
 }
 
 bool Component::OnEditorDeleteComponent()

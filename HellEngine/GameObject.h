@@ -2,8 +2,11 @@
 #define __H_GAME_OBJECT__
 
 #include <vector>
+#include "MathGeoLib/src/Math/MathTypes.h"
+
 class Component;
 enum class ComponentType;
+class SerializableObject;
 
 class GameObject
 {
@@ -34,8 +37,13 @@ public:
 	bool GetActive() const;
 	void SetActive(bool activeState);
 
+	void Save(SerializableObject& obj);
+	void Load(const SerializableObject& obj);
+
 public:
 
+	u32 uuid;
+	u32 parentUuid;
 	std::string name;
 
 private:

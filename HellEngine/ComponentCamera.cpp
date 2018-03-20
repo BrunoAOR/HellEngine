@@ -10,6 +10,7 @@
 #include "ModuleDebugDraw.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleScene.h"
+#include "SerializableObject.h"
 #include "globals.h"
 #include "openGL.h"
 
@@ -352,6 +353,24 @@ bool ComponentCamera::IsInsideFrustum(GameObject * go)
 {
 	BROFILER_CATEGORY("ComponentMaterial::Find", Profiler::Color::Gold);
 	return	std::find(insideFrustum.begin(), insideFrustum.end(), go) != insideFrustum.end();
+}
+
+void ComponentCamera::Save(SerializableObject & obj) const
+{
+	obj.AddColor("Background", background);
+	obj.AddFloat("NearPlane", nearClippingPlane);
+	obj.AddFloat("FarPlane", farClippingPlane);
+	obj.AddFloat("AspectRatio", aspectRatio);
+	obj.AddFloat("VerticalFOV", verticalFOVRad);
+}
+
+void ComponentCamera::Load(const SerializableObject & obj)
+{
+	background = obj.GetColor("Background");
+	nearClippingPlane = obj.GetFloat("NearPlane");
+	farClippingPlane = obj.GetFloat("FarPlane");
+	aspectRatio = obj.GetFloat("AspectRatio");
+	verticalFOVRad = obj.GetFloat("VerticalFOV");
 }
 
 float ComponentCamera::GetHorizontalFOVrad() const

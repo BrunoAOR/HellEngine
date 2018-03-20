@@ -87,6 +87,9 @@ public:
 
 	bool IsInsideFrustum(GameObject* go);
 
+	virtual void Save(SerializableObject& obj) const override;
+	virtual void Load(const SerializableObject& obj) override;
+
 public:
 
 	bool isActiveCamera;

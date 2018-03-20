@@ -13,6 +13,11 @@ SerializableObject::~SerializableObject()
 {
 }
 
+void SerializableObject::AddBool(const std::string & key, bool value)
+{
+	(*jsonObject)[key] = value;
+}
+
 void SerializableObject::AddInt(const std::string& key, int value)
 {
 	(*jsonObject)[key] = value;
@@ -28,7 +33,7 @@ void SerializableObject::AddFloat(const std::string& key, float value)
 	(*jsonObject)[key] = value;
 }
 
-void SerializableObject::AddFloat3(const std::string & key, const float3& value)
+void SerializableObject::AddFloat3(const std::string & key, const float3& value) 
 {
 	Json jsonObj;
 	jsonObj["x"] = value.x;
@@ -62,7 +67,17 @@ void SerializableObject::AddString(const std::string& key, const std::string & v
 	(*jsonObject)[key] = value;
 }
 
-int SerializableObject::GetInt(const std::string& key)
+bool SerializableObject::GetBool(const std::string & key) const
+{
+	if (jsonObject->count(key))
+	{
+		return (*jsonObject)[key];
+	}
+	assert(false);
+	return false;
+}
+
+int SerializableObject::GetInt(const std::string& key) const
 {
 	if (jsonObject->count(key))
 	{
@@ -72,7 +87,7 @@ int SerializableObject::GetInt(const std::string& key)
 	return 0;
 }
 
-u32 SerializableObject::Getu32(const std::string & key)
+u32 SerializableObject::Getu32(const std::string & key) const
 {
 	if (jsonObject->count(key))
 	{
@@ -82,7 +97,7 @@ u32 SerializableObject::Getu32(const std::string & key)
 	return 0;
 }
 
-float SerializableObject::GetFloat(const std::string& key)
+float SerializableObject::GetFloat(const std::string& key) const
 {
 	if (jsonObject->count(key))
 	{
@@ -92,7 +107,7 @@ float SerializableObject::GetFloat(const std::string& key)
 	return 0.0f;
 }
 
-float3 SerializableObject::GetFloat3(const std::string & key)
+float3 SerializableObject::GetFloat3(const std::string & key) const
 {
 	if (jsonObject->count(key))
 	{
@@ -107,7 +122,7 @@ float3 SerializableObject::GetFloat3(const std::string & key)
 	return float3();
 }
 
-float4 SerializableObject::GetFloat4(const std::string & key)
+float4 SerializableObject::GetFloat4(const std::string & key) const
 {
 	if (jsonObject->count(key))
 	{
@@ -123,7 +138,7 @@ float4 SerializableObject::GetFloat4(const std::string & key)
 	return float4();
 }
 
-Color SerializableObject::GetColor(const std::string& key)
+Color SerializableObject::GetColor(const std::string& key) const
 {
 	if (jsonObject->count(key))
 	{
@@ -139,7 +154,7 @@ Color SerializableObject::GetColor(const std::string& key)
 	return Color();
 }
 
-std::string SerializableObject::GetString(const std::string& key)
+std::string SerializableObject::GetString(const std::string& key) const
 {
 	if (jsonObject->count(key))
 	{
