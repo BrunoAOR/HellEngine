@@ -4,6 +4,7 @@
 #include <string>
 #include <stack>
 #include "globals.h"
+#include "SerializableObject.h"
 
 class Serializer
 {
@@ -12,19 +13,9 @@ public:
 	~Serializer();
 
 	void Test();
-	void Start();
-
-	std::string End();
-	
-	void OpenArray();
-	void CloseArray();
-
-
 
 private:
 	Json mainJson;
-	std::stack<Json*> jsonStack;
-	Json* activeJson;
 };
 
 #endif // !__H_SERIALIZER__

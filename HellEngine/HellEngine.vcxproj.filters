@@ -354,6 +354,9 @@
     <ClInclude Include="SerializableObject.h">
       <Filter>General\Serialization</Filter>
     </ClInclude>
+    <ClInclude Include="SerializableArray.h">
+      <Filter>General\Serialization</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -570,6 +573,9 @@
       <Filter>General\Serialization</Filter>
     </ClCompile>
     <ClCompile Include="SerializableObject.cpp">
+      <Filter>General\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="SerializableArray.cpp">
       <Filter>General\Serialization</Filter>
     </ClCompile>
   </ItemGroup>

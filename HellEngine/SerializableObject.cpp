@@ -1,4 +1,5 @@
 #include "SerializableObject.h"
+#include "SerializableArray.h"
 #include "Color.h"
 #include "MathGeoLib/src/Math/float3.h"
 #include "MathGeoLib/src/Math/float4.h"
@@ -11,6 +12,14 @@ SerializableObject::SerializableObject(Json* obj)
 
 SerializableObject::~SerializableObject()
 {
+}
+
+SerializableArray SerializableObject::BuildSerializableArray(const std::string& key)
+{
+	(*jsonObject)[key] = Json::array();
+	Json& arrayObj = (*jsonObject)[key];
+	SerializableArray sArray(&arrayObj);
+	return sArray;
 }
 
 void SerializableObject::AddBool(const std::string & key, bool value)
@@ -65,6 +74,27 @@ void SerializableObject::AddColor(const std::string& key, const Color & value)
 void SerializableObject::AddString(const std::string& key, const std::string & value)
 {
 	(*jsonObject)[key] = value;
+}
+
+void SerializableObject::AddVectorInt(const std::string& key, const std::vector<int> value)
+{
+	(*jsonObject)[key] = value;
+}
+
+void SerializableObject::AddVectorString(const std::string& key, const std::vector<std::string> value)
+{
+	(*jsonObject)[key] = value;
+}
+
+SerializableArray SerializableObject::GetSerializableArray(const std::string & key)
+{
+	if (jsonObject->count(key))
+	{
+		Json& jsonArray = (*jsonObject)[key];
+		return SerializableArray(&jsonArray);
+	}
+	assert(false);
+	return SerializableArray();
 }
 
 bool SerializableObject::GetBool(const std::string & key) const
@@ -162,4 +192,24 @@ std::string SerializableObject::GetString(const std::string& key) const
 	}
 	assert(false);
 	return std::string();
+}
+
+std::vector<int> SerializableObject::GetVectorInt(const std::string & key) const
+{
+	if (jsonObject->count(key))
+	{
+		return (*jsonObject)[key];
+	}
+	assert(false);
+	return std::vector<int>();
+}
+
+std::vector<std::string> SerializableObject::GetVectorString(const std::string & key) const
+{
+	if (jsonObject->count(key))
+	{
+		return (*jsonObject)[key];
+	}
+	assert(false);
+	return std::vector<std::string>();
 }
