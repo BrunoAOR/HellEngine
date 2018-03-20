@@ -327,6 +327,10 @@ void ModuleScene::Save()
 	serializer.Save("assets/scenes/Scene.json");
 }
 
+void ModuleScene::Load(const char * path)
+{
+}
+
 void ModuleScene::DrawHierarchy()
 {
 	std::stack<GameObject*> goStack;

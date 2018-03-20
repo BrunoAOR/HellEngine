@@ -49,6 +49,7 @@ public:
 	std::vector<GameObject*> FindByName(const std::string& name, GameObject* gameObject = nullptr);
 
 	void Save();
+	void Load(const char* path);
 
 public:
 
