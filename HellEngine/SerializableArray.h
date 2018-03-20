@@ -12,6 +12,7 @@ public:
 
 	SerializableObject BuildSerializableObject();
 	SerializableObject GetSerializableObject(uint index);
+	uint Size() const;
 
 private:
 	Json* jsonArray = nullptr;

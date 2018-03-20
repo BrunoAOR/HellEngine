@@ -12,6 +12,10 @@ public:
 	Serializer();
 	~Serializer();
 
+	SerializableObject GetEmptySerializableObject();
+	bool Save(const std::string& fileName);
+	SerializableObject Load(const std::string& fileName);
+
 	void Test();
 
 private:

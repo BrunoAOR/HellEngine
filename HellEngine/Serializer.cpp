@@ -12,12 +12,39 @@ Serializer::~Serializer()
 {
 }
 
+SerializableObject Serializer::GetEmptySerializableObject()
+{
+	mainJson.clear();
+	return SerializableObject(&mainJson);
+}
+
+bool Serializer::Save(const std::string& fileName)
+{
+	return SaveJson(mainJson, fileName);
+}
+
+SerializableObject Serializer::Load(const std::string& fileName)
+{
+	mainJson.clear();
+	mainJson = LoadJson(fileName.c_str());
+	return SerializableObject(&mainJson);
+}
+
 void Serializer::Test()
 {
 	std::string path = "C:/Users/bruno/Desktop/Test.json";
 	mainJson = LoadJson(path.c_str());
 
 	SerializableObject sObj(&mainJson);
+
+	SerializableArray someArray = sObj.GetSerializableArray("my Array");
+
+	for (uint i = 0; i < someArray.Size(); ++i)
+	{
+		SerializableObject someObject = someArray.GetSerializableObject(i);
+		LOGGER("Got %i in key Num", someObject.GetInt("Num"));
+	}
+
 
 	Color red(1, 0, 0, 1);
 	sObj.AddColor("red", red);

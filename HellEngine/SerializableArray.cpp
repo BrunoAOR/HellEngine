@@ -30,3 +30,9 @@ SerializableObject SerializableArray::GetSerializableObject(uint index)
 	Json& jsonObject = jsonArray->at(index);
 	return SerializableObject(&jsonObject);
 }
+
+uint SerializableArray::Size() const
+{
+	assert(jsonArray);
+	return jsonArray->size();
+}
