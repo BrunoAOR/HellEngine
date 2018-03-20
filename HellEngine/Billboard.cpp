@@ -40,13 +40,12 @@ void Billboard::SetSize(uint width, uint height)
 	size.y = height;
 }
 
-Quad Billboard::ComputeQuad(const ComponentCamera* camera)
+const Quad& Billboard::ComputeQuad(const ComponentCamera* camera)
 {
 	float3 up = { 0.0f, 1.0f, 0.0f };
 	float3 right = (position - camera->GetPosition3()).Cross(up).Normalized();
 	float3 normal = right.Cross(up).Normalized();
 
-	Quad quad;
 	quad.vertices[0] = position - (right * ((float) size.x / 2)) - (up * (float) size.y / 2);
 	quad.vertices[1] = position + (right * ((float) size.x / 2)) - (up * (float) size.y / 2);
 	quad.vertices[2] = position + (right * ((float) size.x / 2)) + (up * (float) size.y / 2);

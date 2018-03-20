@@ -26,11 +26,12 @@ public:
 	void SetPosition(const float3& position);
 	void SetSize(uint width, uint height);
 
-	Quad ComputeQuad(const ComponentCamera* camera);
+	const Quad& ComputeQuad(const ComponentCamera* camera);
 
 private:
 	float3 position;
 	iPoint size;
+	Quad quad;
 };
 
 #endif
