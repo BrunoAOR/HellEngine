@@ -117,6 +117,8 @@
     <ClInclude Include="physicsFunctions.h" />
     <ClInclude Include="Point.h" />
     <ClInclude Include="SceneLoader.h" />
+    <ClInclude Include="SerializableObject.h" />
+    <ClInclude Include="Serializer.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="SpaceOctNode.h" />
     <ClInclude Include="SpaceQuadNode.h" />
@@ -193,6 +195,8 @@
     <ClCompile Include="ModuleWindow.cpp" />
     <ClCompile Include="physicsFunctions.cpp" />
     <ClCompile Include="SceneLoader.cpp" />
+    <ClCompile Include="SerializableObject.cpp" />
+    <ClCompile Include="Serializer.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="SpaceOctNode.cpp" />
     <ClCompile Include="SpaceQuadNode.cpp" />

@@ -22,6 +22,9 @@
     <Filter Include="ImGuizmo">
       <UniqueIdentifier>{5e52c346-c6f6-4462-9e71-e2628967add8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="General\Serialization">
+      <UniqueIdentifier>{f5980987-b87d-412c-b59d-db2eb89aa9a3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="memLeaks.h">
@@ -47,9 +50,6 @@
     </ClInclude>
     <ClInclude Include="ModuleRender.h">
       <Filter>Engine Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="Animation.h">
-      <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="EventWindow.h">
       <Filter>General</Filter>
@@ -345,6 +345,15 @@
     <ClInclude Include="MeshInfo.h">
       <Filter>General</Filter>
     </ClInclude>
+    <ClInclude Include="Serializer.h">
+      <Filter>General\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>General\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="SerializableObject.h">
+      <Filter>General\Serialization</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -556,6 +565,12 @@
     </ClCompile>
     <ClCompile Include="ComponentAnimation.cpp">
       <Filter>Scene Management</Filter>
+    </ClCompile>
+    <ClCompile Include="Serializer.cpp">
+      <Filter>General\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="SerializableObject.cpp">
+      <Filter>General\Serialization</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
