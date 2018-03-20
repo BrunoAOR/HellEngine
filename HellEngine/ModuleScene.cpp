@@ -6,9 +6,12 @@
 #include "ComponentCamera.h"
 #include "ComponentTransform.h"
 #include "ComponentType.h"
+#include "GameObject.h"
 #include "ModuleScene.h"
 #include "ModuleWindow.h"
-#include "GameObject.h"
+#include "Serializer.h"
+#include "SerializableArray.h"
+#include "SerializableObject.h"
 /* For TestCollisionChecks */
 #include "ComponentTransform.h"
 #include "ComponentMesh.h"
@@ -246,7 +249,13 @@ void ModuleScene::SetSelectedGameObject(GameObject * go)
 
 bool ModuleScene::LoadModel(const char* modelPath, GameObject* parent)
 {
-	return sceneLoader.Load(modelPath, parent);
+	bool success;
+	success = sceneLoader.Load(modelPath, parent);
+
+	if (success)
+		modelPaths.push_back(modelPath);
+
+	return success;
 }
 
 GameObject* ModuleScene::CreateGameObject()
@@ -290,9 +299,36 @@ std::vector<GameObject*> ModuleScene::FindByName(const std::string& name, GameOb
     return ret;
 }
 
+void ModuleScene::Save()
+{
+	Serializer serializer;
+	SerializableObject sObject = serializer.GetEmptySerializableObject();
+	sObject.AddVectorString("ModelPaths", modelPaths);
+	SerializableArray gameObjectsArray = sObject.BuildSerializableArray("GameObjects");
+
+	std::stack<GameObject*> goStack;
+	GameObject* go = root;
+	goStack.push(go);
+	
+	while (!goStack.empty())
+	{
+		go = goStack.top();
+		goStack.pop();
+
+		SerializableObject goSObject = gameObjectsArray.BuildSerializableObject();
+
+		go->Save(goSObject);
+
+		for (GameObject* child : go->GetChildren())		
+			goStack.push(child);
+
+	}
+
+	serializer.Save("assets/scenes/Scene.json");
+}
+
 void ModuleScene::DrawHierarchy()
 {
-
 	std::stack<GameObject*> goStack;
 	GameObject* go = root;
 	goStack.push(go);

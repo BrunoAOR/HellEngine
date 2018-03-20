@@ -512,7 +512,7 @@ void GameObject::SetActive(bool activeState)
 void GameObject::Save(SerializableObject& obj)
 {
 	obj.Addu32("UUID", uuid);
-	obj.Addu32("ParentUUID", GetParent()->uuid);
+	obj.Addu32("ParentUUID", GetParent() ? GetParent()->uuid : -1);
 	obj.AddString("Name", name);
 	obj.AddBool("Active", isActive);
 	SerializableArray sArray = obj.BuildSerializableArray("Components");

@@ -48,6 +48,8 @@ public:
 	void Destroy(GameObject* gameObject);
 	std::vector<GameObject*> FindByName(const std::string& name, GameObject* gameObject = nullptr);
 
+	void Save();
+
 public:
 
 	GameObject* root;
@@ -72,6 +74,7 @@ private:
 	SpaceQuadTree quadTree;
 	SceneLoader sceneLoader;
 
+	std::vector<std::string> modelPaths;
 };
 
 template<typename T>
