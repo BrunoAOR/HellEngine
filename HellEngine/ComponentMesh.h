@@ -47,7 +47,6 @@ private:
 	ModelInfo customModelInfo;
 	
 	int activeModelInfo = -1;
-
 };
 
 #endif // !__H_COMPONENT_MESH__

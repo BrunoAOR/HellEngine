@@ -118,12 +118,17 @@ int ComponentMesh::MaxCountInGameObject()
 	return 1;
 }
 
-void ComponentMesh::Save(SerializableObject & obj) const
+void ComponentMesh::Save(SerializableObject& obj) const
 {
 	obj.AddInt("ActiveModelInfo", activeModelInfo);
+	std::vector<int> modelInfos;
+	for (unsigned int i = 0; i < customModelInfo.meshInfosIndexes.size(); i++)
+		modelInfos.push_back(customModelInfo.meshInfosIndexes.at(i));
+
+	obj.AddVectorInt("ModelInfos", modelInfos);
 }
 
-void ComponentMesh::Load(const SerializableObject & obj)
+void ComponentMesh::Load(const SerializableObject& obj)
 {
 	activeModelInfo = obj.GetInt("ActiveModelInfo");
 }

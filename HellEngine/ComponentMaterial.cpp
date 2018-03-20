@@ -251,7 +251,7 @@ int ComponentMaterial::MaxCountInGameObject()
 	return -1;
 }
 
-void ComponentMaterial::Save(SerializableObject & obj) const
+void ComponentMaterial::Save(SerializableObject& obj) const
 {
 	obj.AddString("VertexShaderPath", vertexShaderPath);
 	obj.AddString("FragmentShaderPath", fragmentShaderPath);
@@ -263,7 +263,7 @@ void ComponentMaterial::Save(SerializableObject & obj) const
 	obj.AddInt("MagnificationMode", textureConfiguration.magnificationMode);
 }
 
-void ComponentMaterial::Load(const SerializableObject & obj)
+void ComponentMaterial::Load(const SerializableObject& obj)
 {
 	memcpy_s(vertexShaderPath, 256, obj.GetString("VertexShaderPath").c_str(), obj.GetString("VertexShaderPath").length());
 	memcpy_s(fragmentShaderPath, 256, obj.GetString("FragmentShaderPath").c_str(), obj.GetString("FragmentShaderPath").length());

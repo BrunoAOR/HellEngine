@@ -100,7 +100,7 @@ int ComponentAnimation::MaxCountInGameObject()
 	return 1;
 }
 
-void ComponentAnimation::Save(SerializableObject & obj) const
+void ComponentAnimation::Save(SerializableObject& obj) const
 {
 	obj.AddInt("InstanceID", instanceID);
 	obj.AddString("AnimationName", animationName);
@@ -108,7 +108,7 @@ void ComponentAnimation::Save(SerializableObject & obj) const
 	obj.AddInt("BlendTime", blendTime);
 }
 
-void ComponentAnimation::Load(const SerializableObject & obj)
+void ComponentAnimation::Load(const SerializableObject& obj)
 {
 	instanceID = obj.GetInt("InstanceID");
 	memcpy_s(animationName, 256, obj.GetString("AnimationName").c_str(), obj.GetString("AnimationName").length());

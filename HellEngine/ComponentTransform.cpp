@@ -614,14 +614,14 @@ void ComponentTransform::ApplyWorldTransformationMatrix(const float4x4& worldTra
 	}
 }
 
-void ComponentTransform::Save(SerializableObject & obj) const
+void ComponentTransform::Save(SerializableObject& obj) const
 {
 	obj.AddFloat3("Position", position);
 	obj.AddFloat3("Scale", scale);
 	obj.AddFloat4("Rotation", float4(rotation.x, rotation.y, rotation.z, rotation.w));
 }
 
-void ComponentTransform::Load(const SerializableObject & obj)
+void ComponentTransform::Load(const SerializableObject& obj)
 {
 	position = obj.GetFloat3("Position");
 	scale = obj.GetFloat3("Scale");

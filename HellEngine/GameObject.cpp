@@ -13,6 +13,7 @@
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "ModuleScene.h"
+#include "SerializableArray.h"
 #include "SerializableObject.h"
 #include "globals.h"
 
@@ -508,15 +509,21 @@ void GameObject::SetActive(bool activeState)
 	isActive = activeState;
 }
 
-void GameObject::Save(SerializableObject & obj)
+void GameObject::Save(SerializableObject& obj)
 {
 	obj.Addu32("UUID", uuid);
 	obj.Addu32("ParentUUID", GetParent()->uuid);
 	obj.AddString("Name", name);
 	obj.AddBool("Active", isActive);
+	SerializableArray sArray = obj.BuildSerializableArray("Components");
+	for (Component* c : components)
+	{
+		SerializableObject sObject = sArray.BuildSerializableObject();
+		c->Save(sObject);
+	}
 }
 
-void GameObject::Load(const SerializableObject & obj)
+void GameObject::Load(const SerializableObject& obj)
 {
 	uuid = obj.Getu32("UUID");
 	parentUuid = obj.Getu32("ParentUUID");

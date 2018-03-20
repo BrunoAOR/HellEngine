@@ -355,7 +355,7 @@ bool ComponentCamera::IsInsideFrustum(GameObject * go)
 	return	std::find(insideFrustum.begin(), insideFrustum.end(), go) != insideFrustum.end();
 }
 
-void ComponentCamera::Save(SerializableObject & obj) const
+void ComponentCamera::Save(SerializableObject& obj) const
 {
 	obj.AddColor("Background", background);
 	obj.AddFloat("NearPlane", nearClippingPlane);
@@ -364,7 +364,7 @@ void ComponentCamera::Save(SerializableObject & obj) const
 	obj.AddFloat("VerticalFOV", verticalFOVRad);
 }
 
-void ComponentCamera::Load(const SerializableObject & obj)
+void ComponentCamera::Load(const SerializableObject& obj)
 {
 	background = obj.GetColor("Background");
 	nearClippingPlane = obj.GetFloat("NearPlane");
