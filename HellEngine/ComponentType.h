@@ -8,10 +8,11 @@ enum class ComponentType
 	GRASS,
 	MATERIAL,
 	MESH,
+	PARTICLE_SYSTEM,
 	TRANSFORM
 };
 
-extern const ComponentType COMPONENT_TYPES[6];
+extern const ComponentType COMPONENT_TYPES[7];
 const char* GetString(ComponentType componentType);
 
 #endif // !__H_COMPONENT_TYPE__

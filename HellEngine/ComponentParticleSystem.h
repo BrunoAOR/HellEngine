@@ -21,9 +21,16 @@ public:
 
 	void Init(uint maxParticles, const iPoint& emitSize, uint fallingTime, 
 		float fallingHeight, const char* texturePath, const fPoint& particleSize);
+
+	virtual void Update() override;
+	void UpdateSystem(const ComponentCamera& camera);
+
 	void Clear();
-	void Update(uint elapsedTime, const ComponentCamera& camera);
+
 	void Draw();
+
+	virtual void OnEditor() override;
+	virtual int MaxCountInGameObject() override;
 
 private:
 

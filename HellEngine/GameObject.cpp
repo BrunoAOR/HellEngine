@@ -10,6 +10,7 @@
 #include "ComponentGrass.h"
 #include "ComponentMaterial.h"
 #include "ComponentMesh.h"
+#include "ComponentParticleSystem.h"
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "ModuleScene.h"
@@ -427,6 +428,9 @@ Component* GameObject::AddComponent(ComponentType type)
 	case ComponentType::MESH:
 		AddDependingComponent();
 		component = new ComponentMesh(this);
+		break;
+	case ComponentType::PARTICLE_SYSTEM:
+		component = new ComponentParticleSystem(this);
 		break;
 	case ComponentType::TRANSFORM:
 		component = new ComponentTransform(this);

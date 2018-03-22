@@ -5,7 +5,6 @@
 #include "Application.h"
 #include "Billboard.h"
 #include "ComponentGrass.h"
-#include "ComponentType.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleTextureManager.h"
 #include "ModuleScene.h"
