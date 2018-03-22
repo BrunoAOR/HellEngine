@@ -19,21 +19,21 @@ public:
 	~Billboard();
 
 	float3 GetPosition() const;
-	iPoint GetSize() const;
-	uint GetWidth() const;
-	uint GetHeight() const;
+	fPoint GetSize() const;
+	float GetWidth() const;
+	float GetHeight() const;
 
 	void SetPosition(const float* position);
 	void SetPosition(const float3& position);
-	void SetSize(uint width, uint height);
-	void SetWidth(uint width);
-	void SetHeight(uint height);
+	void SetSize(float width, float height);
+	void SetWidth(float width);
+	void SetHeight(float height);
 
 	const Quad& ComputeQuad(const ComponentCamera* camera);
 
 private:
 	float3 position;
-	iPoint size;
+	fPoint size;
 	Quad quad;
 };
 

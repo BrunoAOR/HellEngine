@@ -16,17 +16,17 @@ float3 Billboard::GetPosition() const
 	return position;
 }
 
-iPoint Billboard::GetSize() const
+fPoint Billboard::GetSize() const
 {
 	return size;
 }
 
-uint Billboard::GetWidth() const
+float Billboard::GetWidth() const
 {
 	return size.x;
 }
 
-uint Billboard::GetHeight() const
+float Billboard::GetHeight() const
 {
 	return size.y;
 }
@@ -46,18 +46,18 @@ void Billboard::SetPosition(const float3& pos)
 	position = pos;
 }
 
-void Billboard::SetSize(uint width, uint height)
+void Billboard::SetSize(float width, float height)
 {
 	size.x = width;
 	size.y = height;
 }
 
-void Billboard::SetWidth(uint width)
+void Billboard::SetWidth(float width)
 {
 	size.x = width;
 }
 
-void Billboard::SetHeight(uint height)
+void Billboard::SetHeight(float height)
 {
 	size.y = height;
 }
@@ -68,10 +68,10 @@ const Quad& Billboard::ComputeQuad(const ComponentCamera* camera)
 	float3 right = (position - camera->GetPosition3()).Cross(up).Normalized();
 	float3 normal = right.Cross(up).Normalized();
 
-	quad.vertices[0] = position - (right * ((float) size.x / 2)) - (up * (float) size.y / 2);
-	quad.vertices[1] = position + (right * ((float) size.x / 2)) - (up * (float) size.y / 2);
-	quad.vertices[2] = position + (right * ((float) size.x / 2)) + (up * (float) size.y / 2);
-	quad.vertices[3] = position - (right * ((float) size.x / 2)) + (up * (float) size.y / 2);
+	quad.vertices[0] = position - (right * (size.x / 2)) - (up * size.y / 2);
+	quad.vertices[1] = position + (right * (size.x / 2)) - (up * size.y / 2);
+	quad.vertices[2] = position + (right * (size.x / 2)) + (up * size.y / 2);
+	quad.vertices[3] = position - (right * (size.x / 2)) + (up * size.y / 2);
 
 	return quad;
 }

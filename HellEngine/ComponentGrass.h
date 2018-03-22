@@ -63,8 +63,10 @@ private:
 	float offsetX = 1;
 	float offsetZ = 1;
 	float3 position;
-	int width = 1; 
-	int height = 1;
+	float width = 1; 
+	float height = 1;
+	float randomPositionRange = 0;
+	float randomScaleRange = 0;
 
 	TextureConfiguration textureConfiguration;
 	TextureInfo textureInfo;

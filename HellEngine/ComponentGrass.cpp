@@ -1,3 +1,4 @@
+#include <random>
 #include "ImGui/imgui.h"
 #include "MathGeoLib/src/Math/float4x4.h"
 #include "MathGeoLib/src/Math/Quat.h"
@@ -7,6 +8,7 @@
 #include "ComponentType.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleTextureManager.h"
+#include "ModuleTime.h"
 #include "Shader.h"
 #include "openGL.h"
 
@@ -199,9 +201,17 @@ void ComponentGrass::CreateQuadVAO()
 	{
 		for (int j = 0; j < billboardInstancesZ; ++j)
 		{
+			float xPositionRnd = (float)rand() / RAND_MAX;
+			xPositionRnd = -(randomPositionRange / 2) + xPositionRnd * randomPositionRange;
+			float zPositionRnd = (float)rand() / RAND_MAX;
+			zPositionRnd = -(randomPositionRange / 2) + zPositionRnd * randomPositionRange;
+			float scaleRnd = (float)rand() / RAND_MAX;
+			scaleRnd = -(randomScaleRange / 2) + scaleRnd * randomScaleRange;
+
+
 			Billboard* billboard = new Billboard();
-			billboard->SetPosition(float3(position.x + offsetX * i + mainXOffset, position.y, position.z + offsetZ * j + mainZOffset));
-			billboard->SetSize(width, height);
+			billboard->SetPosition(float3(position.x + offsetX * i + mainXOffset + xPositionRnd, position.y, position.z + offsetZ * j + mainZOffset + zPositionRnd));
+			billboard->SetSize(width * (1 + scaleRnd), height * (1 + scaleRnd));
 			billboards.push_back(billboard);
 		}
 	}
@@ -308,9 +318,16 @@ void ComponentGrass::UpdateBillboards()
 	{
 		for (int j = 0; j < billboardInstancesZ; ++j)
 		{
+			float xPositionRnd = (float)rand() / RAND_MAX;
+			xPositionRnd = -(randomPositionRange / 2) + xPositionRnd * randomPositionRange;
+			float zPositionRnd = (float)rand() / RAND_MAX;
+			zPositionRnd = -(randomPositionRange / 2) + zPositionRnd * randomPositionRange;
+			float scaleRnd = (float)rand() / RAND_MAX;
+			scaleRnd = -(randomScaleRange / 2) + scaleRnd * randomScaleRange;
+
 			Billboard* billboard = billboards[i * billboardInstancesZ + j];
-			billboard->SetPosition(float3(position.x + offsetX * i + mainXOffset, position.y, position.z + offsetZ * j + mainZOffset));
-			billboard->SetSize(width, height);
+			billboard->SetPosition(float3(position.x + offsetX * i + mainXOffset + xPositionRnd, position.y, position.z + offsetZ * j + mainZOffset + zPositionRnd));
+			billboard->SetSize(width * (1 + scaleRnd), height * (1 + scaleRnd));
 		}
 	}
 }
@@ -547,14 +564,18 @@ void ComponentGrass::OnEditorBillboardConfiguration()
 		if (ImGui::DragFloat3("Position", position.ptr(), 0.03f))
 			UpdateBillboards();
 
+		if (ImGui::InputFloat("Random Pos Rng", &randomPositionRange))
+			UpdateBillboards();
 
-		if (ImGui::InputInt("Width", &width))
+		if (ImGui::InputFloat("Width", &width))
 			UpdateBillboards();
 
 
-		if (ImGui::InputInt("Height", &height))
+		if (ImGui::InputFloat("Height", &height))
 			UpdateBillboards();
 
+		if (ImGui::InputFloat("Random Scale Rng", &randomScaleRange))
+			UpdateBillboards();
 
 		if (ImGui::InputInt("InstancesX", &billboardInstancesX))
 			CreateQuadVAO();
