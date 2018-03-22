@@ -23,8 +23,11 @@ public:
 	uint GetWidth() const;
 	uint GetHeight() const;
 
+	void SetPosition(const float* position);
 	void SetPosition(const float3& position);
 	void SetSize(uint width, uint height);
+	void SetWidth(uint width);
+	void SetHeight(uint height);
 
 	const Quad& ComputeQuad(const ComponentCamera* camera);
 

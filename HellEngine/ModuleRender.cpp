@@ -148,8 +148,10 @@ bool ModuleRender::InitOpenGL() const
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	glClearDepth(1.0f);
 	glClearColor(0.f, 0.f, 0.f, 1.f);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_ALPHA_TEST);
+	glAlphaFunc(GL_GREATER, 0.1f);
 	glEnable(GL_DEPTH_TEST);
 	//glEnable(GL_CULL_FACE);
 	glDisable(GL_LIGHTING);
@@ -158,7 +160,7 @@ bool ModuleRender::InitOpenGL() const
 	glDisable(GL_FOG);
 
 	glFrontFace(GL_CCW);
-	glCullFace(GL_BACK);
+	//glCullFace(GL_BACK);
 
 	/* Set viewport */
 	//glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);

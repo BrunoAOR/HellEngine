@@ -1,6 +1,6 @@
 #include "ComponentType.h"
 
-const ComponentType COMPONENT_TYPES[] = { ComponentType::ANIMATION, ComponentType::CAMERA, ComponentType::MATERIAL, ComponentType::MESH, ComponentType::TRANSFORM };
+const ComponentType COMPONENT_TYPES[] = { ComponentType::ANIMATION, ComponentType::CAMERA, ComponentType::GRASS, ComponentType::MATERIAL, ComponentType::MESH, ComponentType::TRANSFORM };
 
 const char* GetString(ComponentType componentType)
 {
@@ -10,6 +10,8 @@ const char* GetString(ComponentType componentType)
 		return "Animation";
 	case ComponentType::CAMERA:
 		return "Camera";
+	case ComponentType::GRASS:
+		return "Grass";
 	case ComponentType::MATERIAL:
 		return "Material";
 	case ComponentType::MESH:

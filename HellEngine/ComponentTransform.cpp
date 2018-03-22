@@ -22,7 +22,7 @@ ComponentTransform::ComponentTransform(GameObject* owner) : Component(owner)
 	position = float3(0.0f, 0.0f, 0.0f);
 	scale = float3(1.0f, 1.0f, 1.0f);
 	rotation = Quat::FromEulerXYZ(0.0f, 0.0f, 0.0f);
-	
+
 	if (baseBoundingBoxVertices.size() == 0)
 	{
 		InitializeBaseBB();
@@ -107,16 +107,12 @@ void ComponentTransform::Update()
 			for (int i = 0; i < 8 * 6; ++i)
 			{
 				if (i % 6 == 0 || i % 6 == 1 || i % 6 == 2)
+				{
 					boundingBoxUniqueData[i] = uniqueVertices[(i / 6) * 3 + (i % 6)];
-				else
-					boundingBoxUniqueData[i] = uniqueColors[(i / 6) * 3 + ((i % 6) - 3)];
-
-				oldBBData[i] = boundingBoxUniqueData[i];
+					oldBBData[i] = boundingBoxUniqueData[i];
+				}
 			}
 
-			glBindVertexArray(baseBoundingBoxMeshInfo.vao);
-			glBindBuffer(GL_ARRAY_BUFFER, baseBoundingBoxMeshInfo.vbo);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8 * 6, boundingBoxUniqueData, GL_DYNAMIC_DRAW);
 			glUnmapBuffer(GL_ARRAY_BUFFER);
 
 			glBindVertexArray(GL_NONE);
@@ -389,25 +385,25 @@ void ComponentTransform::UpdateLocalModelMatrix()
 	float4x4 translationMatrix = float4x4::TranslationToRotation(position.x, position.y, position.z);
 	translationMatrix.LeftMultiply(rotationMatrix);
 	translationMatrix.LeftMultiply(scaleMatrix);
-	memcpy_s(localModelMatrix.ptr(), sizeof(float) * 16, translationMatrix.Transposed().ptr(), sizeof(float) * 16);	
-	
+	memcpy_s(localModelMatrix.ptr(), sizeof(float) * 16, translationMatrix.Transposed().ptr(), sizeof(float) * 16);
+
 	UpdateWorldModelMatrix();
 }
 
 void ComponentTransform::UpdateWorldModelMatrix(const float4x4* newParentWorldMatrix)
 {
 	std::stack<ComponentTransform*> stack;
-	
+
 	ComponentTransform* transform = this;
 	stack.push(transform);
 
 	std::vector<GameObject*> children;
 
-	while (!stack.empty()) 
+	while (!stack.empty())
 	{
 		transform = stack.top();
 		stack.pop();
-				 
+
 		transform->worldModelMatrix = transform->localModelMatrix;
 
 		/* Calculate world Matrix */
@@ -441,7 +437,7 @@ void ComponentTransform::UpdateWorldModelMatrix(const float4x4* newParentWorldMa
 		}
 	}
 
-	
+
 }
 
 void ComponentTransform::InitializeBaseBB()

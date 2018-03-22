@@ -87,7 +87,7 @@ private:
 	static uint materialsCount;
 	static uint checkeredPatternBufferId;
 
-	TextureConfigutaion textureConfiguration;
+	TextureConfiguration textureConfiguration;
 	TextureInfo textureInfo;
 
 	/* Shader related */

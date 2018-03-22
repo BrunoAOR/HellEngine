@@ -3,6 +3,8 @@
 
 Billboard::Billboard()
 {
+	position = { 0, 0, 0 };
+	size = { 0, 0 };
 }
 
 Billboard::~Billboard()
@@ -29,6 +31,16 @@ uint Billboard::GetHeight() const
 	return size.y;
 }
 
+
+
+void Billboard::SetPosition(const float * pos)
+{
+	assert(pos);
+	position.x = pos[0];
+	position.y = pos[1];
+	position.z = pos[2];
+}
+
 void Billboard::SetPosition(const float3& pos)
 {
 	position = pos;
@@ -37,6 +49,16 @@ void Billboard::SetPosition(const float3& pos)
 void Billboard::SetSize(uint width, uint height)
 {
 	size.x = width;
+	size.y = height;
+}
+
+void Billboard::SetWidth(uint width)
+{
+	size.x = width;
+}
+
+void Billboard::SetHeight(uint height)
+{
 	size.y = height;
 }
 
