@@ -18,6 +18,9 @@ ComponentGrass::ComponentGrass(GameObject* owner) : Component(owner)
 	type = ComponentType::GRASS;
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
 	CreateQuadVAO();
+	previousCameraPos.x = FLT_MAX;
+	previousCameraPos.y = FLT_MAX;
+	previousCameraPos.z = FLT_MAX;
 }
 
 ComponentGrass::~ComponentGrass()
@@ -49,47 +52,52 @@ void ComponentGrass::Update()
 {
 	if (isValid)
 	{
-		const uint allVertCount = 6;
-		const uint uniqueVertCount = 4;
-		const uint billboardsSize = billboards.size();
-
-		GLfloat* newVertQuadData = new GLfloat[uniqueVertCount * 3 * billboardsSize];
-
-		for (uint i = 0; i < billboardsSize; ++i)
+		const float3& currentCameraPos = App->editorCamera->camera->GetPosition3();
+		if (billboardsChanged || previousCameraPos.x != currentCameraPos.x || previousCameraPos.z != currentCameraPos.z)
 		{
-			Billboard* billboard = billboards[i];
+			previousCameraPos = currentCameraPos;
 
-			const Quad& quad = billboard->ComputeQuad(App->editorCamera->camera);
+			const uint allVertCount = 6;
+			const uint uniqueVertCount = 4;
+			const uint billboardsSize = billboards.size();
 
-			/* Quad vertices, color, and UV */
-			for (uint j = 0; j < uniqueVertCount; ++j)
+			GLfloat* newVertQuadData = new GLfloat[uniqueVertCount * 3 * billboardsSize];
+
+			for (uint i = 0; i < billboardsSize; ++i)
 			{
-				newVertQuadData[i * uniqueVertCount * 3 + (j * 3) + 0] = quad.vertices[j].x;
-				newVertQuadData[i * uniqueVertCount * 3 + (j * 3) + 1] = quad.vertices[j].y;
-				newVertQuadData[i * uniqueVertCount * 3 + (j * 3) + 2] = quad.vertices[j].z;
+				Billboard* billboard = billboards[i];
+
+				const Quad& quad = billboard->ComputeQuad(App->editorCamera->camera);
+
+				/* Quad vertices, color, and UV */
+				for (uint j = 0; j < uniqueVertCount; ++j)
+				{
+					newVertQuadData[i * uniqueVertCount * 3 + (j * 3) + 0] = quad.vertices[j].x;
+					newVertQuadData[i * uniqueVertCount * 3 + (j * 3) + 1] = quad.vertices[j].y;
+					newVertQuadData[i * uniqueVertCount * 3 + (j * 3) + 2] = quad.vertices[j].z;
+				}
 			}
+
+			glBindVertexArray(quadMeshInfo.vao);
+			glBindBuffer(GL_ARRAY_BUFFER, quadMeshInfo.vbo);
+			float* oldQuadData = (float*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+
+			int j = 0;
+			for (uint i = 0; i < uniqueVertCount * 8 * billboardsSize; ++i)
+			{
+				if (i % 8 == 0 || i % 8 == 1 || i % 8 == 2)
+					oldQuadData[i] = newVertQuadData[j++];
+
+			}
+
+			glUnmapBuffer(GL_ARRAY_BUFFER);
+
+			glBindVertexArray(GL_NONE);
+			glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
+			delete[] newVertQuadData;
 		}
-
-		glBindVertexArray(quadMeshInfo.vao);
-		glBindBuffer(GL_ARRAY_BUFFER, quadMeshInfo.vbo);
-		float* oldQuadData = (float*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-
-		int j = 0;
-		for (uint i = 0; i < uniqueVertCount * 8 * billboardsSize; ++i)
-		{
-			if (i % 8 == 0 || i % 8 == 1 || i % 8 == 2)
-				oldQuadData[i] = newVertQuadData[j++];
-
-		}
-
-		glUnmapBuffer(GL_ARRAY_BUFFER);
-
-		glBindVertexArray(GL_NONE);
-		glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
-
 		DrawElements();
-
-		delete[] newVertQuadData;
 	}
 }
 
@@ -176,6 +184,7 @@ int ComponentGrass::MaxCountInGameObject()
 
 void ComponentGrass::CreateQuadVAO()
 {
+	billboardsChanged = true;
 	for (Billboard* billboard : billboards)
 		delete billboard;
 
@@ -289,6 +298,7 @@ void ComponentGrass::CreateQuadVAO()
 
 void ComponentGrass::UpdateBillboards()
 {
+	billboardsChanged = true;
 	assert(billboardInstancesX * billboardInstancesZ == billboards.size());
 
 	float mainXOffset = -(offsetX * ((billboardInstancesX - 1) / 2.0f));

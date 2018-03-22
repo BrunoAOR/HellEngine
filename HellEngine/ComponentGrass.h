@@ -63,8 +63,8 @@ private:
 	float offsetX = 1;
 	float offsetZ = 1;
 	float3 position;
-	int width; 
-	int height;
+	int width = 1; 
+	int height = 1;
 
 	TextureConfiguration textureConfiguration;
 	TextureInfo textureInfo;
@@ -95,6 +95,8 @@ private:
 	static std::map<Shader*, uint> loadedShaderCount;
 
 	MeshInfo quadMeshInfo;
+	float3 previousCameraPos;
+	bool billboardsChanged;
 };
 
 #endif
