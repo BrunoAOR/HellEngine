@@ -8,7 +8,7 @@
 #include "ComponentType.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleTextureManager.h"
-#include "ModuleTime.h"
+#include "ModuleScene.h"
 #include "Shader.h"
 #include "openGL.h"
 
@@ -69,7 +69,11 @@ void ComponentGrass::Update()
 			{
 				Billboard* billboard = billboards[i];
 
-				const Quad& quad = billboard->ComputeQuad(App->editorCamera->camera);
+				ComponentCamera* activeCamera = App->scene->GetActiveGameCamera();
+				if (!activeCamera)
+					activeCamera = App->editorCamera->camera;
+
+				const Quad& quad = billboard->ComputeQuad(activeCamera);
 
 				/* Quad vertices, color, and UV */
 				for (uint j = 0; j < uniqueVertCount; ++j)
@@ -252,7 +256,11 @@ void ComponentGrass::CreateQuadVAO()
 	{
 		Billboard* billboard = billboards[i];
 
-		const Quad& quad = billboard->ComputeQuad(App->editorCamera->camera);
+		ComponentCamera* activeCamera = App->scene->GetActiveGameCamera();
+		if (!activeCamera)
+			activeCamera = App->editorCamera->camera;
+
+		const Quad& quad = billboard->ComputeQuad(activeCamera);
 
 		/* Quad vertices, color, and UV */
 		for (int j = 0; j < uniqueVertCount; ++j)
