@@ -114,9 +114,6 @@ void ComponentTransform::Update()
 				oldBBData[i] = boundingBoxUniqueData[i];
 			}
 
-			glBindVertexArray(baseBoundingBoxMeshInfo.vao);
-			glBindBuffer(GL_ARRAY_BUFFER, baseBoundingBoxMeshInfo.vbo);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8 * 6, boundingBoxUniqueData, GL_DYNAMIC_DRAW);
 			glUnmapBuffer(GL_ARRAY_BUFFER);
 
 			glBindVertexArray(GL_NONE);
