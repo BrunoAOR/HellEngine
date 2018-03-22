@@ -19,21 +19,14 @@ public:
 	ComponentParticleSystem(GameObject* owner);
 	virtual ~ComponentParticleSystem();
 
-	void Init(uint maxParticles, const iPoint& emitSize, uint fallingTime, 
-		float fallingHeight, const char* texturePath, const fPoint& particleSize);
-
 	virtual void Update() override;
-	void UpdateSystem(const ComponentCamera& camera);
 
-	void Clear();
 
-	void Draw();
 
 	virtual void OnEditor() override;
 	virtual int MaxCountInGameObject() override;
 
 private:
-
 	struct Particle
 	{
 		float3 position;
@@ -41,11 +34,24 @@ private:
 		uint lifetime;
 	};
 
+private:
+	void Init(uint maxParticles, const iPoint& emitSize, uint fallingTime,
+		float fallingHeight, const char* texturePath, const fPoint& particleSize);
+
+	void InitParticle(Particle& particle);
+
+	void UpdateSystem(const ComponentCamera& camera);
+
+	void Clear();
+
+	void Draw();
+
+private:
 	Particle* particles;
 	uint numParticles;
 
-	std::vector<uint> particlesAlive;
-	std::vector<uint> particlesDead;
+	std::vector<uint> liveParticles;
+	std::vector<uint> deadParticles;
 
 	Billboard* billboards;
 	uint numBillboards;
@@ -55,6 +61,9 @@ private:
 	uint elapsedTime = 0;
 	float fallingHeight = 0.0f;
 	uint textureID = 0;
+
+	uint nextSpawnTime = 0;
+	uint spawnInterval = 0;
 
 	MeshInfo particlesMeshInfo;
 };
