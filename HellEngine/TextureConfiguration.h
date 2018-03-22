@@ -1,7 +1,7 @@
 #ifndef __H_TEXTURE_CONFIGURATION__
 #define __H_TEXTURE_CONFIGURATION__
 
-struct TextureConfigutaion
+struct TextureConfiguration
 {
 public:
 

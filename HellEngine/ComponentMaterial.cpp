@@ -34,14 +34,17 @@ ComponentMaterial::ComponentMaterial(GameObject* owner) : Component(owner)
 
 ComponentMaterial::~ComponentMaterial()
 {
-	if (loadedShaderCount.at(shader) == 1) {
-		delete shader;
-		loadedShaderCount.erase(shader);
-		shader = nullptr;
-	}
-	else {
-		loadedShaderCount.at(shader)--;
-	}
+	if (!loadedShaderCount.empty()) 
+	{
+		if (loadedShaderCount.at(shader) == 1) {
+			delete shader;
+			loadedShaderCount.erase(shader);
+			shader = nullptr;
+		}
+		else {
+			loadedShaderCount.at(shader)--;
+		}
+	}	
 
 	if (textureBufferId != checkeredPatternBufferId)
 		App->textureManager->ReleaseTexture(textureBufferId);
@@ -431,6 +434,7 @@ bool ComponentMaterial::DrawElements(const float* modelMatrix, const ModelInfo* 
 		shader->Deactivate();
 		return true;
 	}
+
 	return false;
 }
 

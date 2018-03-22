@@ -1,49 +1,29 @@
-#ifndef __H_COMPONENT_MATERIAL__
-#define __H_COMPONENT_MATERIAL__
+#ifndef __H_COMPONENT_GRASS__
+#define __H_COMPONENT_GRASS__
 
-#include <map>
-#include <string>
-#include <vector>
+#include "Billboard.h"
 #include "Component.h"
+#include "MeshInfo.h"
 #include "TextureConfiguration.h"
 #include "TextureInfo.h"
-#include "globals.h"
-#include "ModuleTextureManager.h"
 
-class ComponentMesh;
-class ComponentTransform;
 class Shader;
-struct ModelInfo;
-struct MeshInfo;
 
-class ComponentMaterial :
+class ComponentGrass :
 	public Component
 {
 public:
+	ComponentGrass(GameObject* owner);
+	virtual ~ComponentGrass() override;
 
-	ComponentMaterial(GameObject* owner);
-	virtual ~ComponentMaterial() override;
-
-	virtual void Update() override;
-	
-	/* Recieves the vertex shader file path and tries to compile it */
-	bool SetVertexShaderPath(const std::string& sourcePath);
-
-	/* Recieves the fragment shader file path and tries to compile it */
-	bool SetFragmentShaderPath(const std::string& sourcePath);
-
-	/* Recieves the texture file path and tries to load it using Devil */
-	bool SetTexturePath(const std::string& sourcePath);
-
-	/* Recieves the shader data file path and checks its validity */
-	bool SetShaderDataPath(const std::string& sourcePath);
+	virtual void Update();
 
 	/* Returns whether the Material has a loaded texture and a linked shader with valid data */
 	bool IsValid();
 
 	/* Attemps to apply all of the material setup */
 	bool Apply();
-	
+
 	/* Applies the default material configuration */
 	void SetDefaultMaterialConfiguration();
 
@@ -53,18 +33,11 @@ public:
 	/* Returns the maximum number of times that this particular Type of Component can be added to a GameObject */
 	virtual int MaxCountInGameObject() override;
 
-public:
-	
-	/* Mesh related */
-	int modelInfoVaoIndex = -1;
+private:	
+	void CreateQuadVAO();
+	void UpdateBillboards();
 
-private:
-
-	/* Draws a certain model using the Material's shader and texture, from a Vertex Array Oject WITH indexes */
-	bool DrawElements(const float* modelMatrix, const ModelInfo* modelInfo);
-	void DrawMesh(const MeshInfo* meshInfo);
-
-	uint CreateCheckeredTexture();
+	bool DrawElements();
 
 	bool LoadVertexShader();
 	bool LoadFragmentShader();
@@ -74,6 +47,7 @@ private:
 	bool GenerateUniforms();
 	void UpdatePublicUniforms();
 
+	void OnEditorBillboardConfiguration();
 	void OnEditorMaterialConfiguration();
 	void OnEditorTextureInformation();
 	void OnEditorTextureConfiguration();
@@ -82,17 +56,23 @@ private:
 	Shader* ShaderAlreadyLinked();
 
 private:
-
-	/* General */
-	static uint materialsCount;
-	static uint checkeredPatternBufferId;
+	uint textureID;
+	std::vector<Billboard*> billboards;
+	int billboardInstancesX = 1;
+	int billboardInstancesZ = 1;
+	float offsetX = 1;
+	float offsetZ = 1;
+	float3 position;
+	float width = 1; 
+	float height = 1;
+	float randomPositionRange = 0;
+	float randomScaleRange = 0;
 
 	TextureConfiguration textureConfiguration;
 	TextureInfo textureInfo;
 
-	/* Shader related */
-	bool isValid = false;
 	Shader* shader = nullptr;
+	bool isValid = false;
 	uint textureBufferId = 0;
 	char vertexShaderPath[256] = "";
 	char fragmentShaderPath[256] = "";
@@ -116,7 +96,9 @@ private:
 	static std::vector<Shader*> loadedShaders;
 	static std::map<Shader*, uint> loadedShaderCount;
 
-	const ModelInfo* modelInfo = nullptr;
+	MeshInfo quadMeshInfo;
+	float3 previousCameraPos;
+	bool billboardsChanged;
 };
 
-#endif // !__H_COMPONENT_MATERIAL__
+#endif
