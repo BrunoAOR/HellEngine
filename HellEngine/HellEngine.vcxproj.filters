@@ -351,6 +351,9 @@
     <ClInclude Include="ComponentGrass.h">
       <Filter>Scene Management</Filter>
     </ClInclude>
+    <ClInclude Include="ComponentParticleSystem.h">
+      <Filter>Scene Management</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -567,6 +570,9 @@
       <Filter>General</Filter>
     </ClCompile>
     <ClCompile Include="ComponentGrass.cpp">
+      <Filter>Scene Management</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentParticleSystem.cpp">
       <Filter>Scene Management</Filter>
     </ClCompile>
   </ItemGroup>
