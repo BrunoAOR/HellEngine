@@ -15,7 +15,7 @@ ComponentParticleSystem::ComponentParticleSystem(GameObject* owner) : Component(
 {
 	type = ComponentType::PARTICLE_SYSTEM;
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
-	Init(10, iPoint(10, 10), 3000, 10, "assets/images/rainSprite.tga", fPoint(1, 1));
+	Init(1000, iPoint(10, 10), 1000, 10, "assets/images/rainSprite.tga", fPoint(1, 1));
 }
 
 ComponentParticleSystem::~ComponentParticleSystem()
@@ -92,7 +92,7 @@ void ComponentParticleSystem::UpdateSystem(const ComponentCamera& camera)
 		uint idx = liveParticles[i];
 		Particle& particle = particles[idx];
 		particle.position += particle.velocity * (float) deltaTime;
-		if (deltaTime > particle.lifetime)
+		if (deltaTime >= particle.lifetime)
 			++particlesToKill;
 		else
 			particle.lifetime -= deltaTime;
@@ -116,16 +116,17 @@ void ComponentParticleSystem::UpdateSystem(const ComponentCamera& camera)
 
 		Particle& particle = particles[idx];
 		InitParticle(particle);
+		particle.lifetime -= deltaTime;
 
 		nextSpawnTime += spawnInterval;
 	}
 
-	elapsedTime += App->time->DeltaTimeMS();
+	elapsedTime += deltaTime;
 
 	if (elapsedTime > fallingTime)
 	{
 		elapsedTime -= fallingTime;
-		nextSpawnTime -= fallingTime;
+		nextSpawnTime = 0;
 	}
 }
 
@@ -136,7 +137,7 @@ void ComponentParticleSystem::Draw()
 		uint idx = liveParticles[i];
 		Particle& particle = particles[idx];
 		
-		glColor3f(1.0f, 0.0f, 0.0f);
+		glColor3f(1.0f, 1.0f, 1.0f);
 		glPointSize(3.0f);
 		glBegin(GL_POINTS);
 		glVertex3fv(particle.position.ptr());
