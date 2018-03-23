@@ -42,8 +42,8 @@ public:
 
 public:
 
-	u32 uuid;
-	u32 parentUuid;
+	u32 uuid = 0;
+	u32 parentUuid = 0;
 	std::string name;
 
 private:

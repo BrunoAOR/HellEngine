@@ -40,6 +40,9 @@ GameObject::GameObject(const char* name, GameObject* parentGameObject) : name(na
 GameObject::~GameObject()
 {
 	//LOGGER("Began deletion of GameObject '%s'", name.c_str());
+	if (hierarchyActiveGameObject == this)
+		hierarchyActiveGameObject = nullptr;
+
 	for (Component* component : components)
 	{
 		delete component;
@@ -512,7 +515,8 @@ void GameObject::SetActive(bool activeState)
 void GameObject::Save(SerializableObject& obj)
 {
 	obj.Addu32("UUID", uuid);
-	obj.Addu32("ParentUUID", GetParent() ? GetParent()->uuid : -1);
+	obj.AddString("Name", name);
+	obj.Addu32("ParentUUID", GetParent() ? GetParent()->uuid : 0);
 	obj.AddString("Name", name);
 	obj.AddBool("Active", isActive);
 	SerializableArray sArray = obj.BuildSerializableArray("Components");
@@ -526,9 +530,24 @@ void GameObject::Save(SerializableObject& obj)
 void GameObject::Load(const SerializableObject& obj)
 {
 	uuid = obj.Getu32("UUID");
+	name = obj.GetString("Name");
 	parentUuid = obj.Getu32("ParentUUID");
 	name = obj.GetString("Name");
 	isActive = obj.GetBool("Active");
+
+	SerializableArray componentsArray = obj.GetSerializableArray("Components");
+	uint componentsCount = componentsArray.Size();
+
+	for (uint i = 0; i < componentsCount; ++i)
+	{
+		SerializableObject componentObject = componentsArray.GetSerializableObject(i);
+		std::string cTypeString = componentObject.GetString("Type");
+		ComponentType cType = GetComponentType(cTypeString.c_str());
+		
+		Component* component = AddComponent(cType);
+		component->Load(componentObject);
+	}
+
 }
 
 bool GameObject::HasGameObjectInChildrenHierarchy(GameObject * testGameObject)

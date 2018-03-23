@@ -357,6 +357,9 @@ bool ComponentCamera::IsInsideFrustum(GameObject * go)
 
 void ComponentCamera::Save(SerializableObject& obj) const
 {
+	Component::Save(obj);
+
+	obj.AddFloat3("Position", GetPosition3());
 	obj.AddColor("Background", background);
 	obj.AddFloat("NearPlane", nearClippingPlane);
 	obj.AddFloat("FarPlane", farClippingPlane);
@@ -366,11 +369,19 @@ void ComponentCamera::Save(SerializableObject& obj) const
 
 void ComponentCamera::Load(const SerializableObject& obj)
 {
+	Component::Load(obj);
+
+	float3 pos = obj.GetFloat3("Position");
+	SetPosition(pos.x, pos.y, pos.z);
 	background = obj.GetColor("Background");
 	nearClippingPlane = obj.GetFloat("NearPlane");
 	farClippingPlane = obj.GetFloat("FarPlane");
 	aspectRatio = obj.GetFloat("AspectRatio");
 	verticalFOVRad = obj.GetFloat("VerticalFOV");
+
+	frustum.SetPerspective(GetHorizontalFOVrad(), verticalFOVRad);
+	frustum.SetViewPlaneDistances(nearClippingPlane, farClippingPlane);
+
 }
 
 float ComponentCamera::GetHorizontalFOVrad() const

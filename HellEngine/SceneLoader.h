@@ -12,7 +12,7 @@ class SceneLoader
 public:
 	SceneLoader();
 
-	bool Load(const char* modelPath, GameObject* parent);
+	bool Load(const char* modelPath, GameObject* parent, bool meshesOnly = false);
 
 	~SceneLoader();
 

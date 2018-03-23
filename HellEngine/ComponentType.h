@@ -12,5 +12,6 @@ enum class ComponentType
 
 extern const ComponentType COMPONENT_TYPES[5];
 const char* GetString(ComponentType componentType);
+ComponentType GetComponentType(const char* componentTypeString);
 
 #endif // !__H_COMPONENT_TYPE__

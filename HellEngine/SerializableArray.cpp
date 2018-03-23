@@ -24,7 +24,7 @@ SerializableObject SerializableArray::BuildSerializableObject()
 	return sObj;
 }
 
-SerializableObject SerializableArray::GetSerializableObject(uint index)
+SerializableObject SerializableArray::GetSerializableObject(uint index) const
 {
 	assert(index < jsonArray->size());
 	Json& jsonObject = jsonArray->at(index);

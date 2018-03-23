@@ -120,6 +120,8 @@ int ComponentMesh::MaxCountInGameObject()
 
 void ComponentMesh::Save(SerializableObject& obj) const
 {
+	Component::Save(obj);
+
 	obj.AddInt("ActiveModelInfo", activeModelInfo);
 	std::vector<int> modelInfos;
 	for (unsigned int i = 0; i < customModelInfo.meshInfosIndexes.size(); i++)
@@ -130,7 +132,17 @@ void ComponentMesh::Save(SerializableObject& obj) const
 
 void ComponentMesh::Load(const SerializableObject& obj)
 {
+	Component::Load(obj);
+
 	activeModelInfo = obj.GetInt("ActiveModelInfo");
+
+	std::vector<int> modelInfos = obj.GetVectorInt("ModelInfos");
+	if (!modelInfos.empty())
+	{
+		customModelInfo.meshInfosIndexes.reserve(modelInfos.size());
+		customModelInfo.meshInfosIndexes.insert(customModelInfo.meshInfosIndexes.begin(), modelInfos.begin(), modelInfos.end());
+	}
+	UpdateBoundingBox();
 }
 
 void ComponentMesh::CreateCubeMeshInfo()

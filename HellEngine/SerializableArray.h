@@ -11,7 +11,7 @@ public:
 	~SerializableArray();
 
 	SerializableObject BuildSerializableObject();
-	SerializableObject GetSerializableObject(uint index);
+	SerializableObject GetSerializableObject(uint index) const;
 	uint Size() const;
 
 private:

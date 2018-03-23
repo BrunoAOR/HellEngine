@@ -22,10 +22,10 @@ public:
 	void AddFloat4(const std::string& key, const float4& value);
 	void AddColor(const std::string& key, const Color& value);
 	void AddString(const std::string& key, const std::string& value);
-	void AddVectorInt(const std::string& key, const std::vector<int> value);
-	void AddVectorString(const std::string& key, const std::vector<std::string> value);
+	void AddVectorInt(const std::string& key, const std::vector<int>& value);
+	void AddVectorString(const std::string& key, const std::vector<std::string>& value);
 
-	SerializableArray GetSerializableArray(const std::string& key);
+	SerializableArray GetSerializableArray(const std::string& key) const;
 
 	bool GetBool(const std::string& key) const;
 	int GetInt(const std::string& key) const;

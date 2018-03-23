@@ -29,25 +29,7 @@ ModuleScene::ModuleScene()
 
 ModuleScene::~ModuleScene() 
 {
-	for (MeshInfo* meshInfo : meshes)
-	{
-		/* Delete VRAM buffers */
-		glDeleteVertexArrays(1, &meshInfo->vao);
-		glDeleteBuffers(1, &meshInfo->vbo);
-		glDeleteBuffers(1, &meshInfo->ebo);
-		
-		/* Delete Bones */
-		for (Bone* bone : meshInfo->bones)
-		{
-			/* DO NOT delete it->first because it points to the same memLocation as bone->name which will be deleted next */
-			delete[] bone->name;
-			delete[] bone->weights;
-			delete bone;
-		}
-
-		delete meshInfo;
-	}
-	meshes.clear();
+	
 }
 
 bool ModuleScene::Init()
@@ -63,6 +45,28 @@ bool ModuleScene::CleanUp()
 
 	delete root;
 	root = nullptr;
+
+	modelPaths.clear();
+
+	for (MeshInfo* meshInfo : meshes)
+	{
+		/* Delete VRAM buffers */
+		glDeleteVertexArrays(1, &meshInfo->vao);
+		glDeleteBuffers(1, &meshInfo->vbo);
+		glDeleteBuffers(1, &meshInfo->ebo);
+
+		/* Delete Bones */
+		for (Bone* bone : meshInfo->bones)
+		{
+			/* DO NOT delete it->first because it points to the same memLocation as bone->name which will be deleted next */
+			delete[] bone->name;
+			delete[] bone->weights;
+			delete bone;
+		}
+
+		delete meshInfo;
+	}
+	meshes.clear();
 
 	return true;
 }
@@ -247,10 +251,10 @@ void ModuleScene::SetSelectedGameObject(GameObject * go)
 	editorInfo.selectedGameObject = go;
 }
 
-bool ModuleScene::LoadModel(const char* modelPath, GameObject* parent)
+bool ModuleScene::LoadModel(const char* modelPath, GameObject* parent, bool meshesOnly)
 {
 	bool success;
-	success = sceneLoader.Load(modelPath, parent);
+	success = sceneLoader.Load(modelPath, parent, meshesOnly);
 
 	if (success)
 		modelPaths.push_back(modelPath);
@@ -306,10 +310,12 @@ void ModuleScene::Save()
 	sObject.AddVectorString("ModelPaths", modelPaths);
 	SerializableArray gameObjectsArray = sObject.BuildSerializableArray("GameObjects");
 
-	std::stack<GameObject*> goStack;
+	std::stack<GameObject*> goStack;	
+
 	GameObject* go = root;
 	goStack.push(go);
-	
+
+	/* The root otself is NOT serialized */
 	while (!goStack.empty())
 	{
 		go = goStack.top();
@@ -327,8 +333,58 @@ void ModuleScene::Save()
 	serializer.Save("assets/scenes/Scene.json");
 }
 
-void ModuleScene::Load(const char * path)
+void ModuleScene::Load(const char* jsonPath)
 {
+	/* First we clean up the scene */
+	
+	CleanUp();
+
+	Serializer serializer;
+	SerializableObject sObject = serializer.Load(jsonPath);
+
+	/* Load Meshes */
+
+	std::vector<std::string> allPaths = sObject.GetVectorString("ModelPaths");
+	/* allPaths is not copied into modelPaths because that happens inside the LoadModel method */
+	for (std::string path : allPaths)
+	{
+		LoadModel(path.c_str(), nullptr, true);
+	}
+
+	/* Now we load GameObjects */
+	std::map<u32, GameObject*> gameObjectsByUuid;
+	std::map<u32, std::vector<GameObject*>> gameObjectsToParent;
+
+	SerializableArray gameObjectsArray = sObject.GetSerializableArray("GameObjects");
+	uint gameObjectsCount = gameObjectsArray.Size();
+
+	for (uint i = 0; i < gameObjectsCount; ++i)
+	{
+		SerializableObject goData = gameObjectsArray.GetSerializableObject(i);
+		GameObject* go = CreateGameObject();
+		if (i == 0)
+			root = go;
+
+		go->Load(goData);
+		gameObjectsByUuid[go->uuid] = go;
+		if (go->parentUuid)
+		{
+			gameObjectsToParent[go->parentUuid].push_back(go);
+		}
+	}
+
+	for (std::map<u32, std::vector<GameObject*>>::iterator it = gameObjectsToParent.begin(); it != gameObjectsToParent.end(); ++it)
+	{
+		std::vector<GameObject*>& gosToParent = it->second;
+		GameObject* parent = nullptr;
+		for (GameObject* go : gosToParent)
+		{
+			assert(gameObjectsByUuid.count(go->parentUuid) > 0);
+			go->SetParent(gameObjectsByUuid[go->parentUuid]);
+		}
+	}
+
+
 }
 
 void ModuleScene::DrawHierarchy()

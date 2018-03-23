@@ -253,6 +253,9 @@ int ComponentMaterial::MaxCountInGameObject()
 
 void ComponentMaterial::Save(SerializableObject& obj) const
 {
+	Component::Save(obj);
+
+	obj.AddInt("ModelInfoVaoIndex", modelInfoVaoIndex);
 	obj.AddString("VertexShaderPath", vertexShaderPath);
 	obj.AddString("FragmentShaderPath", fragmentShaderPath);
 	obj.AddString("TexturePath", texturePath);
@@ -265,6 +268,9 @@ void ComponentMaterial::Save(SerializableObject& obj) const
 
 void ComponentMaterial::Load(const SerializableObject& obj)
 {
+	Component::Load(obj);
+
+	modelInfoVaoIndex = obj.GetInt("ModelInfoVaoIndex");
 	memcpy_s(vertexShaderPath, 256, obj.GetString("VertexShaderPath").c_str(), obj.GetString("VertexShaderPath").length());
 	memcpy_s(fragmentShaderPath, 256, obj.GetString("FragmentShaderPath").c_str(), obj.GetString("FragmentShaderPath").length());
 	memcpy_s(texturePath, 256, obj.GetString("TexturePath").c_str(), obj.GetString("TexturePath").length());
@@ -273,6 +279,7 @@ void ComponentMaterial::Load(const SerializableObject& obj)
 	textureConfiguration.mipMaps = obj.GetBool("MipMaps");
 	textureConfiguration.minificationMode = obj.GetInt("MinificationMode");
 	textureConfiguration.magnificationMode = obj.GetInt("MagnificationMode");
+	Apply();
 }
 
 void ComponentMaterial::OnEditorMaterialConfiguration()

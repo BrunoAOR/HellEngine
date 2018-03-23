@@ -43,7 +43,7 @@ public:
 	ComponentCamera* GetActiveGameCamera() const;
 	void SetSelectedGameObject(GameObject* go);
 
-	bool LoadModel(const char* modelPath, GameObject* parent);
+	bool LoadModel(const char* modelPath, GameObject* parent, bool meshesOnly = false);
 	GameObject* CreateGameObject();
 	void Destroy(GameObject* gameObject);
 	std::vector<GameObject*> FindByName(const std::string& name, GameObject* gameObject = nullptr);

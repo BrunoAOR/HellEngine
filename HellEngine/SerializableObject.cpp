@@ -71,22 +71,22 @@ void SerializableObject::AddColor(const std::string& key, const Color & value)
 	(*jsonObject)[key] = jsonObj;
 }
 
-void SerializableObject::AddString(const std::string& key, const std::string & value)
+void SerializableObject::AddString(const std::string& key, const std::string& value)
 {
 	(*jsonObject)[key] = value;
 }
 
-void SerializableObject::AddVectorInt(const std::string& key, const std::vector<int> value)
+void SerializableObject::AddVectorInt(const std::string& key, const std::vector<int>& value)
 {
 	(*jsonObject)[key] = value;
 }
 
-void SerializableObject::AddVectorString(const std::string& key, const std::vector<std::string> value)
+void SerializableObject::AddVectorString(const std::string& key, const std::vector<std::string>& value)
 {
 	(*jsonObject)[key] = value;
 }
 
-SerializableArray SerializableObject::GetSerializableArray(const std::string & key)
+SerializableArray SerializableObject::GetSerializableArray(const std::string& key) const
 {
 	if (jsonObject->count(key))
 	{
@@ -97,7 +97,7 @@ SerializableArray SerializableObject::GetSerializableArray(const std::string & k
 	return SerializableArray();
 }
 
-bool SerializableObject::GetBool(const std::string & key) const
+bool SerializableObject::GetBool(const std::string& key) const
 {
 	if (jsonObject->count(key))
 	{

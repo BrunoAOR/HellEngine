@@ -21,7 +21,7 @@ SceneLoader::SceneLoader()
 {
 }
 
-bool SceneLoader::Load(const char* modelPath, GameObject* parent)
+bool SceneLoader::Load(const char* modelPath, GameObject* parent, bool meshesOnly)
 {
 	assimpScene = aiImportFile(modelPath, aiProcess_Triangulate);
 	if (parent == nullptr)
@@ -31,8 +31,11 @@ bool SceneLoader::Load(const char* modelPath, GameObject* parent)
 	{
 		currentModelPath = modelPath;
 		LoadMeshes();
-		LoadNode(assimpScene->mRootNode, parent);
-		StoreBoneToTransformLinks();
+		if (!meshesOnly)
+		{
+			LoadNode(assimpScene->mRootNode, parent);
+			StoreBoneToTransformLinks();
+		}
 
 		aiReleaseImport(assimpScene);
 		assimpScene = nullptr;
