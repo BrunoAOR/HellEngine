@@ -120,7 +120,6 @@
     <ClInclude Include="physicsFunctions.h" />
     <ClInclude Include="Point.h" />
     <ClInclude Include="SceneLoader.h" />
-    <ClInclude Include="Shader.h" />
     <ClInclude Include="ShaderProgram.h" />
     <ClInclude Include="SpaceOctNode.h" />
     <ClInclude Include="SpaceQuadNode.h" />
@@ -200,7 +199,6 @@
     <ClCompile Include="ModuleWindow.cpp" />
     <ClCompile Include="physicsFunctions.cpp" />
     <ClCompile Include="SceneLoader.cpp" />
-    <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
     <ClCompile Include="SpaceOctNode.cpp" />
     <ClCompile Include="SpaceQuadNode.cpp" />
