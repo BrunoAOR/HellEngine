@@ -7,6 +7,7 @@
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "GameObject.h"
+#include "ModuleEditorCamera.h"
 #include "ModuleScene.h"
 #include "ModuleWindow.h"
 #include "Serializer.h"
@@ -41,6 +42,8 @@ bool ModuleScene::Init()
 
 bool ModuleScene::CleanUp()
 {
+	editorInfo.selectedGameObject = nullptr;
+
 	quadTree.CleanUp();
 
 	delete root;
@@ -71,9 +74,6 @@ bool ModuleScene::CleanUp()
 	return true;
 }
 
-#include "Application.h"
-#include "ModuleInput.h"
-#include "globals.h"
 UpdateStatus ModuleScene::Update()
 {
 	if (quadTree.GetType() != SpaceQuadTree::QuadTreeType::INVALID && DEBUG_MODE)
@@ -384,7 +384,8 @@ void ModuleScene::Load(const char* jsonPath)
 		}
 	}
 
-
+	/* Re-initialize ModuleEditorCamera */
+	App->editorCamera->Init();
 }
 
 void ModuleScene::DrawHierarchy()

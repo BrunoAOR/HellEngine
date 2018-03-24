@@ -60,11 +60,11 @@ private:
 	GameObject* AddCubeChild();
 	GameObject* AddSphereChild();
 
-	void OnEditorHierarchy();
+	bool OnEditorHierarchy();
 	void OnEditorHierarchyDragAndDrop();
-	void OnEditorHierarchyRightClick();
+	bool OnEditorHierarchyRightClick();
 	void OnEditorHierarchyCreateMenu();
-	void OnEditorHierarchyLoadModelMenu();
+	bool OnEditorHierarchyLoadModelMenu();
 
 private:
 

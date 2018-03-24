@@ -87,7 +87,7 @@ void SceneLoader::LoadNode(const aiNode* node, GameObject* parent)
 		char* fullPath = new char[256];
 
 		/* NOTE: A GameObject will have as many materials as the number of sub-meshes (MeshInfo) contained in the aiNode (-> stored in ModelInfo)
-		Each material will identify the meshInfo to draw by an index stored in ComponentMaterial:: */
+		Each material will identify the meshInfo to draw by an index stored in ComponentMaterial::modelInfoVaoIndex */
 		ModelInfo modelInfo;
 		for (unsigned int i = 0; i < node->mNumMeshes; ++i)
 		{

@@ -155,19 +155,23 @@ void GameObject::OnEditorRootHierarchy()
 	{
 		for (GameObject* child : children)
 		{
-			child->OnEditorHierarchy();
+			if (child->OnEditorHierarchy())
+				break;
 		}
 		ImGui::TreePop();
 	}
 }
 
-void GameObject::OnEditorHierarchy()
+bool GameObject::OnEditorHierarchy()
 {
+	bool earlyReturn = false;
 	ImGuiTreeNodeFlags selectedFlag = App->scene->editorInfo.selectedGameObject == this ? ImGuiTreeNodeFlags_Selected : 0;
 	if (children.size() == 0)
 	{
 		ImGui::TreeNodeEx(this, ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | selectedFlag, name.c_str());
-		OnEditorHierarchyRightClick();
+		earlyReturn = OnEditorHierarchyRightClick();
+		if (earlyReturn)
+			return true;
 
 		if (ImGui::IsItemClicked())
 			App->scene->editorInfo.selectedGameObject = this;
@@ -178,7 +182,9 @@ void GameObject::OnEditorHierarchy()
 	else
 	{
 		bool open = ImGui::TreeNodeEx(this, selectedFlag, name.c_str());
-		OnEditorHierarchyRightClick();
+		earlyReturn = OnEditorHierarchyRightClick();
+		if (earlyReturn)
+			return true;
 
 		if (ImGui::IsItemClicked())
 			App->scene->editorInfo.selectedGameObject = this;
@@ -189,11 +195,14 @@ void GameObject::OnEditorHierarchy()
 		{
 			for (GameObject* child : children)
 			{
-				child->OnEditorHierarchy();
+				earlyReturn = child->OnEditorHierarchy();
+				if (earlyReturn)
+					break;
 			}
 			ImGui::TreePop();
 		}
 	}
+	return earlyReturn;
 }
 
 void GameObject::OnEditorHierarchyDragAndDrop()
@@ -216,8 +225,9 @@ void GameObject::OnEditorHierarchyDragAndDrop()
 	}
 }
 
-void GameObject::OnEditorHierarchyRightClick()
+bool GameObject::OnEditorHierarchyRightClick()
 {
+	bool earlyReturn = false;
 	if (ImGui::BeginPopupContextItem())
 	{
 		OnEditorHierarchyCreateMenu();
@@ -227,7 +237,7 @@ void GameObject::OnEditorHierarchyRightClick()
 			App->scene->Destroy(this);
 			App->scene->editorInfo.selectedGameObject = nullptr;
 			ImGui::EndPopup();
-			return;
+			return true;
 		}
 
 		ImGui::Separator();
@@ -246,10 +256,12 @@ void GameObject::OnEditorHierarchyRightClick()
 
 		ImGui::Separator();
 
-		OnEditorHierarchyLoadModelMenu();
+		earlyReturn = OnEditorHierarchyLoadModelMenu();
 
 		ImGui::EndPopup();
 	}
+	return earlyReturn;
+
 }
 
 void GameObject::OnEditorHierarchyCreateMenu()
@@ -274,7 +286,7 @@ void GameObject::OnEditorHierarchyCreateMenu()
 	}
 }
 
-void GameObject::OnEditorHierarchyLoadModelMenu()
+bool GameObject::OnEditorHierarchyLoadModelMenu()
 {
 	static char modelPath[256]{ '\0' };
 	static bool error = false;
@@ -288,9 +300,10 @@ void GameObject::OnEditorHierarchyLoadModelMenu()
 		
 		if (error)
 			ImGui::Text("Could not load model from provided path!");
-		
+
 		ImGui::EndMenu();
 	}
+	return !error;
 }
 
 GameObject* GameObject::GetParent()
@@ -516,7 +529,7 @@ void GameObject::Save(SerializableObject& obj)
 {
 	obj.Addu32("UUID", uuid);
 	obj.AddString("Name", name);
-	obj.Addu32("ParentUUID", GetParent() ? GetParent()->uuid : 0);
+	obj.Addu32("ParentUUID", GetParent() ? GetParent()->uuid : this == App->scene->root ? 0 : App->scene->root->uuid);
 	obj.AddString("Name", name);
 	obj.AddBool("Active", isActive);
 	SerializableArray sArray = obj.BuildSerializableArray("Components");
