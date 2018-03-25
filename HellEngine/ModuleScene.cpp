@@ -357,10 +357,12 @@ void ModuleScene::Load(const char* jsonPath)
 	/* Now we load GameObjects */
 	std::map<u32, GameObject*> gameObjectsByUuid;
 	std::map<u32, std::vector<GameObject*>> gameObjectsToParent;
+	std::vector<Component*> meshesCreated;
 
 	SerializableArray gameObjectsArray = sObject.GetSerializableArray("GameObjects");
 	uint gameObjectsCount = gameObjectsArray.Size();
 
+	/* Create GameObjects */
 	for (uint i = 0; i < gameObjectsCount; ++i)
 	{
 		SerializableObject goData = gameObjectsArray.GetSerializableObject(i);
@@ -369,13 +371,19 @@ void ModuleScene::Load(const char* jsonPath)
 			root = go;
 
 		go->Load(goData);
+
+		std::vector<Component*> goMeshes = go->GetComponents(ComponentType::MESH);
+		meshesCreated.insert(meshesCreated.end(), goMeshes.begin(), goMeshes.end());
+
 		gameObjectsByUuid[go->uuid] = go;
-		if (go->parentUuid)
+		/* Check done to leave root out */
+		if (go->parentUuid != 0)
 		{
 			gameObjectsToParent[go->parentUuid].push_back(go);
 		}
 	}
 
+	/* Parent GameObjects */
 	for (std::map<u32, std::vector<GameObject*>>::iterator it = gameObjectsToParent.begin(); it != gameObjectsToParent.end(); ++it)
 	{
 		std::vector<GameObject*>& gosToParent = it->second;
@@ -385,6 +393,12 @@ void ModuleScene::Load(const char* jsonPath)
 			assert(gameObjectsByUuid.count(go->parentUuid) > 0);
 			go->SetParent(gameObjectsByUuid[go->parentUuid]);
 		}
+	}
+
+	/* Optimize Meshes */
+	for (Component* component : meshesCreated)
+	{
+		((ComponentMesh*)component)->StoreBoneToTransformLinks();
 	}
 
 	/* Re-initialize ModuleEditorCamera */

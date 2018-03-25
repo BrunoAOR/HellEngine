@@ -7,7 +7,8 @@
 #include "ModelInfo.h"
 #include "MeshInfo.h"
 #include "globals.h"
-
+class ComponentTransform;
+struct Bone;
 typedef float GLfloat;
 
 class ComponentMesh :
@@ -23,6 +24,7 @@ public:
 	const ModelInfo* GetActiveModelInfo() const;
 	bool SetActiveModelInfo(int index);
 	void SetCustomModel(const ModelInfo& modelInfo);
+	void StoreBoneToTransformLinks();
 
 	virtual void OnEditor() override;
 
@@ -45,6 +47,7 @@ private:
 	static uint meshesCount;
 	static std::vector<ModelInfo> defaultModelInfos;
 	ModelInfo customModelInfo;
+	std::map<Bone*, ComponentTransform*> boneToTransformLinks;
 	
 	int activeModelInfo = -1;
 };

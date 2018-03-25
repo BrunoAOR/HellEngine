@@ -390,8 +390,7 @@ bool SceneLoader::Load(const char* modelPath, GameObject* parent, bool meshesOnl
 		currentModelPath = nullptr;
 		moduleSceneMeshesOffset = 0;
 
-		currentMeshInfos.clear();
-		rootNode = nullptr;
+		currentComponentMeshes.clear();
 		
 		return true;
 	}
@@ -410,10 +409,6 @@ void SceneLoader::LoadNode(const aiNode* node, GameObject* parent)
 	GameObject* go = App->scene->CreateGameObject();
 	go->name = node->mName.data;
 	go->SetParent(parent);
-
-	/* Cache the root node */
-	if (!rootNode)
-		rootNode = go;
 
 	/* Add Transform */
 	ComponentTransform* transform = (ComponentTransform*)go->AddComponent(ComponentType::TRANSFORM);
@@ -456,6 +451,7 @@ void SceneLoader::LoadNode(const aiNode* node, GameObject* parent)
 
 		ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
 		mesh->SetCustomModel(modelInfo);
+		currentComponentMeshes.push_back(mesh);
 	}
 
 	for (unsigned int i = 0; i < node->mNumChildren; ++i)
@@ -472,24 +468,15 @@ void SceneLoader::LoadMeshes()
 	{
 		const aiMesh* assimpMesh = assimpScene->mMeshes[i];
 		MeshInfo* meshInfo = CreateMeshInfo(assimpMesh);
-		currentMeshInfos.push_back(meshInfo);
 		App->scene->meshes.push_back(meshInfo);
 	}
 }
 
 void SceneLoader::StoreBoneToTransformLinks()
 {
-	for (MeshInfo* meshInfo : currentMeshInfos)
+	for (ComponentMesh* mesh : currentComponentMeshes)
 	{
-		for (Bone* bone : meshInfo->bones)
-		{
-			GameObject* go = rootNode->FindByName(bone->name);
-			assert(go);
-			ComponentTransform* transform = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM);
-			assert(transform);
-
-			bone->connectedTransform = transform;
-		}
+		mesh->StoreBoneToTransformLinks();
 	}
 }
 

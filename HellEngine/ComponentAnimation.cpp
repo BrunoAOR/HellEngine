@@ -102,6 +102,8 @@ int ComponentAnimation::MaxCountInGameObject()
 
 void ComponentAnimation::Save(SerializableObject& obj) const
 {
+	Component::Save(obj);
+
 	obj.AddInt("InstanceID", instanceID);
 	obj.AddString("AnimationName", animationName);
 	obj.AddBool("Loop", loop);
@@ -110,6 +112,8 @@ void ComponentAnimation::Save(SerializableObject& obj) const
 
 void ComponentAnimation::Load(const SerializableObject& obj)
 {
+	Component::Load(obj);
+
 	instanceID = obj.GetInt("InstanceID");
 	memcpy_s(animationName, 256, obj.GetString("AnimationName").c_str(), obj.GetString("AnimationName").length());
 	loop = obj.GetBool("Loop");

@@ -166,6 +166,29 @@ void ComponentMesh::UpdateBoundingBox()
 		transform->UpdateBoundingBox(this);
 }
 
+void ComponentMesh::StoreBoneToTransformLinks()
+{
+	const ModelInfo* activeModelInfo = GetActiveModelInfo();
+	GameObject* parent = gameObject->GetParent();
+
+	if (parent)
+	{
+		for (uint meshInfoIndex : activeModelInfo->meshInfosIndexes)
+		{
+			MeshInfo* meshInfo = App->scene->meshes.at(meshInfoIndex);
+			for (Bone* bone : meshInfo->bones)
+			{
+				GameObject* go = parent->FindByName(bone->name);
+				assert(go);
+				ComponentTransform* transform = (ComponentTransform*)go->GetComponent(ComponentType::TRANSFORM);
+				assert(transform);
+
+				boneToTransformLinks[bone] = transform;
+			}
+		}
+	}
+}
+
 void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 {
 	BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning", Profiler::Color::Crimson);
@@ -220,7 +243,7 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 				{
 					Bone* bone = verticesGroup.bones[i];
 
-					float4x4 matrixProduct = bone->connectedTransform->GetModelMatrix4x4();
+					float4x4 matrixProduct = boneToTransformLinks[bone]->GetModelMatrix4x4();
 					matrixProduct.LeftMultiply(rootToWorldInverse);
 					matrixProduct.RightMultiply(bone->inverseBindMatrix);
 					matrixProduct *= verticesGroup.weights[i];
@@ -241,7 +264,7 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 		{
 			for (Bone* bone : meshInfo->bones)
 			{
-				float4x4 matrixProduct = bone->connectedTransform->GetModelMatrix4x4();
+				float4x4 matrixProduct = boneToTransformLinks[bone]->GetModelMatrix4x4();
 				matrixProduct.LeftMultiply(rootToWorldInverse);
 				matrixProduct.RightMultiply(bone->inverseBindMatrix);
 
