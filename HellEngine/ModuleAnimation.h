@@ -7,6 +7,7 @@
 #include "Assimp/include/assimp/cimport.h"
 #include "Module.h"
 #include "globals.h"
+class SerializableObject;
 
 struct LessString
 {
@@ -74,6 +75,9 @@ public:
 
 	/* Draws the Animation loading window */
 	void OnEditorAnimationWindow(float mainMenuBarHeight, bool* pOpen);
+
+	void Save(SerializableObject& obj);
+	void Load(const SerializableObject& obj);
 
 private:
 

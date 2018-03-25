@@ -7,6 +7,7 @@
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "GameObject.h"
+#include "ModuleAnimation.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleScene.h"
 #include "ModuleWindow.h"
@@ -309,6 +310,10 @@ void ModuleScene::Save()
 {
 	Serializer serializer;
 	SerializableObject sObject = serializer.GetEmptySerializableObject();
+
+	/* Save animations info */
+	App->animation->Save(sObject);
+
 	sObject.AddVectorString("ModelPaths", modelPaths);
 	SerializableArray gameObjectsArray = sObject.BuildSerializableArray("GameObjects");
 
@@ -343,6 +348,9 @@ void ModuleScene::Load(const char* jsonPath)
 
 	Serializer serializer;
 	SerializableObject sObject = serializer.Load(jsonPath);
+
+	/* Load animations info */
+	App->animation->Load(sObject);
 
 	/* Load Meshes */
 	sceneLoader.LoadCubeMesh();

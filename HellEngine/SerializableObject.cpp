@@ -4,6 +4,10 @@
 #include "MathGeoLib/src/Math/float3.h"
 #include "MathGeoLib/src/Math/float4.h"
 
+SerializableObject::SerializableObject()
+{
+}
+
 SerializableObject::SerializableObject(Json* obj)
 {
 	assert(obj);
@@ -16,10 +20,20 @@ SerializableObject::~SerializableObject()
 
 SerializableArray SerializableObject::BuildSerializableArray(const std::string& key)
 {
+	assert(jsonObject);
 	(*jsonObject)[key] = Json::array();
 	Json& arrayObj = (*jsonObject)[key];
 	SerializableArray sArray(&arrayObj);
 	return sArray;
+}
+
+SerializableObject SerializableObject::BuildSerializableObject(const std::string& key)
+{
+	assert(jsonObject);
+	(*jsonObject)[key] = Json::object();
+	Json& obj = (*jsonObject)[key];
+	SerializableObject sObj(&obj);
+	return sObj;
 }
 
 void SerializableObject::AddBool(const std::string & key, bool value)
@@ -95,6 +109,17 @@ SerializableArray SerializableObject::GetSerializableArray(const std::string& ke
 	}
 	assert(false);
 	return SerializableArray();
+}
+
+SerializableObject SerializableObject::GetSerializableObject(const std::string & key) const
+{
+	if (jsonObject->count(key))
+	{
+		Json& jsonObj = (*jsonObject)[key];
+		return SerializableObject(&jsonObj);
+	}
+	assert(false);
+	return SerializableObject();
 }
 
 bool SerializableObject::GetBool(const std::string& key) const

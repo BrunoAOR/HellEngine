@@ -1,12 +1,14 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 #include "Brofiler/include/Brofiler.h"
+#include "ImGui/imgui.h"
 #include "MathGeoLib/src/Math/float3.h"
 #include "MathGeoLib/src/Math/Quat.h"
 #include "Application.h"
 #include "ModuleAnimation.h"
 #include "ModuleTime.h"
-#include "ImGui/imgui.h"
+#include "SerializableArray.h"
+#include "SerializableObject.h"
 
 ModuleAnimation::ModuleAnimation()
 {
@@ -31,6 +33,7 @@ bool ModuleAnimation::CleanUp()
 		delete[] it->first;
 		delete it->second;
 	}
+	animations.clear();
 
 	for (uint i = 0; i < instances.size(); i++)
 	{
@@ -40,6 +43,10 @@ bool ModuleAnimation::CleanUp()
 
 		delete instance;
 	}
+	instances.clear();
+
+	loadedAnimationNames.clear();
+	animationsNamesToPathsMap.clear();
 
 	return true;
 }
@@ -390,6 +397,48 @@ void ModuleAnimation::OnEditorAnimationWindow(float mainMenuBarHeight, bool* pOp
 	ImGui::Unindent();
 
 	ImGui::End();
+}
+
+void ModuleAnimation::Save(SerializableObject& obj)
+{
+	SerializableObject animationsObject = obj.BuildSerializableObject("Animations");
+	animationsObject.AddVectorString("Animation Names", loadedAnimationNames);
+	
+	SerializableArray animationsArray = animationsObject.BuildSerializableArray("Names to Paths");
+	for (std::unordered_map<std::string, std::string>::iterator it = animationsNamesToPathsMap.begin(); it != animationsNamesToPathsMap.end(); ++it)
+	{
+		SerializableObject pair = animationsArray.BuildSerializableObject();
+		pair.AddString("name", it->first);
+		pair.AddString("path", it->second);
+	}
+}
+
+void ModuleAnimation::Load(const SerializableObject& obj)
+{
+	/* Delete any previously loaded animations */
+	CleanUp();
+
+	/* Load the loadedAnimationNames and animationsNamesToPathsMap from the SerializableObject into temporary objects*/
+	std::vector<std::string> namesTemp;
+	std::unordered_map<std::string, std::string> nameToPathTemp;
+
+	SerializableObject animationsObject = obj.GetSerializableObject("Animations");
+	namesTemp = animationsObject.GetVectorString("Animation Names");
+	
+	SerializableArray animationsArray = animationsObject.GetSerializableArray("Names to Paths");
+	uint arraySize = animationsArray.Size();
+	for (uint i = 0; i < arraySize; ++i)
+	{
+		SerializableObject pair = animationsArray.GetSerializableObject(i);
+		nameToPathTemp[pair.GetString("name")] = pair.GetString("path");
+	}
+
+	/* Load the animations from the temp objects */
+	for (const std::string& animationName : namesTemp)
+	{
+		bool success = Load(animationName.c_str(), nameToPathTemp[animationName].c_str());
+		assert(success);
+	}
 }
 
 aiVector3D ModuleAnimation::InterpolateVector3D(const aiVector3D& first, const aiVector3D& second, float lambda) const

@@ -9,10 +9,12 @@ struct Color;
 class SerializableObject
 {
 public:
+	SerializableObject();
 	SerializableObject(Json* obj);
 	~SerializableObject();
 
 	SerializableArray BuildSerializableArray(const std::string& key);
+	SerializableObject BuildSerializableObject(const std::string& key);
 
 	void AddBool(const std::string& key, bool value);
 	void AddInt(const std::string& key, int value);
@@ -26,6 +28,7 @@ public:
 	void AddVectorString(const std::string& key, const std::vector<std::string>& value);
 
 	SerializableArray GetSerializableArray(const std::string& key) const;
+	SerializableObject GetSerializableObject(const std::string& key) const;
 
 	bool GetBool(const std::string& key) const;
 	int GetInt(const std::string& key) const;
