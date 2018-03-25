@@ -273,9 +273,6 @@
     <ClInclude Include="Color.h">
       <Filter>General</Filter>
     </ClInclude>
-    <ClInclude Include="Shader.h">
-      <Filter>General</Filter>
-    </ClInclude>
     <ClInclude Include="GameObject.h">
       <Filter>Scene Management</Filter>
     </ClInclude>
@@ -353,6 +350,12 @@
     </ClInclude>
     <ClInclude Include="ComponentParticleSystem.h">
       <Filter>Scene Management</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleShaderManager.h">
+      <Filter>Engine Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderProgram.h">
+      <Filter>General</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -506,9 +509,6 @@
     <ClCompile Include="ModuleEditorCamera.cpp">
       <Filter>Engine Modules</Filter>
     </ClCompile>
-    <ClCompile Include="Shader.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
     <ClCompile Include="GameObject.cpp">
       <Filter>Scene Management</Filter>
     </ClCompile>
@@ -574,6 +574,12 @@
     </ClCompile>
     <ClCompile Include="ComponentParticleSystem.cpp">
       <Filter>Scene Management</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleShaderManager.cpp">
+      <Filter>Engine Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderProgram.cpp">
+      <Filter>General</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
