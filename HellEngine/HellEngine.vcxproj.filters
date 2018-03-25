@@ -273,9 +273,6 @@
     <ClInclude Include="Color.h">
       <Filter>General</Filter>
     </ClInclude>
-    <ClInclude Include="Shader.h">
-      <Filter>General</Filter>
-    </ClInclude>
     <ClInclude Include="GameObject.h">
       <Filter>Scene Management</Filter>
     </ClInclude>
@@ -356,6 +353,18 @@
     </ClInclude>
     <ClInclude Include="SerializableArray.h">
       <Filter>General\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="Billboard.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentGrass.h">
+      <Filter>Scene Management</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleShaderManager.h">
+      <Filter>Engine Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderProgram.h">
+      <Filter>General</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -509,9 +518,6 @@
     <ClCompile Include="ModuleEditorCamera.cpp">
       <Filter>Engine Modules</Filter>
     </ClCompile>
-    <ClCompile Include="Shader.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
     <ClCompile Include="GameObject.cpp">
       <Filter>Scene Management</Filter>
     </ClCompile>
@@ -577,6 +583,18 @@
     </ClCompile>
     <ClCompile Include="SerializableArray.cpp">
       <Filter>General\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="Billboard.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentGrass.cpp">
+      <Filter>Scene Management</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleShaderManager.cpp">
+      <Filter>Engine Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderProgram.cpp">
+      <Filter>General</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

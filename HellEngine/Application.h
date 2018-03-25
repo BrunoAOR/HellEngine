@@ -14,6 +14,7 @@ class ModuleScene;
 class ModuleTime;
 class ModuleWindow;
 class ModuleTextureManager;
+class ModuleShaderManager;
 enum class UpdateStatus;
 
 class Application
@@ -27,6 +28,8 @@ public:
 	bool CleanUp();
 
 public:
+	ModuleTextureManager * textureManager = nullptr;
+	ModuleShaderManager* shaderManager = nullptr;
 	ModuleInput * input = nullptr;
 	ModuleTime* time = nullptr;
 	ModuleWindow* window = nullptr;
@@ -37,7 +40,6 @@ public:
 	ModuleImGui* imgui = nullptr;
 	ModuleAudio* audio = nullptr;
 	ModuleDebugDraw* debugDraw = nullptr;
-	ModuleTextureManager* textureManager = nullptr;
 
 private:
 	std::list<Module*> modules;

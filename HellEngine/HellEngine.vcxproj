@@ -21,10 +21,12 @@
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="Application.h" />
+    <ClInclude Include="Billboard.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="ComponentAnimation.h" />
     <ClInclude Include="ComponentCamera.h" />
+    <ClInclude Include="ComponentGrass.h" />
     <ClInclude Include="ComponentMesh.h" />
     <ClInclude Include="ComponentTransform.h" />
     <ClInclude Include="ComponentMaterial.h" />
@@ -110,6 +112,7 @@
     <ClInclude Include="ModuleInput.h" />
     <ClInclude Include="ModuleRender.h" />
     <ClInclude Include="ModuleScene.h" />
+    <ClInclude Include="ModuleShaderManager.h" />
     <ClInclude Include="ModuleTextureManager.h" />
     <ClInclude Include="ModuleTime.h" />
     <ClInclude Include="ModuleWindow.h" />
@@ -120,7 +123,7 @@
     <ClInclude Include="SerializableArray.h" />
     <ClInclude Include="SerializableObject.h" />
     <ClInclude Include="Serializer.h" />
-    <ClInclude Include="Shader.h" />
+    <ClInclude Include="ShaderProgram.h" />
     <ClInclude Include="SpaceOctNode.h" />
     <ClInclude Include="SpaceQuadNode.h" />
     <ClInclude Include="SpaceOctTree.h" />
@@ -132,9 +135,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="Billboard.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ComponentAnimation.cpp" />
     <ClCompile Include="ComponentCamera.cpp" />
+    <ClCompile Include="ComponentGrass.cpp" />
     <ClCompile Include="ComponentMesh.cpp" />
     <ClCompile Include="ComponentTransform.cpp" />
     <ClCompile Include="ComponentMaterial.cpp" />
@@ -191,6 +196,7 @@
     <ClCompile Include="ModuleInput.cpp" />
     <ClCompile Include="ModuleRender.cpp" />
     <ClCompile Include="ModuleScene.cpp" />
+    <ClCompile Include="ModuleShaderManager.cpp" />
     <ClCompile Include="ModuleTextureManager.cpp" />
     <ClCompile Include="ModuleTime.cpp" />
     <ClCompile Include="ModuleWindow.cpp" />
@@ -199,7 +205,7 @@
     <ClCompile Include="SerializableArray.cpp" />
     <ClCompile Include="SerializableObject.cpp" />
     <ClCompile Include="Serializer.cpp" />
-    <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="ShaderProgram.cpp" />
     <ClCompile Include="SpaceOctNode.cpp" />
     <ClCompile Include="SpaceQuadNode.cpp" />
     <ClCompile Include="SpaceOctTree.cpp" />

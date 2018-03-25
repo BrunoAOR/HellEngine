@@ -9,17 +9,17 @@
 #include "ModuleEditorCamera.h"
 #include "ModuleRender.h"
 #include "ModuleScene.h"
+#include "ModuleShaderManager.h"
+#include "ModuleTextureManager.h"
 #include "MeshInfo.h"
 #include "ModelInfo.h"
 #include "SerializableObject.h"
-#include "Shader.h"
+#include "ShaderProgram.h"
 #include "globals.h"
 #include "openGL.h"
 
 uint ComponentMaterial::materialsCount = 0;
 uint ComponentMaterial::checkeredPatternBufferId = 0;
-std::vector<Shader*> ComponentMaterial::loadedShaders;
-std::map<Shader*, uint> ComponentMaterial::loadedShaderCount;
 
 ComponentMaterial::ComponentMaterial(GameObject* owner) : Component(owner)
 {
@@ -35,13 +35,10 @@ ComponentMaterial::ComponentMaterial(GameObject* owner) : Component(owner)
 
 ComponentMaterial::~ComponentMaterial()
 {
-	if (loadedShaderCount.at(shader) == 1) {
-		delete shader;
-		loadedShaderCount.erase(shader);
-		shader = nullptr;
-	}
-	else {
-		loadedShaderCount.at(shader)--;
+	if (shaderProgram)
+	{
+		App->shaderManager->ReleaseShaderProgram(shaderProgram);
+		shaderProgram = nullptr;
 	}
 
 	if (textureBufferId != checkeredPatternBufferId)
@@ -177,37 +174,17 @@ bool ComponentMaterial::IsValid()
 /* Attemps to apply all of the material setup */
 bool ComponentMaterial::Apply()
 {
-	if (shader != nullptr)
-		loadedShaderCount.at(shader)--;
+	/*
+	The new shaderProgramId is request before releasing the previous one in case we are requesting for the same program.
+	If this were the case, and this ComponentMaterial were the only user of the program,
+	releasing the program first would cause it to get destroyed and then rebuilt when requesting it anew.
+	*/
+	const ShaderProgram* oldShaderProgram = shaderProgram;
+	shaderProgram = App->shaderManager->GetShaderProgram(vertexShaderPath, fragmentShaderPath);
+	App->shaderManager->ReleaseShaderProgram(oldShaderProgram);
+	oldShaderProgram = nullptr;
 
-	Shader* s = ShaderAlreadyLinked();
-
-	if (s) {
-		shader = s;
-		loadedShaderCount.at(shader)++;
-		isValid = true;
-	}
-	else {
-		shader = new Shader();
-
-		isValid = (LoadVertexShader()
-			&& LoadFragmentShader()
-			&& shader->LinkShaderProgram()
-			&& GenerateUniforms());
-
-		if (isValid) {
-			loadedShaders.push_back(shader);
-			loadedShaderCount.insert(std::pair<Shader*, int>(shader, 1));
-		}
-		else {
-			delete shader;
-			shader = nullptr;
-		}
-	}
-
-	isValid &= LoadTexture()
-		&& LoadShaderData()
-		&& GenerateUniforms();
+	isValid = shaderProgram && LoadTexture() && LoadShaderData() && GenerateUniforms();
 
 	return isValid;
 }
@@ -420,29 +397,12 @@ void ComponentMaterial::OnEditorShaderOptions()
 	}
 }
 
-Shader * ComponentMaterial::ShaderAlreadyLinked()
-{
-	Shader* s = nullptr;
-	for (std::vector<Shader*>::iterator it = loadedShaders.begin(); it != loadedShaders.end() && s == nullptr; ++it) {
-		if ((strcmp(vertexShaderPath, (*it)->vertexPath) == 0) && (strcmp(fragmentShaderPath, (*it)->fragmentPath) == 0)) {
-			s = *it;
-			break;
-		}
-	}
-
-	return s;
-}
-
 bool ComponentMaterial::DrawElements(const float* modelMatrix, const ModelInfo* modelInfo)
 {
 	if (IsValid() && modelInfo != nullptr && modelInfo->meshInfosIndexes.size() > 0)
 	{
-
-		shader->Activate();
-
-		glUniformMatrix4fv(privateUniforms["model_matrix"], 1, GL_FALSE, modelMatrix);
-		glUniformMatrix4fv(privateUniforms["view"], 1, GL_FALSE, App->editorCamera->camera->GetViewMatrix());
-		glUniformMatrix4fv(privateUniforms["projection"], 1, GL_FALSE, App->editorCamera->camera->GetProjectionMatrix());
+		shaderProgram->Activate();
+		shaderProgram->UpdateMatrixUniforms(modelMatrix, App->editorCamera->camera->GetViewMatrix(), App->editorCamera->camera->GetProjectionMatrix());
 		UpdatePublicUniforms();
 
 		if (modelInfoVaoIndex >= 0 && modelInfoVaoIndex < (int)modelInfo->meshInfosIndexes.size())
@@ -460,9 +420,10 @@ bool ComponentMaterial::DrawElements(const float* modelMatrix, const ModelInfo* 
 			}
 		}
 
-		shader->Deactivate();
+		shaderProgram->Deactivate();
 		return true;
 	}
+
 	return false;
 }
 
@@ -507,11 +468,6 @@ uint ComponentMaterial::CreateCheckeredTexture()
 bool ComponentMaterial::GenerateUniforms()
 {
 	/* Gets called AFTER successfully linking the shader program */
-	privateUniforms.clear();
-	privateUniforms["model_matrix"] = glGetUniformLocation(shader->GetProgramId(), "model_matrix");
-	privateUniforms["view"] = glGetUniformLocation(shader->GetProgramId(), "view");
-	privateUniforms["projection"] = glGetUniformLocation(shader->GetProgramId(), "projection");
-
 	publicUniforms.clear();
 	if (IsEmptyString(shaderDataPath))
 		return true;
@@ -549,7 +505,7 @@ bool ComponentMaterial::GenerateUniforms()
 		uniform.values[2] = 0.0f;
 		uniform.values[3] = 1.0f;
 
-		uniform.location = glGetUniformLocation(shader->GetProgramId(), uniform.name.c_str());
+		uniform.location = glGetUniformLocation(shaderProgram->GetProgramId(), uniform.name.c_str());
 		if (uniform.location == -1)
 			return false;
 
@@ -575,34 +531,6 @@ void ComponentMaterial::UpdatePublicUniforms()
 			break;
 		}
 	}
-}
-
-bool ComponentMaterial::LoadVertexShader()
-{
-	std::string vertexString;
-	if (!LoadTextFile(vertexShaderPath, vertexString))
-		return false;
-
-	strncpy_s(shader->vertexPath, sizeof(shader->vertexPath), vertexShaderPath, sizeof(vertexShaderPath));
-
-	if (!shader->CompileVertexShader(vertexString.c_str()))
-		return false;
-
-	return true;
-}
-
-bool ComponentMaterial::LoadFragmentShader()
-{
-	std::string fragmentString;
-	if (!LoadTextFile(fragmentShaderPath, fragmentString))
-		return false;
-
-	strncpy_s(shader->fragmentPath, sizeof(shader->fragmentPath), fragmentShaderPath, sizeof(fragmentShaderPath));
-
-	if (!shader->CompileFragmentShader(fragmentString.c_str()))
-		return false;
-
-	return true;
 }
 
 bool ComponentMaterial::LoadShaderData()

@@ -120,7 +120,7 @@ const float * ComponentCamera::GetPosition() const
 	return frustum.Pos().ptr();
 }
 
-const float3 ComponentCamera::GetPosition3() const
+const float3& ComponentCamera::GetPosition3() const
 {
 	return frustum.Pos();
 }

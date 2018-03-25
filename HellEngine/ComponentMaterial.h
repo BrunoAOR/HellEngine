@@ -8,11 +8,10 @@
 #include "TextureConfiguration.h"
 #include "TextureInfo.h"
 #include "globals.h"
-#include "ModuleTextureManager.h"
 
 class ComponentMesh;
 class ComponentTransform;
-class Shader;
+class ShaderProgram;
 struct ModelInfo;
 struct MeshInfo;
 
@@ -69,8 +68,6 @@ private:
 
 	uint CreateCheckeredTexture();
 
-	bool LoadVertexShader();
-	bool LoadFragmentShader();
 	bool LoadShaderData();
 	bool LoadTexture();
 	void ConfigureTexture();
@@ -82,8 +79,6 @@ private:
 	void OnEditorTextureConfiguration();
 	void OnEditorShaderOptions();
 
-	Shader* ShaderAlreadyLinked();
-
 private:
 
 	/* General */
@@ -94,8 +89,9 @@ private:
 	TextureInfo textureInfo;
 
 	/* Shader related */
+	const ShaderProgram* shaderProgram;
+
 	bool isValid = false;
-	Shader* shader = nullptr;
 	uint textureBufferId = 0;
 	char vertexShaderPath[256] = "";
 	char fragmentShaderPath[256] = "";
@@ -114,10 +110,6 @@ private:
 		float values[4];
 	};
 	std::vector<Uniform> publicUniforms;
-	std::map<std::string, uint> privateUniforms;
-
-	static std::vector<Shader*> loadedShaders;
-	static std::map<Shader*, uint> loadedShaderCount;
 
 	const ModelInfo* modelInfo = nullptr;
 };

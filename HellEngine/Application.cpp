@@ -13,10 +13,13 @@
 #include "ModuleWindow.h"
 #include "UpdateStatus.h"
 #include "ModuleTextureManager.h"
+#include "ModuleShaderManager.h"
 
 Application::Application()
 {
 	/* Order matters: they will init/start/pre/update/post in this order */
+	modules.push_back(textureManager = new ModuleTextureManager());
+	modules.push_back(shaderManager = new ModuleShaderManager());
 	modules.push_back(input = new ModuleInput());
 	modules.push_back(time = new ModuleTime());
 	modules.push_back(window = new ModuleWindow());
@@ -27,7 +30,6 @@ Application::Application()
 	modules.push_back(imgui = new ModuleImGui());
 	modules.push_back(audio = new ModuleAudio());
 	modules.push_back(debugDraw = new ModuleDebugDraw());
-	modules.push_back(textureManager = new ModuleTextureManager());
 }
 
 Application::~Application()

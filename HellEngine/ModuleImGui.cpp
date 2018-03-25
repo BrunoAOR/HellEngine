@@ -381,7 +381,7 @@ void ModuleImGui::ShowOpenGLWindow(float mainMenuBarHeight, bool * pOpen)
 {
 	static bool alphaTest = true;
 	static bool depthTest = true;
-	static bool cullFace = true;
+	static bool cullFace = false;
 	static bool lighting = false;
 	static bool colorMaterial = true;
 	static bool texture2D = true;
