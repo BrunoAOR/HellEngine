@@ -402,14 +402,14 @@ void ModuleAnimation::OnEditorAnimationWindow(float mainMenuBarHeight, bool* pOp
 void ModuleAnimation::Save(SerializableObject& obj)
 {
 	SerializableObject animationsObject = obj.BuildSerializableObject("Animations");
-	animationsObject.AddVectorString("Animation Names", loadedAnimationNames);
+	animationsObject.AddVectorString("AnimationNames", loadedAnimationNames);
 	
-	SerializableArray animationsArray = animationsObject.BuildSerializableArray("Names to Paths");
+	SerializableArray animationsArray = animationsObject.BuildSerializableArray("NamesToPaths");
 	for (std::unordered_map<std::string, std::string>::iterator it = animationsNamesToPathsMap.begin(); it != animationsNamesToPathsMap.end(); ++it)
 	{
 		SerializableObject pair = animationsArray.BuildSerializableObject();
-		pair.AddString("name", it->first);
-		pair.AddString("path", it->second);
+		pair.AddString("Name", it->first);
+		pair.AddString("Path", it->second);
 	}
 }
 
@@ -423,14 +423,14 @@ void ModuleAnimation::Load(const SerializableObject& obj)
 	std::unordered_map<std::string, std::string> nameToPathTemp;
 
 	SerializableObject animationsObject = obj.GetSerializableObject("Animations");
-	namesTemp = animationsObject.GetVectorString("Animation Names");
+	namesTemp = animationsObject.GetVectorString("AnimationNames");
 	
-	SerializableArray animationsArray = animationsObject.GetSerializableArray("Names to Paths");
+	SerializableArray animationsArray = animationsObject.GetSerializableArray("NamesToPaths");
 	uint arraySize = animationsArray.Size();
 	for (uint i = 0; i < arraySize; ++i)
 	{
 		SerializableObject pair = animationsArray.GetSerializableObject(i);
-		nameToPathTemp[pair.GetString("name")] = pair.GetString("path");
+		nameToPathTemp[pair.GetString("Name")] = pair.GetString("Path");
 	}
 
 	/* Load the animations from the temp objects */

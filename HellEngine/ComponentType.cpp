@@ -31,6 +31,8 @@ ComponentType GetComponentType(const char* componentTypeString)
 		return ComponentType::ANIMATION;
 	else if (strcmp(componentTypeString, "Camera") == 0)
 		return ComponentType::CAMERA;
+	else if (strcmp(componentTypeString, "Grass") == 0)
+		return ComponentType::GRASS;
 	else if (strcmp(componentTypeString, "Material") == 0)
 		return ComponentType::MATERIAL;
 	else if (strcmp(componentTypeString, "Mesh") == 0)
