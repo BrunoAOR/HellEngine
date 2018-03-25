@@ -34,8 +34,8 @@ public:
 
 private:
 
-	void CreateCubeMeshInfo();
-	void CreateSphereMeshInfo(uint rings, uint sections);
+	void PrepareCubeMeshInfo();
+	void PrepareSphereMeshInfo();
 
 	void UpdateBoundingBox();
 	void ApplyVertexSkinning(const MeshInfo* meshInfo);

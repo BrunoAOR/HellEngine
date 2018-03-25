@@ -37,6 +37,8 @@ bool ModuleScene::Init()
 {
 	root = new GameObject("root", nullptr);
 	root->AddComponent(ComponentType::CAMERA);
+	sceneLoader.LoadCubeMesh();
+	sceneLoader.LoadSphereMesh();
 	return true;
 }
 
@@ -343,7 +345,8 @@ void ModuleScene::Load(const char* jsonPath)
 	SerializableObject sObject = serializer.Load(jsonPath);
 
 	/* Load Meshes */
-
+	sceneLoader.LoadCubeMesh();
+	sceneLoader.LoadSphereMesh();
 	std::vector<std::string> allPaths = sObject.GetVectorString("ModelPaths");
 	/* allPaths is not copied into modelPaths because that happens inside the LoadModel method */
 	for (std::string path : allPaths)
