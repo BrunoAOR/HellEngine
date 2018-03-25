@@ -176,7 +176,7 @@ UpdateStatus ModuleImGui::Update()
 	}
 
 	if (showAnimationWindow) {
-		ShowAnimationWindow(mainMenuBarHeight, &showAnimationWindow);
+		App->animation->OnEditorAnimationWindow(mainMenuBarHeight, &showAnimationWindow);
 	}
 
 	if (showCameraWindow)
@@ -343,36 +343,6 @@ void ModuleImGui::ShowEditorCameraWindow(float mainMenuBarHeight, bool* pOpen)
 	}
 
 	ImGui::Checkbox("Is Active Camera", &isActiveCamera);
-
-	ImGui::End();
-}
-
-void ModuleImGui::ShowAnimationWindow(float mainMenuBarHeight, bool * pOpen)
-{
-	static bool loadMessage = false;
-	static bool loadedCorrectly = false;
-	static char animationPath[256] = "";
-	static char animationName[256] = "";
-
-	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
-	ImGui::SetNextWindowSize(ImVec2(450, 600));
-	ImGui::Begin("Animation options", pOpen, ImGuiWindowFlags_NoCollapse);
-
-	ImGui::InputText("Animation path", animationPath, 256);
-	ImGui::InputText("Animation name", animationName, 256);
-
-	if (ImGui::Button("Load")) {
-
-		loadedCorrectly = App->animation->Load(animationName, animationPath);
-		loadMessage = true;
-	}
-
-	if (loadMessage) {
-		if (loadedCorrectly)
-			ImGui::Text("Animation loaded correctly.");
-		else
-			ImGui::Text("Animation not found.");
-	}
 
 	ImGui::End();
 }

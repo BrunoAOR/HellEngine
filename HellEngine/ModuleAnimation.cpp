@@ -6,6 +6,7 @@
 #include "Application.h"
 #include "ModuleAnimation.h"
 #include "ModuleTime.h"
+#include "ImGui/imgui.h"
 
 ModuleAnimation::ModuleAnimation()
 {
@@ -13,62 +14,6 @@ ModuleAnimation::ModuleAnimation()
 
 ModuleAnimation::~ModuleAnimation()
 {
-}
-
-bool ModuleAnimation::Load(const char* name, const char* file)
-{
-	const aiScene* assimpScene = aiImportFile(file, 0);
-
-	if (assimpScene) {
-		for (uint i = 0; i < assimpScene->mNumAnimations; i++) {
-			aiAnimation* anim = assimpScene->mAnimations[i];
-
-			Animation* a = new Animation();
-			a->duration = uint(anim->mDuration / anim->mTicksPerSecond) * 1000;
-
-			for (uint j = 0; j < anim->mNumChannels; j++) {
-				AnimationNode* node = new AnimationNode();
-
-				uint length = anim->mChannels[j]->mNodeName.length;
-				char* auxName = new char[length + 1];
-				memcpy_s(auxName, length, anim->mChannels[j]->mNodeName.C_Str(), length);
-				auxName[length] = '\0';
-				const char* channelName = auxName;
-
-				node->numPositions = anim->mChannels[j]->mNumPositionKeys;
-				node->numRotations = anim->mChannels[j]->mNumRotationKeys;
-
-				node->positions = new aiVector3D[node->numPositions];
-				node->rotations = new aiQuaternion[node->numRotations];
-
-				for (uint n = 0; n < node->numPositions; n++) {
-					node->positions[n].x = anim->mChannels[j]->mPositionKeys[n].mValue.x;
-					node->positions[n].y = anim->mChannels[j]->mPositionKeys[n].mValue.y;
-					node->positions[n].z = anim->mChannels[j]->mPositionKeys[n].mValue.z;
-
-					node->rotations[n].x = anim->mChannels[j]->mRotationKeys[n].mValue.x;
-					node->rotations[n].y = anim->mChannels[j]->mRotationKeys[n].mValue.y;
-					node->rotations[n].z = anim->mChannels[j]->mRotationKeys[n].mValue.z;
-					node->rotations[n].w = anim->mChannels[j]->mRotationKeys[n].mValue.w;
-				}
-
-				a->channels.insert(std::make_pair(channelName, node));
-			}
-
-			char* animationName = new char[256];
-			strcpy_s(animationName, 256, name);
-
-			animations.insert(std::make_pair(animationName, a));
-		}
-
-		aiReleaseImport(assimpScene);
-
-		return true;
-	}
-
-	LOGGER("File %s not found", file);
-
-	return false;
 }
 
 bool ModuleAnimation::CleanUp()
@@ -115,10 +60,73 @@ UpdateStatus ModuleAnimation::Update()
 			}
 		}
 	}
-
 	return UpdateStatus::UPDATE_CONTINUE;
 }
 
+bool ModuleAnimation::Load(const char* name, const char* file)
+{
+	if (animationsNamesToPathsMap.count(name) != 0)
+	{
+		LOGGER("WARNING: ModuleAnimation - An animation with the name %s has already been loaded", name);
+		return false;
+	}
+
+	const aiScene* assimpScene = aiImportFile(file, 0);
+
+	if (assimpScene) {
+		loadedAnimationNames.push_back(name);
+		animationsNamesToPathsMap[name] = file;
+
+		for (uint i = 0; i < assimpScene->mNumAnimations; i++) {
+			aiAnimation* anim = assimpScene->mAnimations[i];
+
+			Animation* a = new Animation();
+			a->duration = uint(anim->mDuration / anim->mTicksPerSecond) * 1000;
+
+			for (uint j = 0; j < anim->mNumChannels; j++) {
+				AnimationNode* node = new AnimationNode();
+
+				uint length = anim->mChannels[j]->mNodeName.length;
+				char* auxName = new char[length + 1];
+				memcpy_s(auxName, length, anim->mChannels[j]->mNodeName.C_Str(), length);
+				auxName[length] = '\0';
+				const char* channelName = auxName;
+
+				node->numPositions = anim->mChannels[j]->mNumPositionKeys;
+				node->numRotations = anim->mChannels[j]->mNumRotationKeys;
+
+				node->positions = new aiVector3D[node->numPositions];
+				node->rotations = new aiQuaternion[node->numRotations];
+
+				for (uint n = 0; n < node->numPositions; n++) {
+					node->positions[n].x = anim->mChannels[j]->mPositionKeys[n].mValue.x;
+					node->positions[n].y = anim->mChannels[j]->mPositionKeys[n].mValue.y;
+					node->positions[n].z = anim->mChannels[j]->mPositionKeys[n].mValue.z;
+
+					node->rotations[n].x = anim->mChannels[j]->mRotationKeys[n].mValue.x;
+					node->rotations[n].y = anim->mChannels[j]->mRotationKeys[n].mValue.y;
+					node->rotations[n].z = anim->mChannels[j]->mRotationKeys[n].mValue.z;
+					node->rotations[n].w = anim->mChannels[j]->mRotationKeys[n].mValue.w;
+				}
+
+				a->channels.insert(std::make_pair(channelName, node));
+			}
+
+			char* animationName = new char[256];
+			strcpy_s(animationName, 256, name);
+
+			animations.insert(std::make_pair(animationName, a));
+		}
+
+		aiReleaseImport(assimpScene);
+
+		return true;
+	}
+
+	LOGGER("ERROR: ModuleAnimation - File %s not found", file);
+
+	return false;
+}
 
 int ModuleAnimation::Play(const char* name, bool loop)
 {
@@ -311,6 +319,77 @@ bool ModuleAnimation::GetTransform(uint id, const char* channel, float3 & positi
 	else {
 		return false;
 	}
+}
+
+void ModuleAnimation::OnEditorAnimationWindow(float mainMenuBarHeight, bool* pOpen)
+{
+	static char animationPath[256] = "";
+	static char animationName[256] = "";
+	static std::string loadMessage = "";
+
+	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
+	ImGui::SetNextWindowSize(ImVec2(450, 600));
+	ImGui::Begin("Animation options", pOpen, ImGuiWindowFlags_NoCollapse);
+
+	ImGui::InputText("Animation path", animationPath, 256);
+	ImGui::InputText("Animation name", animationName, 256);
+
+	if (ImGui::Button("Load"))
+	{
+		if (animationsNamesToPathsMap.count(animationName) != 0)
+		{
+			loadMessage = "Animation name already in use";
+		}
+		else
+		{
+			bool pathInUse = false;
+			for (std::unordered_map<std::string, std::string>::iterator it = animationsNamesToPathsMap.begin(); it != animationsNamesToPathsMap.end(); ++it)
+			{
+				if (strcmp(it->second.c_str(), animationPath) == 0)
+				{
+					loadMessage = "Animation already loaded with name " + it->first;
+					pathInUse = true;
+					break;
+				}
+			}
+
+			if (!pathInUse)
+			{
+				if (App->animation->Load(animationName, animationPath))
+				{
+					animationPath[0] = '\0';
+					animationName[0] = '\0';
+					loadMessage = "Animation loaded correctly.";
+				}
+				else
+					loadMessage = "Animation not found.";
+			}
+		}
+	}
+
+	ImGui::Text(loadMessage.c_str());
+
+	ImGui::Separator();
+	ImGui::Text("Loaded animations:");
+
+	ImGui::Indent();
+	if (loadedAnimationNames.empty())
+	{
+		ImGui::Text("No animations loaded.");
+	}
+	else
+	{
+		for (const std::string& name : loadedAnimationNames)
+		{
+			ImGui::Text(name.c_str());
+			ImGui::Indent();
+			ImGui::TextWrapped((std::string("From path: ") + animationsNamesToPathsMap[name]).c_str());
+			ImGui::Unindent();
+		}
+	}
+	ImGui::Unindent();
+
+	ImGui::End();
 }
 
 aiVector3D ModuleAnimation::InterpolateVector3D(const aiVector3D& first, const aiVector3D& second, float lambda) const
