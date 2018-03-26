@@ -11,6 +11,7 @@
 class Billboard;
 class ComponentCamera;
 class GameObject;
+class ShaderProgram;
 
 class ComponentParticleSystem :
 	public Component
@@ -20,8 +21,6 @@ public:
 	virtual ~ComponentParticleSystem();
 
 	virtual void Update() override;
-
-
 
 	virtual void OnEditor() override;
 	virtual int MaxCountInGameObject() override;
@@ -36,9 +35,9 @@ private:
 
 private:
 	void Init(uint maxParticles, const iPoint& emitSize, uint fallingTime,
-		float fallingHeight, const char* texturePath, const fPoint& particleSize);
+		float fallingHeight, const fPoint& particleSize);
 
-	void InitParticle(Particle& particle, uint deltaTime);
+	void InitParticle(Particle& particle, Billboard& billboard, uint deltaTime);
 
 	void UpdateSystem(const ComponentCamera& camera);
 
@@ -46,7 +45,16 @@ private:
 
 	void Draw();
 
+	void CreateQuadVAO();
+	bool DrawElements();
+	bool LoadTexture();
+
 private:
+	const ShaderProgram* shaderProgram = nullptr;
+	bool isValid = false;
+
+	char texturePath[256] = "";
+
 	Particle* particles;
 	uint numParticles;
 

@@ -27,8 +27,7 @@ ComponentGrass::ComponentGrass(GameObject* owner) : Component(owner)
 ComponentGrass::~ComponentGrass()
 {
 	App->shaderManager->ReleaseShaderProgram(shaderProgram);
-	shaderProgram = nullptr;
-	
+	shaderProgram = nullptr;	
 
 	if (textureID != 0)
 		App->textureManager->ReleaseTexture(textureID);

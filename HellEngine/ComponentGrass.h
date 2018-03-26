@@ -34,7 +34,7 @@ private:
 
 private:
 	uint textureID = 0;
-	const ShaderProgram * shaderProgram = nullptr;
+	const ShaderProgram* shaderProgram = nullptr;
 	bool isValid = false;
 
 	char texturePath[256] = "";
