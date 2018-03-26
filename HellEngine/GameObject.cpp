@@ -7,6 +7,7 @@
 #include "Component.h"
 #include "ComponentAnimation.h"
 #include "ComponentCamera.h"
+#include "ComponentGrass.h"
 #include "ComponentMaterial.h"
 #include "ComponentMesh.h"
 #include "ComponentTransform.h"
@@ -429,6 +430,15 @@ Component* GameObject::AddComponent(ComponentType type)
 	//Certain components should be created along with the correspondent transform component
 	switch (type)
 	{
+	case ComponentType::ANIMATION:
+		component = new ComponentAnimation(this);
+		break;
+	case ComponentType::CAMERA:
+		component = new ComponentCamera(this);
+		break;
+	case ComponentType::GRASS:
+		component = new ComponentGrass(this);
+		break;
 	case ComponentType::MATERIAL:
 		component = new ComponentMaterial(this);
 		break;
@@ -438,12 +448,6 @@ Component* GameObject::AddComponent(ComponentType type)
 		break;
 	case ComponentType::TRANSFORM:
 		component = new ComponentTransform(this);
-		break;
-	case ComponentType::CAMERA:
-		component = new ComponentCamera(this);
-		break;
-	case ComponentType::ANIMATION:
-		component = new ComponentAnimation(this);
 		break;
 	case ComponentType::UIELEMENT:
 		component = new ComponentUIElement(this);

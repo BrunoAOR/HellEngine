@@ -18,8 +18,8 @@ public:
 	void Update();
 
 	const float* GetPosition() const;
-
-	const float3 GetPosition3() const;
+	
+	const float3& GetPosition3() const;
 
 	/* Sets the position of the camera */
 	void SetPosition(float x, float y, float z);

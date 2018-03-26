@@ -14,6 +14,7 @@ class ModuleScene;
 class ModuleTime;
 class ModuleWindow;
 class ModuleTextureManager;
+class ModuleShaderManager;
 class ModuleTrueFont;
 class ModuleUI;
 enum class UpdateStatus;
@@ -29,6 +30,8 @@ public:
 	bool CleanUp();
 
 public:
+	ModuleTextureManager * textureManager = nullptr;
+	ModuleShaderManager* shaderManager = nullptr;
 	ModuleInput * input = nullptr;
 	ModuleTime* time = nullptr;
 	ModuleWindow* window = nullptr;
@@ -39,7 +42,6 @@ public:
 	ModuleImGui* imgui = nullptr;
 	ModuleAudio* audio = nullptr;
 	ModuleDebugDraw* debugDraw = nullptr;
-	ModuleTextureManager* textureManager = nullptr;
 	ModuleTrueFont* font = nullptr;
 	ModuleUI* ui = nullptr;
 

@@ -72,7 +72,7 @@ GLuint ModuleTextureManager::LoadImageWithDevIL(const char* theFileName, Texture
 
 	/* ... then attempt to conver it. */
 	/* NOTE: If your image contains alpha channel you can replace IL_RGB with IL_RGBA */
-	success = ilConvertImage(IL_RGB, IL_UNSIGNED_BYTE);
+	success = ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
 
 	/* Quit out if we failed the conversion */
 	if (!success)
