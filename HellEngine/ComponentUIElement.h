@@ -4,15 +4,15 @@
 #include "Component.h"
 #include "SDL\include\SDL_rect.h"
 
-enum class UIElementType {IMG, LABEL, BUTTON, INPUT_TEXT};
-const UIElementType UI_TYPES[] = { UIElementType::IMG, UIElementType::LABEL, UIElementType::BUTTON, UIElementType::INPUT_TEXT };
+enum class UIElementType {NONE, IMG, LABEL, BUTTON, INPUT_TEXT};
+const UIElementType UI_TYPES[] = { UIElementType::NONE, UIElementType::IMG, UIElementType::LABEL, UIElementType::BUTTON, UIElementType::INPUT_TEXT };
 
 class ComponentUIElement : public Component
 {
 public:
 
 	ComponentUIElement(GameObject* owner);
-	~ComponentUIElement() override;
+	virtual ~ComponentUIElement() override;
 
 	virtual void OnEditor() override;
 
@@ -21,16 +21,16 @@ public:
 
 	static const char* GetUITypeString(UIElementType uiType);
 	
-	SDL_Rect * GetRect();
-	void SetRect(SDL_Rect * rectValue);
-	bool GetVisible();
+	UIElementType GetUiType() const;
+	const SDL_Rect& GetRect() const;
+	void SetRect(const SDL_Rect& rectValue);
+	bool GetVisible() const;
 	void SetVisible(bool visibleValue);
 
-private:
-
+protected:
 	UIElementType uiType;
 
-	SDL_Rect* rect;
+	SDL_Rect rect;
 	bool visible;
 
 };

@@ -13,6 +13,7 @@
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "ComponentUIElement.h"
+#include "ModuleUI.h"
 #include "ModuleScene.h"
 #include "globals.h"
 
@@ -98,7 +99,7 @@ void GameObject::OnEditorInspector()
 	{
 		for (ComponentType componentType : COMPONENT_TYPES)
 		{
-			if (componentType != ComponentType::UIELEMENT) 
+			if (componentType != ComponentType::UI_ELEMENT) 
 			{
 				if (ImGui::MenuItem(GetString(componentType), ""))
 				{
@@ -449,9 +450,11 @@ Component* GameObject::AddComponent(ComponentType type)
 	case ComponentType::TRANSFORM:
 		component = new ComponentTransform(this);
 		break;
-	case ComponentType::UIELEMENT:
+	case ComponentType::UI_ELEMENT:
 		component = new ComponentUIElement(this);
 		break;
+	case ComponentType::UI_IMAGE:
+		component = ModuleUI::NewUIElement(UIElementType::IMG, this);
 	}
 
 	if (component != nullptr)

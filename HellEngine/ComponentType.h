@@ -9,10 +9,11 @@ enum class ComponentType
 	MATERIAL,
 	MESH,
 	TRANSFORM,
-	UIELEMENT
+	UI_ELEMENT,
+	UI_IMAGE
 };
 
-extern const ComponentType COMPONENT_TYPES[7];
+extern const ComponentType COMPONENT_TYPES[8];
 const char* GetString(ComponentType componentType);
 
 #endif // !__H_COMPONENT_TYPE__

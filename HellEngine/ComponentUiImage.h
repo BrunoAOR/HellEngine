@@ -14,11 +14,20 @@ public:
 
 	virtual void OnEditor() override;
 
-	GLuint GetTextureID();
+	unsigned int GetTextureID();
 	void SetTextureID(GLuint textureIDValue);
 
+	bool LoadImage();
+
+	char imagePath[256] = "";
+
+
 private:
-	GLuint textureID;
+	//bool LoadImage();
+
+private:
+	unsigned int textureID = 0;
+	//char imagePath[256] = "";
 };
 
 #endif __H_COMPONENT_UI_IMAGE__

@@ -1,24 +1,24 @@
+#include "ImGui/imgui.h"
+#include "Application.h"
 #include "ComponentUIElement.h"
 #include "ComponentType.h"
-#include "ImGui\imgui.h"
+#include "ModuleUI.h"
 
 
 ComponentUIElement::ComponentUIElement(GameObject * owner) : Component(owner)
 {
-	type = ComponentType::UIELEMENT;
+	type = ComponentType::UI_ELEMENT;
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
-    if (rect == nullptr) {
-        SDL_Rect* rectTemp = new SDL_Rect;
-        rectTemp->h = 10;
-        rectTemp->w = 10;
-        rectTemp->x = 10;
-        rectTemp->y = 10;
-        SetRect(rectTemp);
-    }
+	rect.x = 10;
+	rect.y = 10;
+	rect.w = 10;
+	rect.h = 10;
+    App->ui->RegisterUiElement(this);
 }
 
 ComponentUIElement::~ComponentUIElement()
 {
+	App->ui->UnregisterUiElement(this);
 }
 
 void ComponentUIElement::OnEditor()
@@ -28,22 +28,18 @@ void ComponentUIElement::OnEditor()
 		if (OnEditorDeleteComponent())
 			return;
 
-		if (rect != nullptr) 
-        {
-            int pos[2] = { rect->x, rect->y };
-            int size[2] = {rect->w, rect->h};
-            if (ImGui::DragInt2("Position", pos, 0.3f)) 
-            {
-                rect->x = pos[0];
-                rect->y = pos[1];
-            }
-            if (ImGui::DragInt2("Size", size, 0.3f))
-            {
-                rect->w = size[0];
-                rect->h = size[1];
-            }
-        }
-		
+		int pos[2] = { rect.x, rect.y };
+		int size[2] = { rect.w, rect.h };
+		if (ImGui::DragInt2("Position", pos, 0.3f))
+		{
+			rect.x = pos[0];
+			rect.y = pos[1];
+		}
+		if (ImGui::DragInt2("Size", size, 0.3f))
+		{
+			rect.w = size[0];
+			rect.h = size[1];
+		}
 	}
 }
 
@@ -69,17 +65,25 @@ const char * ComponentUIElement::GetUITypeString(UIElementType uiType)
 	}
 }
 
-SDL_Rect * ComponentUIElement::GetRect()
+UIElementType ComponentUIElement::GetUiType() const
+{
+	return uiType;
+}
+
+const SDL_Rect& ComponentUIElement::GetRect() const
 {
 	return rect;
 }
 
-void ComponentUIElement::SetRect(SDL_Rect * rectValue)
+void ComponentUIElement::SetRect(const SDL_Rect& rectValue)
 {
-	rect = rectValue;
+	rect.x = rectValue.x;
+	rect.y = rectValue.y;
+	rect.w = rectValue.w;
+	rect.h = rectValue.h;
 }
 
-bool ComponentUIElement::GetVisible()
+bool ComponentUIElement::GetVisible() const
 {
 	return visible;
 }
