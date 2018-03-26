@@ -52,9 +52,9 @@ void ComponentParticleSystem::Init(uint maxParticles, const iPoint& emitSize, ui
 	textureID = App->textureManager->GetTexture(texturePath);
 }
 
-void ComponentParticleSystem::InitParticle(Particle& particle)
+void ComponentParticleSystem::InitParticle(Particle& particle, uint deltaTime)
 {
-	particle.lifetime = fallingTime;
+	particle.lifetime = fallingTime - deltaTime;
 	particle.position.x = (-emissionArea.x / 2.0f) + ((float) rand() / RAND_MAX) * emissionArea.x;
 	particle.position.y = fallingHeight;
 	particle.position.z = ((float) rand() / RAND_MAX) * emissionArea.y;
@@ -85,6 +85,13 @@ void ComponentParticleSystem::Update()
 void ComponentParticleSystem::UpdateSystem(const ComponentCamera& camera)
 {
 	uint deltaTime = App->time->DeltaTimeMS();
+	elapsedTime += deltaTime;
+
+	if (elapsedTime > fallingTime)
+	{
+		elapsedTime -= fallingTime;
+		nextSpawnTime = 0;
+	}
 
 	uint particlesToKill = 0;
 	for (uint i = 0; i < liveParticles.size(); ++i)
@@ -92,10 +99,12 @@ void ComponentParticleSystem::UpdateSystem(const ComponentCamera& camera)
 		uint idx = liveParticles[i];
 		Particle& particle = particles[idx];
 		particle.position += particle.velocity * (float) deltaTime;
-		if (deltaTime >= particle.lifetime)
+
+		if (particle.lifetime <= deltaTime)
 			++particlesToKill;
 		else
 			particle.lifetime -= deltaTime;
+
 	}
 
 	if (particlesToKill > 0)
@@ -106,7 +115,7 @@ void ComponentParticleSystem::UpdateSystem(const ComponentCamera& camera)
 		liveParticles.erase(liveParticles.begin(), liveParticles.begin() + particlesToKill);
 	}	
 
-	while (elapsedTime >= nextSpawnTime)
+	while (elapsedTime > nextSpawnTime)
 	{
 		assert(deadParticles.size() > 0);
 		uint idx = deadParticles.back();
@@ -115,19 +124,10 @@ void ComponentParticleSystem::UpdateSystem(const ComponentCamera& camera)
 		liveParticles.push_back(idx);
 
 		Particle& particle = particles[idx];
-		InitParticle(particle);
-		particle.lifetime -= deltaTime;
-
+		InitParticle(particle, deltaTime);
+		
 		nextSpawnTime += spawnInterval;
-	}
-
-	elapsedTime += deltaTime;
-
-	if (elapsedTime > fallingTime)
-	{
-		elapsedTime -= fallingTime;
-		nextSpawnTime = 0;
-	}
+	}	
 }
 
 void ComponentParticleSystem::Draw()

@@ -38,7 +38,7 @@ private:
 	void Init(uint maxParticles, const iPoint& emitSize, uint fallingTime,
 		float fallingHeight, const char* texturePath, const fPoint& particleSize);
 
-	void InitParticle(Particle& particle);
+	void InitParticle(Particle& particle, uint deltaTime);
 
 	void UpdateSystem(const ComponentCamera& camera);
 
