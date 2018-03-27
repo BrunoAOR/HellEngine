@@ -1,8 +1,7 @@
 #ifndef __H_COMPONENT_UI_IMAGE__
 #define __H_COMPONENT_UI_IMAGE__
-
 #include "ComponentUIElement.h"
-
+class ComponentTransform2D;
 typedef unsigned int GLuint;
 
 class ComponentUiImage : public ComponentUIElement
@@ -21,6 +20,8 @@ public:
 
 	char imagePath[256] = "";
 
+public:
+	ComponentTransform2D * transform2D = nullptr;
 
 private:
 	//bool LoadImage();

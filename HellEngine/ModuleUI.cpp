@@ -5,6 +5,7 @@
 #include "ComponentUiImage.h"
 #include "ComponentUiLabel.h"
 #include "ComponentUiInputText.h"
+#include "ComponentTransform2D.h"
 #include "GameObject.h"
 #include "ModuleDebugDraw.h"
 #include "ModuleEditorCamera.h"
@@ -12,6 +13,7 @@
 #include "ModuleScene.h"
 #include "ModuleShaderManager.h"
 #include "ModuleWindow.h"
+#include "Point.h"
 #include "ShaderProgram.h"
 #include "openGl.h"
 
@@ -41,11 +43,14 @@ bool ModuleUI::Init()
 	GameObject* image = App->scene->CreateGameObject();
 	image->name = "Image test";
 	image->SetParent(canvas);
+
+	ComponentTransform2D* imageTransform = (ComponentTransform2D*)image->AddComponent(ComponentType::TRANSFORM_2D);
+	imageTransform->SetLocalPos(500, 200);
+	imageTransform->SetSize(150, 150);
+
 	ComponentUiImage* componentImage = (ComponentUiImage*)image->AddComponent(ComponentType::UI_IMAGE);
 	memcpy_s(componentImage->imagePath, 256, "assets/images/lenna.png", 24);
 	componentImage->LoadImage();
-	SDL_Rect rect{ 500, 200, 150, 150 };
-	componentImage->SetRect(rect);
 
 	return true;
 }
@@ -189,12 +194,12 @@ void ModuleUI::UpdateImage(ComponentUiImage* image)
 	{
 		shaderProgram->Activate();
 
-		const SDL_Rect& r = image->GetRect();
-
-		float rx = (float)r.x;
-		float ry = (float)r.y;
-		float rw = (float)r.w;
-		float rh = (float)r.h;
+		const fPoint& pos = image->transform2D->GetWorldPos();
+		const fPoint& size = image->transform2D->GetSize();
+		float rx = pos.x;
+		float ry = pos.y;
+		float rw = size.x;
+		float rh = size.y;
 
 
 		float modelMatrix[16] = {

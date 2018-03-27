@@ -22,6 +22,9 @@
     <Filter Include="ImGuizmo">
       <UniqueIdentifier>{5e52c346-c6f6-4462-9e71-e2628967add8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{467f1ae1-547e-4948-84e9-7af0f8304105}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="memLeaks.h">
@@ -361,6 +364,9 @@
     <ClInclude Include="ShaderProgram.h">
       <Filter>General</Filter>
     </ClInclude>
+    <ClInclude Include="ComponentTransform2D.h">
+      <Filter>UI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -589,6 +595,9 @@
     <ClCompile Include="ComponentUiLabel.cpp" />
     <ClCompile Include="ComponentUiInputText.cpp" />
     <ClCompile Include="ComponentUiButton.cpp" />
+    <ClCompile Include="ComponentTransform2D.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="MathGeoLib\src\Math\float2.inl">

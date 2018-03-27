@@ -11,6 +11,7 @@
 #include "ComponentMaterial.h"
 #include "ComponentMesh.h"
 #include "ComponentTransform.h"
+#include "ComponentTransform2D.h"
 #include "ComponentType.h"
 #include "ComponentUIElement.h"
 #include "ModuleUI.h"
@@ -97,30 +98,26 @@ void GameObject::OnEditorInspector()
 	name = nameBuf;
 	if (ImGui::BeginMenu("Add new Component"))
 	{
-		for (ComponentType componentType : COMPONENT_TYPES)
+		for (ComponentType componentType : COMPONENT_TYPES_3D)
 		{
-			if (componentType != ComponentType::UI_ELEMENT) 
+			if (ImGui::MenuItem(GetString(componentType), ""))
+			{
+				AddComponent(componentType);
+			}
+		}
+
+		if (ImGui::BeginMenu("UI", ""))
+		{
+			for (ComponentType componentType : COMPONENT_TYPES_2D)
 			{
 				if (ImGui::MenuItem(GetString(componentType), ""))
 				{
 					AddComponent(componentType);
 				}
 			}
-			else
-			{
-				if (ImGui::BeginMenu(GetString(componentType), ""))
-				{
-					for (UIElementType uiType : UI_TYPES)
-					{
-						if (ImGui::MenuItem(ComponentUIElement::GetUITypeString(uiType), ""))
-						{
-							AddComponent(componentType); //TODO Create UI specific element depending on UIElemenType Selected
-						}
-					}
-					ImGui::EndMenu();
-				}			
-			}
+			ImGui::EndMenu();
 		}
+
 		ImGui::EndMenu();
 	}
 	for (Component* component : components)
@@ -331,10 +328,16 @@ bool GameObject::SetParent(GameObject* newParent)
 	/* Verify for nullptr. Parent to Scene's root if so */
 	if (newParent == nullptr)
 	{
-		/* Inform the transform (if it exists) */
+		/* Inform the transform or transform2D (if it exists) */
 		ComponentTransform* transform = (ComponentTransform*)GetComponent(ComponentType::TRANSFORM);
 		if (transform)
 			transform->RecalculateLocalMatrix(nullptr);
+		else
+		{
+			ComponentTransform2D* transform2D = (ComponentTransform2D*)GetComponent(ComponentType::TRANSFORM_2D);
+			if (transform2D)
+				transform2D->RecalculateLocalPos(nullptr);
+		}
 
 		/* Remove from current parent. */
 		parent->RemoveChild(this);
@@ -355,7 +358,7 @@ bool GameObject::SetParent(GameObject* newParent)
 	}
 	else
 	{
-		/* Inform the transform (if it exists) about the newParent's transform (if it exists, else nullptr) */
+		/* Inform the transform or transform2D (if it exists) about the newParent's transform (if it exists, else nullptr) */
 		ComponentTransform* transform = (ComponentTransform*)GetComponent(ComponentType::TRANSFORM);
 
 		if (transform)
@@ -364,6 +367,15 @@ bool GameObject::SetParent(GameObject* newParent)
 
 			/* Note that parentTransform might be nullptr, but that is a case handled by the Transform::RecalculateLocalMatrix method */
 			transform->RecalculateLocalMatrix(parentTransform);
+		}
+		else
+		{
+			ComponentTransform2D* transform2D = (ComponentTransform2D*)GetComponent(ComponentType::TRANSFORM_2D);
+			if (transform2D)
+			{
+				ComponentTransform2D* parentTransform2D = (ComponentTransform2D*)newParent->GetComponent(ComponentType::TRANSFORM_2D);
+				transform2D->RecalculateLocalPos(parentTransform2D);
+			}
 		}
 
 		/* Remove from current parent. */
@@ -449,6 +461,9 @@ Component* GameObject::AddComponent(ComponentType type)
 		break;
 	case ComponentType::TRANSFORM:
 		component = new ComponentTransform(this);
+		break;
+	case ComponentType::TRANSFORM_2D:
+		component = new ComponentTransform2D(this);
 		break;
 	case ComponentType::UI_ELEMENT:
 		component = new ComponentUIElement(this);

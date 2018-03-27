@@ -30,6 +30,7 @@
     <ClInclude Include="ComponentMesh.h" />
     <ClInclude Include="ComponentTransform.h" />
     <ClInclude Include="ComponentMaterial.h" />
+    <ClInclude Include="ComponentTransform2D.h" />
     <ClInclude Include="ComponentType.h" />
     <ClInclude Include="ComponentUiButton.h" />
     <ClInclude Include="ComponentUIElement.h" />
@@ -147,6 +148,7 @@
     <ClCompile Include="ComponentMesh.cpp" />
     <ClCompile Include="ComponentTransform.cpp" />
     <ClCompile Include="ComponentMaterial.cpp" />
+    <ClCompile Include="ComponentTransform2D.cpp" />
     <ClCompile Include="ComponentType.cpp" />
     <ClCompile Include="ComponentUiButton.cpp" />
     <ClCompile Include="ComponentUIElement.cpp" />
