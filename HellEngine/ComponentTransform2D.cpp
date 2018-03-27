@@ -4,7 +4,7 @@
 #include "ComponentType.h"
 #include "GameObject.h"
 
-ComponentTransform2D::ComponentTransform2D(GameObject* owner) : Component(owner)
+ComponentTransform2D::ComponentTransform2D(GameObject* owner) : Component(owner), size(100, 100)
 {
 	type = ComponentType::TRANSFORM_2D;
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);

@@ -10,7 +10,6 @@
 ComponentUiImage::ComponentUiImage(GameObject * owner) : ComponentUIElement(owner)
 {
 	type = ComponentType::UI_IMAGE;
-	uiType = UIElementType::IMG;
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
 	textureID = 0;
 	transform2D = (ComponentTransform2D*)gameObject->GetComponent(ComponentType::TRANSFORM_2D);
@@ -34,19 +33,6 @@ void ComponentUiImage::OnEditor()
 		if (OnEditorDeleteComponent())
 			return;
 
-		int pos[2] = { rect.x, rect.y };
-		int size[2] = { rect.w, rect.h };
-		if (ImGui::DragInt2("Position", pos, 0.3f))
-		{
-			rect.x = pos[0];
-			rect.y = pos[1];
-		}
-		if (ImGui::DragInt2("Size", size, 0.3f))
-		{
-			rect.w = size[0];
-			rect.h = size[1];
-		}
-
 		ImGui::InputText("Image path", imagePath, 256);
 		if (ImGui::Button("Load image"))
 			LoadImage();
@@ -61,6 +47,19 @@ unsigned int ComponentUiImage::GetTextureID()
 void ComponentUiImage::SetTextureID(GLuint textureIDValue)
 {
 	textureID = textureIDValue;
+}
+
+bool ComponentUiImage::SetImagePath(const std::string& newImagePath)
+{
+	if (newImagePath.size() > 255)
+	{
+		LOGGER("ERROR: ComponentUiImage - imagePath is longer than 255 characters!");
+		return false;
+	}
+
+	memcpy_s(imagePath, 256, newImagePath.c_str(), newImagePath.size());
+	imagePath[newImagePath.size()] = '\0';
+	return LoadImage();
 }
 
 bool ComponentUiImage::LoadImage()

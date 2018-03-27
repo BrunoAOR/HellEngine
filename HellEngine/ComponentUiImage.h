@@ -16,19 +16,17 @@ public:
 	unsigned int GetTextureID();
 	void SetTextureID(GLuint textureIDValue);
 
-	bool LoadImage();
-
-	char imagePath[256] = "";
+	bool SetImagePath(const std::string& newImagePath);
 
 public:
 	ComponentTransform2D * transform2D = nullptr;
 
 private:
-	//bool LoadImage();
+	bool LoadImage();
 
 private:
 	unsigned int textureID = 0;
-	//char imagePath[256] = "";
+	char imagePath[256] = "";
 };
 
 #endif __H_COMPONENT_UI_IMAGE__

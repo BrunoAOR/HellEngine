@@ -37,7 +37,6 @@ bool ModuleUI::Init()
 
 	canvas = App->scene->CreateGameObject();
 	canvas->name = "Canvas";
-	canvas->AddComponent(ComponentType::UI_ELEMENT);
 
 	/* Testing */
 	GameObject* image = App->scene->CreateGameObject();
@@ -49,8 +48,7 @@ bool ModuleUI::Init()
 	imageTransform->SetSize(150, 150);
 
 	ComponentUiImage* componentImage = (ComponentUiImage*)image->AddComponent(ComponentType::UI_IMAGE);
-	memcpy_s(componentImage->imagePath, 256, "assets/images/lenna.png", 24);
-	componentImage->LoadImage();
+	componentImage->SetImagePath("assets/images/lenna.png");
 
 	return true;
 }
@@ -62,17 +60,28 @@ bool ModuleUI::CleanUp()
 	return true;
 }
 
-ComponentUIElement* ModuleUI::NewUIElement(UIElementType uiType, GameObject* goOwner)
+GameObject* ModuleUI::NewUIElement(UIElementType uiType)
 {
-	if (uiType == UIElementType::IMG)
-		return new ComponentUiImage(goOwner);
-	if (uiType == UIElementType::BUTTON)
-		return new ComponentUiButton(goOwner);
-	if (uiType == UIElementType::LABEL)
-		return new ComponentUiLabel(goOwner);
-	if (uiType == UIElementType::INPUT_TEXT)
-		return new ComponentUiInputText(goOwner);
-	return nullptr;
+	GameObject* go = App->scene->CreateGameObject();
+	go->name = GetUITypeString(uiType);
+	go->AddComponent(ComponentType::TRANSFORM_2D);
+	switch (uiType)
+	{
+	case UIElementType::IMG:
+		go->AddComponent(ComponentType::UI_IMAGE);
+		break;
+	case UIElementType::LABEL:
+		assert(false);
+		break;
+	case UIElementType::BUTTON:
+		assert(false);
+		break;
+	case UIElementType::INPUT_TEXT:
+		assert(false);
+		break;
+	}
+
+	return go;
 }
 
 UpdateStatus ModuleUI::Update()
@@ -170,11 +179,12 @@ void ModuleUI::UpdateElements()
 
 void ModuleUI::UpdateComponent(ComponentUIElement* component)
 {
-    switch (component->GetUiType())
+    switch (component->GetType())
     {
-    case UIElementType::IMG:
+	case ComponentType::UI_IMAGE:
         UpdateImage((ComponentUiImage*) component);
         break;
+	/*
     case UIElementType::BUTTON:
         UpdateButton((ComponentUiButton*)component);
         break;
@@ -184,6 +194,7 @@ void ModuleUI::UpdateComponent(ComponentUIElement* component)
     case UIElementType::INPUT_TEXT:
         UpdateInputText((ComponentUiInputText*)component);
         break;
+	*/
     }
 }
 

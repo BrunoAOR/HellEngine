@@ -10,12 +10,11 @@ enum class ComponentType
 	MESH,
 	TRANSFORM,
 	TRANSFORM_2D,
-	UI_ELEMENT,
 	UI_IMAGE
 };
 
 extern const ComponentType COMPONENT_TYPES_3D[6];
-extern const ComponentType COMPONENT_TYPES_2D[3];
+extern const ComponentType COMPONENT_TYPES_2D[2];
 const char* GetString(ComponentType componentType);
 
 #endif // !__H_COMPONENT_TYPE__

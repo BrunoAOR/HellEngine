@@ -4,6 +4,7 @@
 #include <vector>
 class Component;
 enum class ComponentType;
+enum class UIElementType;
 
 class GameObject
 {
@@ -51,6 +52,7 @@ private:
 	GameObject* AddCameraChild();
 	GameObject* AddCubeChild();
 	GameObject* AddSphereChild();
+	GameObject* AddUiElement(UIElementType uiElementType);
 
 	void OnEditorHierarchy();
 	void OnEditorHierarchyDragAndDrop();

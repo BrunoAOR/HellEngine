@@ -24,7 +24,7 @@ public:
     UpdateStatus Update();
 
     //UIElement Factory
-	static ComponentUIElement* NewUIElement(UIElementType uiType, GameObject* goOwner);
+	static GameObject* NewUIElement(UIElementType uiType);
 
     GameObject* GetClickedGameObject();
     GameObject* GetHoveringGameObject();

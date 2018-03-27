@@ -13,7 +13,7 @@
 #include "ComponentTransform.h"
 #include "ComponentTransform2D.h"
 #include "ComponentType.h"
-#include "ComponentUIElement.h"
+#include "ComponentUiImage.h"
 #include "ModuleUI.h"
 #include "ModuleScene.h"
 #include "globals.h"
@@ -106,7 +106,7 @@ void GameObject::OnEditorInspector()
 			}
 		}
 
-		if (ImGui::BeginMenu("UI", ""))
+		if (ImGui::BeginMenu("UI"))
 		{
 			for (ComponentType componentType : COMPONENT_TYPES_2D)
 			{
@@ -279,6 +279,17 @@ void GameObject::OnEditorHierarchyCreateMenu()
 
 		if (ImGui::Selectable("Create Sphere"))
 			AddSphereChild();
+
+		if (ImGui::BeginMenu("UI"))
+		{
+			for (UIElementType uiElementType : UI_ELEMENT_TYPES)
+			{
+				if (ImGui::Selectable(GetUITypeString(uiElementType)))
+					AddUiElement(uiElementType);
+
+			}
+			ImGui::EndMenu();
+		}
 
 		ImGui::EndMenu();
 	}
@@ -465,11 +476,9 @@ Component* GameObject::AddComponent(ComponentType type)
 	case ComponentType::TRANSFORM_2D:
 		component = new ComponentTransform2D(this);
 		break;
-	case ComponentType::UI_ELEMENT:
-		component = new ComponentUIElement(this);
-		break;
 	case ComponentType::UI_IMAGE:
-		component = ModuleUI::NewUIElement(UIElementType::IMG, this);
+		component = new ComponentUiImage(this);
+		break;
 	}
 
 	if (component != nullptr)
@@ -630,6 +639,13 @@ GameObject* GameObject::AddSphereChild()
 	ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
 	mat->SetDefaultMaterialConfiguration();
 	mat->Apply();
+	return go;
+}
+
+GameObject* GameObject::AddUiElement(UIElementType uiElementType)
+{
+	GameObject* go = App->ui->NewUIElement(uiElementType);
+	go->SetParent(this);
 	return go;
 }
 
