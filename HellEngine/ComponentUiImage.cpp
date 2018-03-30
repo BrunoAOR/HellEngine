@@ -36,7 +36,20 @@ void ComponentUiImage::OnEditor()
 		ImGui::InputText("Image path", imagePath, 256);
 		if (ImGui::Button("Load image"))
 			LoadImage();
+
+		ImGui::ColorEdit4("Color", color);
+		ImGui::DragFloat("Intensity", &intensity, 0.01f, 0.0f, 1.0f, "%.2f");
 	}
+}
+
+const float* ComponentUiImage::GetColor() const
+{
+	return color;
+}
+
+float ComponentUiImage::GetColorIntensity() const
+{
+	return intensity;
 }
 
 unsigned int ComponentUiImage::GetTextureID()

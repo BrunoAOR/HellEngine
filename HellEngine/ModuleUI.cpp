@@ -29,8 +29,13 @@ ModuleUI::~ModuleUI()
 
 bool ModuleUI::Init()
 {
-	shaderProgram = App->shaderManager->GetShaderProgram("assets/shaders/defaultModelShader.vert", "assets/shaders/defaultModelShader.frag");
+	shaderProgram = App->shaderManager->GetShaderProgram("assets/shaders/uiShader.vert", "assets/shaders/uiShader.frag");
 	if (!shaderProgram)
+		return false;
+
+	colorUniformLocation = glGetUniformLocation(shaderProgram->GetProgramId(), "tintColor");
+	intensityUniformLocation = glGetUniformLocation(shaderProgram->GetProgramId(), "intensity");
+	if (colorUniformLocation == -1 || intensityUniformLocation == -1)
 		return false;
 
 	GenerateSquareMeshInfo();
@@ -90,13 +95,7 @@ UpdateStatus ModuleUI::Update()
     {
         //Check UI states ("pressed, etc...")
         glDisable(GL_DEPTH_TEST);
-		/*glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(0, App->window->GetWidth(), 0, App->window->GetHeight(), -1, 1);
-		glMatrixMode(GL_MODELVIEW);*/
-
         UpdateElements();
-        
 		glEnable(GL_DEPTH_TEST);
     }
     return UpdateStatus::UPDATE_CONTINUE;
@@ -127,14 +126,14 @@ void ModuleUI::UnregisterUiElement(ComponentUIElement* uiElement)
 
 void ModuleUI::GenerateSquareMeshInfo()
 {
-	/* Data has 4 groups of xPos, yPos, zPos, xNorm, yNorm, zNorm, u, v */
+	/* Data has 4 groups of xPos, yPos, zPos, u, v */
 	squareMeshInfo.name = "square";
 	
-	float data[8 * 4] = {
-		0, 0, 1,		0, 0, 1,	0, 0,
-		1, 0, 1,		0, 0, 1,	1, 0, 
-		1, 1, 1,		0, 0, 1,	1, 1,
-		0, 1, 1,		0, 0, 1,	0, 1 };
+	float data[5 * 4] = {
+		0, 0, 1,		0, 0,
+		1, 0, 1,		1, 0, 
+		1, 1, 1,		1, 1,
+		0, 1, 1,		0, 1 };
 
 	const int elementsCount = 6;
 	squareMeshInfo.elementsCount = elementsCount;
@@ -149,13 +148,11 @@ void ModuleUI::GenerateSquareMeshInfo()
 
 	glBindVertexArray(squareMeshInfo.vao);
 	glBindBuffer(GL_ARRAY_BUFFER, squareMeshInfo.vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 4 * 8, data, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 5 * 4, data, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE); /* Can be unbound, since the vertex information is stored in the VAO throught the VertexAttribPointers */
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, squareMeshInfo.ebo);
@@ -206,15 +203,12 @@ void ModuleUI::UpdateImage(ComponentUiImage* image)
 	uint textureID = image->GetTextureID();
 	if (textureID)
 	{
-		shaderProgram->Activate();
-
 		const fPoint& pos = image->transform2D->GetWorldPos();
 		const fPoint& size = image->transform2D->GetSize();
 		float rx = pos.x;
 		float ry = pos.y;
 		float rw = size.x;
 		float rh = size.y;
-
 
 		float modelMatrix[16] = {
 			rw,	0,	0, 0,
@@ -232,26 +226,22 @@ void ModuleUI::UpdateImage(ComponentUiImage* image)
 
 		float w = (float)App->window->GetWidth();
 		float h = (float)App->window->GetHeight();
-		float n = 100;	// Near plane
-		float f = -100;	// Far plane
+		float n = 1;	// Near plane
+		float f = -1;	// Far plane
 
-		float orthoMatrix[16] = {
-			2 / w,	0,	0,	-1,
-			0,	2 / h,	0,	-1,
-			0,	0,	-2 / (f - n),	-(f + n) / (f - n),
-			0, 0, 0, 1
-		};
-
-		float orthoMatrixTrans[16] = {
+		float openGLorthoMatrix[16] = {
 			2 / w,	0,	0,	0,
 			0,	2 / h,	0,	0,
 			0,	0,	-2 / (f - n),	0,
 			-1, -1, -(f + n) / (f - n), 1
 		};
 
+		shaderProgram->Activate();
 		/* Matrixes are given in this order: Model, View, Projection */
-		shaderProgram->UpdateMatrixUniforms(modelMatrix, identity, orthoMatrixTrans);
-		
+		shaderProgram->UpdateMatrixUniforms(modelMatrix, identity, openGLorthoMatrix);
+		glUniform4fv(colorUniformLocation, 1, image->GetColor());
+		glUniform1f(intensityUniformLocation, image->GetColorIntensity());
+
 		glBindTexture(GL_TEXTURE_2D, textureID);
 		glBindVertexArray(squareMeshInfo.vao);
 		glDrawElements(GL_TRIANGLES, squareMeshInfo.elementsCount, GL_UNSIGNED_INT, nullptr);
