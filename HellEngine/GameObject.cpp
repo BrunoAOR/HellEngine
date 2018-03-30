@@ -14,6 +14,7 @@
 #include "ComponentTransform2D.h"
 #include "ComponentType.h"
 #include "ComponentUiImage.h"
+#include "ComponentUiLabel.h"
 #include "ModuleUI.h"
 #include "ModuleScene.h"
 #include "globals.h"
@@ -478,6 +479,9 @@ Component* GameObject::AddComponent(ComponentType type)
 		break;
 	case ComponentType::UI_IMAGE:
 		component = new ComponentUiImage(this);
+		break;
+	case ComponentType::UI_LABEL:
+		component = new ComponentUiLabel(this);
 		break;
 	}
 

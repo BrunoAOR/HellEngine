@@ -33,7 +33,7 @@ Application::Application()
 	modules.push_back(imgui = new ModuleImGui());
 	modules.push_back(audio = new ModuleAudio());
 	modules.push_back(debugDraw = new ModuleDebugDraw());
-	modules.push_back(font = new ModuleTrueFont());
+	modules.push_back(fonts = new ModuleTrueFont());
 	modules.push_back(ui = new ModuleUI());
 }
 

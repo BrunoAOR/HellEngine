@@ -42,7 +42,7 @@ public:
 	ModuleImGui* imgui = nullptr;
 	ModuleAudio* audio = nullptr;
 	ModuleDebugDraw* debugDraw = nullptr;
-	ModuleTrueFont* font = nullptr;
+	ModuleTrueFont* fonts = nullptr;
 	ModuleUI* ui = nullptr;
 
 private:

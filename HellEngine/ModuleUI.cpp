@@ -27,15 +27,21 @@ ModuleUI::~ModuleUI()
 {
 }
 
+#include "ModuleTrueFont.h"
 bool ModuleUI::Init()
 {
 	shaderProgram = App->shaderManager->GetShaderProgram("assets/shaders/uiShader.vert", "assets/shaders/uiShader.frag");
-	if (!shaderProgram)
+	textShaderProgram = App->shaderManager->GetShaderProgram("assets/shaders/uiShader.vert", "assets/shaders/uiTextShader.frag");
+	if (!shaderProgram || !textShaderProgram)
 		return false;
 
 	colorUniformLocation = glGetUniformLocation(shaderProgram->GetProgramId(), "tintColor");
 	intensityUniformLocation = glGetUniformLocation(shaderProgram->GetProgramId(), "intensity");
 	if (colorUniformLocation == -1 || intensityUniformLocation == -1)
+		return false;
+
+	textColorUniformLocation = glGetUniformLocation(textShaderProgram->GetProgramId(), "tintColor");
+	if (textColorUniformLocation == -1)
 		return false;
 
 	GenerateSquareMeshInfo();
@@ -54,6 +60,19 @@ bool ModuleUI::Init()
 
 	ComponentUiImage* componentImage = (ComponentUiImage*)image->AddComponent(ComponentType::UI_IMAGE);
 	componentImage->SetImagePath("assets/images/lenna.png");
+	
+	App->fonts->RegisterFont("temp", "assets/images/fonts/temp.ttf");
+
+	GameObject* label = App->scene->CreateGameObject();
+	label->name = "Label test";
+	label->SetParent(canvas);
+
+	ComponentTransform2D* labelTransform = (ComponentTransform2D*)label->AddComponent(ComponentType::TRANSFORM_2D);
+	labelTransform->SetLocalPos(700, 200);
+	labelTransform->SetSize(150, 150);
+
+	ComponentUiLabel* componentLabel = (ComponentUiLabel*)label->AddComponent(ComponentType::UI_LABEL);
+	/* Testing end */
 
 	return true;
 }
@@ -259,7 +278,55 @@ void ModuleUI::UpdateButton(ComponentUiButton* button)
 
 void ModuleUI::UpdateLabel(ComponentUiLabel* label)
 {
+	uint textureID = label->GetTextureID();
+	if (textureID)
+	{
+		const fPoint& pos = label->transform2D->GetWorldPos();
+		const fPoint& size = label->transform2D->GetSize();
+		float rx = pos.x;
+		float ry = pos.y;
+		float rw = size.x;
+		float rh = size.y;
 
+		float modelMatrix[16] = {
+			rw,	0,	0, 0,
+			0,	rh,	0, 0,
+			0,	0,	1, 0,
+			rx,	ry,	0, 1
+		};
+
+		float identity[16] = {
+			1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1
+		};
+
+		float w = (float)App->window->GetWidth();
+		float h = (float)App->window->GetHeight();
+		float n = 1;	// Near plane
+		float f = -1;	// Far plane
+
+		float openGLorthoMatrix[16] = {
+			2 / w,	0,	0,	0,
+			0,	2 / h,	0,	0,
+			0,	0,	-2 / (f - n),	0,
+			-1, -1, -(f + n) / (f - n), 1
+		};
+
+		textShaderProgram->Activate();
+		/* Matrixes are given in this order: Model, View, Projection */
+		textShaderProgram->UpdateMatrixUniforms(modelMatrix, identity, openGLorthoMatrix);
+		glUniform4fv(textColorUniformLocation, 1, label->GetColor());
+
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glBindVertexArray(squareMeshInfo.vao);
+		glDrawElements(GL_TRIANGLES, squareMeshInfo.elementsCount, GL_UNSIGNED_INT, nullptr);
+		glBindVertexArray(GL_NONE);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		textShaderProgram->Deactivate();
+	}
 }
 
 void ModuleUI::UpdateInputText(ComponentUiInputText* inputText)

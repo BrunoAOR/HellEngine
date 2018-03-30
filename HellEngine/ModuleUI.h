@@ -50,6 +50,10 @@ private:
 	const ShaderProgram* shaderProgram = nullptr;
 	uint colorUniformLocation = -1;
 	uint intensityUniformLocation = -1;
+
+	const ShaderProgram* textShaderProgram = nullptr;
+	uint textColorUniformLocation = -1;
+
 	MeshInfo squareMeshInfo;
 };
 #endif __H_MODULE_UI__
