@@ -17,7 +17,7 @@ ComponentParticleSystem::ComponentParticleSystem(GameObject* owner) : Component(
 {
 	type = ComponentType::PARTICLE_SYSTEM;
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
-	Init(500, iPoint(10, 10), 2000, 10, fPoint(0.2f, 0.2f));
+	Init(1000, iPoint(10, 10), 2000, 10, fPoint(0.1f, 0.1f));
 	shaderProgram = App->shaderManager->GetShaderProgram("assets/shaders/defaultShader.vert", "assets/shaders/defaultShader.frag");
 	assert(shaderProgram);
 }
@@ -45,21 +45,23 @@ void ComponentParticleSystem::Init(uint maxParticles, const iPoint& emitSize, ui
 
 		billboards[i].SetSize(particleSize.x, particleSize.y);
 	}
-	
+
 	emissionArea = emitSize;
 
 	fallingTime = fallTime;
 	fallingHeight = fallHeight;
 
 	spawnInterval = fallingTime / numParticles;
+
+	CreateQuadVAO();
 }
 
 void ComponentParticleSystem::InitParticle(Particle& particle, Billboard& billboard, uint deltaTime)
 {
 	particle.lifetime = fallingTime - deltaTime;
-	particle.position.x = (-emissionArea.x / 2.0f) + ((float) rand() / RAND_MAX) * emissionArea.x;
+	particle.position.x = (-emissionArea.x / 2.0f) + ((float)rand() / RAND_MAX) * emissionArea.x;
 	particle.position.y = fallingHeight;
-	particle.position.z = (((float) rand() / RAND_MAX) * emissionArea.y) - (emissionArea.y / 2);
+	particle.position.z = (((float)rand() / RAND_MAX) * emissionArea.y) - (emissionArea.y / 2);
 	billboard.SetPosition(particle.position);
 }
 
@@ -73,7 +75,7 @@ void ComponentParticleSystem::Clear()
 
 	textureID = 0;
 
-	delete [] particles;
+	delete[] particles;
 	particles = nullptr;
 
 	delete[] billboards;
@@ -86,9 +88,12 @@ void ComponentParticleSystem::Update()
 	if (!activeCamera)
 		activeCamera = App->editorCamera->camera;
 
-	UpdateSystem(*activeCamera);
+	if (isValid)
+	{
+		UpdateSystem(*activeCamera);
 
-	Draw();
+		Draw();
+	}
 }
 
 void ComponentParticleSystem::UpdateSystem(const ComponentCamera& camera)
@@ -108,7 +113,7 @@ void ComponentParticleSystem::UpdateSystem(const ComponentCamera& camera)
 		uint idx = liveParticles[i];
 		Particle& particle = particles[idx];
 		Billboard& billboard = billboards[idx];
-		particle.position += particle.velocity * (float) deltaTime;
+		particle.position += particle.velocity * (float)deltaTime;
 		billboard.SetPosition(particle.position);
 
 		if (particle.lifetime <= deltaTime)
@@ -124,7 +129,7 @@ void ComponentParticleSystem::UpdateSystem(const ComponentCamera& camera)
 			deadParticles.push_back(liveParticles[i]);
 
 		liveParticles.erase(liveParticles.begin(), liveParticles.begin() + particlesToKill);
-	}	
+	}
 
 	while (elapsedTime > nextSpawnTime)
 	{
@@ -137,68 +142,72 @@ void ComponentParticleSystem::UpdateSystem(const ComponentCamera& camera)
 		Particle& particle = particles[idx];
 		Billboard& billboard = billboards[idx];
 		InitParticle(particle, billboard, deltaTime);
-		
-		nextSpawnTime += spawnInterval;
-	}	
 
-	CreateQuadVAO();
+		nextSpawnTime += spawnInterval;
+	}
+
+	//CreateQuadVAO();
 }
 
 void ComponentParticleSystem::Draw()
 {
-	if (isValid)
+	const uint allVertCount = 6;
+	const uint uniqueVertCount = 4;
+	const uint aliveBillboards = liveParticles.size();
+
+	GLfloat* newVertQuadData = new GLfloat[uniqueVertCount * 3 * aliveBillboards];
+
+	for (uint i = 0; i < aliveBillboards; ++i)
 	{
-		const uint allVertCount = 6;
-		const uint uniqueVertCount = 4;
-		const uint aliveBillboards = liveParticles.size();
+		uint idx = liveParticles[i];
+		Billboard& billboard = billboards[idx];
 
-		GLfloat* newVertQuadData = new GLfloat[uniqueVertCount * 3 * aliveBillboards];
-		
-		for (uint i = 0; i < aliveBillboards; ++i)
+		ComponentCamera* activeCamera = App->scene->GetActiveGameCamera();
+		if (!activeCamera)
+			activeCamera = App->editorCamera->camera;
+
+		const Quad& quad = billboard.ComputeQuad(activeCamera);
+
+		/* Quad vertices, color, and UV */
+		for (uint j = 0; j < uniqueVertCount; ++j)
 		{
-			uint idx = liveParticles[i];
-			Billboard& billboard = billboards[idx];
-
-			ComponentCamera* activeCamera = App->scene->GetActiveGameCamera();
-			if (!activeCamera)
-				activeCamera = App->editorCamera->camera;
-
-			const Quad& quad = billboard.ComputeQuad(activeCamera);
-
-			/* Quad vertices, color, and UV */
-			for (uint j = 0; j < uniqueVertCount; ++j)
-			{
-				newVertQuadData[i * uniqueVertCount * 3 + (j * 3) + 0] = quad.vertices[j].x;
-				newVertQuadData[i * uniqueVertCount * 3 + (j * 3) + 1] = quad.vertices[j].y;
-				newVertQuadData[i * uniqueVertCount * 3 + (j * 3) + 2] = quad.vertices[j].z;
-			}
+			newVertQuadData[i * uniqueVertCount * 3 + (j * 3) + 0] = quad.vertices[j].x;
+			newVertQuadData[i * uniqueVertCount * 3 + (j * 3) + 1] = quad.vertices[j].y;
+			newVertQuadData[i * uniqueVertCount * 3 + (j * 3) + 2] = quad.vertices[j].z;
 		}
-
-		glBindVertexArray(particlesMeshInfo.vao);
-		glBindBuffer(GL_ARRAY_BUFFER, particlesMeshInfo.vbo);
-		float* oldQuadData = (float*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-
-		int j = 0;
-		for (uint i = 0; i < uniqueVertCount * 8 * aliveBillboards; ++i)
-		{
-			if (i % 8 == 0 || i % 8 == 1 || i % 8 == 2)
-				oldQuadData[i] = newVertQuadData[j++];
-
-		}
-
-		glUnmapBuffer(GL_ARRAY_BUFFER);
-
-		glBindVertexArray(GL_NONE);
-		glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
-
-		delete[] newVertQuadData;
 	}
+
+	glBindVertexArray(particlesMeshInfo.vao);
+	glBindBuffer(GL_ARRAY_BUFFER, particlesMeshInfo.vbo);
+	float* oldQuadData = (float*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+
+	int j = 0;
+	for (uint i = 0; i < uniqueVertCount * 8 * aliveBillboards; ++i)
+	{
+		if (i % 8 == 0 || i % 8 == 1 || i % 8 == 2)
+			oldQuadData[i] = newVertQuadData[j++];
+
+	}
+
+	glUnmapBuffer(GL_ARRAY_BUFFER);
+
+	glBindVertexArray(GL_NONE);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+
+	delete[] newVertQuadData;
 
 	DrawElements();
 }
 
 void ComponentParticleSystem::CreateQuadVAO()
 {
+	if (particlesMeshInfo.vao != 0)
+	{
+		glDeleteBuffers(1, &particlesMeshInfo.vbo);
+		glDeleteBuffers(1, &particlesMeshInfo.ebo);
+		glDeleteVertexArrays(1, &particlesMeshInfo.vao);
+	}
+
 	GLfloat cWhite[3];
 
 	GLfloat corners[8];
@@ -226,15 +235,13 @@ void ComponentParticleSystem::CreateQuadVAO()
 
 	const uint allVertCount = 6;
 	const uint uniqueVertCount = 4;
-	const uint aliveBillboards = liveParticles.size();
 
-	GLfloat* uniqueQuadData = new GLfloat[uniqueVertCount * 8 * aliveBillboards];
-	GLuint* verticesOrder = new GLuint[allVertCount * aliveBillboards];
+	GLfloat* uniqueQuadData = new GLfloat[uniqueVertCount * 8 * numParticles];
+	GLuint* verticesOrder = new GLuint[allVertCount * numParticles];
 
-	for (uint i = 0; i < aliveBillboards; ++i)
+	for (uint i = 0; i < numParticles; ++i)
 	{
-		uint idx = liveParticles[i];
-		Billboard& billboard = billboards[idx];
+		Billboard& billboard = billboards[i];
 
 		ComponentCamera* activeCamera = App->scene->GetActiveGameCamera();
 		if (!activeCamera)
@@ -265,8 +272,8 @@ void ComponentParticleSystem::CreateQuadVAO()
 		verticesOrder[i * allVertCount + 5] = (i * uniqueVertCount) + 3;
 	}
 
-	particlesMeshInfo.name = "Quad";
-	particlesMeshInfo.elementsCount = allVertCount * aliveBillboards;
+	particlesMeshInfo.name = "ParticleSystem";
+	particlesMeshInfo.elementsCount = allVertCount * numParticles;
 
 	glGenVertexArrays(1, &particlesMeshInfo.vao);
 	glGenBuffers(1, &particlesMeshInfo.vbo);
@@ -274,7 +281,7 @@ void ComponentParticleSystem::CreateQuadVAO()
 
 	glBindVertexArray(particlesMeshInfo.vao);
 	glBindBuffer(GL_ARRAY_BUFFER, particlesMeshInfo.vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uniqueVertCount * 8 * aliveBillboards, uniqueQuadData, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uniqueVertCount * 8 * numParticles, uniqueQuadData, GL_DYNAMIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
@@ -296,35 +303,30 @@ void ComponentParticleSystem::CreateQuadVAO()
 
 bool ComponentParticleSystem::DrawElements()
 {
-	if (isValid)
-	{
-		shaderProgram->Activate();
+	shaderProgram->Activate();
 
-		ComponentCamera* activeCamera = App->scene->GetActiveGameCamera();
-		if (!activeCamera)
-			activeCamera = App->editorCamera->camera;
-		
-		float3 position = activeCamera->GetPosition3();
-		float4x4 modelMatrix(
-			1, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			position.x, position.y, position.z, 1
-		);
+	ComponentCamera* activeCamera = App->scene->GetActiveGameCamera();
+	if (!activeCamera)
+		activeCamera = App->editorCamera->camera;
 
-		shaderProgram->UpdateMatrixUniforms(modelMatrix.ptr(), App->editorCamera->camera->GetViewMatrix(), App->editorCamera->camera->GetProjectionMatrix());
+	float3 position = activeCamera->GetPosition3();
+	float4x4 modelMatrix(
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		position.x, position.y, position.z, 1
+	);
 
-		glBindTexture(GL_TEXTURE_2D, textureID);
-		glBindVertexArray(particlesMeshInfo.vao);
-		glDrawElements(GL_TRIANGLES, particlesMeshInfo.elementsCount, GL_UNSIGNED_INT, nullptr);
-		glBindVertexArray(GL_NONE);
-		glBindTexture(GL_TEXTURE_2D, GL_NONE);
+	shaderProgram->UpdateMatrixUniforms(modelMatrix.ptr(), App->editorCamera->camera->GetViewMatrix(), App->editorCamera->camera->GetProjectionMatrix());
 
-		shaderProgram->Deactivate();
-		return true;
-	}
+	glBindTexture(GL_TEXTURE_2D, textureID);
+	glBindVertexArray(particlesMeshInfo.vao);
+	glDrawElements(GL_TRIANGLES, liveParticles.size(), GL_UNSIGNED_INT, nullptr);
+	glBindVertexArray(GL_NONE);
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
 
-	return false;
+	shaderProgram->Deactivate();
+	return true;
 }
 
 bool ComponentParticleSystem::LoadTexture()
