@@ -71,7 +71,7 @@ GameObject* ModuleUI::NewUIElement(UIElementType uiType)
 		go->AddComponent(ComponentType::UI_IMAGE);
 		break;
 	case UIElementType::LABEL:
-		assert(false);
+		go->AddComponent(ComponentType::UI_LABEL);
 		break;
 	case UIElementType::BUTTON:
 		assert(false);
@@ -184,6 +184,9 @@ void ModuleUI::UpdateComponent(ComponentUIElement* component)
 	case ComponentType::UI_IMAGE:
         UpdateImage((ComponentUiImage*) component);
         break;
+	case ComponentType::UI_LABEL:
+		UpdateLabel((ComponentUiLabel*)component);
+		break;
 	/*
     case UIElementType::BUTTON:
         UpdateButton((ComponentUiButton*)component);

@@ -344,8 +344,6 @@
     </ClInclude>
     <ClInclude Include="ModuleTrueFont.h" />
     <ClInclude Include="ModuleUI.h" />
-    <ClInclude Include="ComponentUIElement.h" />
-    <ClInclude Include="ComponentUiImage.h" />
     <ClInclude Include="ComponentUiLabel.h" />
     <ClInclude Include="ComponentUiInputText.h" />
     <ClInclude Include="ComponentUiButton.h" />
@@ -365,6 +363,12 @@
       <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="ComponentTransform2D.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentUIElement.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentUiImage.h">
       <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
@@ -590,12 +594,16 @@
     </ClCompile>
     <ClCompile Include="ModuleTrueFont.cpp" />
     <ClCompile Include="ModuleUI.cpp" />
-    <ClCompile Include="ComponentUIElement.cpp" />
-    <ClCompile Include="ComponentUiImage.cpp" />
     <ClCompile Include="ComponentUiLabel.cpp" />
     <ClCompile Include="ComponentUiInputText.cpp" />
     <ClCompile Include="ComponentUiButton.cpp" />
     <ClCompile Include="ComponentTransform2D.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentUIElement.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentUiImage.cpp">
       <Filter>UI</Filter>
     </ClCompile>
   </ItemGroup>
