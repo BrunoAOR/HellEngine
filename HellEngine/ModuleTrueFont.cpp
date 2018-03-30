@@ -1,5 +1,6 @@
 #pragma comment( lib, "SDL_ttf/libx86/SDL2_ttf.lib")
 #include <algorithm>
+#include "ImGui/imgui.h"
 #include "ModuleTrueFont.h"
 #include "globals.h"
 
@@ -134,4 +135,78 @@ bool ModuleTrueFont::ReleaseFont(TTF_Font* font)
 		}
 	}
 	return false;
+}
+
+void ModuleTrueFont::OnEditorFontsWindow(float mainMenuBarHeight, bool * pOpen)
+{
+	static char fontPath[256] = "";
+	static char fontName[256] = "";
+	static std::string loadMessage = "";
+
+	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
+	ImGui::SetNextWindowSize(ImVec2(450, 600));
+	ImGui::Begin("Font options", pOpen, ImGuiWindowFlags_NoCollapse);
+
+	ImGui::InputText("Font path", fontPath, 256);
+	ImGui::InputText("Font name", fontName, 256);
+
+	if (ImGui::Button("Load"))
+	{
+		if (fontsNamesToFontInfo.count(fontName) != 0)
+		{
+			loadMessage = "Font name already in use";
+		}
+		else
+		{
+			bool pathInUse = false;
+			for (std::unordered_map<std::string, FontInfo>::iterator it = fontsNamesToFontInfo.begin(); it != fontsNamesToFontInfo.end(); ++it)
+			{
+				FontInfo& fontInfo = it->second;
+				if (strcmp(fontInfo.path.c_str(), fontPath) == 0)
+				{
+					loadMessage = "Font already loaded with name " + it->first;
+					pathInUse = true;
+					break;
+				}
+			}
+
+			if (!pathInUse)
+			{
+				if (RegisterFont(fontName, fontPath))
+				{
+					fontPath[0] = '\0';
+					fontName[0] = '\0';
+					loadMessage = "Font loaded correctly.";
+				}
+				else
+					loadMessage = "File could not be loaded.";
+			}
+		}
+	}
+
+	ImGui::Text(loadMessage.c_str());
+
+	ImGui::Separator();
+	ImGui::Text("Loaded fonts:");
+
+	ImGui::Indent();
+	if (loadedFontsNames.empty())
+	{
+		ImGui::Text("No fonts loaded.");
+	}
+	else
+	{
+		for (const std::string& name : loadedFontsNames)
+		{
+			ImGui::Text(name.c_str());
+			ImGui::Indent();
+			ImGui::TextWrapped((std::string("From path: ") + fontsNamesToFontInfo[name].path).c_str());
+			ImGui::Unindent();
+		}
+	}
+	ImGui::Unindent();
+
+	ImGui::End();
+
+
 }

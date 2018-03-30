@@ -22,6 +22,8 @@ public:
 	TTF_Font* GetFont(const std::string& name, int size);
 	bool ReleaseFont(TTF_Font* font);
 
+	void OnEditorFontsWindow(float mainMenuBarHeight, bool* pOpen);
+
 private:
 	struct SizeInfo {
 		unsigned int numRefs = 0;

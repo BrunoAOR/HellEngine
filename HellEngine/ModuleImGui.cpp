@@ -14,6 +14,7 @@
 #include "ModuleInput.h"
 #include "ModuleRender.h"
 #include "ModuleScene.h"
+#include "ModuleTrueFont.h"
 #include "ModuleWindow.h"
 #include "globals.h"
 
@@ -81,6 +82,7 @@ UpdateStatus ModuleImGui::Update()
 	static bool showAbout = false;
 	static bool showAnimationWindow = false;
 	static bool showCameraWindow = false;
+	static bool showFontsWindow = false;
 	static bool showOpenGLWindow = false;
 	static bool showTextEditorWindow = false;
 	static bool showHierarchyWindow = true;
@@ -112,6 +114,7 @@ UpdateStatus ModuleImGui::Update()
 			ImGui::Separator();
 
 			ImGui::MenuItem("Animation", nullptr, &showAnimationWindow);
+			ImGui::MenuItem("Fonts", nullptr, &showFontsWindow);
 			ImGui::MenuItem("Camera", nullptr, &showCameraWindow);
 			ImGui::MenuItem("OpenGL", nullptr, &showOpenGLWindow);
 
@@ -167,6 +170,11 @@ UpdateStatus ModuleImGui::Update()
 	if (showCameraWindow)
 	{
 		ShowEditorCameraWindow(mainMenuBarHeight, &showCameraWindow);
+	}
+
+	if (showFontsWindow)
+	{
+		App->fonts->OnEditorFontsWindow(mainMenuBarHeight, &showFontsWindow);
 	}
 
 	if (showOpenGLWindow)
