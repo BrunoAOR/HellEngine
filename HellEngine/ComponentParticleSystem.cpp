@@ -59,7 +59,7 @@ void ComponentParticleSystem::InitParticle(Particle& particle, Billboard& billbo
 	particle.lifetime = fallingTime - deltaTime;
 	particle.position.x = (-emissionArea.x / 2.0f) + ((float) rand() / RAND_MAX) * emissionArea.x;
 	particle.position.y = fallingHeight;
-	particle.position.z = ((float) rand() / RAND_MAX) * emissionArea.y;
+	particle.position.z = (((float) rand() / RAND_MAX) * emissionArea.y) - (emissionArea.y / 2);
 	billboard.SetPosition(particle.position);
 }
 
