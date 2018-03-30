@@ -2,13 +2,12 @@
 #define __H_COMPONENT_UI_IMAGE__
 #include "ComponentUIElement.h"
 class ComponentTransform2D;
-typedef unsigned int GLuint;
 
 class ComponentUiImage : public ComponentUIElement
 {
 public:
 
-	ComponentUiImage(GameObject * owner);
+	ComponentUiImage(GameObject* owner);
 	virtual ~ComponentUiImage();
 
 	virtual void OnEditor() override;
@@ -17,12 +16,11 @@ public:
 	float GetColorIntensity() const;
 
 	unsigned int GetTextureID();
-	void SetTextureID(GLuint textureIDValue);
 
 	bool SetImagePath(const std::string& newImagePath);
 
 public:
-	ComponentTransform2D * transform2D = nullptr;
+	ComponentTransform2D* transform2D = nullptr;
 
 private:
 	bool LoadImage();

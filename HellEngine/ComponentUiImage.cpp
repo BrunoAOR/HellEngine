@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "ImGui/imgui.h"
 #include "Application.h"
 #include "ComponentType.h"
@@ -7,11 +8,10 @@
 #include "ModuleTextureManager.h"
 #include "globals.h"
 
-ComponentUiImage::ComponentUiImage(GameObject * owner) : ComponentUIElement(owner)
+ComponentUiImage::ComponentUiImage(GameObject* owner) : ComponentUIElement(owner)
 {
 	type = ComponentType::UI_IMAGE;
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
-	textureID = 0;
 	transform2D = (ComponentTransform2D*)gameObject->GetComponent(ComponentType::TRANSFORM_2D);
 	assert(transform2D);
 }
@@ -55,11 +55,6 @@ float ComponentUiImage::GetColorIntensity() const
 unsigned int ComponentUiImage::GetTextureID()
 {
 	return textureID;
-}
-
-void ComponentUiImage::SetTextureID(GLuint textureIDValue)
-{
-	textureID = textureIDValue;
 }
 
 bool ComponentUiImage::SetImagePath(const std::string& newImagePath)
