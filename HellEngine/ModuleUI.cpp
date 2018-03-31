@@ -97,19 +97,29 @@ GameObject* ModuleUI::NewUIElement(UIElementType uiType)
 	GameObject* go = App->scene->CreateGameObject();
 	go->name = GetUITypeString(uiType);
 	go->AddComponent(ComponentType::TRANSFORM_2D);
+
+	ComponentUiImage* image = nullptr;
+	ComponentUiButton* button = nullptr;
+	GameObject* childGo = nullptr;
 	switch (uiType)
 	{
+	case UIElementType::BUTTON:
+		button = (ComponentUiButton*)go->AddComponent(ComponentType::UI_BUTTON);
+		image = (ComponentUiImage*)go->AddComponent(ComponentType::UI_IMAGE);
+		childGo = App->scene->CreateGameObject();
+		childGo->name = "Text";
+		childGo->AddComponent(ComponentType::TRANSFORM_2D);
+		childGo->SetParent(go);
+		childGo->AddComponent(ComponentType::UI_LABEL);
+		break;
 	case UIElementType::IMG:
 		go->AddComponent(ComponentType::UI_IMAGE);
 		break;
-	case UIElementType::LABEL:
-		go->AddComponent(ComponentType::UI_LABEL);
-		break;
-	case UIElementType::BUTTON:
-		assert(false);
-		break;
 	case UIElementType::INPUT_TEXT:
 		assert(false);
+		break;
+	case UIElementType::LABEL:
+		go->AddComponent(ComponentType::UI_LABEL);
 		break;
 	}
 
@@ -211,18 +221,21 @@ void ModuleUI::UpdateComponent(ComponentUIElement* component)
 	case ComponentType::UI_LABEL:
 		UpdateLabel((ComponentUiLabel*)component);
 		break;
-	/*
-    case UIElementType::BUTTON:
+    case ComponentType::UI_BUTTON:
         UpdateButton((ComponentUiButton*)component);
         break;
-    case UIElementType::LABEL:
-        UpdateLabel((ComponentUiLabel*)component);
-        break;
+    /*
+	
     case UIElementType::INPUT_TEXT:
         UpdateInputText((ComponentUiInputText*)component);
         break;
 	*/
     }
+}
+
+void ModuleUI::UpdateButton(ComponentUiButton* button)
+{
+
 }
 
 void ModuleUI::UpdateImage(ComponentUiImage* image)
@@ -279,7 +292,7 @@ void ModuleUI::UpdateImage(ComponentUiImage* image)
 	}
 }
 
-void ModuleUI::UpdateButton(ComponentUiButton* button)
+void ModuleUI::UpdateInputText(ComponentUiInputText* inputText)
 {
 
 }
@@ -335,9 +348,4 @@ void ModuleUI::UpdateLabel(ComponentUiLabel* label)
 
 		textShaderProgram->Deactivate();
 	}
-}
-
-void ModuleUI::UpdateInputText(ComponentUiInputText* inputText)
-{
-
 }

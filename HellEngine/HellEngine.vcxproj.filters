@@ -342,11 +342,7 @@
     <ClInclude Include="ComponentAnimation.h">
       <Filter>Scene Management</Filter>
     </ClInclude>
-    <ClInclude Include="ModuleTrueFont.h" />
-    <ClInclude Include="ModuleUI.h" />
-    <ClInclude Include="ComponentUiLabel.h" />
     <ClInclude Include="ComponentUiInputText.h" />
-    <ClInclude Include="ComponentUiButton.h" />
     <ClInclude Include="MeshInfo.h">
       <Filter>General</Filter>
     </ClInclude>
@@ -370,6 +366,18 @@
     </ClInclude>
     <ClInclude Include="ComponentUiImage.h">
       <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentUiLabel.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentUiButton.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleUI.h">
+      <Filter>Engine Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleTrueFont.h">
+      <Filter>Engine Modules</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -592,11 +600,7 @@
     <ClCompile Include="ShaderProgram.cpp">
       <Filter>General</Filter>
     </ClCompile>
-    <ClCompile Include="ModuleTrueFont.cpp" />
-    <ClCompile Include="ModuleUI.cpp" />
-    <ClCompile Include="ComponentUiLabel.cpp" />
     <ClCompile Include="ComponentUiInputText.cpp" />
-    <ClCompile Include="ComponentUiButton.cpp" />
     <ClCompile Include="ComponentTransform2D.cpp">
       <Filter>UI</Filter>
     </ClCompile>
@@ -605,6 +609,18 @@
     </ClCompile>
     <ClCompile Include="ComponentUiImage.cpp">
       <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentUiLabel.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentUiButton.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleTrueFont.cpp">
+      <Filter>Engine Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleUI.cpp">
+      <Filter>Engine Modules</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

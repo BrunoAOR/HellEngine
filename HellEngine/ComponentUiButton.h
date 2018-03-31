@@ -11,7 +11,7 @@ class ComponentUiButton : public ComponentUIElement
 {
 public:
 
-	ComponentUiButton(GameObject * owner);
+	ComponentUiButton(GameObject* owner);
 	virtual ~ComponentUiButton();
 
 	virtual void OnEditor() override;

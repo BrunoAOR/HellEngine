@@ -35,10 +35,10 @@ private:
 	void GenerateSquareMeshInfo();
     void UpdateElements();
     void UpdateComponent(ComponentUIElement* component);
-    void UpdateImage(ComponentUiImage* image);
-    void UpdateButton(ComponentUiButton* button);
-    void UpdateLabel(ComponentUiLabel* label);
-    void UpdateInputText(ComponentUiInputText* inputText);
+	void UpdateButton(ComponentUiButton* button);
+	void UpdateImage(ComponentUiImage* image);
+	void UpdateInputText(ComponentUiInputText* inputText);
+	void UpdateLabel(ComponentUiLabel* label);
 
 private:
 	std::vector<ComponentUIElement*> uiElements;
