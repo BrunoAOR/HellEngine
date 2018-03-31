@@ -21,6 +21,7 @@ public:
 
 	const fPoint& GetSize() const;
 	void SetSize(const fPoint& newSize);
+	void SetSize(int x, int y);
 	void SetSize(float x, float y);
 
 	void UpdateWorldPos(const ComponentTransform2D* parentTransform2D);

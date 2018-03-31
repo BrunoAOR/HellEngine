@@ -72,6 +72,12 @@ bool ModuleUI::Init()
 	labelTransform->SetSize(150, 150);
 
 	ComponentUiLabel* componentLabel = (ComponentUiLabel*)label->AddComponent(ComponentType::UI_LABEL);
+	componentLabel->SetLabelText("Hello Lenna!");
+	componentLabel->SetFontSize(40);
+	componentLabel->SetColor(1.0f, 0.5f, 0.5f, 1.0f);
+	componentLabel->SetFontName("temp");
+	componentLabel->SetAdaptSizeToText(true);
+	
 	/* Testing end */
 
 	return true;

@@ -17,7 +17,6 @@ ComponentTransform2D::ComponentTransform2D(GameObject* owner) : Component(owner)
 	}
 }
 
-
 ComponentTransform2D::~ComponentTransform2D()
 {
 }
@@ -72,10 +71,14 @@ const fPoint & ComponentTransform2D::GetSize() const
 	return size;
 }
 
-void ComponentTransform2D::SetSize(const fPoint & newSize)
+void ComponentTransform2D::SetSize(const fPoint& newSize)
 {
-	size.x = newSize.x;
-	size.y = newSize.y;
+	SetSize(newSize.x, newSize.y);
+}
+
+void ComponentTransform2D::SetSize(int x, int y)
+{
+	SetSize((float)x, (float)y);
 }
 
 void ComponentTransform2D::SetSize(float x, float y)
