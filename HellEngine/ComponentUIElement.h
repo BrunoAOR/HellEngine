@@ -3,6 +3,7 @@
 
 #include "Component.h"
 #include "SDL\include\SDL_rect.h"
+class ComponentTransform2D;
 
 enum class UIElementType { IMG, LABEL, BUTTON, INPUT_TEXT };
 
@@ -24,6 +25,9 @@ public:
 	// Inherited via Component
 	virtual void OnEditor() override;
 	virtual int MaxCountInGameObject() override;
+
+public:
+	ComponentTransform2D* transform2D = nullptr;
 
 protected:
 	bool visible;

@@ -4,7 +4,6 @@
 #include "ComponentType.h"
 #include "ComponentUIElement.h"
 #include "ComponentUiImage.h"
-#include "GameObject.h"
 #include "ModuleTextureManager.h"
 #include "globals.h"
 
@@ -12,8 +11,6 @@ ComponentUiImage::ComponentUiImage(GameObject* owner) : ComponentUIElement(owner
 {
 	type = ComponentType::UI_IMAGE;
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
-	transform2D = (ComponentTransform2D*)gameObject->GetComponent(ComponentType::TRANSFORM_2D);
-	assert(transform2D);
 }
 
 

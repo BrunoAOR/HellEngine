@@ -1,7 +1,6 @@
 #ifndef __H_COMPONENT_UI_IMAGE__
 #define __H_COMPONENT_UI_IMAGE__
 #include "ComponentUIElement.h"
-class ComponentTransform2D;
 
 class ComponentUiImage : public ComponentUIElement
 {
@@ -18,9 +17,6 @@ public:
 	unsigned int GetTextureID();
 
 	bool SetImagePath(const std::string& newImagePath);
-
-public:
-	ComponentTransform2D* transform2D = nullptr;
 
 private:
 	bool LoadImage();

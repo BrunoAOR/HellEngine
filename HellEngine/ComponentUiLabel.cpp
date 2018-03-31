@@ -3,7 +3,6 @@
 #include "Application.h"
 #include "ComponentUiLabel.h"
 #include "ComponentType.h"
-#include "GameObject.h"
 #include "ModuleTrueFont.h"
 #include "globals.h"
 #include "openGL.h"
@@ -15,16 +14,18 @@ ComponentUiLabel::ComponentUiLabel(GameObject* owner) : ComponentUIElement(owner
 {
 	type = ComponentType::UI_LABEL;
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
-	transform2D = (ComponentTransform2D*)gameObject->GetComponent(ComponentType::TRANSFORM_2D);
-	assert(transform2D);
 }
 
 ComponentUiLabel::~ComponentUiLabel()
 {
-	if (textTextureID != 0)
+	if (textTextureID)
 	{
-		/* Release the textTexture */
+		glDeleteTextures(1, &textTextureID);
 		textTextureID = 0;
+	}
+	if (font)
+	{
+		App->fonts->ReleaseFont(font);
 	}
 }
 

@@ -3,7 +3,6 @@
 #include <SDL_ttf.h>
 #include "ComponentUIElement.h"
 #include "Point.h"
-class ComponentTransform2D;
 
 
 class ComponentUiLabel : public ComponentUIElement
@@ -26,9 +25,6 @@ public:
 	void SetAdaptSizeToText(bool shouldAdapt);
 
 	unsigned int GetTextureID();
-
-public:
-	ComponentTransform2D* transform2D = nullptr;
 
 private:
 	void UpdateFont();

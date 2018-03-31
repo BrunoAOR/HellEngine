@@ -2,6 +2,7 @@
 #include "Application.h"
 #include "ComponentUIElement.h"
 #include "ComponentType.h"
+#include "GameObject.h"
 #include "ModuleUI.h"
 
 
@@ -27,7 +28,9 @@ const char * GetUITypeString(UIElementType uiType)
 ComponentUIElement::ComponentUIElement(GameObject * owner) : Component(owner)
 {
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
-    App->ui->RegisterUiElement(this);
+	transform2D = (ComponentTransform2D*)gameObject->GetComponent(ComponentType::TRANSFORM_2D);
+	assert(transform2D);
+	App->ui->RegisterUiElement(this);
 }
 
 ComponentUIElement::~ComponentUIElement()

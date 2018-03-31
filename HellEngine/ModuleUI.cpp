@@ -87,6 +87,8 @@ bool ModuleUI::CleanUp()
 {
 	App->shaderManager->ReleaseShaderProgram(shaderProgram);
 	shaderProgram = nullptr;
+	App->shaderManager->ReleaseShaderProgram(textShaderProgram);
+	textShaderProgram = nullptr;
 	return true;
 }
 
