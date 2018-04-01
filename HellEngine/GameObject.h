@@ -2,8 +2,11 @@
 #define __H_GAME_OBJECT__
 
 #include <vector>
+#include "MathGeoLib/src/Math/MathTypes.h"
+
 class Component;
 enum class ComponentType;
+class SerializableObject;
 
 class GameObject
 {
@@ -34,8 +37,13 @@ public:
 	bool GetActive() const;
 	void SetActive(bool activeState);
 
+	void Save(SerializableObject& obj);
+	void Load(const SerializableObject& obj);
+
 public:
 
+	u32 uuid = 0;
+	u32 parentUuid = 0;
 	std::string name;
 
 private:
@@ -52,11 +60,11 @@ private:
 	GameObject* AddCubeChild();
 	GameObject* AddSphereChild();
 
-	void OnEditorHierarchy();
+	bool OnEditorHierarchy();
 	void OnEditorHierarchyDragAndDrop();
-	void OnEditorHierarchyRightClick();
+	bool OnEditorHierarchyRightClick();
 	void OnEditorHierarchyCreateMenu();
-	void OnEditorHierarchyLoadModelMenu();
+	bool OnEditorHierarchyLoadModelMenu();
 
 private:
 

@@ -101,6 +101,21 @@ UpdateStatus ModuleImGui::Update()
 			ImGui::MenuItem("Show demo window", nullptr, &showDemoWindow);
 			ImGui::Separator();
 
+			if (ImGui::MenuItem("Save scene", nullptr, false))
+				App->scene->Save();
+
+			static char modelPath[256]{ '\0' };
+
+			if (ImGui::BeginMenu("Load scene"))
+			{
+				ImGui::InputText("Scene path", modelPath, 256);
+				ImGui::Separator();
+				if (ImGui::Selectable("Load"))
+					App->scene->Load(modelPath);
+				
+				ImGui::EndMenu();
+			}
+
 			ImGui::MenuItem("Quit", nullptr, &shouldQuit);
 			ImGui::EndMenu();
 		}
@@ -161,7 +176,7 @@ UpdateStatus ModuleImGui::Update()
 	}
 
 	if (showAnimationWindow) {
-		ShowAnimationWindow(mainMenuBarHeight, &showAnimationWindow);
+		App->animation->OnEditorAnimationWindow(mainMenuBarHeight, &showAnimationWindow);
 	}
 
 	if (showCameraWindow)
@@ -200,7 +215,7 @@ UpdateStatus ModuleImGui::Update()
 	}
 
 	ImGui::Render();
-
+	
 	if (shouldQuit)
 	{
 		return UpdateStatus::UPDATE_STOP;
@@ -329,36 +344,6 @@ void ModuleImGui::ShowEditorCameraWindow(float mainMenuBarHeight, bool* pOpen)
 
 	ImGui::Checkbox("Is Active Camera", &isActiveCamera);
 
-	ImGui::End();
-}
-
-void ModuleImGui::ShowAnimationWindow(float mainMenuBarHeight, bool * pOpen)
-{
-	static bool loadMessage = false;
-	static bool loadedCorrectly = false;
-	static char animationPath[256] = "";
-	static char animationName[256] = "";
-
-	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
-	ImGui::SetNextWindowSize(ImVec2(450, 600));
-	ImGui::Begin("Animation options", pOpen, ImGuiWindowFlags_NoCollapse);
-
-	ImGui::InputText("Animation path", animationPath, 256); 
-	ImGui::InputText("Animation name", animationName, 256);
-
-	if (ImGui::Button("Load")) {	
-
-		loadedCorrectly = App->animation->Load(animationName, animationPath);
-		loadMessage = true;
-	}
-
-	if (loadMessage) {
-		if (loadedCorrectly)
-			ImGui::Text("Animation loaded correctly.");
-		else
-			ImGui::Text("Animation not found.");
-	}
-	
 	ImGui::End();
 }
 
@@ -718,7 +703,7 @@ void ModuleImGui::DrawGuizmo()
 		if (App->input->GetKey(SDL_SCANCODE_R) == KeyState::KEY_REPEAT)
 			mCurrentGizmoOperation = ImGuizmo::SCALE;
 	}
-	
+
 	ImGuizmo::SetRect(0, 0, (float)App->window->GetWidth(), (float)App->window->GetHeight());
 
 

@@ -2,7 +2,10 @@
 #define __H_COMPONENT__
 
 #include <string>
+#include "MathGeoLib/src/Math/MathTypes.h"
+
 class GameObject;
+class SerializableObject;
 enum class ComponentType;
 
 class Component
@@ -24,12 +27,18 @@ public:
 	/* Returns the maximum number of times that this particular Type of Component can be added to a GameObject */
 	virtual int MaxCountInGameObject() = 0;
 
+	virtual void Save(SerializableObject& obj) const;
+
+	virtual void Load(const SerializableObject& obj);
+
 	bool OnEditorDeleteComponent();
 
 public:
 
 	GameObject* gameObject = nullptr;
 	bool toRemove = false;
+
+	u32 uuid;
 
 protected:
 

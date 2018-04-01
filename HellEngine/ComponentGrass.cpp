@@ -9,6 +9,7 @@
 #include "ModuleTextureManager.h"
 #include "ModuleScene.h"
 #include "ModuleShaderManager.h"
+#include "SerializableObject.h"
 #include "ShaderProgram.h"
 #include "openGL.h"
 
@@ -113,6 +114,42 @@ void ComponentGrass::OnEditor()
 int ComponentGrass::MaxCountInGameObject()
 {
 	return 1;
+}
+
+void ComponentGrass::Save(SerializableObject& obj) const
+{
+	Component::Save(obj);
+
+	obj.AddString("TexturePath", texturePath);
+	obj.AddFloat3("Position", position);
+	obj.AddFloat("RandomPositionRange", randomPositionRange);
+	obj.AddFloat("Width", width);
+	obj.AddFloat("Height", height);
+	obj.AddFloat("RandomScaleRange", randomScaleRange);
+	obj.AddInt("BillboardInstancesX", billboardInstancesX);
+	obj.AddInt("BillboardInstancesZ", billboardInstancesZ);
+	obj.AddFloat("OffsetX", offsetX);
+	obj.AddFloat("OffsetZ", offsetZ);
+}
+
+void ComponentGrass::Load(const SerializableObject& obj)
+{
+	Component::Load(obj);
+
+	std::string texturePathAsString = obj.GetString("TexturePath");
+	memcpy_s(texturePath, 256, texturePathAsString.c_str(), texturePathAsString.length());
+	position = obj.GetFloat3("Position");
+	randomPositionRange = obj.GetFloat("RandomPositionRange");
+	width = obj.GetFloat("Width");
+	height = obj.GetFloat("Height");
+	randomScaleRange = obj.GetFloat("RandomScaleRange");
+	billboardInstancesX = obj.GetInt("BillboardInstancesX");
+	billboardInstancesZ = obj.GetInt("BillboardInstancesZ");
+	offsetX = obj.GetFloat("OffsetX");
+	offsetZ = obj.GetFloat("OffsetZ");
+
+	LoadTexture();
+	CreateQuadVAO();
 }
 
 void ComponentGrass::CreateQuadVAO()

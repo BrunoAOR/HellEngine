@@ -25,7 +25,6 @@ struct Bone
 	BoneWeight* weights = nullptr;
 	uint numWeights = 0;
 	float4x4 inverseBindMatrix;
-	ComponentTransform* connectedTransform = nullptr;
 };
 
 struct VerticesGroup

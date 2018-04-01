@@ -43,10 +43,13 @@ public:
 	ComponentCamera* GetActiveGameCamera() const;
 	void SetSelectedGameObject(GameObject* go);
 
-	bool LoadModel(const char* modelPath, GameObject* parent);
+	bool LoadModel(const char* modelPath, GameObject* parent, bool meshesOnly = false);
 	GameObject* CreateGameObject();
 	void Destroy(GameObject* gameObject);
 	std::vector<GameObject*> FindByName(const std::string& name, GameObject* gameObject = nullptr);
+
+	void Save();
+	void Load(const char* path);
 
 public:
 
@@ -72,6 +75,7 @@ private:
 	SpaceQuadTree quadTree;
 	SceneLoader sceneLoader;
 
+	std::vector<std::string> modelPaths;
 };
 
 template<typename T>

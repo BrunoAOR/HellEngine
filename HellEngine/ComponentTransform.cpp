@@ -9,6 +9,7 @@
 #include "ModelInfo.h"
 #include "ModuleDebugDraw.h"
 #include "ModuleScene.h"
+#include "SerializableObject.h"
 #include "globals.h"
 #include "openGL.h"
 
@@ -607,4 +608,28 @@ void ComponentTransform::ApplyWorldTransformationMatrix(const float4x4& worldTra
 		UpdateBoundingBox();
 		UpdateMatrices();
 	}
+}
+
+void ComponentTransform::Save(SerializableObject& obj) const
+{
+	Component::Save(obj);
+	float3 worldPos;
+	float3 worldScale;
+	Quat worldRot;
+	DecomposeMatrix(GetModelMatrix4x4(), worldPos, worldRot, worldScale);
+
+	obj.AddFloat3("Position", worldPos);
+	obj.AddFloat3("Scale", worldScale);
+	obj.AddFloat4("Rotation", float4(worldRot.x, worldRot.y, worldRot.z, worldRot.w));
+}
+
+void ComponentTransform::Load(const SerializableObject& obj)
+{
+	Component::Load(obj);
+
+	position = obj.GetFloat3("Position");
+	scale = obj.GetFloat3("Scale");
+	float4 rot = obj.GetFloat4("Rotation");
+	rotation = Quat(rot.x, rot.y, rot.z, rot.w);
+	UpdateLocalModelMatrix();
 }

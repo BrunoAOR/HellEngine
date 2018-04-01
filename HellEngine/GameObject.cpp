@@ -2,6 +2,7 @@
 #include <assert.h>
 #include "Brofiler/include/Brofiler.h"
 #include "ImGui/imgui.h"
+#include "MathGeoLib/src/Algorithm/Random/LCG.h"
 #include "Application.h"
 #include "GameObject.h"
 #include "Component.h"
@@ -14,8 +15,9 @@
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "ModuleScene.h"
+#include "SerializableArray.h"
+#include "SerializableObject.h"
 #include "globals.h"
-
 
 GameObject* GameObject::hierarchyActiveGameObject = nullptr;
 
@@ -32,12 +34,17 @@ GameObject::GameObject(const char* name, GameObject* parentGameObject) : name(na
 			SetParent(parentGameObject);
 	}
 
+	LCG lcg;
+	uuid = lcg.IntFast();
 	App->scene->gameObjectsCount++;
 }
 
 GameObject::~GameObject()
 {
 	//LOGGER("Began deletion of GameObject '%s'", name.c_str());
+	if (hierarchyActiveGameObject == this)
+		hierarchyActiveGameObject = nullptr;
+
 	for (Component* component : components)
 	{
 		delete component;
@@ -150,19 +157,23 @@ void GameObject::OnEditorRootHierarchy()
 	{
 		for (GameObject* child : children)
 		{
-			child->OnEditorHierarchy();
+			if (child->OnEditorHierarchy())
+				break;
 		}
 		ImGui::TreePop();
 	}
 }
 
-void GameObject::OnEditorHierarchy()
+bool GameObject::OnEditorHierarchy()
 {
+	bool earlyReturn = false;
 	ImGuiTreeNodeFlags selectedFlag = App->scene->editorInfo.selectedGameObject == this ? ImGuiTreeNodeFlags_Selected : 0;
 	if (children.size() == 0)
 	{
 		ImGui::TreeNodeEx(this, ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | selectedFlag, name.c_str());
-		OnEditorHierarchyRightClick();
+		earlyReturn = OnEditorHierarchyRightClick();
+		if (earlyReturn)
+			return true;
 
 		if (ImGui::IsItemClicked())
 			App->scene->editorInfo.selectedGameObject = this;
@@ -173,7 +184,9 @@ void GameObject::OnEditorHierarchy()
 	else
 	{
 		bool open = ImGui::TreeNodeEx(this, selectedFlag, name.c_str());
-		OnEditorHierarchyRightClick();
+		earlyReturn = OnEditorHierarchyRightClick();
+		if (earlyReturn)
+			return true;
 
 		if (ImGui::IsItemClicked())
 			App->scene->editorInfo.selectedGameObject = this;
@@ -184,11 +197,14 @@ void GameObject::OnEditorHierarchy()
 		{
 			for (GameObject* child : children)
 			{
-				child->OnEditorHierarchy();
+				earlyReturn = child->OnEditorHierarchy();
+				if (earlyReturn)
+					break;
 			}
 			ImGui::TreePop();
 		}
 	}
+	return earlyReturn;
 }
 
 void GameObject::OnEditorHierarchyDragAndDrop()
@@ -211,8 +227,9 @@ void GameObject::OnEditorHierarchyDragAndDrop()
 	}
 }
 
-void GameObject::OnEditorHierarchyRightClick()
+bool GameObject::OnEditorHierarchyRightClick()
 {
+	bool earlyReturn = false;
 	if (ImGui::BeginPopupContextItem())
 	{
 		OnEditorHierarchyCreateMenu();
@@ -222,7 +239,7 @@ void GameObject::OnEditorHierarchyRightClick()
 			App->scene->Destroy(this);
 			App->scene->editorInfo.selectedGameObject = nullptr;
 			ImGui::EndPopup();
-			return;
+			return true;
 		}
 
 		ImGui::Separator();
@@ -241,10 +258,12 @@ void GameObject::OnEditorHierarchyRightClick()
 
 		ImGui::Separator();
 
-		OnEditorHierarchyLoadModelMenu();
+		earlyReturn = OnEditorHierarchyLoadModelMenu();
 
 		ImGui::EndPopup();
 	}
+	return earlyReturn;
+
 }
 
 void GameObject::OnEditorHierarchyCreateMenu()
@@ -269,7 +288,7 @@ void GameObject::OnEditorHierarchyCreateMenu()
 	}
 }
 
-void GameObject::OnEditorHierarchyLoadModelMenu()
+bool GameObject::OnEditorHierarchyLoadModelMenu()
 {
 	static char modelPath[256]{ '\0' };
 	static bool error = false;
@@ -283,9 +302,10 @@ void GameObject::OnEditorHierarchyLoadModelMenu()
 		
 		if (error)
 			ImGui::Text("Could not load model from provided path!");
-		
+
 		ImGui::EndMenu();
 	}
+	return !error;
 }
 
 GameObject* GameObject::GetParent()
@@ -511,6 +531,44 @@ bool GameObject::GetActive() const
 void GameObject::SetActive(bool activeState)
 {
 	isActive = activeState;
+}
+
+void GameObject::Save(SerializableObject& obj)
+{
+	obj.Addu32("UUID", uuid);
+	obj.AddString("Name", name);
+	obj.Addu32("ParentUUID", GetParent() ? GetParent()->uuid : this == App->scene->root ? 0 : App->scene->root->uuid);
+	obj.AddString("Name", name);
+	obj.AddBool("Active", isActive);
+	SerializableArray sArray = obj.BuildSerializableArray("Components");
+	for (Component* c : components)
+	{
+		SerializableObject sObject = sArray.BuildSerializableObject();
+		c->Save(sObject);
+	}
+}
+
+void GameObject::Load(const SerializableObject& obj)
+{
+	uuid = obj.Getu32("UUID");
+	name = obj.GetString("Name");
+	parentUuid = obj.Getu32("ParentUUID");
+	name = obj.GetString("Name");
+	isActive = obj.GetBool("Active");
+
+	SerializableArray componentsArray = obj.GetSerializableArray("Components");
+	uint componentsCount = componentsArray.Size();
+
+	for (uint i = 0; i < componentsCount; ++i)
+	{
+		SerializableObject componentObject = componentsArray.GetSerializableObject(i);
+		std::string cTypeString = componentObject.GetString("Type");
+		ComponentType cType = GetComponentType(cTypeString.c_str());
+		
+		Component* component = AddComponent(cType);
+		component->Load(componentObject);
+	}
+
 }
 
 bool GameObject::HasGameObjectInChildrenHierarchy(GameObject * testGameObject)

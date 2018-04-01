@@ -6,6 +6,7 @@
 #include "MeshInfo.h"
 #include "TextureConfiguration.h"
 #include "TextureInfo.h"
+class SerializableObject;
 class ShaderProgram;
 
 class ComponentGrass :
@@ -23,6 +24,9 @@ public:
 	/* Returns the maximum number of times that this particular Type of Component can be added to a GameObject */
 	virtual int MaxCountInGameObject() override;
 
+	virtual void Save(SerializableObject& obj) const override;
+	virtual void Load(const SerializableObject& obj) override;
+
 private:	
 	void CreateQuadVAO();
 	void UpdateBillboards();
@@ -36,20 +40,19 @@ private:
 	uint textureID = 0;
 	const ShaderProgram* shaderProgram = nullptr;
 	bool isValid = false;
-
-	char texturePath[256] = "";
-
 	std::vector<Billboard*> billboards;
+	
+	char texturePath[256] = "";
+	float3 position;
+	float randomPositionRange = 0;
+	float width = 1;
+	float height = 1;
+	float randomScaleRange = 0;
 	int billboardInstancesX = 1;
 	int billboardInstancesZ = 1;
 	float offsetX = 1;
 	float offsetZ = 1;
-	float3 position;
-	float width = 1; 
-	float height = 1;
-	float randomPositionRange = 0;
-	float randomScaleRange = 0;
-
+	
 	MeshInfo quadMeshInfo;
 	float3 previousCameraPos;
 	bool billboardsChanged;
