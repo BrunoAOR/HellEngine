@@ -39,6 +39,8 @@ ComponentType GetComponentType(const char* componentTypeString)
 		return ComponentType::MATERIAL;
 	else if (strcmp(componentTypeString, "Mesh") == 0)
 		return ComponentType::MESH;
+	else if (strcmp(componentTypeString, "Particle System") == 0)
+		return ComponentType::PARTICLE_SYSTEM;
 	else if (strcmp(componentTypeString, "Transform") == 0)
 		return ComponentType::TRANSFORM;
 

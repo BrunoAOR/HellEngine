@@ -10,6 +10,7 @@
 #include "ModuleShaderManager.h"
 #include "ModuleTextureManager.h"
 #include "ModuleTime.h"
+#include "SerializableObject.h"
 #include "ShaderProgram.h"
 #include "openGL.h"
 
@@ -88,7 +89,7 @@ void ComponentParticleSystem::Clear()
 
 void ComponentParticleSystem::Update()
 {
-	if (isValid)
+	if (isValid && App->time->DeltaTimeMS() < 100)
 	{
 		ComponentCamera* activeCamera = App->scene->GetActiveGameCamera();
 		if (!activeCamera)
@@ -354,4 +355,21 @@ void ComponentParticleSystem::OnEditor()
 int ComponentParticleSystem::MaxCountInGameObject()
 {
 	return 1;
+}
+
+void ComponentParticleSystem::Save(SerializableObject& obj) const
+{
+	Component::Save(obj);
+
+	obj.AddString("TexturePath", texturePath);
+}
+
+void ComponentParticleSystem::Load(const SerializableObject& obj)
+{
+	Component::Load(obj);
+
+	std::string objTexturePath = obj.GetString("TexturePath");
+	memcpy_s(texturePath, 256, objTexturePath.c_str(), objTexturePath.length());
+	texturePath[objTexturePath.length()] = '\0';
+	LoadTexture();
 }
