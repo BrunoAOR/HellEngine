@@ -35,7 +35,6 @@ void ComponentUiImage::OnEditor()
 			LoadImage();
 
 		ImGui::ColorEdit4("Color", color);
-		ImGui::DragFloat("Intensity", &intensity, 0.01f, 0.0f, 1.0f, "%.2f");
 	}
 }
 
@@ -44,9 +43,12 @@ const float* ComponentUiImage::GetColor() const
 	return color;
 }
 
-float ComponentUiImage::GetColorIntensity() const
+void ComponentUiImage::SetColor(float * newColor)
 {
-	return intensity;
+	color[0] = newColor[0];
+	color[1] = newColor[1];
+	color[2] = newColor[2];
+	color[3] = newColor[3];
 }
 
 unsigned int ComponentUiImage::GetTextureID()

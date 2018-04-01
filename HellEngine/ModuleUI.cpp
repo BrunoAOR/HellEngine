@@ -31,17 +31,11 @@ ModuleUI::~ModuleUI()
 bool ModuleUI::Init()
 {
 	shaderProgram = App->shaderManager->GetShaderProgram("assets/shaders/uiShader.vert", "assets/shaders/uiShader.frag");
-	textShaderProgram = App->shaderManager->GetShaderProgram("assets/shaders/uiShader.vert", "assets/shaders/uiTextShader.frag");
-	if (!shaderProgram || !textShaderProgram)
+	if (!shaderProgram)
 		return false;
 
 	colorUniformLocation = glGetUniformLocation(shaderProgram->GetProgramId(), "tintColor");
-	intensityUniformLocation = glGetUniformLocation(shaderProgram->GetProgramId(), "intensity");
-	if (colorUniformLocation == -1 || intensityUniformLocation == -1)
-		return false;
-
-	textColorUniformLocation = glGetUniformLocation(textShaderProgram->GetProgramId(), "tintColor");
-	if (textColorUniformLocation == -1)
+	if (colorUniformLocation == -1)
 		return false;
 
 	GenerateSquareMeshInfo();
@@ -60,7 +54,7 @@ bool ModuleUI::Init()
 
 	ComponentUiImage* componentImage = (ComponentUiImage*)image->AddComponent(ComponentType::UI_IMAGE);
 	componentImage->SetImagePath("assets/images/lenna.png");
-	
+
 	App->fonts->RegisterFont("temp", "assets/images/fonts/temp.ttf");
 
 	GameObject* label = App->scene->CreateGameObject();
@@ -87,8 +81,6 @@ bool ModuleUI::CleanUp()
 {
 	App->shaderManager->ReleaseShaderProgram(shaderProgram);
 	shaderProgram = nullptr;
-	App->shaderManager->ReleaseShaderProgram(textShaderProgram);
-	textShaderProgram = nullptr;
 	return true;
 }
 
@@ -205,7 +197,7 @@ void ModuleUI::UpdateElements()
 	{
 		for (ComponentUIElement* uiElement : uiElements)
 		{
-			if (uiElement->gameObject->GetActive())
+			if (uiElement->GetActive())
 				UpdateComponent(uiElement);
 		}
 	}
@@ -280,7 +272,6 @@ void ModuleUI::UpdateImage(ComponentUiImage* image)
 		/* Matrixes are given in this order: Model, View, Projection */
 		shaderProgram->UpdateMatrixUniforms(modelMatrix, identity, openGLorthoMatrix);
 		glUniform4fv(colorUniformLocation, 1, image->GetColor());
-		glUniform1f(intensityUniformLocation, image->GetColorIntensity());
 
 		glBindTexture(GL_TEXTURE_2D, textureID);
 		glBindVertexArray(squareMeshInfo.vao);
@@ -335,10 +326,10 @@ void ModuleUI::UpdateLabel(ComponentUiLabel* label)
 			-1, -1, -(f + n) / (f - n), 1
 		};
 
-		textShaderProgram->Activate();
+		shaderProgram->Activate();
 		/* Matrixes are given in this order: Model, View, Projection */
-		textShaderProgram->UpdateMatrixUniforms(modelMatrix, identity, openGLorthoMatrix);
-		glUniform4fv(textColorUniformLocation, 1, label->GetColor());
+		shaderProgram->UpdateMatrixUniforms(modelMatrix, identity, openGLorthoMatrix);
+		glUniform4fv(colorUniformLocation, 1, label->GetColor());
 
 		glBindTexture(GL_TEXTURE_2D, textureID);
 		glBindVertexArray(squareMeshInfo.vao);
@@ -346,6 +337,6 @@ void ModuleUI::UpdateLabel(ComponentUiLabel* label)
 		glBindVertexArray(GL_NONE);
 		glBindTexture(GL_TEXTURE_2D, 0);
 
-		textShaderProgram->Deactivate();
+		shaderProgram->Deactivate();
 	}
 }

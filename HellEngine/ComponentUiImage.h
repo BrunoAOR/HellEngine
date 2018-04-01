@@ -12,7 +12,7 @@ public:
 	virtual void OnEditor() override;
 
 	const float* GetColor() const;
-	float GetColorIntensity() const;
+	void SetColor(float* newColor);
 
 	unsigned int GetTextureID();
 
@@ -25,7 +25,6 @@ private:
 	unsigned int textureID = 0;
 	char imagePath[256] = "";
 	float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	float intensity = 0.0f;
 };
 
 #endif __H_COMPONENT_UI_IMAGE__
