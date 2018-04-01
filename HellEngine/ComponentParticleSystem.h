@@ -38,15 +38,14 @@ private:
 		float fallingHeight, const fPoint& particleSize);
 
 	void InitParticle(Particle& particle, Billboard& billboard, uint deltaTime);
-
-	void UpdateSystem(const ComponentCamera& camera);
-
 	void Clear();
 
-	void Draw();
-
+	void UpdateSystem();
+	void UpdateVAO();
+	bool DrawElements(const ComponentCamera& camera);
+	
 	void CreateQuadVAO();
-	bool DrawElements();
+
 	bool LoadTexture();
 
 private:
