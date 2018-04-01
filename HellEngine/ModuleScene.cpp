@@ -6,9 +6,14 @@
 #include "ComponentCamera.h"
 #include "ComponentTransform.h"
 #include "ComponentType.h"
+#include "GameObject.h"
+#include "ModuleAnimation.h"
+#include "ModuleEditorCamera.h"
 #include "ModuleScene.h"
 #include "ModuleWindow.h"
-#include "GameObject.h"
+#include "Serializer.h"
+#include "SerializableArray.h"
+#include "SerializableObject.h"
 /* For TestCollisionChecks */
 #include "ComponentTransform.h"
 #include "ComponentMesh.h"
@@ -26,13 +31,36 @@ ModuleScene::ModuleScene()
 
 ModuleScene::~ModuleScene() 
 {
+	
+}
+
+bool ModuleScene::Init()
+{
+	root = new GameObject("root", nullptr);
+	root->AddComponent(ComponentType::CAMERA);
+	sceneLoader.LoadCubeMesh();
+	sceneLoader.LoadSphereMesh();
+	return true;
+}
+
+bool ModuleScene::CleanUp()
+{
+	editorInfo.selectedGameObject = nullptr;
+
+	quadTree.CleanUp();
+
+	delete root;
+	root = nullptr;
+
+	modelPaths.clear();
+
 	for (MeshInfo* meshInfo : meshes)
 	{
 		/* Delete VRAM buffers */
 		glDeleteVertexArrays(1, &meshInfo->vao);
 		glDeleteBuffers(1, &meshInfo->vbo);
 		glDeleteBuffers(1, &meshInfo->ebo);
-		
+
 		/* Delete Bones */
 		for (Bone* bone : meshInfo->bones)
 		{
@@ -45,28 +73,10 @@ ModuleScene::~ModuleScene()
 		delete meshInfo;
 	}
 	meshes.clear();
-}
-
-bool ModuleScene::Init()
-{
-	root = new GameObject("root", nullptr);
-	root->AddComponent(ComponentType::CAMERA);
-	return true;
-}
-
-bool ModuleScene::CleanUp()
-{
-	quadTree.CleanUp();
-
-	delete root;
-	root = nullptr;
 
 	return true;
 }
 
-#include "Application.h"
-#include "ModuleInput.h"
-#include "globals.h"
 UpdateStatus ModuleScene::Update()
 {
 	if (quadTree.GetType() != SpaceQuadTree::QuadTreeType::INVALID && DEBUG_MODE)
@@ -244,9 +254,15 @@ void ModuleScene::SetSelectedGameObject(GameObject * go)
 	editorInfo.selectedGameObject = go;
 }
 
-bool ModuleScene::LoadModel(const char* modelPath, GameObject* parent)
+bool ModuleScene::LoadModel(const char* modelPath, GameObject* parent, bool meshesOnly)
 {
-	return sceneLoader.Load(modelPath, parent);
+	bool success;
+	success = sceneLoader.Load(modelPath, parent, meshesOnly);
+
+	if (success)
+		modelPaths.push_back(modelPath);
+
+	return success;
 }
 
 GameObject* ModuleScene::CreateGameObject()
@@ -290,9 +306,115 @@ std::vector<GameObject*> ModuleScene::FindByName(const std::string& name, GameOb
     return ret;
 }
 
+void ModuleScene::Save()
+{
+	Serializer serializer;
+	SerializableObject sObject = serializer.GetEmptySerializableObject();
+
+	/* Save animations info */
+	App->animation->Save(sObject);
+
+	sObject.AddVectorString("ModelPaths", modelPaths);
+	SerializableArray gameObjectsArray = sObject.BuildSerializableArray("GameObjects");
+
+	std::stack<GameObject*> goStack;	
+
+	GameObject* go = root;
+	goStack.push(go);
+
+	/* The root otself is NOT serialized */
+	while (!goStack.empty())
+	{
+		go = goStack.top();
+		goStack.pop();
+
+		SerializableObject goSObject = gameObjectsArray.BuildSerializableObject();
+
+		go->Save(goSObject);
+
+		for (GameObject* child : go->GetChildren())		
+			goStack.push(child);
+
+	}
+
+	serializer.Save("assets/scenes/Scene.json");
+}
+
+void ModuleScene::Load(const char* jsonPath)
+{
+	/* First we clean up the scene */
+	
+	CleanUp();
+
+	Serializer serializer;
+	SerializableObject sObject = serializer.Load(jsonPath);
+
+	/* Load animations info */
+	App->animation->Load(sObject);
+
+	/* Load Meshes */
+	sceneLoader.LoadCubeMesh();
+	sceneLoader.LoadSphereMesh();
+	std::vector<std::string> allPaths = sObject.GetVectorString("ModelPaths");
+	/* allPaths is not copied into modelPaths because that happens inside the LoadModel method */
+	for (std::string path : allPaths)
+	{
+		LoadModel(path.c_str(), nullptr, true);
+	}
+
+	/* Now we load GameObjects */
+	std::map<u32, GameObject*> gameObjectsByUuid;
+	std::map<u32, std::vector<GameObject*>> gameObjectsToParent;
+	std::vector<Component*> meshesCreated;
+
+	SerializableArray gameObjectsArray = sObject.GetSerializableArray("GameObjects");
+	uint gameObjectsCount = gameObjectsArray.Size();
+
+	/* Create GameObjects */
+	for (uint i = 0; i < gameObjectsCount; ++i)
+	{
+		SerializableObject goData = gameObjectsArray.GetSerializableObject(i);
+		GameObject* go = CreateGameObject();
+		if (i == 0)
+			root = go;
+
+		go->Load(goData);
+
+		std::vector<Component*> goMeshes = go->GetComponents(ComponentType::MESH);
+		meshesCreated.insert(meshesCreated.end(), goMeshes.begin(), goMeshes.end());
+
+		gameObjectsByUuid[go->uuid] = go;
+		/* Check done to leave root out */
+		if (go->parentUuid != 0)
+		{
+			gameObjectsToParent[go->parentUuid].push_back(go);
+		}
+	}
+
+	/* Parent GameObjects */
+	for (std::map<u32, std::vector<GameObject*>>::iterator it = gameObjectsToParent.begin(); it != gameObjectsToParent.end(); ++it)
+	{
+		std::vector<GameObject*>& gosToParent = it->second;
+		GameObject* parent = nullptr;
+		for (GameObject* go : gosToParent)
+		{
+			assert(gameObjectsByUuid.count(go->parentUuid) > 0);
+			go->SetParent(gameObjectsByUuid[go->parentUuid]);
+		}
+	}
+
+	/* Optimize Meshes */
+	for (Component* component : meshesCreated)
+	{
+		((ComponentMesh*)component)->StoreBoneToTransformLinks();
+	}
+
+	/* Re-initialize ModuleEditorCamera */
+	App->editorCamera->Init();
+}
+
 void ModuleScene::DrawHierarchy()
 {
-
 	std::stack<GameObject*> goStack;
 	GameObject* go = root;
 	goStack.push(go);

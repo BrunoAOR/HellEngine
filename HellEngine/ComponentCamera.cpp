@@ -10,6 +10,7 @@
 #include "ModuleDebugDraw.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleScene.h"
+#include "SerializableObject.h"
 #include "globals.h"
 #include "openGL.h"
 
@@ -258,15 +259,13 @@ void ComponentCamera::SetUp(float x, float y, float z)
 
 void ComponentCamera::SetFrontAndUp(float fx, float fy, float fz, float ux, float uy, float uz)
 {
-	if ((fx == 0 && fy == 0 && fz == 0) && (ux == 0 && uy == 0 && uz == 0))
+	if ((fx == 0 && fy == 0 && fz == 0) || (ux == 0 && uy == 0 && uz == 0))
 		return;
 
 	vec front(fx, fy, fz);
 	vec up(ux, uy, uz);
 	front.Normalize();
 	up.Normalize();
-	Quat rotF = Quat::RotateFromTo(frustum.Front(), front);
-	Quat rotU = Quat::RotateFromTo(frustum.Up(), up);
 	frustum.SetFrontAndUp(front, up);
 }
 
@@ -352,6 +351,39 @@ bool ComponentCamera::IsInsideFrustum(GameObject * go)
 {
 	BROFILER_CATEGORY("ComponentMaterial::Find", Profiler::Color::Gold);
 	return	std::find(insideFrustum.begin(), insideFrustum.end(), go) != insideFrustum.end();
+}
+
+void ComponentCamera::Save(SerializableObject& obj) const
+{
+	Component::Save(obj);
+
+	obj.AddFloat3("Position", GetPosition3());
+	obj.AddFloat3("Front", GetFront3());
+	obj.AddFloat3("Up", GetUp3());
+	obj.AddColor("Background", background);
+	obj.AddFloat("NearPlane", nearClippingPlane);
+	obj.AddFloat("FarPlane", farClippingPlane);
+	obj.AddFloat("AspectRatio", aspectRatio);
+	obj.AddFloat("VerticalFOV", verticalFOVRad);
+}
+
+void ComponentCamera::Load(const SerializableObject& obj)
+{
+	Component::Load(obj);
+
+	float3 pos = obj.GetFloat3("Position");
+	float3 front = obj.GetFloat3("Front");
+	float3 up = obj.GetFloat3("Up");
+	frustum.SetFrame(pos, front, up);
+	background = obj.GetColor("Background");
+	nearClippingPlane = obj.GetFloat("NearPlane");
+	farClippingPlane = obj.GetFloat("FarPlane");
+	aspectRatio = obj.GetFloat("AspectRatio");
+	verticalFOVRad = obj.GetFloat("VerticalFOV");
+
+	frustum.SetPerspective(GetHorizontalFOVrad(), verticalFOVRad);
+	frustum.SetViewPlaneDistances(nearClippingPlane, farClippingPlane);
+
 }
 
 float ComponentCamera::GetHorizontalFOVrad() const

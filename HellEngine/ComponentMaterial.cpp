@@ -13,6 +13,7 @@
 #include "ModuleTextureManager.h"
 #include "MeshInfo.h"
 #include "ModelInfo.h"
+#include "SerializableObject.h"
 #include "ShaderProgram.h"
 #include "globals.h"
 #include "openGL.h"
@@ -225,6 +226,50 @@ void ComponentMaterial::OnEditor()
 int ComponentMaterial::MaxCountInGameObject()
 {
 	return -1;
+}
+
+void ComponentMaterial::Save(SerializableObject& obj) const
+{
+	Component::Save(obj);
+
+	obj.AddInt("ModelInfoVaoIndex", modelInfoVaoIndex);
+	obj.AddString("VertexShaderPath", vertexShaderPath);
+	obj.AddString("FragmentShaderPath", fragmentShaderPath);
+	obj.AddString("TexturePath", texturePath);
+	obj.AddString("ShaderDataPath", shaderDataPath);
+	obj.AddInt("WrapMode", textureConfiguration.wrapMode);
+	obj.AddBool("MipMaps", textureConfiguration.mipMaps);
+	obj.AddInt("MinificationMode", textureConfiguration.minificationMode);
+	obj.AddInt("MagnificationMode", textureConfiguration.magnificationMode);
+}
+
+void ComponentMaterial::Load(const SerializableObject& obj)
+{
+	Component::Load(obj);
+
+	modelInfoVaoIndex = obj.GetInt("ModelInfoVaoIndex");
+	
+	std::string objVertexShaderPath = obj.GetString("VertexShaderPath");
+	memcpy_s(vertexShaderPath, 256, objVertexShaderPath.c_str(), objVertexShaderPath.length());
+	vertexShaderPath[objVertexShaderPath.length()] = '\0';
+	
+	std::string objFragmentShaderPath = obj.GetString("FragmentShaderPath");
+	memcpy_s(fragmentShaderPath, 256, objFragmentShaderPath.c_str(), objFragmentShaderPath.length());
+	fragmentShaderPath[objFragmentShaderPath.length()] = '\0';
+
+	std::string objTexturePath = obj.GetString("TexturePath");
+	memcpy_s(texturePath, 256, objTexturePath.c_str(), objTexturePath.length());
+	texturePath[objTexturePath.length()] = '\0';
+
+	std::string objShaderDataPath = obj.GetString("ShaderDataPath");
+	memcpy_s(shaderDataPath, 256, objShaderDataPath.c_str(), objShaderDataPath.length());
+	shaderDataPath[objShaderDataPath.length()] = '\0';
+
+	textureConfiguration.wrapMode = obj.GetInt("WrapMode");
+	textureConfiguration.mipMaps = obj.GetBool("MipMaps");
+	textureConfiguration.minificationMode = obj.GetInt("MinificationMode");
+	textureConfiguration.magnificationMode = obj.GetInt("MagnificationMode");
+	Apply();
 }
 
 void ComponentMaterial::OnEditorMaterialConfiguration()

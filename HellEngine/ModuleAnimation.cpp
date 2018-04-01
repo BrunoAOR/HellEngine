@@ -1,11 +1,14 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 #include "Brofiler/include/Brofiler.h"
+#include "ImGui/imgui.h"
 #include "MathGeoLib/src/Math/float3.h"
 #include "MathGeoLib/src/Math/Quat.h"
 #include "Application.h"
 #include "ModuleAnimation.h"
 #include "ModuleTime.h"
+#include "SerializableArray.h"
+#include "SerializableObject.h"
 
 ModuleAnimation::ModuleAnimation()
 {
@@ -15,11 +18,72 @@ ModuleAnimation::~ModuleAnimation()
 {
 }
 
+bool ModuleAnimation::CleanUp()
+{
+	for (std::map<const char*, Animation*>::iterator it = animations.begin(); it != animations.end(); ++it) 
+	{
+		for (std::map<const char*, AnimationNode*>::iterator it2 = (*it).second->channels.begin(); it2 != (*it).second->channels.end(); ++it2) 
+		{
+			delete[] it2->first;
+			delete[] it2->second->positions;
+			delete[] it2->second->rotations;
+			delete it2->second;
+		}
+
+		delete[] it->first;
+		delete it->second;
+	}
+	animations.clear();
+
+	for (uint i = 0; i < instances.size(); i++)
+	{
+		AnimationInstance* instance = instances.at(i);
+	
+		delete instance->next;
+
+		delete instance;
+	}
+	instances.clear();
+
+	loadedAnimationNames.clear();
+	animationsNamesToPathsMap.clear();
+
+	return true;
+}
+
+UpdateStatus ModuleAnimation::Update()
+{
+	for (std::vector<AnimationInstance*>::iterator it = instances.begin(); it != instances.end(); ++it)
+	{
+		if (*it && (*it)->active)
+		{
+			(*it)->time += App->time->DeltaTimeMS();
+			if ((*it)->next)
+			{
+				(*it)->next->time += App->time->DeltaTimeMS();
+				(*it)->blendTime += App->time->DeltaTimeMS();
+				if ((*it)->blendTime >= (*it)->blendDuration)
+					DeleteOldInstance(*it);
+			}
+		}
+	}
+	return UpdateStatus::UPDATE_CONTINUE;
+}
+
 bool ModuleAnimation::Load(const char* name, const char* file)
 {
+	if (animationsNamesToPathsMap.count(name) != 0)
+	{
+		LOGGER("WARNING: ModuleAnimation - An animation with the name %s has already been loaded", name);
+		return false;
+	}
+
 	const aiScene* assimpScene = aiImportFile(file, 0);
 
 	if (assimpScene) {
+		loadedAnimationNames.push_back(name);
+		animationsNamesToPathsMap[name] = file;
+
 		for (uint i = 0; i < assimpScene->mNumAnimations; i++) {
 			aiAnimation* anim = assimpScene->mAnimations[i];
 
@@ -66,59 +130,10 @@ bool ModuleAnimation::Load(const char* name, const char* file)
 		return true;
 	}
 
-	LOGGER("File %s not found", file);
+	LOGGER("ERROR: ModuleAnimation - File %s not found", file);
 
 	return false;
 }
-
-bool ModuleAnimation::CleanUp()
-{
-	for (std::map<const char*, Animation*>::iterator it = animations.begin(); it != animations.end(); ++it) 
-	{
-		for (std::map<const char*, AnimationNode*>::iterator it2 = (*it).second->channels.begin(); it2 != (*it).second->channels.end(); ++it2) 
-		{
-			delete[] it2->first;
-			delete[] it2->second->positions;
-			delete[] it2->second->rotations;
-			delete it2->second;
-		}
-
-		delete[] it->first;
-		delete it->second;
-	}
-
-	for (uint i = 0; i < instances.size(); i++)
-	{
-		AnimationInstance* instance = instances.at(i);
-	
-		delete instance->next;
-
-		delete instance;
-	}
-
-	return true;
-}
-
-UpdateStatus ModuleAnimation::Update()
-{
-	for (std::vector<AnimationInstance*>::iterator it = instances.begin(); it != instances.end(); ++it)
-	{
-		if (*it && (*it)->active)
-		{
-			(*it)->time += App->time->DeltaTimeMS();
-			if ((*it)->next)
-			{
-				(*it)->next->time += App->time->DeltaTimeMS();
-				(*it)->blendTime += App->time->DeltaTimeMS();
-				if ((*it)->blendTime >= (*it)->blendDuration)
-					DeleteOldInstance(*it);
-			}
-		}
-	}
-
-	return UpdateStatus::UPDATE_CONTINUE;
-}
-
 
 int ModuleAnimation::Play(const char* name, bool loop)
 {
@@ -310,6 +325,119 @@ bool ModuleAnimation::GetTransform(uint id, const char* channel, float3 & positi
 	}
 	else {
 		return false;
+	}
+}
+
+void ModuleAnimation::OnEditorAnimationWindow(float mainMenuBarHeight, bool* pOpen)
+{
+	static char animationPath[256] = "";
+	static char animationName[256] = "";
+	static std::string loadMessage = "";
+
+	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
+	ImGui::SetNextWindowSize(ImVec2(450, 600));
+	ImGui::Begin("Animation options", pOpen, ImGuiWindowFlags_NoCollapse);
+
+	ImGui::InputText("Animation path", animationPath, 256);
+	ImGui::InputText("Animation name", animationName, 256);
+
+	if (ImGui::Button("Load"))
+	{
+		if (animationsNamesToPathsMap.count(animationName) != 0)
+		{
+			loadMessage = "Animation name already in use";
+		}
+		else
+		{
+			bool pathInUse = false;
+			for (std::unordered_map<std::string, std::string>::iterator it = animationsNamesToPathsMap.begin(); it != animationsNamesToPathsMap.end(); ++it)
+			{
+				if (strcmp(it->second.c_str(), animationPath) == 0)
+				{
+					loadMessage = "Animation already loaded with name " + it->first;
+					pathInUse = true;
+					break;
+				}
+			}
+
+			if (!pathInUse)
+			{
+				if (App->animation->Load(animationName, animationPath))
+				{
+					animationPath[0] = '\0';
+					animationName[0] = '\0';
+					loadMessage = "Animation loaded correctly.";
+				}
+				else
+					loadMessage = "Animation not found.";
+			}
+		}
+	}
+
+	ImGui::Text(loadMessage.c_str());
+
+	ImGui::Separator();
+	ImGui::Text("Loaded animations:");
+
+	ImGui::Indent();
+	if (loadedAnimationNames.empty())
+	{
+		ImGui::Text("No animations loaded.");
+	}
+	else
+	{
+		for (const std::string& name : loadedAnimationNames)
+		{
+			ImGui::Text(name.c_str());
+			ImGui::Indent();
+			ImGui::TextWrapped((std::string("From path: ") + animationsNamesToPathsMap[name]).c_str());
+			ImGui::Unindent();
+		}
+	}
+	ImGui::Unindent();
+
+	ImGui::End();
+}
+
+void ModuleAnimation::Save(SerializableObject& obj)
+{
+	SerializableObject animationsObject = obj.BuildSerializableObject("Animations");
+	animationsObject.AddVectorString("AnimationNames", loadedAnimationNames);
+	
+	SerializableArray animationsArray = animationsObject.BuildSerializableArray("NamesToPaths");
+	for (std::unordered_map<std::string, std::string>::iterator it = animationsNamesToPathsMap.begin(); it != animationsNamesToPathsMap.end(); ++it)
+	{
+		SerializableObject pair = animationsArray.BuildSerializableObject();
+		pair.AddString("Name", it->first);
+		pair.AddString("Path", it->second);
+	}
+}
+
+void ModuleAnimation::Load(const SerializableObject& obj)
+{
+	/* Delete any previously loaded animations */
+	CleanUp();
+
+	/* Load the loadedAnimationNames and animationsNamesToPathsMap from the SerializableObject into temporary objects*/
+	std::vector<std::string> namesTemp;
+	std::unordered_map<std::string, std::string> nameToPathTemp;
+
+	SerializableObject animationsObject = obj.GetSerializableObject("Animations");
+	namesTemp = animationsObject.GetVectorString("AnimationNames");
+	
+	SerializableArray animationsArray = animationsObject.GetSerializableArray("NamesToPaths");
+	uint arraySize = animationsArray.Size();
+	for (uint i = 0; i < arraySize; ++i)
+	{
+		SerializableObject pair = animationsArray.GetSerializableObject(i);
+		nameToPathTemp[pair.GetString("Name")] = pair.GetString("Path");
+	}
+
+	/* Load the animations from the temp objects */
+	for (const std::string& animationName : namesTemp)
+	{
+		bool success = Load(animationName.c_str(), nameToPathTemp[animationName].c_str());
+		assert(success);
 	}
 }
 

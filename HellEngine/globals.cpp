@@ -34,6 +34,18 @@ Json LoadJson(const char* path)
 	return json;
 }
 
+bool SaveJson(const Json& json, const std::string& fileName)
+{
+	std::ofstream file(fileName);
+	if (file.good())
+	{
+		file << json;
+		file.close();
+		return true;
+	}
+	return false;
+}
+
 bool LoadTextFile(const std::string& path, std::string& outputString)
 {
 	outputString = "";
@@ -58,6 +70,7 @@ bool SaveTextFile(const std::string& path, const std::string& content)
 	if (outFile.good())
 	{
 		outFile << content;
+		outFile.close();
 		return true;
 	}
 	return false;

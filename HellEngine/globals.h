@@ -40,10 +40,12 @@
 namespace math {
 	class float4x4;
 	class float3;
+	class float4;
 	class Quat;
 }
 typedef math::float4x4 float4x4;
 typedef math::float3 float3;
+typedef math::float4 float4;
 typedef math::Quat Quat;
 
 /* Useful typedefs */
@@ -53,6 +55,7 @@ typedef unsigned int uint;
 extern bool DEBUG_MODE;
 
 void Logger(const char file[], int line, const char* format, ...);
+bool SaveJson(const Json& json, const std::string& fileName);
 Json LoadJson(const char* path);
 bool LoadTextFile(const std::string& path, std::string& outputString);
 bool SaveTextFile(const std::string& path, const std::string& content);

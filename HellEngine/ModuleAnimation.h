@@ -2,10 +2,12 @@
 #define __H_MODULE_ANIMATION__
 
 #include <map>
+#include <unordered_map>
 #include <stack>
 #include "Assimp/include/assimp/cimport.h"
 #include "Module.h"
 #include "globals.h"
+class SerializableObject;
 
 struct LessString
 {
@@ -56,9 +58,10 @@ public:
 	ModuleAnimation();
 	~ModuleAnimation();
 
-	bool Load(const char* name, const char* file);
 	bool CleanUp();
 	UpdateStatus Update();
+
+	bool Load(const char* name, const char* file);
 
 	int Play(const char* name, bool loop = true);
 	void Stop(uint id);
@@ -70,10 +73,21 @@ public:
 
 	bool GetTransform(uint id, const char* channel, float3& position, Quat& rotation) const;
 
+	/* Draws the Animation loading window */
+	void OnEditorAnimationWindow(float mainMenuBarHeight, bool* pOpen);
+
+	void Save(SerializableObject& obj);
+	void Load(const SerializableObject& obj);
+
 private:
 
 	aiVector3D InterpolateVector3D(const aiVector3D& first, const aiVector3D& second, float lambda) const;
 	aiQuaternion InterpolateQuaternion(const aiQuaternion& first, const aiQuaternion& second, float lambda) const;
+
+private:
+
+	std::vector<std::string> loadedAnimationNames;
+	std::unordered_map<std::string, std::string> animationsNamesToPathsMap;
 };
 
 #endif

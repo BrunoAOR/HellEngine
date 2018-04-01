@@ -8,6 +8,7 @@ enum class ComponentType
 	GRASS,
 	MATERIAL,
 	MESH,
+	PARTICLE_SYSTEM,
 	TRANSFORM,
 	TRANSFORM_2D,
 	UI_IMAGE,
@@ -15,8 +16,10 @@ enum class ComponentType
 	UI_BUTTON
 };
 
-extern const ComponentType COMPONENT_TYPES_3D[6];
+extern const ComponentType COMPONENT_TYPES_3D[7];
 extern const ComponentType COMPONENT_TYPES_2D[4];
+
 const char* GetString(ComponentType componentType);
+ComponentType GetComponentType(const char* componentTypeString);
 
 #endif // !__H_COMPONENT_TYPE__

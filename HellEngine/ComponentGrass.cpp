@@ -5,11 +5,11 @@
 #include "Application.h"
 #include "Billboard.h"
 #include "ComponentGrass.h"
-#include "ComponentType.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleTextureManager.h"
 #include "ModuleScene.h"
 #include "ModuleShaderManager.h"
+#include "SerializableObject.h"
 #include "ShaderProgram.h"
 #include "openGL.h"
 
@@ -28,8 +28,7 @@ ComponentGrass::ComponentGrass(GameObject* owner) : Component(owner)
 ComponentGrass::~ComponentGrass()
 {
 	App->shaderManager->ReleaseShaderProgram(shaderProgram);
-	shaderProgram = nullptr;
-	
+	shaderProgram = nullptr;	
 
 	if (textureID != 0)
 		App->textureManager->ReleaseTexture(textureID);
@@ -115,6 +114,43 @@ void ComponentGrass::OnEditor()
 int ComponentGrass::MaxCountInGameObject()
 {
 	return 1;
+}
+
+void ComponentGrass::Save(SerializableObject& obj) const
+{
+	Component::Save(obj);
+
+	obj.AddString("TexturePath", texturePath);
+	obj.AddFloat3("Position", position);
+	obj.AddFloat("RandomPositionRange", randomPositionRange);
+	obj.AddFloat("Width", width);
+	obj.AddFloat("Height", height);
+	obj.AddFloat("RandomScaleRange", randomScaleRange);
+	obj.AddInt("BillboardInstancesX", billboardInstancesX);
+	obj.AddInt("BillboardInstancesZ", billboardInstancesZ);
+	obj.AddFloat("OffsetX", offsetX);
+	obj.AddFloat("OffsetZ", offsetZ);
+}
+
+void ComponentGrass::Load(const SerializableObject& obj)
+{
+	Component::Load(obj);
+
+	std::string objTexturePath = obj.GetString("TexturePath");
+	memcpy_s(texturePath, 256, objTexturePath.c_str(), objTexturePath.length());
+	texturePath[objTexturePath.length()] = '\0';
+	position = obj.GetFloat3("Position");
+	randomPositionRange = obj.GetFloat("RandomPositionRange");
+	width = obj.GetFloat("Width");
+	height = obj.GetFloat("Height");
+	randomScaleRange = obj.GetFloat("RandomScaleRange");
+	billboardInstancesX = obj.GetInt("BillboardInstancesX");
+	billboardInstancesZ = obj.GetInt("BillboardInstancesZ");
+	offsetX = obj.GetFloat("OffsetX");
+	offsetZ = obj.GetFloat("OffsetZ");
+
+	LoadTexture();
+	CreateQuadVAO();
 }
 
 void ComponentGrass::CreateQuadVAO()

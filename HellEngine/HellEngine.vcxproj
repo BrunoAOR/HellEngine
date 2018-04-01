@@ -28,6 +28,7 @@
     <ClInclude Include="ComponentCamera.h" />
     <ClInclude Include="ComponentGrass.h" />
     <ClInclude Include="ComponentMesh.h" />
+    <ClInclude Include="ComponentParticleSystem.h" />
     <ClInclude Include="ComponentTransform.h" />
     <ClInclude Include="ComponentMaterial.h" />
     <ClInclude Include="ComponentTransform2D.h" />
@@ -128,6 +129,9 @@
     <ClInclude Include="physicsFunctions.h" />
     <ClInclude Include="Point.h" />
     <ClInclude Include="SceneLoader.h" />
+    <ClInclude Include="SerializableArray.h" />
+    <ClInclude Include="SerializableObject.h" />
+    <ClInclude Include="Serializer.h" />
     <ClInclude Include="ShaderProgram.h" />
     <ClInclude Include="SpaceOctNode.h" />
     <ClInclude Include="SpaceQuadNode.h" />
@@ -146,6 +150,7 @@
     <ClCompile Include="ComponentCamera.cpp" />
     <ClCompile Include="ComponentGrass.cpp" />
     <ClCompile Include="ComponentMesh.cpp" />
+    <ClCompile Include="ComponentParticleSystem.cpp" />
     <ClCompile Include="ComponentTransform.cpp" />
     <ClCompile Include="ComponentMaterial.cpp" />
     <ClCompile Include="ComponentTransform2D.cpp" />
@@ -215,6 +220,9 @@
     <ClCompile Include="ModuleWindow.cpp" />
     <ClCompile Include="physicsFunctions.cpp" />
     <ClCompile Include="SceneLoader.cpp" />
+    <ClCompile Include="SerializableArray.cpp" />
+    <ClCompile Include="SerializableObject.cpp" />
+    <ClCompile Include="Serializer.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
     <ClCompile Include="SpaceOctNode.cpp" />
     <ClCompile Include="SpaceQuadNode.cpp" />

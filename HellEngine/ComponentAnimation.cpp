@@ -6,6 +6,7 @@
 #include "ComponentType.h"
 #include "GameObject.h"
 #include "ModuleInput.h"
+#include "SerializableObject.h"
 
 ComponentAnimation::ComponentAnimation(GameObject * owner) : Component(owner)
 {
@@ -97,4 +98,24 @@ void ComponentAnimation::OnEditor()
 int ComponentAnimation::MaxCountInGameObject()
 {
 	return 1;
+}
+
+void ComponentAnimation::Save(SerializableObject& obj) const
+{
+	Component::Save(obj);
+
+	obj.AddString("AnimationName", animationName);
+	obj.AddBool("Loop", loop);
+	obj.AddInt("BlendTime", blendTime);
+}
+
+void ComponentAnimation::Load(const SerializableObject& obj)
+{
+	Component::Load(obj);
+
+	std::string objAnimationName = obj.GetString("AnimationName");
+	memcpy_s(animationName, 256, objAnimationName.c_str(), objAnimationName.length());
+	animationName[objAnimationName.length()] = '\0';
+	loop = obj.GetBool("Loop");
+	blendTime = obj.GetInt("BlendTime");
 }
