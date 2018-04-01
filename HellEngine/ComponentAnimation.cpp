@@ -113,7 +113,9 @@ void ComponentAnimation::Load(const SerializableObject& obj)
 {
 	Component::Load(obj);
 
-	memcpy_s(animationName, 256, obj.GetString("AnimationName").c_str(), obj.GetString("AnimationName").length());
+	std::string objAnimationName = obj.GetString("AnimationName");
+	memcpy_s(animationName, 256, objAnimationName.c_str(), objAnimationName.length());
+	animationName[objAnimationName.length()] = '\0';
 	loop = obj.GetBool("Loop");
 	blendTime = obj.GetInt("BlendTime");
 }

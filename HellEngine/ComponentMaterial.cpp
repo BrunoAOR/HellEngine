@@ -248,10 +248,23 @@ void ComponentMaterial::Load(const SerializableObject& obj)
 	Component::Load(obj);
 
 	modelInfoVaoIndex = obj.GetInt("ModelInfoVaoIndex");
-	memcpy_s(vertexShaderPath, 256, obj.GetString("VertexShaderPath").c_str(), obj.GetString("VertexShaderPath").length());
-	memcpy_s(fragmentShaderPath, 256, obj.GetString("FragmentShaderPath").c_str(), obj.GetString("FragmentShaderPath").length());
-	memcpy_s(texturePath, 256, obj.GetString("TexturePath").c_str(), obj.GetString("TexturePath").length());
-	memcpy_s(shaderDataPath, 256, obj.GetString("ShaderDataPath").c_str(), obj.GetString("ShaderDataPath").length());
+	
+	std::string objVertexShaderPath = obj.GetString("VertexShaderPath");
+	memcpy_s(vertexShaderPath, 256, objVertexShaderPath.c_str(), objVertexShaderPath.length());
+	vertexShaderPath[objVertexShaderPath.length()] = '\0';
+	
+	std::string objFragmentShaderPath = obj.GetString("FragmentShaderPath");
+	memcpy_s(fragmentShaderPath, 256, objFragmentShaderPath.c_str(), objFragmentShaderPath.length());
+	fragmentShaderPath[objFragmentShaderPath.length()] = '\0';
+
+	std::string objTexturePath = obj.GetString("TexturePath");
+	memcpy_s(texturePath, 256, objTexturePath.c_str(), objTexturePath.length());
+	texturePath[objTexturePath.length()] = '\0';
+
+	std::string objShaderDataPath = obj.GetString("ShaderDataPath");
+	memcpy_s(shaderDataPath, 256, objShaderDataPath.c_str(), objShaderDataPath.length());
+	shaderDataPath[objShaderDataPath.length()] = '\0';
+
 	textureConfiguration.wrapMode = obj.GetInt("WrapMode");
 	textureConfiguration.mipMaps = obj.GetBool("MipMaps");
 	textureConfiguration.minificationMode = obj.GetInt("MinificationMode");

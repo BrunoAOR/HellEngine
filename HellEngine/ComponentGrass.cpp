@@ -136,8 +136,9 @@ void ComponentGrass::Load(const SerializableObject& obj)
 {
 	Component::Load(obj);
 
-	std::string texturePathAsString = obj.GetString("TexturePath");
-	memcpy_s(texturePath, 256, texturePathAsString.c_str(), texturePathAsString.length());
+	std::string objTexturePath = obj.GetString("TexturePath");
+	memcpy_s(texturePath, 256, objTexturePath.c_str(), objTexturePath.length());
+	texturePath[objTexturePath.length()] = '\0';
 	position = obj.GetFloat3("Position");
 	randomPositionRange = obj.GetFloat("RandomPositionRange");
 	width = obj.GetFloat("Width");
