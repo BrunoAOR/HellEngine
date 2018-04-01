@@ -9,6 +9,7 @@
 #include "GameObject.h"
 #include "ModuleDebugDraw.h"
 #include "ModuleEditorCamera.h"
+#include "ModuleInput.h"
 #include "ModuleUI.h"
 #include "ModuleScene.h"
 #include "ModuleShaderManager.h"
@@ -72,6 +73,19 @@ bool ModuleUI::Init()
 	componentLabel->SetFontName("temp");
 	componentLabel->SetAdaptSizeToText(true);
 	
+	GameObject* button = NewUIElement(UIElementType::BUTTON);
+	button->name = "Button test";
+	button->SetParent(canvas);
+
+	ComponentTransform2D* buttonTransform = (ComponentTransform2D*)button->GetComponent(ComponentType::TRANSFORM_2D);
+	buttonTransform->SetLocalPos(500, 400);
+	buttonTransform->SetSize(150, 150);
+
+	ComponentUiButton* componentButton = (ComponentUiButton*)button->GetComponent(ComponentType::UI_BUTTON);
+	componentButton->SetTransitionImage(ButtonStatus::DEFAULT, "assets/images/lenna.png");
+	componentButton->SetTransitionImage(ButtonStatus::HOVER, "assets/images/grass.png");
+	componentButton->SetTransitionImage(ButtonStatus::PRESSED, "assets/images/ryu.jpg");
+
 	/* Testing end */
 
 	return true;
@@ -90,19 +104,22 @@ GameObject* ModuleUI::NewUIElement(UIElementType uiType)
 	go->name = GetUITypeString(uiType);
 	go->AddComponent(ComponentType::TRANSFORM_2D);
 
-	ComponentUiImage* image = nullptr;
 	ComponentUiButton* button = nullptr;
+	ComponentUiImage* image = nullptr;
+	ComponentUiLabel* label = nullptr;
 	GameObject* childGo = nullptr;
 	switch (uiType)
 	{
 	case UIElementType::BUTTON:
 		button = (ComponentUiButton*)go->AddComponent(ComponentType::UI_BUTTON);
 		image = (ComponentUiImage*)go->AddComponent(ComponentType::UI_IMAGE);
+		button->SetTargetImage(image);
 		childGo = App->scene->CreateGameObject();
-		childGo->name = "Text";
+		childGo->name = "Label";
 		childGo->AddComponent(ComponentType::TRANSFORM_2D);
 		childGo->SetParent(go);
-		childGo->AddComponent(ComponentType::UI_LABEL);
+		label = (ComponentUiLabel*)childGo->AddComponent(ComponentType::UI_LABEL);
+		label->SetLabelText("New Label");
 		break;
 	case UIElementType::IMG:
 		go->AddComponent(ComponentType::UI_IMAGE);
@@ -111,7 +128,8 @@ GameObject* ModuleUI::NewUIElement(UIElementType uiType)
 		assert(false);
 		break;
 	case UIElementType::LABEL:
-		go->AddComponent(ComponentType::UI_LABEL);
+		label = (ComponentUiLabel*)go->AddComponent(ComponentType::UI_LABEL);
+		label->SetLabelText("New Label");
 		break;
 	}
 
@@ -122,21 +140,16 @@ UpdateStatus ModuleUI::Update()
 {
     if (canvas != nullptr)
     {
+		mousePosition = App->input->GetMousePosition();
+		mousePosition.y = App->window->GetHeight() - mousePosition.y;
+		mouseButtonState = App->input->GetMouseButtonDown(1);
+
         //Check UI states ("pressed, etc...")
         glDisable(GL_DEPTH_TEST);
         UpdateElements();
 		glEnable(GL_DEPTH_TEST);
     }
     return UpdateStatus::UPDATE_CONTINUE;
-}
-
-GameObject* ModuleUI::GetClickedGameObject()
-{
-    return clicked;
-}
-GameObject* ModuleUI::GetHoveringGameObject()
-{
-    return hovering;
 }
 
 void ModuleUI::RegisterUiElement(ComponentUIElement* newUiElement)
@@ -227,7 +240,27 @@ void ModuleUI::UpdateComponent(ComponentUIElement* component)
 
 void ModuleUI::UpdateButton(ComponentUiButton* button)
 {
-
+	if (button->GetButtonStatus() != ButtonStatus::DISABLED)
+	{
+		const fPoint& buttonPos = button->transform2D->GetWorldPos();
+		const fPoint& buttonSize = button->transform2D->GetSize();
+		if (mousePosition.x >= buttonPos.x && mousePosition.x <= buttonPos.x + buttonSize.x
+			&& mousePosition.y >= buttonPos.y && mousePosition.y <= buttonPos.y + buttonSize.y)
+		{
+			if (mouseButtonState == KeyState::KEY_DOWN || mouseButtonState == KeyState::KEY_REPEAT)
+			{
+				button->SetButtonStatus(ButtonStatus::PRESSED);
+			}
+			else
+			{
+				button->SetButtonStatus(ButtonStatus::HOVER);
+			}
+		}
+		else
+		{
+			button->SetButtonStatus(ButtonStatus::DEFAULT);
+		}
+	}
 }
 
 void ModuleUI::UpdateImage(ComponentUiImage* image)

@@ -6,12 +6,14 @@
 #include "Module.h"
 #include "ComponentUIElement.h"
 #include "MeshInfo.h"
+#include "Point.h"
 class ComponentUiImage;
 class ComponentUiButton;
 class ComponentUiLabel;
 class ComponentUiInputText;
 class GameObject;
 class ShaderProgram;
+enum class KeyState;
 
 class ModuleUI : public Module
 {
@@ -44,8 +46,9 @@ private:
 	std::vector<ComponentUIElement*> uiElements;
 
     GameObject* canvas = nullptr;
-    GameObject* clicked = nullptr;
-    GameObject* hovering = nullptr;
+    
+	iPoint mousePosition;
+	KeyState mouseButtonState;
 
 	const ShaderProgram* shaderProgram = nullptr;
 	uint colorUniformLocation = -1;
