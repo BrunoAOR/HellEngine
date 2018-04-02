@@ -1,6 +1,7 @@
 #include "ImGui/imgui.h"
 #include "Application.h"
 #include "ComponentUiButton.h"
+#include "ComponentUiImage.h"
 #include "ComponentType.h"
 #include "GameObject.h"
 #include "ModuleTextureManager.h"

@@ -2,8 +2,8 @@
 #define __H_COMPONENT_UI_INPUT_TEXT__
 
 #include "ComponentUIElement.h"
-#include "ComponentUiImage.h"
-#include "ComponentUiLabel.h"
+class ComponentUiImage;
+class ComponentUiLabel;
 
 class ComponentUiInputText : public ComponentUIElement
 {
@@ -14,16 +14,24 @@ public:
 
 	void OnEditor();
 
-	int GetMaxChars();
-	void SetMaxChars(int maxCharsValue);
+	void SetTargetBackgroundImage(ComponentUiImage* backgroundImage);
+	void SetTargetPlaceholderLabel(ComponentUiLabel* placeholderLabel);
+	void SetTargetTextLabel(ComponentUiLabel* textLabel);
+	void SetTargetCaretImage(ComponentUiImage* caretImage);
+
+	unsigned int GetMaxChars();
+	void SetMaxChars(unsigned int maxCharsValue);
 	bool GetIsPassword();
 	void SetIsPassword(bool isPasswordValue);
 
 private:
 
-	ComponentUiImage *uiImage;
-	ComponentUiLabel *uiLabel;
-	int maxChars;
+	ComponentUiImage* backgroundImage;
+	ComponentUiLabel* placeholderLabel;
+	ComponentUiLabel* textLabel;
+	ComponentUiImage* caretImage;
+
+	unsigned int maxChars;
 	bool isPassword;
 };
 

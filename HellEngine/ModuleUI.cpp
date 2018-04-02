@@ -44,7 +44,8 @@ bool ModuleUI::Init()
 	canvas = App->scene->CreateGameObject();
 	canvas->name = "Canvas";
 
-	/* Testing */
+	/* TESTING */
+	/* image */
 	GameObject* image = App->scene->CreateGameObject();
 	image->name = "Image test";
 	image->SetParent(canvas);
@@ -58,6 +59,7 @@ bool ModuleUI::Init()
 
 	App->fonts->RegisterFont("temp", "assets/images/fonts/temp.ttf");
 
+	/* label */
 	GameObject* label = App->scene->CreateGameObject();
 	label->name = "Label test";
 	label->SetParent(canvas);
@@ -73,6 +75,7 @@ bool ModuleUI::Init()
 	componentLabel->SetFontName("temp");
 	componentLabel->SetAdaptSizeToText(true);
 	
+	/* button */
 	GameObject* button = NewUIElement(UIElementType::BUTTON);
 	button->name = "Button test";
 	button->SetParent(canvas);
@@ -85,6 +88,17 @@ bool ModuleUI::Init()
 	componentButton->SetTransitionImage(ButtonStatus::DEFAULT, "assets/images/lenna.png");
 	componentButton->SetTransitionImage(ButtonStatus::HOVER, "assets/images/grass.png");
 	componentButton->SetTransitionImage(ButtonStatus::PRESSED, "assets/images/ryu.jpg");
+
+	/* input text */
+	GameObject* inputText = NewUIElement(UIElementType::INPUT_TEXT);
+	inputText->name = "Input Text test";
+	inputText->SetParent(canvas);
+
+	ComponentTransform2D* textTransform = (ComponentTransform2D*)inputText->GetComponent(ComponentType::TRANSFORM_2D);
+	textTransform->SetLocalPos(700, 400);
+	textTransform->SetSize(150, 150);
+
+
 
 	/* Testing end */
 
@@ -106,6 +120,7 @@ GameObject* ModuleUI::NewUIElement(UIElementType uiType)
 
 	ComponentUiButton* button = nullptr;
 	ComponentUiImage* image = nullptr;
+	ComponentUiInputText* inputText = nullptr;
 	ComponentUiLabel* label = nullptr;
 	GameObject* childGo = nullptr;
 	switch (uiType)
@@ -125,7 +140,31 @@ GameObject* ModuleUI::NewUIElement(UIElementType uiType)
 		go->AddComponent(ComponentType::UI_IMAGE);
 		break;
 	case UIElementType::INPUT_TEXT:
-		assert(false);
+		inputText = (ComponentUiInputText*)go->AddComponent(ComponentType::UI_INPUT_TEXT);
+		image = (ComponentUiImage*)go->AddComponent(ComponentType::UI_IMAGE);
+		inputText->SetTargetBackgroundImage(image);
+		/* Child Placeholder */
+		childGo = App->scene->CreateGameObject();
+		childGo->name = "Placeholder";
+		childGo->AddComponent(ComponentType::TRANSFORM_2D);
+		childGo->SetParent(go);
+		label = (ComponentUiLabel*)childGo->AddComponent(ComponentType::UI_LABEL);
+		inputText->SetTargetPlaceholderLabel(label);
+		label->SetLabelText("Enter text here...");
+		/* Child Text */
+		childGo = App->scene->CreateGameObject();
+		childGo->name = "Text";
+		childGo->AddComponent(ComponentType::TRANSFORM_2D);
+		childGo->SetParent(go);
+		label = (ComponentUiLabel*)childGo->AddComponent(ComponentType::UI_LABEL);
+		inputText->SetTargetTextLabel(label);
+		/* Child Caret image */
+		childGo = App->scene->CreateGameObject();
+		childGo->name = "Caret";
+		childGo->AddComponent(ComponentType::TRANSFORM_2D);
+		childGo->SetParent(go);
+		image = (ComponentUiImage*)childGo->AddComponent(ComponentType::UI_IMAGE);
+		inputText->SetTargetCaretImage(image);
 		break;
 	case UIElementType::LABEL:
 		label = (ComponentUiLabel*)go->AddComponent(ComponentType::UI_LABEL);
@@ -223,18 +262,15 @@ void ModuleUI::UpdateComponent(ComponentUIElement* component)
 	case ComponentType::UI_IMAGE:
         UpdateImage((ComponentUiImage*) component);
         break;
+	case ComponentType::UI_INPUT_TEXT:
+		UpdateInputText((ComponentUiInputText*)component);
+		break;
 	case ComponentType::UI_LABEL:
 		UpdateLabel((ComponentUiLabel*)component);
 		break;
     case ComponentType::UI_BUTTON:
         UpdateButton((ComponentUiButton*)component);
         break;
-    /*
-	
-    case UIElementType::INPUT_TEXT:
-        UpdateInputText((ComponentUiInputText*)component);
-        break;
-	*/
     }
 }
 

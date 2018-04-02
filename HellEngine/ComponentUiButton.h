@@ -2,9 +2,8 @@
 #define __H_COMPONENT_UI_BUTTON__
 
 #include "ComponentUIElement.h"
-#include "ComponentUiImage.h"
-#include "ComponentUiLabel.h"
 #include "Color.h"
+class ComponentUiImage;
 
 enum class ButtonStatus { DEFAULT, HOVER, PRESSED, DISABLED };
 enum class ButtonTransitionType { COLOR, SPRITE };

@@ -17,6 +17,7 @@
 #include "ComponentType.h"
 #include "ComponentUiButton.h"
 #include "ComponentUiImage.h"
+#include "ComponentUiInputText.h"
 #include "ComponentUiLabel.h"
 #include "ModuleUI.h"
 #include "ModuleScene.h"
@@ -507,6 +508,9 @@ Component* GameObject::AddComponent(ComponentType type)
 		break;
 	case ComponentType::UI_IMAGE:
 		component = new ComponentUiImage(this);
+		break;
+	case ComponentType::UI_INPUT_TEXT:
+		component = new ComponentUiInputText(this);
 		break;
 	case ComponentType::UI_LABEL:
 		component = new ComponentUiLabel(this);
