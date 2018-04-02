@@ -24,7 +24,6 @@ public:
 	void SetFocusState(bool focusState);
 
 	unsigned int GetMaxChars();
-	void SetMaxChars(unsigned int maxCharsValue);
 	bool GetIsPassword();
 	void SetIsPassword(bool isPasswordValue);
 
@@ -33,19 +32,23 @@ public:
 
 private:
 	void AddNewText(const char* newText);
+	void DeleteSelection();
 
 private:
+	static const unsigned int maxChars = 256;
+
 	ComponentUiImage* backgroundImage;
 	ComponentUiLabel* placeholderLabel;
 	ComponentUiLabel* textLabel;
 	ComponentUiImage* caretImage;
 
-	char textContent[256] = "";
+	char textContent[maxChars] = "";
 	unsigned int currentCharCount = 0;
 	unsigned int cursorPosition = 0;
-	
+	unsigned int selectionStart = 0;
+	unsigned int selectionEnd = 0;
+
 	bool hasFocus = false;
-	unsigned int maxChars;
 	bool isPassword;
 };
 

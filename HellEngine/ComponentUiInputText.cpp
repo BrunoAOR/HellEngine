@@ -32,35 +32,73 @@ void ComponentUiInputText::UpdateTextField()
 	{
 		/* HANDLE KEYS */
 
-		/* Handle moving with arrows */
+		/* Handle moving with arrows and making selections */
 		if (App->input->GetKey(SDL_SCANCODE_LEFT) == KeyState::KEY_DOWN)
 		{
 			if (cursorPosition > 0)
+			{
 				--cursorPosition;
+				if (App->input->GetKey(SDL_SCANCODE_LSHIFT) == KeyState::KEY_REPEAT || App->input->GetKey(SDL_SCANCODE_RSHIFT) == KeyState::KEY_REPEAT)
+				{
+					--selectionEnd;
+				}
+				else
+				{
+					selectionStart = cursorPosition;
+					selectionEnd = cursorPosition;
+				}
+			}
 		}
 		if (App->input->GetKey(SDL_SCANCODE_RIGHT) == KeyState::KEY_DOWN)
 		{
-			if (cursorPosition < strnlen_s(textContent, 256) && cursorPosition < 255)
+			if (cursorPosition < strnlen_s(textContent, maxChars) && cursorPosition < maxChars - 1)
+			{
 				++cursorPosition;
+				if (App->input->GetKey(SDL_SCANCODE_LSHIFT) == KeyState::KEY_REPEAT || App->input->GetKey(SDL_SCANCODE_RSHIFT) == KeyState::KEY_REPEAT)
+				{
+					++selectionEnd;
+				}
+				else
+				{
+					selectionStart = cursorPosition;
+					selectionEnd = cursorPosition;
+				}
+			}
 		}
+
 		/* Handle deleting with backspace and delete */
 		if (App->input->GetKey(SDL_SCANCODE_BACKSPACE) == KeyState::KEY_DOWN)
 		{
 			if (cursorPosition > 0)
 			{
-				memcpy_s(textContent + cursorPosition - 1, currentCharCount - cursorPosition + 1, textContent + cursorPosition, currentCharCount - cursorPosition + 1);
-				--cursorPosition;
-				--currentCharCount;
+				if (selectionStart == selectionEnd)
+				{
+					memcpy_s(textContent + cursorPosition - 1, currentCharCount - cursorPosition + 1, textContent + cursorPosition, currentCharCount - cursorPosition + 1);
+					--cursorPosition;
+					--currentCharCount;
+				}
+				else
+				{
+					DeleteSelection();
+				}
 			}
 		}
 		if (App->input->GetKey(SDL_SCANCODE_DELETE) == KeyState::KEY_DOWN)
 		{
 			if (cursorPosition < currentCharCount)
 			{
-				memcpy_s(textContent + cursorPosition, currentCharCount - cursorPosition + 1, textContent + cursorPosition + 1, currentCharCount - cursorPosition + 1);
-				--currentCharCount;
+				if (selectionStart == selectionEnd)
+				{
+					memcpy_s(textContent + cursorPosition, currentCharCount - cursorPosition + 1, textContent + cursorPosition + 1, currentCharCount - cursorPosition + 1);
+					--currentCharCount;
+				}
+				else
+				{
+					DeleteSelection();
+				}
 			}
 		}
+
 		/* Handle Home and End */
 		if (App->input->GetKey(SDL_SCANCODE_HOME) == KeyState::KEY_DOWN)
 		{
@@ -70,6 +108,7 @@ void ComponentUiInputText::UpdateTextField()
 		{
 			cursorPosition = currentCharCount;
 		}
+
 		/* Handle Enter */
 		if (App->input->GetKey(SDL_SCANCODE_RETURN) == KeyState::KEY_DOWN || App->input->GetKey(SDL_SCANCODE_RETURN2) == KeyState::KEY_DOWN)
 		{
@@ -127,11 +166,6 @@ unsigned int ComponentUiInputText::GetMaxChars()
 	return maxChars;
 }
 
-void ComponentUiInputText::SetMaxChars(unsigned int maxCharsValue)
-{
-	maxChars = maxCharsValue;
-}
-
 bool ComponentUiInputText::GetIsPassword()
 {
 	return isPassword;
@@ -145,8 +179,9 @@ void ComponentUiInputText::SetIsPassword(bool isPasswordValue)
 void ComponentUiInputText::AddNewText(const char* newText)
 {
 	uint newTextSize = strnlen_s(newText, 32);
-	if (newTextSize > 0 && currentCharCount + newTextSize < 256)
+	if (newTextSize > 0 && currentCharCount + newTextSize < maxChars)
 	{
+		DeleteSelection();
 		char* tail = nullptr;
 		uint tailSize = 0;
 		if (cursorPosition != currentCharCount)
@@ -155,15 +190,29 @@ void ComponentUiInputText::AddNewText(const char* newText)
 			tail = new char[tailSize];
 			memcpy_s(tail, tailSize, textContent + cursorPosition, tailSize);
 		}
-		memcpy_s(textContent + cursorPosition, 256 - cursorPosition, newText, newTextSize);
+		memcpy_s(textContent + cursorPosition, maxChars - cursorPosition, newText, newTextSize);
 		cursorPosition += newTextSize;
+		selectionStart = selectionEnd = cursorPosition;
 		currentCharCount += newTextSize;
 		if (tail)
 		{
-			memcpy_s(textContent + cursorPosition, 256 - cursorPosition, tail, tailSize);
+			memcpy_s(textContent + cursorPosition, maxChars - cursorPosition, tail, tailSize);
 		}
 		textContent[currentCharCount] = '\0';
 
 		delete tail;
+	}
+}
+
+void ComponentUiInputText::DeleteSelection()
+{
+	if (selectionStart != selectionEnd)
+	{
+		uint selectionLeft = selectionStart < selectionEnd ? selectionStart : selectionEnd;
+		uint selectionRight = selectionStart < selectionEnd ? selectionEnd : selectionStart;
+		uint selectionSize = selectionRight - selectionLeft;
+		memcpy_s(textContent + selectionLeft, currentCharCount - selectionRight + 1, textContent + selectionRight, currentCharCount - selectionRight + 1);
+		currentCharCount -= selectionSize;
+		cursorPosition = selectionStart = selectionEnd = selectionLeft;
 	}
 }
