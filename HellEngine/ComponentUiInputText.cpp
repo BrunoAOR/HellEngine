@@ -38,15 +38,7 @@ void ComponentUiInputText::UpdateTextField()
 			if (cursorPosition > 0)
 			{
 				--cursorPosition;
-				if (App->input->GetKey(SDL_SCANCODE_LSHIFT) == KeyState::KEY_REPEAT || App->input->GetKey(SDL_SCANCODE_RSHIFT) == KeyState::KEY_REPEAT)
-				{
-					--selectionEnd;
-				}
-				else
-				{
-					selectionStart = cursorPosition;
-					selectionEnd = cursorPosition;
-				}
+				HandleShiftKey();
 			}
 		}
 		if (App->input->GetKey(SDL_SCANCODE_RIGHT) == KeyState::KEY_DOWN)
@@ -54,16 +46,20 @@ void ComponentUiInputText::UpdateTextField()
 			if (cursorPosition < strnlen_s(textContent, maxChars) && cursorPosition < maxChars - 1)
 			{
 				++cursorPosition;
-				if (App->input->GetKey(SDL_SCANCODE_LSHIFT) == KeyState::KEY_REPEAT || App->input->GetKey(SDL_SCANCODE_RSHIFT) == KeyState::KEY_REPEAT)
-				{
-					++selectionEnd;
-				}
-				else
-				{
-					selectionStart = cursorPosition;
-					selectionEnd = cursorPosition;
-				}
+				HandleShiftKey();
 			}
+		}
+
+		/* Handle Home and End */
+		if (App->input->GetKey(SDL_SCANCODE_HOME) == KeyState::KEY_DOWN)
+		{
+			cursorPosition = 0;
+			HandleShiftKey();
+		}
+		if (App->input->GetKey(SDL_SCANCODE_END) == KeyState::KEY_DOWN)
+		{
+			cursorPosition = currentCharCount;
+			HandleShiftKey();
 		}
 
 		/* Handle deleting with backspace and delete */
@@ -99,14 +95,36 @@ void ComponentUiInputText::UpdateTextField()
 			}
 		}
 
-		/* Handle Home and End */
-		if (App->input->GetKey(SDL_SCANCODE_HOME) == KeyState::KEY_DOWN)
+		/* Handle copy, cut and paste */
+		if ((App->input->GetKey(SDL_SCANCODE_C) == KeyState::KEY_DOWN || App->input->GetKey(SDL_SCANCODE_X) == KeyState::KEY_DOWN)
+			&& (App->input->GetKey(SDL_SCANCODE_LCTRL) == KeyState::KEY_REPEAT || App->input->GetKey(SDL_SCANCODE_RCTRL) == KeyState::KEY_REPEAT))
 		{
-			cursorPosition = 0;
+			if (selectionStart != selectionEnd)
+			{
+				uint selectionLeft = selectionStart < selectionEnd ? selectionStart : selectionEnd;
+				uint selectionRight = selectionStart < selectionEnd ? selectionEnd : selectionStart;
+				uint selectionSize = selectionRight - selectionLeft;
+				char* selectionText = new char[selectionSize + 1];
+				memcpy_s(selectionText, selectionSize, textContent + selectionLeft, selectionSize);
+				selectionText[selectionSize] = '\0';
+
+				bool success = App->input->SetClipboardText(selectionText);
+				assert(success);
+				delete[] selectionText;
+
+				if (App->input->GetKey(SDL_SCANCODE_X) == KeyState::KEY_DOWN)
+					DeleteSelection();
+			}
 		}
-		if (App->input->GetKey(SDL_SCANCODE_END) == KeyState::KEY_DOWN)
+		if (App->input->GetKey(SDL_SCANCODE_V) == KeyState::KEY_DOWN && (App->input->GetKey(SDL_SCANCODE_LCTRL) == KeyState::KEY_REPEAT || App->input->GetKey(SDL_SCANCODE_RCTRL) == KeyState::KEY_REPEAT))
 		{
-			cursorPosition = currentCharCount;
+			std::string clipboardText = App->input->GetClipboardText();
+			if (clipboardText.length() > 0)
+			{
+				uint clipboardSize = clipboardText.length();
+				const char* newText = clipboardText.c_str();
+				AddNewText(newText);
+			}
 		}
 
 		/* Handle Enter */
@@ -178,7 +196,7 @@ void ComponentUiInputText::SetIsPassword(bool isPasswordValue)
 
 void ComponentUiInputText::AddNewText(const char* newText)
 {
-	uint newTextSize = strnlen_s(newText, 32);
+	uint newTextSize = strnlen_s(newText, maxChars);
 	if (newTextSize > 0 && currentCharCount + newTextSize < maxChars)
 	{
 		DeleteSelection();
@@ -200,7 +218,7 @@ void ComponentUiInputText::AddNewText(const char* newText)
 		}
 		textContent[currentCharCount] = '\0';
 
-		delete tail;
+		delete[] tail;
 	}
 }
 
@@ -214,5 +232,18 @@ void ComponentUiInputText::DeleteSelection()
 		memcpy_s(textContent + selectionLeft, currentCharCount - selectionRight + 1, textContent + selectionRight, currentCharCount - selectionRight + 1);
 		currentCharCount -= selectionSize;
 		cursorPosition = selectionStart = selectionEnd = selectionLeft;
+	}
+}
+
+void ComponentUiInputText::HandleShiftKey()
+{
+	if (App->input->GetKey(SDL_SCANCODE_LSHIFT) == KeyState::KEY_REPEAT || App->input->GetKey(SDL_SCANCODE_RSHIFT) == KeyState::KEY_REPEAT)
+	{
+		selectionEnd = cursorPosition;
+	}
+	else
+	{
+		selectionStart = cursorPosition;
+		selectionEnd = cursorPosition;
 	}
 }

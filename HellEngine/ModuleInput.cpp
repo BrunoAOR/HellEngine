@@ -248,6 +248,24 @@ const char * ModuleInput::GetText() const
 	return text;
 }
 
+std::string ModuleInput::GetClipboardText() const
+{
+	if (!SDL_HasClipboardText())
+		return std::string();
+
+
+	char* clipboardText = SDL_GetClipboardText();
+	std::string text(clipboardText);
+
+	SDL_free(clipboardText);
+	return text;
+}
+
+bool ModuleInput::SetClipboardText(const char* text) const
+{
+	return SDL_SetClipboardText(text) == 0;
+}
+
 bool ModuleInput::GetWindowEvent(EventWindow ev) const
 {
 	return windowEvents[(int)ev];

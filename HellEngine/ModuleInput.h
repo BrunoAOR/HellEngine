@@ -39,6 +39,9 @@ public:
 
 	const char* GetText() const;
 
+	std::string GetClipboardText() const;
+	bool SetClipboardText(const char* text) const;
+
 	/* Check for window events last frame */
 	bool GetWindowEvent(EventWindow code) const;
 

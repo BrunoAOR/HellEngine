@@ -33,6 +33,7 @@ public:
 private:
 	void AddNewText(const char* newText);
 	void DeleteSelection();
+	void HandleShiftKey();
 
 private:
 	static const unsigned int maxChars = 256;
