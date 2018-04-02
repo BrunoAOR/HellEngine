@@ -81,20 +81,6 @@ bool IsEmptyString(const char* charString)
 	return (charString != nullptr && charString[0] == '\0');
 }
 
-uint GetStringLength(const char* charString, uint maxSize)
-{
-	if (!charString || IsEmptyString(charString))
-		return 0;
-
-	for (uint i = 0; i < maxSize; ++i)
-	{
-		if (charString[0] == '\0')
-			return i;
-	}
-
-	return maxSize;
-}
-
 void DecomposeMatrix(const float4x4& openGlStyleMatrix, float3& position, Quat& rotation, float3& scale)
 {
 	/* Transpose to get the matrix in a shape when the bottom line is 0 0 0 1 */

@@ -31,11 +31,42 @@ void ComponentUiInputText::UpdateTextField()
 	if (hasFocus)
 	{
 		/* Handle keys */
+		if (App->input->GetKey(SDL_SCANCODE_LEFT) == KeyState::KEY_DOWN)
+		{
+			if (cursorPosition > 0)
+				--cursorPosition;
+		}
+		if (App->input->GetKey(SDL_SCANCODE_RIGHT) == KeyState::KEY_DOWN)
+		{
+			if (cursorPosition < strnlen_s(textContent, 256) && cursorPosition < 255)
+				++cursorPosition;
+		}
 
-		/* Handle text */
+		/* Handle new text */
 		const char* newText = App->input->GetText();
-		uint newTextSize = GetStringLength(newText, 32);
-		strcat_s(textContent, newText);
+		uint newTextSize = strnlen_s(newText, 32);
+		if (newTextSize > 0 && currentCharCount + newTextSize < 256)
+		{
+			char* tail = nullptr;
+			uint tailSize = 0;
+			if (cursorPosition != currentCharCount)
+			{
+				tailSize = currentCharCount - cursorPosition;
+				tail = new char[tailSize];
+				memcpy_s(tail, tailSize, textContent + cursorPosition, tailSize);
+			}
+			memcpy_s(textContent + cursorPosition, 256 - cursorPosition, newText, newTextSize);
+			cursorPosition += newTextSize;
+			currentCharCount += newTextSize;
+			if (tail)
+			{
+				memcpy_s(textContent + cursorPosition, 256 - cursorPosition, tail, tailSize);
+			}
+			textContent[currentCharCount] = '\0';
+
+			delete tail;
+		}
+
 		textLabel->SetLabelText(textContent);
 	}
 }

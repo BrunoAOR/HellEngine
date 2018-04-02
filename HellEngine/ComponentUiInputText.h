@@ -38,6 +38,8 @@ private:
 	ComponentUiImage* caretImage;
 
 	char textContent[256] = "";
+	unsigned int currentCharCount = 0;
+	unsigned int cursorPosition = 0;
 	
 	bool hasFocus = false;
 	unsigned int maxChars;
