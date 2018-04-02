@@ -85,9 +85,9 @@ bool ModuleUI::Init()
 	buttonTransform->SetSize(150, 150);
 
 	ComponentUiButton* componentButton = (ComponentUiButton*)button->GetComponent(ComponentType::UI_BUTTON);
-	componentButton->SetTransitionImage(ButtonStatus::DEFAULT, "assets/images/lenna.png");
-	componentButton->SetTransitionImage(ButtonStatus::HOVER, "assets/images/grass.png");
-	componentButton->SetTransitionImage(ButtonStatus::PRESSED, "assets/images/ryu.jpg");
+	componentButton->transitionHandler.SetTransitionImage(TransitionState::DEFAULT, "assets/images/lenna.png");
+	componentButton->transitionHandler.SetTransitionImage(TransitionState::HOVER, "assets/images/grass.png");
+	componentButton->transitionHandler.SetTransitionImage(TransitionState::PRESSED, "assets/images/ryu.jpg");
 
 	/* input text */
 	GameObject* inputText = NewUIElement(UIElementType::INPUT_TEXT);
@@ -128,7 +128,7 @@ GameObject* ModuleUI::NewUIElement(UIElementType uiType)
 	case UIElementType::BUTTON:
 		button = (ComponentUiButton*)go->AddComponent(ComponentType::UI_BUTTON);
 		image = (ComponentUiImage*)go->AddComponent(ComponentType::UI_IMAGE);
-		button->SetTargetImage(image);
+		button->transitionHandler.SetTargetImage(image);
 		childGo = App->scene->CreateGameObject();
 		childGo->name = "Label";
 		childGo->AddComponent(ComponentType::TRANSFORM_2D);
@@ -276,7 +276,7 @@ void ModuleUI::UpdateComponent(ComponentUIElement* component)
 
 void ModuleUI::UpdateButton(ComponentUiButton* button)
 {
-	if (button->GetButtonStatus() != ButtonStatus::DISABLED)
+	if (button->transitionHandler.GetTransitionState() != TransitionState::DISABLED)
 	{
 		const fPoint& buttonPos = button->transform2D->GetWorldPos();
 		const fPoint& buttonSize = button->transform2D->GetSize();
@@ -285,16 +285,16 @@ void ModuleUI::UpdateButton(ComponentUiButton* button)
 		{
 			if (mouseButtonState == KeyState::KEY_DOWN || mouseButtonState == KeyState::KEY_REPEAT)
 			{
-				button->SetButtonStatus(ButtonStatus::PRESSED);
+				button->transitionHandler.SetTransitionState(TransitionState::PRESSED);
 			}
 			else
 			{
-				button->SetButtonStatus(ButtonStatus::HOVER);
+				button->transitionHandler.SetTransitionState(TransitionState::HOVER);
 			}
 		}
 		else
 		{
-			button->SetButtonStatus(ButtonStatus::DEFAULT);
+			button->transitionHandler.SetTransitionState(TransitionState::DEFAULT);
 		}
 	}
 }

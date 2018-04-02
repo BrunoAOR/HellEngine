@@ -43,4 +43,4 @@ private:
 	TTF_Font* font = nullptr;
 };
 
-#endif __H_COMPONENT_UI_LABEL__
+#endif // !__H_COMPONENT_UI_LABEL__

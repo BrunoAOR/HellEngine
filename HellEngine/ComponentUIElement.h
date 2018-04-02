@@ -33,4 +33,4 @@ protected:
 	bool visible;
 };
 
-#endif __H_COMPONENT_UI_ELEMENT__
+#endif // !__H_COMPONENT_UI_ELEMENT__

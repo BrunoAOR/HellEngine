@@ -27,5 +27,5 @@ private:
 	float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 };
 
-#endif __H_COMPONENT_UI_IMAGE__
+#endif // !__H_COMPONENT_UI_IMAGE__
 

@@ -139,6 +139,7 @@
     <ClInclude Include="SpaceQuadTree.h" />
     <ClInclude Include="TextureConfiguration.h" />
     <ClInclude Include="TextureInfo.h" />
+    <ClInclude Include="UITransitionsHandler.h" />
     <ClInclude Include="UpdateStatus.h" />
     <ClInclude Include="MeshInfo.h" />
   </ItemGroup>
@@ -228,6 +229,7 @@
     <ClCompile Include="SpaceQuadNode.cpp" />
     <ClCompile Include="SpaceOctTree.cpp" />
     <ClCompile Include="SpaceQuadTree.cpp" />
+    <ClCompile Include="UITransitionsHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="MathGeoLib\src\Geometry\KDTree.inl" />

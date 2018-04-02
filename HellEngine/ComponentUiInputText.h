@@ -35,4 +35,4 @@ private:
 	bool isPassword;
 };
 
-#endif __H_COMPONENT_UI_INPUT_TEXT__
+#endif // !__H_COMPONENT_UI_INPUT_TEXT__
