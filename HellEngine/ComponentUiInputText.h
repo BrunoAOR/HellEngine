@@ -32,6 +32,9 @@ public:
 	UITransitionsHandler transitionHandler;
 
 private:
+	void AddNewText(const char* newText);
+
+private:
 	ComponentUiImage* backgroundImage;
 	ComponentUiLabel* placeholderLabel;
 	ComponentUiLabel* textLabel;

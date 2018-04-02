@@ -170,7 +170,7 @@ void ComponentUiLabel::UpdateTexture()
 {
 	static SDL_Color sdlColor{ 255, 255, 255, 0 };
 
-	if (!font || IsEmptyString(labelText))
+	if (!font)
 		return;
 
 	if (textTextureID)
@@ -178,6 +178,9 @@ void ComponentUiLabel::UpdateTexture()
 		glDeleteTextures(1, &textTextureID);
 		textTextureID = 0;
 	}
+
+	if (IsEmptyString(labelText))
+		return;
 
 	SDL_Surface* surface = TTF_RenderText_Blended(font, labelText, sdlColor);
 	assert(surface);

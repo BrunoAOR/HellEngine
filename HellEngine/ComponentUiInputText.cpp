@@ -78,28 +78,7 @@ void ComponentUiInputText::UpdateTextField()
 
 		/* HANDLE NEW TEXT */
 		const char* newText = App->input->GetText();
-		uint newTextSize = strnlen_s(newText, 32);
-		if (newTextSize > 0 && currentCharCount + newTextSize < 256)
-		{
-			char* tail = nullptr;
-			uint tailSize = 0;
-			if (cursorPosition != currentCharCount)
-			{
-				tailSize = currentCharCount - cursorPosition;
-				tail = new char[tailSize];
-				memcpy_s(tail, tailSize, textContent + cursorPosition, tailSize);
-			}
-			memcpy_s(textContent + cursorPosition, 256 - cursorPosition, newText, newTextSize);
-			cursorPosition += newTextSize;
-			currentCharCount += newTextSize;
-			if (tail)
-			{
-				memcpy_s(textContent + cursorPosition, 256 - cursorPosition, tail, tailSize);
-			}
-			textContent[currentCharCount] = '\0';
-
-			delete tail;
-		}
+		AddNewText(newText);
 
 		textLabel->SetLabelText(textContent);
 	}
@@ -161,4 +140,30 @@ bool ComponentUiInputText::GetIsPassword()
 void ComponentUiInputText::SetIsPassword(bool isPasswordValue)
 {
 	isPassword = isPasswordValue;
+}
+
+void ComponentUiInputText::AddNewText(const char* newText)
+{
+	uint newTextSize = strnlen_s(newText, 32);
+	if (newTextSize > 0 && currentCharCount + newTextSize < 256)
+	{
+		char* tail = nullptr;
+		uint tailSize = 0;
+		if (cursorPosition != currentCharCount)
+		{
+			tailSize = currentCharCount - cursorPosition;
+			tail = new char[tailSize];
+			memcpy_s(tail, tailSize, textContent + cursorPosition, tailSize);
+		}
+		memcpy_s(textContent + cursorPosition, 256 - cursorPosition, newText, newTextSize);
+		cursorPosition += newTextSize;
+		currentCharCount += newTextSize;
+		if (tail)
+		{
+			memcpy_s(textContent + cursorPosition, 256 - cursorPosition, tail, tailSize);
+		}
+		textContent[currentCharCount] = '\0';
+
+		delete tail;
+	}
 }
