@@ -80,9 +80,12 @@ bool ComponentUiLabel::SetLabelText(const std::string& newText)
 	if (newText.length() > 1023)
 		return false;
 
-	memcpy_s(labelText, 1024, newText.c_str(), newText.length());
-	labelText[newText.length()] = '\0';
-	UpdateTexture();
+	if (strcmp(newText.c_str(), labelText) != 0)
+	{
+		memcpy_s(labelText, 1024, newText.c_str(), newText.length());
+		labelText[newText.length()] = '\0';
+		UpdateTexture();
+	}
 	return true;
 }
 

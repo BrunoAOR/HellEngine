@@ -30,104 +30,11 @@ void ComponentUiInputText::UpdateTextField()
 {
 	if (hasFocus)
 	{
-		/* HANDLE KEYS */
+		HandleCursorMotion();
+		HandleDeletion();
+		HandleClipboard();
 
-		/* Handle moving with arrows and making selections */
-		if (App->input->GetKey(SDL_SCANCODE_LEFT) == KeyState::KEY_DOWN)
-		{
-			if (cursorPosition > 0)
-			{
-				--cursorPosition;
-				HandleShiftKey();
-			}
-		}
-		if (App->input->GetKey(SDL_SCANCODE_RIGHT) == KeyState::KEY_DOWN)
-		{
-			if (cursorPosition < strnlen_s(textContent, maxChars) && cursorPosition < maxChars - 1)
-			{
-				++cursorPosition;
-				HandleShiftKey();
-			}
-		}
-
-		/* Handle Home and End */
-		if (App->input->GetKey(SDL_SCANCODE_HOME) == KeyState::KEY_DOWN)
-		{
-			cursorPosition = 0;
-			HandleShiftKey();
-		}
-		if (App->input->GetKey(SDL_SCANCODE_END) == KeyState::KEY_DOWN)
-		{
-			cursorPosition = currentCharCount;
-			HandleShiftKey();
-		}
-
-		/* Handle deleting with backspace and delete */
-		if (App->input->GetKey(SDL_SCANCODE_BACKSPACE) == KeyState::KEY_DOWN)
-		{
-			if (cursorPosition > 0)
-			{
-				if (selectionStart == selectionEnd)
-				{
-					memcpy_s(textContent + cursorPosition - 1, currentCharCount - cursorPosition + 1, textContent + cursorPosition, currentCharCount - cursorPosition + 1);
-					--cursorPosition;
-					--currentCharCount;
-				}
-				else
-				{
-					DeleteSelection();
-				}
-			}
-		}
-		if (App->input->GetKey(SDL_SCANCODE_DELETE) == KeyState::KEY_DOWN)
-		{
-			if (cursorPosition < currentCharCount)
-			{
-				if (selectionStart == selectionEnd)
-				{
-					memcpy_s(textContent + cursorPosition, currentCharCount - cursorPosition + 1, textContent + cursorPosition + 1, currentCharCount - cursorPosition + 1);
-					--currentCharCount;
-				}
-				else
-				{
-					DeleteSelection();
-				}
-			}
-		}
-
-		/* Handle copy, cut and paste */
-		if ((App->input->GetKey(SDL_SCANCODE_C) == KeyState::KEY_DOWN || App->input->GetKey(SDL_SCANCODE_X) == KeyState::KEY_DOWN)
-			&& (App->input->GetKey(SDL_SCANCODE_LCTRL) == KeyState::KEY_REPEAT || App->input->GetKey(SDL_SCANCODE_RCTRL) == KeyState::KEY_REPEAT))
-		{
-			if (selectionStart != selectionEnd)
-			{
-				uint selectionLeft = selectionStart < selectionEnd ? selectionStart : selectionEnd;
-				uint selectionRight = selectionStart < selectionEnd ? selectionEnd : selectionStart;
-				uint selectionSize = selectionRight - selectionLeft;
-				char* selectionText = new char[selectionSize + 1];
-				memcpy_s(selectionText, selectionSize, textContent + selectionLeft, selectionSize);
-				selectionText[selectionSize] = '\0';
-
-				bool success = App->input->SetClipboardText(selectionText);
-				assert(success);
-				delete[] selectionText;
-
-				if (App->input->GetKey(SDL_SCANCODE_X) == KeyState::KEY_DOWN)
-					DeleteSelection();
-			}
-		}
-		if (App->input->GetKey(SDL_SCANCODE_V) == KeyState::KEY_DOWN && (App->input->GetKey(SDL_SCANCODE_LCTRL) == KeyState::KEY_REPEAT || App->input->GetKey(SDL_SCANCODE_RCTRL) == KeyState::KEY_REPEAT))
-		{
-			std::string clipboardText = App->input->GetClipboardText();
-			if (clipboardText.length() > 0)
-			{
-				uint clipboardSize = clipboardText.length();
-				const char* newText = clipboardText.c_str();
-				AddNewText(newText);
-			}
-		}
-
-		/* Handle Enter */
+		/* HANDLE RETURN KEY */
 		if (App->input->GetKey(SDL_SCANCODE_RETURN) == KeyState::KEY_DOWN || App->input->GetKey(SDL_SCANCODE_RETURN2) == KeyState::KEY_DOWN)
 		{
 			SetFocusState(false);
@@ -192,6 +99,112 @@ bool ComponentUiInputText::GetIsPassword()
 void ComponentUiInputText::SetIsPassword(bool isPasswordValue)
 {
 	isPassword = isPasswordValue;
+}
+
+void ComponentUiInputText::HandleCursorMotion()
+{
+	/* Handle moving with arrows and making selections */
+	if (App->input->GetKey(SDL_SCANCODE_LEFT) == KeyState::KEY_DOWN)
+	{
+		if (cursorPosition > 0)
+		{
+			--cursorPosition;
+			HandleShiftKey();
+		}
+	}
+	if (App->input->GetKey(SDL_SCANCODE_RIGHT) == KeyState::KEY_DOWN)
+	{
+		if (cursorPosition < strnlen_s(textContent, maxChars) && cursorPosition < maxChars - 1)
+		{
+			++cursorPosition;
+			HandleShiftKey();
+		}
+	}
+
+	/* Handle Home and End */
+	if (App->input->GetKey(SDL_SCANCODE_HOME) == KeyState::KEY_DOWN)
+	{
+		cursorPosition = 0;
+		HandleShiftKey();
+	}
+	if (App->input->GetKey(SDL_SCANCODE_END) == KeyState::KEY_DOWN)
+	{
+		cursorPosition = currentCharCount;
+		HandleShiftKey();
+	}
+}
+
+void ComponentUiInputText::HandleDeletion()
+{
+	/* Handle deleting with backspace and delete */
+	if (App->input->GetKey(SDL_SCANCODE_BACKSPACE) == KeyState::KEY_DOWN)
+	{
+		if (cursorPosition > 0)
+		{
+			if (selectionStart == selectionEnd)
+			{
+				memcpy_s(textContent + cursorPosition - 1, currentCharCount - cursorPosition + 1, textContent + cursorPosition, currentCharCount - cursorPosition + 1);
+				--cursorPosition;
+				--currentCharCount;
+			}
+			else
+			{
+				DeleteSelection();
+			}
+		}
+	}
+	if (App->input->GetKey(SDL_SCANCODE_DELETE) == KeyState::KEY_DOWN)
+	{
+		if (cursorPosition < currentCharCount)
+		{
+			if (selectionStart == selectionEnd)
+			{
+				memcpy_s(textContent + cursorPosition, currentCharCount - cursorPosition + 1, textContent + cursorPosition + 1, currentCharCount - cursorPosition + 1);
+				--currentCharCount;
+			}
+			else
+			{
+				DeleteSelection();
+			}
+		}
+	}
+}
+
+void ComponentUiInputText::HandleClipboard()
+{
+	/* Handle copy and cut */
+	if ((App->input->GetKey(SDL_SCANCODE_C) == KeyState::KEY_DOWN || App->input->GetKey(SDL_SCANCODE_X) == KeyState::KEY_DOWN)
+		&& (App->input->GetKey(SDL_SCANCODE_LCTRL) == KeyState::KEY_REPEAT || App->input->GetKey(SDL_SCANCODE_RCTRL) == KeyState::KEY_REPEAT))
+	{
+		if (selectionStart != selectionEnd)
+		{
+			uint selectionLeft = selectionStart < selectionEnd ? selectionStart : selectionEnd;
+			uint selectionRight = selectionStart < selectionEnd ? selectionEnd : selectionStart;
+			uint selectionSize = selectionRight - selectionLeft;
+			char* selectionText = new char[selectionSize + 1];
+			memcpy_s(selectionText, selectionSize, textContent + selectionLeft, selectionSize);
+			selectionText[selectionSize] = '\0';
+
+			bool success = App->input->SetClipboardText(selectionText);
+			assert(success);
+			delete[] selectionText;
+
+			if (App->input->GetKey(SDL_SCANCODE_X) == KeyState::KEY_DOWN)
+				DeleteSelection();
+		}
+	}
+
+	/* Handle paste */
+	if (App->input->GetKey(SDL_SCANCODE_V) == KeyState::KEY_DOWN && (App->input->GetKey(SDL_SCANCODE_LCTRL) == KeyState::KEY_REPEAT || App->input->GetKey(SDL_SCANCODE_RCTRL) == KeyState::KEY_REPEAT))
+	{
+		std::string clipboardText = App->input->GetClipboardText();
+		if (clipboardText.length() > 0)
+		{
+			uint clipboardSize = clipboardText.length();
+			const char* newText = clipboardText.c_str();
+			AddNewText(newText);
+		}
+	}
 }
 
 void ComponentUiInputText::AddNewText(const char* newText)

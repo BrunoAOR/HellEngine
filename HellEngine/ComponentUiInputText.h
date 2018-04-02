@@ -31,6 +31,9 @@ public:
 	UITransitionsHandler transitionHandler;
 
 private:
+	void HandleCursorMotion();
+	void HandleDeletion();
+	void HandleClipboard();
 	void AddNewText(const char* newText);
 	void DeleteSelection();
 	void HandleShiftKey();
