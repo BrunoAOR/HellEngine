@@ -21,11 +21,6 @@ void ComponentUiInputText::OnEditor()
 	}
 }
 
-void ComponentUiInputText::SetTargetBackgroundImage(ComponentUiImage* newBackgroundImage)
-{
-	backgroundImage = newBackgroundImage;
-}
-
 void ComponentUiInputText::SetTargetPlaceholderLabel(ComponentUiLabel* newPlaceholderLabel)
 {
 	placeholderLabel = newPlaceholderLabel;

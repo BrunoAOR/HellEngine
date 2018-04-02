@@ -2,19 +2,18 @@
 #define __H_COMPONENT_UI_INPUT_TEXT__
 
 #include "ComponentUIElement.h"
+#include "UITransitionsHandler.h"
 class ComponentUiImage;
 class ComponentUiLabel;
 
 class ComponentUiInputText : public ComponentUIElement
 {
 public:
-
 	ComponentUiInputText(GameObject * owner);
 	virtual ~ComponentUiInputText();
 
 	void OnEditor();
 
-	void SetTargetBackgroundImage(ComponentUiImage* backgroundImage);
 	void SetTargetPlaceholderLabel(ComponentUiLabel* placeholderLabel);
 	void SetTargetTextLabel(ComponentUiLabel* textLabel);
 	void SetTargetCaretImage(ComponentUiImage* caretImage);
@@ -24,8 +23,10 @@ public:
 	bool GetIsPassword();
 	void SetIsPassword(bool isPasswordValue);
 
-private:
+public:
+	UITransitionsHandler transitionHandler;
 
+private:
 	ComponentUiImage* backgroundImage;
 	ComponentUiLabel* placeholderLabel;
 	ComponentUiLabel* textLabel;

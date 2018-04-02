@@ -98,7 +98,8 @@ bool ModuleUI::Init()
 	textTransform->SetLocalPos(700, 400);
 	textTransform->SetSize(150, 150);
 
-
+	ComponentUiInputText* componentInputText = (ComponentUiInputText*)inputText->GetComponent(ComponentType::UI_INPUT_TEXT);
+	componentInputText->transitionHandler.SetTransitionImage(TransitionState::DEFAULT, "assets/images/lenna.png");
 
 	/* Testing end */
 
@@ -142,7 +143,7 @@ GameObject* ModuleUI::NewUIElement(UIElementType uiType)
 	case UIElementType::INPUT_TEXT:
 		inputText = (ComponentUiInputText*)go->AddComponent(ComponentType::UI_INPUT_TEXT);
 		image = (ComponentUiImage*)go->AddComponent(ComponentType::UI_IMAGE);
-		inputText->SetTargetBackgroundImage(image);
+		inputText->transitionHandler.SetTargetImage(image);
 		/* Child Placeholder */
 		childGo = App->scene->CreateGameObject();
 		childGo->name = "Placeholder";
@@ -354,7 +355,27 @@ void ModuleUI::UpdateImage(ComponentUiImage* image)
 
 void ModuleUI::UpdateInputText(ComponentUiInputText* inputText)
 {
-
+	if (inputText->transitionHandler.GetTransitionState() != TransitionState::DISABLED)
+	{
+		const fPoint& buttonPos = inputText->transform2D->GetWorldPos();
+		const fPoint& buttonSize = inputText->transform2D->GetSize();
+		if (mousePosition.x >= buttonPos.x && mousePosition.x <= buttonPos.x + buttonSize.x
+			&& mousePosition.y >= buttonPos.y && mousePosition.y <= buttonPos.y + buttonSize.y)
+		{
+			if (mouseButtonState == KeyState::KEY_DOWN || mouseButtonState == KeyState::KEY_REPEAT)
+			{
+				inputText->transitionHandler.SetTransitionState(TransitionState::PRESSED);
+			}
+			else
+			{
+				inputText->transitionHandler.SetTransitionState(TransitionState::HOVER);
+			}
+		}
+		else
+		{
+			inputText->transitionHandler.SetTransitionState(TransitionState::DEFAULT);
+		}
+	}
 }
 
 void ModuleUI::UpdateLabel(ComponentUiLabel* label)
