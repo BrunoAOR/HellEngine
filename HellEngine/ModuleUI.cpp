@@ -362,6 +362,7 @@ void ModuleUI::UpdateImage(ComponentUiImage* image)
 
 void ModuleUI::UpdateInputText(ComponentUiInputText* inputText)
 {
+	inputText->UpdateTextField();
 	if (inputText->transitionHandler.GetTransitionState() != TransitionState::DISABLED)
 	{
 		const fPoint& buttonPos = inputText->transform2D->GetWorldPos();

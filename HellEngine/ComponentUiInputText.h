@@ -14,6 +14,8 @@ public:
 
 	void OnEditor();
 
+	void UpdateTextField();
+
 	void SetTargetPlaceholderLabel(ComponentUiLabel* placeholderLabel);
 	void SetTargetTextLabel(ComponentUiLabel* textLabel);
 	void SetTargetCaretImage(ComponentUiImage* caretImage);

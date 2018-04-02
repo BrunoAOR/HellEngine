@@ -36,6 +36,7 @@ bool ModuleInput::Init()
 		ret = false;
 	}
 
+	SDL_StartTextInput();
 	return ret;
 }
 
@@ -83,6 +84,7 @@ UpdateStatus ModuleInput::PreUpdate()
 			mouseButtons[i] = KeyState::KEY_IDLE;
 	}
 
+	memset(text, 0, 32);
 	while (SDL_PollEvent(&event) != 0)
 	{
 		ImGui_ImplSdlGL3_ProcessEvent(&event);
@@ -90,6 +92,12 @@ UpdateStatus ModuleInput::PreUpdate()
 		{
 		case SDL_QUIT:
 			windowEvents[(int)EventWindow::WE_QUIT] = true;
+			break;
+
+		case SDL_TEXTINPUT:
+			/* Add new text onto the end of our text */
+			strcat_s(text, event.text.text);
+			LOGGER("TextInput: %s", text);
 			break;
 
 		case SDL_WINDOWEVENT:
@@ -220,8 +228,24 @@ UpdateStatus ModuleInput::PreUpdate()
 bool ModuleInput::CleanUp()
 {
 	LOGGER("Quitting SDL event subsystem");
+	SDL_StopTextInput();
 	SDL_QuitSubSystem(SDL_INIT_EVENTS);
 	return true;
+}
+
+KeyState ModuleInput::GetKey(int id) const
+{
+	return keyboard[id];
+}
+
+KeyState ModuleInput::GetMouseButtonDown(int id) const
+{
+	return mouseButtons[id - 1];
+}
+
+const char * ModuleInput::GetText() const
+{
+	return text;
 }
 
 bool ModuleInput::GetWindowEvent(EventWindow ev) const

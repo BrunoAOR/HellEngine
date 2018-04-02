@@ -60,6 +60,7 @@ Json LoadJson(const char* path);
 bool LoadTextFile(const std::string& path, std::string& outputString);
 bool SaveTextFile(const std::string& path, const std::string& content);
 bool IsEmptyString(const char* charString);
+uint GetStringLength(const char* charString, uint maxSize);
 void DecomposeMatrix(const float4x4& openGlStyleMatrix, float3& position, Quat& rotation, float3& scale);
 void DecomposeMatrixPosition(const float4x4& openGlStyleMatrix, float3& position);
 

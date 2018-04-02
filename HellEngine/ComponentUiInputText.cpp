@@ -1,7 +1,9 @@
 #include "ImGui/imgui.h"
+#include "Application.h"
 #include "ComponentType.h"
 #include "ComponentUiInputText.h"
 #include "ComponentUiLabel.h"
+#include "ModuleInput.h"
 #include "globals.h"
 
 
@@ -21,6 +23,20 @@ void ComponentUiInputText::OnEditor()
 	{
 		if (OnEditorDeleteComponent())
 			return;
+	}
+}
+
+void ComponentUiInputText::UpdateTextField()
+{
+	if (hasFocus)
+	{
+		/* Handle keys */
+
+		/* Handle text */
+		const char* newText = App->input->GetText();
+		uint newTextSize = GetStringLength(newText, 32);
+		strcat_s(textContent, newText);
+		textLabel->SetLabelText(textContent);
 	}
 }
 
