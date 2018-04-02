@@ -149,6 +149,16 @@ void ComponentUiLabel::SetAdaptSizeToText(bool shouldAdapt)
 	ResizeTransform();
 }
 
+int ComponentUiLabel::GetTextureWidth() const
+{
+	return 0;
+}
+
+int ComponentUiLabel::GetTextureHeight() const
+{
+	return 0;
+}
+
 unsigned int ComponentUiLabel::GetTextureID()
 {
 	return textTextureID;
@@ -180,6 +190,7 @@ void ComponentUiLabel::UpdateTexture()
 	{
 		glDeleteTextures(1, &textTextureID);
 		textTextureID = 0;
+		textureSize.x = textureSize.y = 0;
 	}
 
 	if (IsEmptyString(labelText))

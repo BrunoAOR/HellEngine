@@ -165,6 +165,13 @@ GameObject* ModuleUI::NewUIElement(UIElementType uiType)
 		label->SetColor(0.0f, 0.0f, 0.0f, 1.0f);
 		label->SetFontName("temp");
 		label->SetFontSize(28);
+		/* Child Selection image */
+		childGo = App->scene->CreateGameObject();
+		childGo->name = "Selection";
+		childGo->AddComponent(ComponentType::TRANSFORM_2D);
+		childGo->SetParent(go);
+		image = (ComponentUiImage*)childGo->AddComponent(ComponentType::UI_IMAGE);
+		inputText->SetTargetSelectionImage(image);
 		/* Child Caret image */
 		childGo = App->scene->CreateGameObject();
 		childGo->name = "Caret";

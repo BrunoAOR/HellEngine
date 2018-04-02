@@ -1,8 +1,10 @@
 #include "ImGui/imgui.h"
 #include "Application.h"
 #include "ComponentType.h"
+#include "ComponentUiImage.h"
 #include "ComponentUiInputText.h"
 #include "ComponentUiLabel.h"
+#include "ComponentTransform2D.h"
 #include "ModuleInput.h"
 #include "globals.h"
 
@@ -19,10 +21,56 @@ ComponentUiInputText::~ComponentUiInputText()
 
 void ComponentUiInputText::OnEditor()
 {
+	static int transitionTypeIndex = 0;
+
 	if (ImGui::CollapsingHeader(editorInfo.idLabel.c_str()))
 	{
 		if (OnEditorDeleteComponent())
 			return;
+
+		static const std::string baseLabel = std::string("Transition setup##TransitionSetup");
+		if (ImGui::TreeNode((baseLabel + std::to_string(editorInfo.id)).c_str()))
+		{
+			TransitionType currentTransitionType = transitionHandler.GetTransitionType();
+
+			transitionTypeIndex = (int)currentTransitionType;
+			if (ImGui::Combo("Transition Type", &transitionTypeIndex, "Color\0Sprite Change\0\0"))
+			{
+				transitionHandler.SetTransitionType((TransitionType)transitionTypeIndex);
+			}
+
+			switch (currentTransitionType)
+			{
+			case TransitionType::COLOR:
+				if (ImGui::ColorEdit4("Default color", transitionHandler.stateInfos[0].color))
+					transitionHandler.SetTransitionColor(TransitionState::DEFAULT);
+				if (ImGui::ColorEdit4("Hover color", transitionHandler.stateInfos[1].color))
+					transitionHandler.SetTransitionColor(TransitionState::HOVER);
+				if (ImGui::ColorEdit4("Pressed color", transitionHandler.stateInfos[2].color))
+					transitionHandler.SetTransitionColor(TransitionState::PRESSED);
+				if (ImGui::ColorEdit4("Disabled color", transitionHandler.stateInfos[3].color))
+					transitionHandler.SetTransitionColor(TransitionState::DISABLED);
+				break;
+			case TransitionType::SPRITE:
+				ImGui::InputText("Default Sprite", transitionHandler.stateInfos[0].imagePath, 256);
+				ImGui::InputText("Hover Sprite", transitionHandler.stateInfos[1].imagePath, 256);
+				ImGui::InputText("Pressed Sprite", transitionHandler.stateInfos[2].imagePath, 256);
+				ImGui::InputText("Disabled Sprite", transitionHandler.stateInfos[3].imagePath, 256);
+				if (ImGui::Button("Load"))
+				{
+					transitionHandler.SetTransitionImage(TransitionState::DEFAULT);
+					transitionHandler.SetTransitionImage(TransitionState::HOVER);
+					transitionHandler.SetTransitionImage(TransitionState::PRESSED);
+					transitionHandler.SetTransitionImage(TransitionState::DISABLED);
+				}
+				break;
+			}
+
+			ImGui::NewLine();
+			ImGui::TreePop();
+		}
+		ImGui::ColorEdit4("Selection color", selectionColor);
+
 	}
 }
 
@@ -44,6 +92,8 @@ void ComponentUiInputText::UpdateTextField()
 		const char* newText = App->input->GetText();
 		AddNewText(newText);
 
+		UpdateCaret();
+
 		textLabel->SetLabelText(textContent);
 	}
 }
@@ -58,9 +108,15 @@ void ComponentUiInputText::SetTargetTextLabel(ComponentUiLabel* newTextLabel)
 	textLabel = newTextLabel;
 }
 
+void ComponentUiInputText::SetTargetSelectionImage(ComponentUiImage* newSelectionImage)
+{
+	selectionImage = newSelectionImage;
+}
+
 void ComponentUiInputText::SetTargetCaretImage(ComponentUiImage* newCaretImage)
 {
 	caretImage = newCaretImage;
+	newCaretImage->transform2D->SetSize(0, 0);
 }
 
 bool ComponentUiInputText::GetFocusState() const
@@ -77,11 +133,16 @@ void ComponentUiInputText::SetFocusState(bool focusState)
 		{
 			textLabel->SetActive(true);
 			placeholderLabel->SetActive(false);
+			caretImage->SetActive(true);
 		}
-		else if (IsEmptyString(textContent))
+		else
 		{
-			textLabel->SetActive(false);
-			placeholderLabel->SetActive(true);
+			caretImage->SetActive(false);
+			if (IsEmptyString(textContent))
+			{
+				textLabel->SetActive(false);
+				placeholderLabel->SetActive(true);
+			}
 		}
 	}
 }
@@ -205,6 +266,10 @@ void ComponentUiInputText::HandleClipboard()
 			AddNewText(newText);
 		}
 	}
+}
+
+void ComponentUiInputText::UpdateCaret()
+{
 }
 
 void ComponentUiInputText::AddNewText(const char* newText)

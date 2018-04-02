@@ -18,6 +18,7 @@ public:
 
 	void SetTargetPlaceholderLabel(ComponentUiLabel* placeholderLabel);
 	void SetTargetTextLabel(ComponentUiLabel* textLabel);
+	void SetTargetSelectionImage(ComponentUiImage* selectionImage);
 	void SetTargetCaretImage(ComponentUiImage* caretImage);
 
 	bool GetFocusState() const;
@@ -34,6 +35,7 @@ private:
 	void HandleCursorMotion();
 	void HandleDeletion();
 	void HandleClipboard();
+	void UpdateCaret();
 	void AddNewText(const char* newText);
 	void DeleteSelection();
 	void HandleShiftKey();
@@ -44,6 +46,7 @@ private:
 	ComponentUiImage* backgroundImage;
 	ComponentUiLabel* placeholderLabel;
 	ComponentUiLabel* textLabel;
+	ComponentUiImage* selectionImage;
 	ComponentUiImage* caretImage;
 
 	char textContent[maxChars] = "";
@@ -54,6 +57,8 @@ private:
 
 	bool hasFocus = false;
 	bool isPassword;
+
+	float selectionColor[4]{ 0.5f, 1.0f, 1.0f, 0.5f };
 };
 
 #endif // !__H_COMPONENT_UI_INPUT_TEXT__

@@ -23,6 +23,9 @@ public:
 	bool SetFontName(const std::string& newFontName);
 	bool GetAdaptSizeToText() const;
 	void SetAdaptSizeToText(bool shouldAdapt);
+	
+	int GetTextureWidth() const;
+	int GetTextureHeight() const;
 
 	unsigned int GetTextureID();
 
