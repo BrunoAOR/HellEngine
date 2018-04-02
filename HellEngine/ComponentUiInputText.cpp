@@ -30,7 +30,9 @@ void ComponentUiInputText::UpdateTextField()
 {
 	if (hasFocus)
 	{
-		/* Handle keys */
+		/* HANDLE KEYS */
+
+		/* Handle moving with arrows */
 		if (App->input->GetKey(SDL_SCANCODE_LEFT) == KeyState::KEY_DOWN)
 		{
 			if (cursorPosition > 0)
@@ -41,8 +43,40 @@ void ComponentUiInputText::UpdateTextField()
 			if (cursorPosition < strnlen_s(textContent, 256) && cursorPosition < 255)
 				++cursorPosition;
 		}
+		/* Handle deleting with backspace and delete */
+		if (App->input->GetKey(SDL_SCANCODE_BACKSPACE) == KeyState::KEY_DOWN)
+		{
+			if (cursorPosition > 0)
+			{
+				memcpy_s(textContent + cursorPosition - 1, currentCharCount - cursorPosition + 1, textContent + cursorPosition, currentCharCount - cursorPosition + 1);
+				--cursorPosition;
+				--currentCharCount;
+			}
+		}
+		if (App->input->GetKey(SDL_SCANCODE_DELETE) == KeyState::KEY_DOWN)
+		{
+			if (cursorPosition < currentCharCount)
+			{
+				memcpy_s(textContent + cursorPosition, currentCharCount - cursorPosition + 1, textContent + cursorPosition + 1, currentCharCount - cursorPosition + 1);
+				--currentCharCount;
+			}
+		}
+		/* Handle Home and End */
+		if (App->input->GetKey(SDL_SCANCODE_HOME) == KeyState::KEY_DOWN)
+		{
+			cursorPosition = 0;
+		}
+		if (App->input->GetKey(SDL_SCANCODE_END) == KeyState::KEY_DOWN)
+		{
+			cursorPosition = currentCharCount;
+		}
+		/* Handle Enter */
+		if (App->input->GetKey(SDL_SCANCODE_RETURN) == KeyState::KEY_DOWN || App->input->GetKey(SDL_SCANCODE_RETURN2) == KeyState::KEY_DOWN)
+		{
+			SetFocusState(false);
+		}
 
-		/* Handle new text */
+		/* HANDLE NEW TEXT */
 		const char* newText = App->input->GetText();
 		uint newTextSize = strnlen_s(newText, 32);
 		if (newTextSize > 0 && currentCharCount + newTextSize < 256)
