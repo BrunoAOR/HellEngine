@@ -54,7 +54,10 @@ private:
 	unsigned int cursorPosition = 0;
 	unsigned int selectionStart = 0;
 	unsigned int selectionEnd = 0;
+	
 	int widths[maxChars];
+	float caretBlinkRate = 1;
+	float caretElapsedTime;
 
 	bool hasFocus = false;
 	bool isPassword;

@@ -6,6 +6,7 @@
 #include "ComponentUiLabel.h"
 #include "ComponentTransform2D.h"
 #include "ModuleInput.h"
+#include "ModuleTime.h"
 #include "globals.h"
 
 
@@ -69,6 +70,8 @@ void ComponentUiInputText::OnEditor()
 			ImGui::NewLine();
 			ImGui::TreePop();
 		}
+
+		ImGui::DragFloat("Caret blink rate", &caretBlinkRate, 0.1f, 0.0f, 5.0f);
 		ImGui::ColorEdit4("Selection color", selectionColor);
 
 	}
@@ -287,13 +290,37 @@ void ComponentUiInputText::HandleClipboard()
 
 void ComponentUiInputText::UpdateCaret()
 {
-	caretImage->transform2D->SetSize(1, textLabel->GetFontSize());
-	int xPos = 0;
-	for (uint i = 0; i < cursorPosition; ++i)
+	bool doUpdate = true;
+	if (caretBlinkRate == 0)
 	{
-		xPos += widths[i];
+		caretImage->SetActive(true);
 	}
-	caretImage->transform2D->SetLocalPos((float)xPos, 0);
+	else
+	{
+		caretElapsedTime += App->time->DeltaTime();
+		float cycleDuration = 1 / caretBlinkRate;
+		while (caretElapsedTime > cycleDuration)
+			caretElapsedTime -= cycleDuration;
+
+		if (caretElapsedTime < 0.5f * cycleDuration)
+			caretImage->SetActive(true);
+		else
+		{
+			caretImage->SetActive(false);
+			doUpdate = false;
+		}
+	}
+
+	if (doUpdate)
+	{
+		caretImage->transform2D->SetSize(1, textLabel->GetFontSize());
+		int xPos = 0;
+		for (uint i = 0; i < cursorPosition; ++i)
+		{
+			xPos += widths[i];
+		}
+		caretImage->transform2D->SetLocalPos((float)xPos, 0);
+	}
 }
 
 void ComponentUiInputText::AddNewText(const char* newText)
