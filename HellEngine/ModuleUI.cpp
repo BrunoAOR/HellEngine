@@ -43,8 +43,10 @@ bool ModuleUI::Init()
 
 	canvas = App->scene->CreateGameObject();
 	canvas->name = "Canvas";
+	App->fonts->RegisterFont("temp", "assets/images/fonts/temp.ttf");
 
-	/* TESTING */
+	/* TESTING START */
+
 	/* image */
 	GameObject* image = App->scene->CreateGameObject();
 	image->name = "Image test";
@@ -56,8 +58,6 @@ bool ModuleUI::Init()
 
 	ComponentUiImage* componentImage = (ComponentUiImage*)image->AddComponent(ComponentType::UI_IMAGE);
 	componentImage->SetImagePath("assets/images/lenna.png");
-
-	App->fonts->RegisterFont("temp", "assets/images/fonts/temp.ttf");
 
 	/* label */
 	GameObject* label = App->scene->CreateGameObject();
@@ -96,12 +96,8 @@ bool ModuleUI::Init()
 
 	ComponentTransform2D* textTransform = (ComponentTransform2D*)inputText->GetComponent(ComponentType::TRANSFORM_2D);
 	textTransform->SetLocalPos(700, 400);
-	textTransform->SetSize(150, 150);
-
-	ComponentUiInputText* componentInputText = (ComponentUiInputText*)inputText->GetComponent(ComponentType::UI_INPUT_TEXT);
-	componentInputText->transitionHandler.SetTransitionImage(TransitionState::DEFAULT, "assets/images/lenna.png");
-
-	/* Testing end */
+		
+	/* TESTING END */
 
 	return true;
 }
@@ -117,7 +113,7 @@ GameObject* ModuleUI::NewUIElement(UIElementType uiType)
 {
 	GameObject* go = App->scene->CreateGameObject();
 	go->name = GetUITypeString(uiType);
-	go->AddComponent(ComponentType::TRANSFORM_2D);
+	ComponentTransform2D* transform = (ComponentTransform2D*)go->AddComponent(ComponentType::TRANSFORM_2D);
 
 	ComponentUiButton* button = nullptr;
 	ComponentUiImage* image = nullptr;
@@ -141,9 +137,11 @@ GameObject* ModuleUI::NewUIElement(UIElementType uiType)
 		go->AddComponent(ComponentType::UI_IMAGE);
 		break;
 	case UIElementType::INPUT_TEXT:
+		transform->SetSize(200, 50);
 		inputText = (ComponentUiInputText*)go->AddComponent(ComponentType::UI_INPUT_TEXT);
 		image = (ComponentUiImage*)go->AddComponent(ComponentType::UI_IMAGE);
 		inputText->transitionHandler.SetTargetImage(image);
+		image->SetImagePath("assets/images/whiteSquare.png");
 		/* Child Placeholder */
 		childGo = App->scene->CreateGameObject();
 		childGo->name = "Placeholder";
@@ -152,6 +150,10 @@ GameObject* ModuleUI::NewUIElement(UIElementType uiType)
 		label = (ComponentUiLabel*)childGo->AddComponent(ComponentType::UI_LABEL);
 		inputText->SetTargetPlaceholderLabel(label);
 		label->SetLabelText("Enter text here...");
+		label->SetColor(0.9f, 0.9f, 0.9f, 1.0f);
+		label->SetAdaptSizeToText(true);
+		label->SetFontName("temp");
+		label->SetFontSize(28);
 		/* Child Text */
 		childGo = App->scene->CreateGameObject();
 		childGo->name = "Text";
@@ -159,6 +161,10 @@ GameObject* ModuleUI::NewUIElement(UIElementType uiType)
 		childGo->SetParent(go);
 		label = (ComponentUiLabel*)childGo->AddComponent(ComponentType::UI_LABEL);
 		inputText->SetTargetTextLabel(label);
+		label->SetAdaptSizeToText(true);
+		label->SetColor(0.0f, 0.0f, 0.0f, 1.0f);
+		label->SetFontName("temp");
+		label->SetFontSize(28);
 		/* Child Caret image */
 		childGo = App->scene->CreateGameObject();
 		childGo->name = "Caret";
@@ -170,6 +176,7 @@ GameObject* ModuleUI::NewUIElement(UIElementType uiType)
 	case UIElementType::LABEL:
 		label = (ComponentUiLabel*)go->AddComponent(ComponentType::UI_LABEL);
 		label->SetLabelText("New Label");
+		label->SetFontName("temp");
 		break;
 	}
 
@@ -365,6 +372,7 @@ void ModuleUI::UpdateInputText(ComponentUiInputText* inputText)
 			if (mouseButtonState == KeyState::KEY_DOWN || mouseButtonState == KeyState::KEY_REPEAT)
 			{
 				inputText->transitionHandler.SetTransitionState(TransitionState::PRESSED);
+				inputText->SetFocusState(true);
 			}
 			else
 			{
@@ -374,6 +382,10 @@ void ModuleUI::UpdateInputText(ComponentUiInputText* inputText)
 		else
 		{
 			inputText->transitionHandler.SetTransitionState(TransitionState::DEFAULT);
+			if (mouseButtonState == KeyState::KEY_DOWN || mouseButtonState == KeyState::KEY_REPEAT)
+			{
+				inputText->SetFocusState(false);
+			}
 		}
 	}
 }

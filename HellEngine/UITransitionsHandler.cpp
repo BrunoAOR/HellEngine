@@ -126,12 +126,16 @@ void UITransitionsHandler::UpdateUiImage()
 {
 	if (uiImage)
 	{
+		TransitionStateInfo& stateInfo = stateInfos[activeStateInfo];
+		TransitionStateInfo& defautStateInfo = stateInfos[(int)TransitionState::DEFAULT];
 		if (currentTransitionType == TransitionType::COLOR)
 		{
-			uiImage->SetImagePath(stateInfos[(int)TransitionState::DEFAULT].imagePath);
-			uiImage->SetColor(stateInfos[activeStateInfo].color);
+			if(defautStateInfo.textureId != 0)
+				uiImage->SetImagePath(defautStateInfo.imagePath);
+			uiImage->SetColor(stateInfo.color);
 		}
 		else if (currentTransitionType == TransitionType::SPRITE)
-			uiImage->SetImagePath(stateInfos[activeStateInfo].imagePath);
+			if (stateInfo.textureId != 0)
+				uiImage->SetImagePath(stateInfo.imagePath);
 	}
 }

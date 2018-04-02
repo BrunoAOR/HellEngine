@@ -18,6 +18,9 @@ public:
 	void SetTargetTextLabel(ComponentUiLabel* textLabel);
 	void SetTargetCaretImage(ComponentUiImage* caretImage);
 
+	bool GetFocusState() const;
+	void SetFocusState(bool focusState);
+
 	unsigned int GetMaxChars();
 	void SetMaxChars(unsigned int maxCharsValue);
 	bool GetIsPassword();
@@ -32,6 +35,9 @@ private:
 	ComponentUiLabel* textLabel;
 	ComponentUiImage* caretImage;
 
+	char textContent[256] = "";
+	
+	bool hasFocus = false;
 	unsigned int maxChars;
 	bool isPassword;
 };

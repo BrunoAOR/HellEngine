@@ -1,6 +1,9 @@
 #include "ImGui/imgui.h"
 #include "ComponentType.h"
 #include "ComponentUiInputText.h"
+#include "ComponentUiLabel.h"
+#include "globals.h"
+
 
 ComponentUiInputText::ComponentUiInputText(GameObject * owner) : ComponentUIElement(owner)
 {
@@ -34,6 +37,29 @@ void ComponentUiInputText::SetTargetTextLabel(ComponentUiLabel* newTextLabel)
 void ComponentUiInputText::SetTargetCaretImage(ComponentUiImage* newCaretImage)
 {
 	caretImage = newCaretImage;
+}
+
+bool ComponentUiInputText::GetFocusState() const
+{
+	return hasFocus;
+}
+
+void ComponentUiInputText::SetFocusState(bool focusState)
+{
+	if (hasFocus != focusState)
+	{
+		hasFocus = focusState;
+		if (hasFocus)
+		{
+			textLabel->SetActive(true);
+			placeholderLabel->SetActive(false);
+		}
+		else if (IsEmptyString(textContent))
+		{
+			textLabel->SetActive(false);
+			placeholderLabel->SetActive(true);
+		}
+	}
 }
 
 unsigned int ComponentUiInputText::GetMaxChars()
