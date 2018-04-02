@@ -93,8 +93,6 @@ void ComponentUiInputText::UpdateTextField()
 		AddNewText(newText);
 
 		UpdateCaret();
-
-		textLabel->SetLabelText(textContent);
 	}
 }
 
@@ -116,7 +114,12 @@ void ComponentUiInputText::SetTargetSelectionImage(ComponentUiImage* newSelectio
 void ComponentUiInputText::SetTargetCaretImage(ComponentUiImage* newCaretImage)
 {
 	caretImage = newCaretImage;
-	newCaretImage->transform2D->SetSize(0, 0);
+	if (caretImage)
+	{
+		caretImage->SetImagePath("assets/images/whiteSquare.png");
+		caretImage->SetColor(0.0f, 0.0f, 0.0f, 1.0f);
+		caretImage->transform2D->SetSize(0, 0);
+	}
 }
 
 bool ComponentUiInputText::GetFocusState() const
@@ -200,33 +203,47 @@ void ComponentUiInputText::HandleDeletion()
 	/* Handle deleting with backspace and delete */
 	if (App->input->GetKey(SDL_SCANCODE_BACKSPACE) == KeyState::KEY_DOWN)
 	{
-		if (cursorPosition > 0)
+		if (selectionStart == selectionEnd)
 		{
-			if (selectionStart == selectionEnd)
+			if (cursorPosition > 0)
 			{
 				memcpy_s(textContent + cursorPosition - 1, currentCharCount - cursorPosition + 1, textContent + cursorPosition, currentCharCount - cursorPosition + 1);
+				for (uint w = cursorPosition - 1; w < currentCharCount - 1; ++w)
+				{
+					widths[w] = widths[w + 1];
+				}
+				widths[currentCharCount - 1] = 0;
+				
 				--cursorPosition;
 				--currentCharCount;
-			}
-			else
-			{
-				DeleteSelection();
+				textLabel->SetLabelText(textContent);
 			}
 		}
+		else
+		{
+			DeleteSelection();
+		}
+
 	}
 	if (App->input->GetKey(SDL_SCANCODE_DELETE) == KeyState::KEY_DOWN)
 	{
-		if (cursorPosition < currentCharCount)
+		if (selectionStart == selectionEnd)
 		{
-			if (selectionStart == selectionEnd)
+			if (cursorPosition < currentCharCount)
 			{
 				memcpy_s(textContent + cursorPosition, currentCharCount - cursorPosition + 1, textContent + cursorPosition + 1, currentCharCount - cursorPosition + 1);
+				for (uint w = cursorPosition; w < currentCharCount - 1; ++w)
+				{
+					widths[w] = widths[w + 1];
+				}
+				widths[currentCharCount - 1] = 0;
 				--currentCharCount;
+				textLabel->SetLabelText(textContent);
 			}
-			else
-			{
-				DeleteSelection();
-			}
+		}
+		else
+		{
+			DeleteSelection();
 		}
 	}
 }
@@ -270,6 +287,13 @@ void ComponentUiInputText::HandleClipboard()
 
 void ComponentUiInputText::UpdateCaret()
 {
+	caretImage->transform2D->SetSize(1, textLabel->GetFontSize());
+	int xPos = 0;
+	for (uint i = 0; i < cursorPosition; ++i)
+	{
+		xPos += widths[i];
+	}
+	caretImage->transform2D->SetLocalPos((float)xPos, 0);
 }
 
 void ComponentUiInputText::AddNewText(const char* newText)
@@ -278,25 +302,43 @@ void ComponentUiInputText::AddNewText(const char* newText)
 	if (newTextSize > 0 && currentCharCount + newTextSize < maxChars)
 	{
 		DeleteSelection();
-		char* tail = nullptr;
-		uint tailSize = 0;
-		if (cursorPosition != currentCharCount)
+		int charactersCopied = 0;
+		while (newTextSize - charactersCopied > 0)
 		{
-			tailSize = currentCharCount - cursorPosition;
-			tail = new char[tailSize];
-			memcpy_s(tail, tailSize, textContent + cursorPosition, tailSize);
-		}
-		memcpy_s(textContent + cursorPosition, maxChars - cursorPosition, newText, newTextSize);
-		cursorPosition += newTextSize;
-		selectionStart = selectionEnd = cursorPosition;
-		currentCharCount += newTextSize;
-		if (tail)
-		{
-			memcpy_s(textContent + cursorPosition, maxChars - cursorPosition, tail, tailSize);
-		}
-		textContent[currentCharCount] = '\0';
+			char* tail = nullptr;
+			uint tailSize = 0;
+			if (cursorPosition != currentCharCount)
+			{
+				tailSize = currentCharCount - cursorPosition;
+				tail = new char[tailSize];
+				memcpy_s(tail, tailSize, textContent + cursorPosition, tailSize);
+			}
 
-		delete[] tail;
+			textContent[cursorPosition] = newText[charactersCopied];
+
+			++cursorPosition;
+			selectionStart = selectionEnd = cursorPosition;
+			++currentCharCount;
+			
+			if (tail)
+			{
+				memcpy_s(textContent + cursorPosition, maxChars - cursorPosition, tail, tailSize);
+			}
+			textContent[currentCharCount] = '\0';
+			
+			int oldWidth = textLabel->GetTextureWidth();
+			textLabel->SetLabelText(textContent);
+			int charWidth = textLabel->GetTextureWidth() - oldWidth;
+
+			for (uint w = currentCharCount - 1; w >= cursorPosition; --w)
+			{
+				widths[w] = widths[w - 1];
+			}
+			widths[cursorPosition - 1] = charWidth;
+
+			delete[] tail;
+			++charactersCopied;
+		}
 	}
 }
 
@@ -308,8 +350,16 @@ void ComponentUiInputText::DeleteSelection()
 		uint selectionRight = selectionStart < selectionEnd ? selectionEnd : selectionStart;
 		uint selectionSize = selectionRight - selectionLeft;
 		memcpy_s(textContent + selectionLeft, currentCharCount - selectionRight + 1, textContent + selectionRight, currentCharCount - selectionRight + 1);
+		for (uint w = selectionLeft; w < currentCharCount - 1; ++w)
+		{
+			widths[w] = widths[w + selectionSize];
+		}
+		for (uint w = 0; w < selectionSize; ++w)
+			widths[currentCharCount - 1] = 0;
+
 		currentCharCount -= selectionSize;
 		cursorPosition = selectionStart = selectionEnd = selectionLeft;
+		textLabel->SetLabelText(textContent);
 	}
 }
 

@@ -43,12 +43,20 @@ const float* ComponentUiImage::GetColor() const
 	return color;
 }
 
-void ComponentUiImage::SetColor(float * newColor)
+void ComponentUiImage::SetColor(float* newColor)
 {
 	color[0] = newColor[0];
 	color[1] = newColor[1];
 	color[2] = newColor[2];
 	color[3] = newColor[3];
+}
+
+void ComponentUiImage::SetColor(float r, float g, float b, float a)
+{
+	color[0] = r;
+	color[1] = g;
+	color[2] = b;
+	color[3] = a;
 }
 
 unsigned int ComponentUiImage::GetTextureID()

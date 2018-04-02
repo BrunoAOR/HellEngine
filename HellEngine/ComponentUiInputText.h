@@ -54,6 +54,7 @@ private:
 	unsigned int cursorPosition = 0;
 	unsigned int selectionStart = 0;
 	unsigned int selectionEnd = 0;
+	int widths[maxChars];
 
 	bool hasFocus = false;
 	bool isPassword;

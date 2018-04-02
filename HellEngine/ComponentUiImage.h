@@ -13,6 +13,7 @@ public:
 
 	const float* GetColor() const;
 	void SetColor(float* newColor);
+	void SetColor(float r, float g, float b, float a);
 
 	unsigned int GetTextureID();
 

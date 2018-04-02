@@ -97,7 +97,6 @@ UpdateStatus ModuleInput::PreUpdate()
 		case SDL_TEXTINPUT:
 			/* Add new text onto the end of our text */
 			strcat_s(text, event.text.text);
-			LOGGER("TextInput: %s", text);
 			break;
 
 		case SDL_WINDOWEVENT:

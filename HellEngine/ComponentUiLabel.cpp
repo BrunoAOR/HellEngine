@@ -91,7 +91,7 @@ bool ComponentUiLabel::SetLabelText(const std::string& newText)
 
 int ComponentUiLabel::GetFontSize() const
 {
-	return 0;
+	return fontSize;
 }
 
 void ComponentUiLabel::SetFontSize(int newFontSize)
@@ -151,12 +151,12 @@ void ComponentUiLabel::SetAdaptSizeToText(bool shouldAdapt)
 
 int ComponentUiLabel::GetTextureWidth() const
 {
-	return 0;
+	return textureSize.x;
 }
 
 int ComponentUiLabel::GetTextureHeight() const
 {
-	return 0;
+	return textureSize.y;
 }
 
 unsigned int ComponentUiLabel::GetTextureID()
