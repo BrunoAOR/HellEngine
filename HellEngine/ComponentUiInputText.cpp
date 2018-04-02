@@ -95,6 +95,7 @@ void ComponentUiInputText::UpdateTextField()
 		const char* newText = App->input->GetText();
 		AddNewText(newText);
 
+		UpdateSelection();
 		UpdateCaret();
 	}
 }
@@ -112,6 +113,12 @@ void ComponentUiInputText::SetTargetTextLabel(ComponentUiLabel* newTextLabel)
 void ComponentUiInputText::SetTargetSelectionImage(ComponentUiImage* newSelectionImage)
 {
 	selectionImage = newSelectionImage;
+	if (selectionImage)
+	{
+		selectionImage->SetImagePath("assets/images/whiteSquare.png");
+		selectionImage->SetColor(0.5f, 1.0f, 1.0f, 0.25f);
+		selectionImage->transform2D->SetSize(0, 0);
+	}
 }
 
 void ComponentUiInputText::SetTargetCaretImage(ComponentUiImage* newCaretImage)
@@ -285,6 +292,30 @@ void ComponentUiInputText::HandleClipboard()
 			const char* newText = clipboardText.c_str();
 			AddNewText(newText);
 		}
+	}
+}
+
+void ComponentUiInputText::UpdateSelection()
+{
+	if (selectionStart != selectionEnd)
+	{
+		uint selectionLeft = selectionStart < selectionEnd ? selectionStart : selectionEnd;
+		uint selectionRight = selectionStart < selectionEnd ? selectionEnd : selectionStart;
+		int posX = 0;
+		int width = 0;
+		for (uint w = 0; w < selectionRight; ++w)
+		{
+			if (w < selectionLeft)
+				posX += widths[w];
+			else
+				width += widths[w];
+		}
+		selectionImage->transform2D->SetLocalPos((float)posX, 0.0f);
+		selectionImage->transform2D->SetSize(width, textLabel->GetFontSize());
+	}
+	else
+	{
+		selectionImage->transform2D->SetSize(0.0f, 0.0f);
 	}
 }
 

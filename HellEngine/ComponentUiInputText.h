@@ -35,6 +35,7 @@ private:
 	void HandleCursorMotion();
 	void HandleDeletion();
 	void HandleClipboard();
+	void UpdateSelection();
 	void UpdateCaret();
 	void AddNewText(const char* newText);
 	void DeleteSelection();
