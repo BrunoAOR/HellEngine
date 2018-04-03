@@ -180,8 +180,10 @@ void ModuleScene::OnEditorPlayButtonWindow(float mainMenuBarHeight)
 		if (ImGui::Button("Stop"))
 		{
 			isPlaying = false;
+			isPaused = false;
 			/* Should Load Scene */
 			App->time->SetTimeScale(originalTimeScale);
+			currentTimeScale = originalTimeScale;
 			Load(sceneTempFile);
 			DeleteFileByPath(sceneTempFile);
 		}
@@ -201,7 +203,8 @@ void ModuleScene::OnEditorPlayButtonWindow(float mainMenuBarHeight)
 
 	if (ImGui::SliderFloat("Time scale", &currentTimeScale, 0.0f, 3.0f, "%.1f"))
 	{
-		App->time->SetTimeScale(currentTimeScale);
+		if (!isPaused)
+			App->time->SetTimeScale(currentTimeScale);
 	}
 
 	ImGui::End();
