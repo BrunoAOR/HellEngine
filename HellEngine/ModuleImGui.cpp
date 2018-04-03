@@ -100,18 +100,25 @@ UpdateStatus ModuleImGui::Update()
 		{
 			ImGui::MenuItem("Show demo window", nullptr, &showDemoWindow);
 			ImGui::Separator();
+			
+			static char filePath[256]{ '\0' };
 
-			if (ImGui::MenuItem("Save scene", nullptr, false))
-				App->scene->Save();
+			if (ImGui::BeginMenu("Save scene"))
+			{
+				ImGui::InputText("Scene path", filePath, 256);
+				ImGui::Separator();
+				if (ImGui::Selectable("Save"))
+					App->scene->Save(filePath);
 
-			static char modelPath[256]{ '\0' };
+				ImGui::EndMenu();
+			}
 
 			if (ImGui::BeginMenu("Load scene"))
 			{
-				ImGui::InputText("Scene path", modelPath, 256);
+				ImGui::InputText("Scene path", filePath, 256);
 				ImGui::Separator();
 				if (ImGui::Selectable("Load"))
-					App->scene->Load(modelPath);
+					App->scene->Load(filePath);
 				
 				ImGui::EndMenu();
 			}
@@ -164,6 +171,8 @@ UpdateStatus ModuleImGui::Update()
 	}
 
 	DrawGuizmo();
+
+	App->scene->OnEditorPlayButtonWindow(mainMenuBarHeight);
 
 	if (showDemoWindow)
 	{

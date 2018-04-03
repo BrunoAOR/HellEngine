@@ -25,6 +25,7 @@ public:
 
 	void OnEditorHierarchy(float mainMenuBarHeight, bool* pOpen);
 	void OnEditorInspector(float mainMenuBarHeight, bool* pOpen);
+	void OnEditorPlayButtonWindow(float mainMenuBarHeight);
 
 	void UnloadSceneFixedQuadTree();
 	void GenerateSceneFixedQuadTree(float* minPoint, float* maxPoint);
@@ -48,7 +49,7 @@ public:
 	void Destroy(GameObject* gameObject);
 	std::vector<GameObject*> FindByName(const std::string& name, GameObject* gameObject = nullptr);
 
-	void Save();
+	void Save(const char* path);
 	void Load(const char* path);
 
 public:

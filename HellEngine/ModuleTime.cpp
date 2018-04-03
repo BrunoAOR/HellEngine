@@ -12,9 +12,9 @@ ModuleTime::~ModuleTime()
 /* Called each loop iteration */
 UpdateStatus ModuleTime::PreUpdate()
 {
-	Uint32 currentUnscaledTime = SDL_GetTicks();
+	Uint32 currentUnscaledTime = SDL_GetTicks() - referenceTime;
 	unscaledDeltaTime = currentUnscaledTime - unscaledTime;
-	unscaledTime = currentUnscaledTime;
+	unscaledTime += unscaledDeltaTime;
 
 	deltaTime = (Uint32)(unscaledDeltaTime * timeScale);
 	time += deltaTime;
@@ -73,7 +73,13 @@ float ModuleTime::GetTimeScale() const
 }
 
 /* Sets the timeScale value ensuring it is >= 0 */
-void ModuleTime::GetTimeScale(float newTimeScale)
+void ModuleTime::SetTimeScale(float newTimeScale)
 {
 	timeScale = newTimeScale >= 0 ? newTimeScale : 0;
+}
+
+void ModuleTime::ResetReferenceTime()
+{
+	referenceTime = SDL_GetTicks();
+	time = unscaledTime = 0;
 }
