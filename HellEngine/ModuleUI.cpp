@@ -43,10 +43,10 @@ bool ModuleUI::Init()
 
 	GameObject* canvas = App->scene->CreateGameObject();
 	canvas->name = "Canvas";
-	//App->fonts->RegisterFont("temp", "assets/images/fonts/temp.ttf");
+	App->fonts->RegisterFont("temp", "assets/images/fonts/temp.ttf");
 
 	/* TESTING START */
-	return true;
+
 	/* image */
 	GameObject* image = App->scene->CreateGameObject();
 	image->name = "Image test";
@@ -58,7 +58,7 @@ bool ModuleUI::Init()
 
 	ComponentUiImage* componentImage = (ComponentUiImage*)image->AddComponent(ComponentType::UI_IMAGE);
 	componentImage->SetImagePath("assets/images/lenna.png");
-
+	return true;
 	/* label */
 	GameObject* label = App->scene->CreateGameObject();
 	label->name = "Label test";

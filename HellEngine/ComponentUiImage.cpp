@@ -5,6 +5,7 @@
 #include "ComponentUIElement.h"
 #include "ComponentUiImage.h"
 #include "ModuleTextureManager.h"
+#include "SerializableObject.h"
 #include "globals.h"
 
 ComponentUiImage::ComponentUiImage(GameObject* owner) : ComponentUIElement(owner)
@@ -75,6 +76,21 @@ bool ComponentUiImage::SetImagePath(const std::string& newImagePath)
 	memcpy_s(imagePath, 256, newImagePath.c_str(), newImagePath.size());
 	imagePath[newImagePath.size()] = '\0';
 	return LoadImage();
+}
+
+void ComponentUiImage::Save(SerializableObject & obj) const
+{
+	Component::Save(obj);
+
+	obj.AddString("ImagePath", imagePath);
+}
+
+void ComponentUiImage::Load(const SerializableObject & obj)
+{
+	Component::Load(obj);
+
+	std::string objImagePath = obj.GetString("ImagePath");
+	SetImagePath(objImagePath);
 }
 
 bool ComponentUiImage::LoadImage()

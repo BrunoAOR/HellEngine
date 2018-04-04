@@ -19,6 +19,9 @@ public:
 
 	bool SetImagePath(const std::string& newImagePath);
 
+	virtual void Save(SerializableObject& obj) const override;
+	virtual void Load(const SerializableObject& obj) override;
+
 private:
 	bool LoadImage();
 
