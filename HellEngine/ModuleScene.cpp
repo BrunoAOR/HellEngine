@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <deque>
 #include <stack>
 #include "Brofiler/include/Brofiler.h"
 #include "ImGui/imgui.h"
@@ -320,23 +321,23 @@ void ModuleScene::Save()
 	sObject.AddVectorString("ModelPaths", modelPaths);
 	SerializableArray gameObjectsArray = sObject.BuildSerializableArray("GameObjects");
 
-	std::stack<GameObject*> goStack;	
+	std::deque<GameObject*> goDeque;	
 
 	GameObject* go = root;
-	goStack.push(go);
+	goDeque.push_back(go);
 
 	/* The root otself is NOT serialized */
-	while (!goStack.empty())
+	while (!goDeque.empty())
 	{
-		go = goStack.top();
-		goStack.pop();
+		go = goDeque.front();
+		goDeque.pop_front();
 
 		SerializableObject goSObject = gameObjectsArray.BuildSerializableObject();
 
 		go->Save(goSObject);
 
 		for (GameObject* child : go->GetChildren())		
-			goStack.push(child);
+			goDeque.push_back(child);
 
 	}
 
@@ -369,8 +370,8 @@ void ModuleScene::Load(const char* jsonPath)
 
 	/* Now we load GameObjects */
 	std::map<u32, GameObject*> gameObjectsByUuid;
-	std::map<u32, std::vector<GameObject*>> gameObjectsToParent;
 	std::vector<Component*> meshesCreated;
+	meshesCreated.reserve(64);
 
 	SerializableArray gameObjectsArray = sObject.GetSerializableArray("GameObjects");
 	uint gameObjectsCount = gameObjectsArray.Size();
@@ -392,17 +393,11 @@ void ModuleScene::Load(const char* jsonPath)
 		/* Check done to leave root out */
 		if (go->parentUuid != 0)
 		{
-			gameObjectsToParent[go->parentUuid].push_back(go);
-		}
-	}
-
-	/* Parent GameObjects */
-	for (std::map<u32, std::vector<GameObject*>>::iterator it = gameObjectsToParent.begin(); it != gameObjectsToParent.end(); ++it)
-	{
-		std::vector<GameObject*>& gosToParent = it->second;
-		GameObject* parent = nullptr;
-		for (GameObject* go : gosToParent)
-		{
+			/*
+			Since GameObjects are saved by layers within the root
+			(meaning that all GameObjects at a depth in the Hierarchy are saved before going to a child depth),
+			it is safe to assume that any parent will have already been loaded
+			*/
 			assert(gameObjectsByUuid.count(go->parentUuid) > 0);
 			go->SetParent(gameObjectsByUuid[go->parentUuid]);
 		}
