@@ -17,20 +17,12 @@ public:
 	ComponentUIElement(GameObject* owner);
 	virtual ~ComponentUIElement() override;
 
-	
-	bool GetVisible() const;
-	void SetVisible(bool visibleValue);
-
-
 	// Inherited via Component
 	virtual void OnEditor() override;
 	virtual int MaxCountInGameObject() override;
 
 public:
 	ComponentTransform2D* transform2D = nullptr;
-
-protected:
-	bool visible;
 };
 
 #endif // !__H_COMPONENT_UI_ELEMENT__

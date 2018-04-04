@@ -29,6 +29,9 @@ public:
 
 	unsigned int GetTextureID();
 
+	virtual void Save(SerializableObject& obj) const override;
+	virtual void Load(const SerializableObject& obj) override;
+
 private:
 	void UpdateFont();
 	void UpdateTexture();

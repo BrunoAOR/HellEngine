@@ -58,7 +58,7 @@ bool ModuleUI::Init()
 
 	ComponentUiImage* componentImage = (ComponentUiImage*)image->AddComponent(ComponentType::UI_IMAGE);
 	componentImage->SetImagePath("assets/images/lenna.png");
-	return true;
+	
 	/* label */
 	GameObject* label = App->scene->CreateGameObject();
 	label->name = "Label test";
@@ -74,7 +74,8 @@ bool ModuleUI::Init()
 	componentLabel->SetColor(1.0f, 0.5f, 0.5f, 1.0f);
 	componentLabel->SetFontName("temp");
 	componentLabel->SetAdaptSizeToText(true);
-	
+	return true;
+
 	/* button */
 	GameObject* button = NewUIElement(UIElementType::BUTTON);
 	button->name = "Button test";

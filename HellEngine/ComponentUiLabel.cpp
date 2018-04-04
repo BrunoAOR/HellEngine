@@ -1,14 +1,15 @@
 #include <assert.h>
 #include "ImGui/imgui.h"
 #include "Application.h"
+#include "Color.h"
 #include "ComponentUiLabel.h"
+#include "ComponentTransform2D.h"
 #include "ComponentType.h"
 #include "ModuleTrueFont.h"
+#include "SerializableObject.h"
 #include "globals.h"
 #include "openGL.h"
 
-
-#include "ComponentTransform2D.h"
 
 ComponentUiLabel::ComponentUiLabel(GameObject* owner) : ComponentUIElement(owner)
 {
@@ -162,6 +163,29 @@ int ComponentUiLabel::GetTextureHeight() const
 unsigned int ComponentUiLabel::GetTextureID()
 {
 	return textTextureID;
+}
+
+void ComponentUiLabel::Save(SerializableObject& obj) const
+{
+	Component::Save(obj);
+
+	obj.AddString("FontName", fontName);
+	obj.AddInt("FontSize", fontSize);
+	obj.AddBool("AdaptSizeToScreen", adaptSizeToText);
+	obj.AddString("LabelText", labelText);
+	obj.AddColor("Color", Color(color[0], color[1], color[2], color[3]));
+}
+
+void ComponentUiLabel::Load(const SerializableObject& obj)
+{
+	Component::Load(obj);
+
+	SetFontName(obj.GetString("FontName"));
+	SetFontSize(obj.GetInt("FontSize"));
+	SetAdaptSizeToText(obj.GetBool("AdaptSizeToScreen"));
+	SetLabelText(obj.GetString("LabelText"));
+	Color objColor = obj.GetColor("Color");
+	SetColor(objColor.r, objColor.g, objColor.b, objColor.a);
 }
 
 void ComponentUiLabel::UpdateFont()

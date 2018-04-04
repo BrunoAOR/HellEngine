@@ -38,18 +38,6 @@ ComponentUIElement::~ComponentUIElement()
 	App->ui->UnregisterUiElement(this);
 }
 
-
-
-bool ComponentUIElement::GetVisible() const
-{
-	return visible;
-}
-
-void ComponentUIElement::SetVisible(bool visibleValue)
-{
-	visible = visibleValue;
-}
-
 void ComponentUIElement::OnEditor()
 {
 }
