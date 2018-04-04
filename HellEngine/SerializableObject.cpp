@@ -46,7 +46,7 @@ void SerializableObject::AddInt(const std::string& key, int value)
 	(*jsonObject)[key] = value;
 }
 
-void SerializableObject::Addu32(const std::string & key, u32 value)
+void SerializableObject::Addu32(const std::string& key, u32 value)
 {
 	(*jsonObject)[key] = value;
 }
@@ -56,7 +56,15 @@ void SerializableObject::AddFloat(const std::string& key, float value)
 	(*jsonObject)[key] = value;
 }
 
-void SerializableObject::AddFloat3(const std::string & key, const float3& value) 
+void SerializableObject::AddFPoint(const std::string& key, const fPoint& value)
+{
+	Json jsonObj;
+	jsonObj["x"] = value.x;
+	jsonObj["y"] = value.y;
+	(*jsonObject)[key] = jsonObj;
+}
+
+void SerializableObject::AddFloat3(const std::string& key, const float3& value) 
 {
 	Json jsonObj;
 	jsonObj["x"] = value.x;
@@ -65,7 +73,7 @@ void SerializableObject::AddFloat3(const std::string & key, const float3& value)
 	(*jsonObject)[key] = jsonObj;
 }
 
-void SerializableObject::AddFloat4(const std::string & key, const float4& value)
+void SerializableObject::AddFloat4(const std::string& key, const float4& value)
 {
 	Json jsonObj;
 	jsonObj["x"] = value.x;
@@ -75,7 +83,7 @@ void SerializableObject::AddFloat4(const std::string & key, const float4& value)
 	(*jsonObject)[key] = jsonObj;
 }
 
-void SerializableObject::AddColor(const std::string& key, const Color & value)
+void SerializableObject::AddColor(const std::string& key, const Color& value)
 {
 	Json jsonObj;
 	jsonObj["r"] = value.r;
@@ -111,7 +119,7 @@ SerializableArray SerializableObject::GetSerializableArray(const std::string& ke
 	return SerializableArray();
 }
 
-SerializableObject SerializableObject::GetSerializableObject(const std::string & key) const
+SerializableObject SerializableObject::GetSerializableObject(const std::string& key) const
 {
 	if (jsonObject->count(key))
 	{
@@ -142,7 +150,7 @@ int SerializableObject::GetInt(const std::string& key) const
 	return 0;
 }
 
-u32 SerializableObject::Getu32(const std::string & key) const
+u32 SerializableObject::Getu32(const std::string& key) const
 {
 	if (jsonObject->count(key))
 	{
@@ -162,7 +170,21 @@ float SerializableObject::GetFloat(const std::string& key) const
 	return 0.0f;
 }
 
-float3 SerializableObject::GetFloat3(const std::string & key) const
+fPoint SerializableObject::GetFPoint(const std::string& key) const
+{
+	if (jsonObject->count(key))
+	{
+		fPoint fp;
+		Json& jsonObj = (*jsonObject)[key];
+		fp.x = jsonObj["x"];
+		fp.y = jsonObj["y"];
+		return fp;
+	}
+	assert(false);
+	return fPoint();
+}
+
+float3 SerializableObject::GetFloat3(const std::string& key) const
 {
 	if (jsonObject->count(key))
 	{
@@ -177,7 +199,7 @@ float3 SerializableObject::GetFloat3(const std::string & key) const
 	return float3();
 }
 
-float4 SerializableObject::GetFloat4(const std::string & key) const
+float4 SerializableObject::GetFloat4(const std::string& key) const
 {
 	if (jsonObject->count(key))
 	{
@@ -219,7 +241,7 @@ std::string SerializableObject::GetString(const std::string& key) const
 	return std::string();
 }
 
-std::vector<int> SerializableObject::GetVectorInt(const std::string & key) const
+std::vector<int> SerializableObject::GetVectorInt(const std::string& key) const
 {
 	if (jsonObject->count(key))
 	{
@@ -229,7 +251,7 @@ std::vector<int> SerializableObject::GetVectorInt(const std::string & key) const
 	return std::vector<int>();
 }
 
-std::vector<std::string> SerializableObject::GetVectorString(const std::string & key) const
+std::vector<std::string> SerializableObject::GetVectorString(const std::string& key) const
 {
 	if (jsonObject->count(key))
 	{

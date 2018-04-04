@@ -1,8 +1,9 @@
 #ifndef __H_SERIALIZABLE_OBJECT__
 #define __H_SERIALIZABLE_OBJECT__
 #include <vector>
-#include "globals.h"
 #include "MathGeoLib/src/Math/MathTypes.h"
+#include "Point.h"
+#include "globals.h"
 class SerializableArray;
 struct Color;
 
@@ -20,6 +21,7 @@ public:
 	void AddInt(const std::string& key, int value);
 	void Addu32(const std::string& key, u32 value);
 	void AddFloat(const std::string& key, float value);
+	void AddFPoint(const std::string& key, const fPoint& value);
 	void AddFloat3(const std::string& key, const float3& value);
 	void AddFloat4(const std::string& key, const float4& value);
 	void AddColor(const std::string& key, const Color& value);
@@ -34,6 +36,7 @@ public:
 	int GetInt(const std::string& key) const;
 	u32 Getu32(const std::string& key) const;
 	float GetFloat(const std::string& key) const;
+	fPoint GetFPoint(const std::string& key) const;
 	float3 GetFloat3(const std::string& key) const;
 	float4 GetFloat4(const std::string& key) const;
 	Color GetColor(const std::string& key) const;

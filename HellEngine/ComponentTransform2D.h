@@ -30,6 +30,9 @@ public:
 	virtual void OnEditor() override;
 	virtual int MaxCountInGameObject() override;
 
+	virtual void Save(SerializableObject& obj) const override;
+	virtual void Load(const SerializableObject& obj) override;
+
 private:
 	void UpdateChildrenWorldPos();
 

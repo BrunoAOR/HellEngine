@@ -3,6 +3,7 @@
 #include "ComponentTransform2D.h"
 #include "ComponentType.h"
 #include "GameObject.h"
+#include "SerializableObject.h"
 
 ComponentTransform2D::ComponentTransform2D(GameObject* owner) : Component(owner), size(100, 100)
 {
@@ -128,6 +129,23 @@ void ComponentTransform2D::OnEditor()
 int ComponentTransform2D::MaxCountInGameObject()
 {
 	return 1;
+}
+
+void ComponentTransform2D::Save(SerializableObject& obj) const
+{
+	Component::Save(obj);
+
+	obj.AddFPoint("Position", worldPos);
+	obj.AddFPoint("Size", size);
+}
+
+void ComponentTransform2D::Load(const SerializableObject& obj)
+{
+	Component::Load(obj);
+
+	worldPos = obj.GetFPoint("Position");
+	size = obj.GetFPoint("Size");
+	RecalculateLocalPos(nullptr);
 }
 
 void ComponentTransform2D::UpdateChildrenWorldPos()
