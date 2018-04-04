@@ -9,6 +9,7 @@
 #include "GameObject.h"
 #include "ModuleAnimation.h"
 #include "ModuleEditorCamera.h"
+#include "ModuleTrueFont.h"
 #include "ModuleScene.h"
 #include "ModuleWindow.h"
 #include "Serializer.h"
@@ -313,6 +314,8 @@ void ModuleScene::Save()
 
 	/* Save animations info */
 	App->animation->Save(sObject);
+	/* Save fonts info */
+	App->fonts->Save(sObject);
 
 	sObject.AddVectorString("ModelPaths", modelPaths);
 	SerializableArray gameObjectsArray = sObject.BuildSerializableArray("GameObjects");
@@ -351,6 +354,8 @@ void ModuleScene::Load(const char* jsonPath)
 
 	/* Load animations info */
 	App->animation->Load(sObject);
+	/* Load fonts info */
+	App->fonts->Load(sObject);
 
 	/* Load Meshes */
 	sceneLoader.LoadCubeMesh();

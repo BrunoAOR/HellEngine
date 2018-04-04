@@ -45,8 +45,6 @@ private:
 private:
 	std::vector<ComponentUIElement*> uiElements;
 
-    GameObject* canvas = nullptr;
-    
 	iPoint mousePosition;
 	KeyState mouseButtonState;
 

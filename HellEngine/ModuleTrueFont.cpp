@@ -2,6 +2,8 @@
 #include <algorithm>
 #include "ImGui/imgui.h"
 #include "ModuleTrueFont.h"
+#include "SerializableArray.h"
+#include "SerializableObject.h"
 #include "globals.h"
 
 
@@ -209,4 +211,31 @@ void ModuleTrueFont::OnEditorFontsWindow(float mainMenuBarHeight, bool * pOpen)
 	ImGui::End();
 
 
+}
+
+void ModuleTrueFont::Save(SerializableObject& obj)
+{
+	SerializableArray fontsArray = obj.BuildSerializableArray("Fonts");
+
+	for (std::unordered_map<std::string, FontInfo>::iterator it = fontsNamesToFontInfo.begin(); it != fontsNamesToFontInfo.end(); ++it)
+	{
+		SerializableObject pair = fontsArray.BuildSerializableObject();
+		pair.AddString("Name", it->first);
+		pair.AddString("Path", it->second.path);
+	}
+}
+
+void ModuleTrueFont::Load(const SerializableObject& obj)
+{
+	/* Delete any previously loaded fonts */
+	CleanUp();
+	Init();
+
+	SerializableArray fontsArray = obj.GetSerializableArray("Fonts");
+	uint arraySize = fontsArray.Size();
+	for (uint i = 0; i < arraySize; ++i)
+	{
+		SerializableObject pair = fontsArray.GetSerializableObject(i);
+		RegisterFont(pair.GetString("Name").c_str(), pair.GetString("Path").c_str());
+	}
 }

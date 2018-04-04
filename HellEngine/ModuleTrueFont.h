@@ -3,8 +3,9 @@
 
 #include <unordered_map>
 #include <SDL_ttf.h>
-
 #include "Module.h"
+class SerializableObject;
+
 
 class ModuleTrueFont : public Module
 {
@@ -23,6 +24,9 @@ public:
 	bool ReleaseFont(TTF_Font* font);
 
 	void OnEditorFontsWindow(float mainMenuBarHeight, bool* pOpen);
+
+	void Save(SerializableObject& obj);
+	void Load(const SerializableObject& obj);
 
 private:
 	struct SizeInfo {

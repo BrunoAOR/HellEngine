@@ -41,12 +41,12 @@ bool ModuleUI::Init()
 
 	GenerateSquareMeshInfo();
 
-	canvas = App->scene->CreateGameObject();
+	GameObject* canvas = App->scene->CreateGameObject();
 	canvas->name = "Canvas";
-	App->fonts->RegisterFont("temp", "assets/images/fonts/temp.ttf");
+	//App->fonts->RegisterFont("temp", "assets/images/fonts/temp.ttf");
 
 	/* TESTING START */
-
+	return true;
 	/* image */
 	GameObject* image = App->scene->CreateGameObject();
 	image->name = "Image test";
@@ -192,18 +192,16 @@ GameObject* ModuleUI::NewUIElement(UIElementType uiType)
 
 UpdateStatus ModuleUI::Update()
 {
-    if (canvas != nullptr)
-    {
-		mousePosition = App->input->GetMousePosition();
-		mousePosition.y = App->window->GetHeight() - mousePosition.y;
-		mouseButtonState = App->input->GetMouseButtonDown(1);
+	mousePosition = App->input->GetMousePosition();
+	mousePosition.y = App->window->GetHeight() - mousePosition.y;
+	mouseButtonState = App->input->GetMouseButtonDown(1);
 
-        //Check UI states ("pressed, etc...")
-        glDisable(GL_DEPTH_TEST);
-        UpdateElements();
-		glEnable(GL_DEPTH_TEST);
-    }
-    return UpdateStatus::UPDATE_CONTINUE;
+	//Check UI states ("pressed, etc...")
+	glDisable(GL_DEPTH_TEST);
+	UpdateElements();
+	glEnable(GL_DEPTH_TEST);
+
+	return UpdateStatus::UPDATE_CONTINUE;
 }
 
 void ModuleUI::RegisterUiElement(ComponentUIElement* newUiElement)
@@ -260,13 +258,10 @@ void ModuleUI::GenerateSquareMeshInfo()
 
 void ModuleUI::UpdateElements()
 {
-	if (canvas->GetActive())
+	for (ComponentUIElement* uiElement : uiElements)
 	{
-		for (ComponentUIElement* uiElement : uiElements)
-		{
-			if (uiElement->GetActive())
-				UpdateComponent(uiElement);
-		}
+		if (uiElement->GetActive())
+			UpdateComponent(uiElement);
 	}
 }
 
