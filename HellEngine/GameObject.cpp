@@ -205,7 +205,10 @@ bool GameObject::OnEditorHierarchy()
 		bool open = ImGui::TreeNodeEx(this, selectedFlag, name.c_str());
 		earlyReturn = OnEditorHierarchyRightClick();
 		if (earlyReturn)
+		{
+			if (open) ImGui::TreePop();
 			return true;
+		}
 
 		if (ImGui::IsItemClicked())
 			App->scene->editorInfo.selectedGameObject = this;
