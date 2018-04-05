@@ -1,7 +1,7 @@
 #ifndef __H_COMPONENT_UI_INPUT_TEXT__
 #define __H_COMPONENT_UI_INPUT_TEXT__
-
 #include "ComponentUIElement.h"
+#include "Point.h"
 #include "UITransitionsHandler.h"
 class ComponentUiImage;
 class ComponentUiLabel;
@@ -42,6 +42,7 @@ private:
 	void HandleClipboard();
 	void UpdateSelection();
 	void UpdateCaret();
+	void UpdateTextOffset();
 	void AddNewText(const char* newText);
 	void DeleteSelection();
 	void HandleShiftKey();
@@ -59,6 +60,7 @@ private:
 	unsigned int cursorPosition = 0;
 	unsigned int selectionStart = 0;
 	unsigned int selectionEnd = 0;
+	iPoint textOffset;
 	
 	int widths[maxChars];
 	float caretBlinkRate = 1;

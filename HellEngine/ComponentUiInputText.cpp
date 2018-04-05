@@ -68,9 +68,11 @@ void ComponentUiInputText::OnEditor()
 				break;
 			}
 
-			ImGui::NewLine();
 			ImGui::TreePop();
 		}
+		ImGui::NewLine();
+		if (ImGui::DragInt2("Text offset", textOffset.ptr()))
+			UpdateTextOffset();
 
 		ImGui::DragFloat("Caret blink rate", &caretBlinkRate, 0.1f, 0.0f, 5.0f);
 	}
@@ -198,6 +200,9 @@ void ComponentUiInputText::Save(SerializableObject& obj) const
 	std::vector<int> objWidths;
 	objWidths.insert(objWidths.begin(), widths, widths + currentCharCount);
 	obj.AddVectorInt("Widths", objWidths);
+
+	obj.AddInt("TextOffsetX", textOffset.x);
+	obj.AddInt("TextOffsetY", textOffset.y);
 }
 
 void ComponentUiInputText::Load(const SerializableObject& obj)
@@ -221,6 +226,9 @@ void ComponentUiInputText::Load(const SerializableObject& obj)
 	{
 		widths[i] = objWidths[i];
 	}
+
+	textOffset.x = obj.GetInt("TextOffsetX");
+	textOffset.y = obj.GetInt("TextOffsetY");
 }
 
 void ComponentUiInputText::LinkComponents(const SerializableObject& obj, const std::map<u32, Component*>& componentsCreated)
@@ -258,6 +266,7 @@ void ComponentUiInputText::LinkComponents(const SerializableObject& obj, const s
 	}
 
 	selectionStart = selectionEnd = cursorPosition = currentCharCount;
+	UpdateTextOffset();
 }
 
 void ComponentUiInputText::HandleCursorMotion()
@@ -395,7 +404,7 @@ void ComponentUiInputText::UpdateSelection()
 			else
 				width += widths[w];
 		}
-		selectionImage->transform2D->SetLocalPos((float)posX, 0.0f);
+		selectionImage->transform2D->SetLocalPos((float)(posX + textOffset.x), (float)textOffset.y);
 		selectionImage->transform2D->SetSize(width, textLabel->GetFontSize());
 	}
 	else
@@ -435,8 +444,17 @@ void ComponentUiInputText::UpdateCaret()
 		{
 			xPos += widths[i];
 		}
-		caretImage->transform2D->SetLocalPos((float)xPos, 0);
+		caretImage->transform2D->SetLocalPos((float)(xPos + textOffset.x), (float)textOffset.y);
 	}
+}
+
+void ComponentUiInputText::UpdateTextOffset()
+{
+	if (textLabel)
+		textLabel->transform2D->SetLocalPos((float)textOffset.x, (float)textOffset.y);
+
+	if (placeholderLabel)
+		placeholderLabel->transform2D->SetLocalPos((float)textOffset.x, (float)textOffset.y);
 }
 
 void ComponentUiInputText::AddNewText(const char* newText)
