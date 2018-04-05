@@ -1,6 +1,7 @@
 #include <assert.h>
 #include "ImGui/imgui.h"
 #include "Application.h"
+#include "Color.h"
 #include "ComponentType.h"
 #include "ComponentUIElement.h"
 #include "ComponentUiImage.h"
@@ -83,6 +84,7 @@ void ComponentUiImage::Save(SerializableObject& obj) const
 	Component::Save(obj);
 
 	obj.AddString("ImagePath", imagePath);
+	obj.AddColor("Color", Color(color[0], color[1], color[2], color[3]));
 }
 
 void ComponentUiImage::Load(const SerializableObject& obj)
@@ -91,6 +93,8 @@ void ComponentUiImage::Load(const SerializableObject& obj)
 
 	std::string objImagePath = obj.GetString("ImagePath");
 	SetImagePath(objImagePath);
+	Color colorObj = obj.GetColor("Color");
+	SetColor(colorObj.r, colorObj.g, colorObj.b, colorObj.a);
 }
 
 bool ComponentUiImage::LoadImage()

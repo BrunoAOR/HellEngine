@@ -7,6 +7,7 @@
 #include "ComponentTransform2D.h"
 #include "ModuleInput.h"
 #include "ModuleTime.h"
+#include "SerializableObject.h"
 #include "globals.h"
 
 
@@ -72,8 +73,6 @@ void ComponentUiInputText::OnEditor()
 		}
 
 		ImGui::DragFloat("Caret blink rate", &caretBlinkRate, 0.1f, 0.0f, 5.0f);
-		ImGui::ColorEdit4("Selection color", selectionColor);
-
 	}
 }
 
@@ -147,10 +146,13 @@ void ComponentUiInputText::SetFocusState(bool focusState)
 			textLabel->SetActive(true);
 			placeholderLabel->SetActive(false);
 			caretImage->SetActive(true);
+			selectionImage->SetActive(true);
 		}
 		else
 		{
 			caretImage->SetActive(false);
+			selectionImage->SetActive(false);
+			selectionStart = selectionEnd = cursorPosition = currentCharCount;
 			if (IsEmptyString(textContent))
 			{
 				textLabel->SetActive(false);
@@ -173,6 +175,89 @@ bool ComponentUiInputText::GetIsPassword()
 void ComponentUiInputText::SetIsPassword(bool isPasswordValue)
 {
 	isPassword = isPasswordValue;
+}
+
+void ComponentUiInputText::Save(SerializableObject& obj) const
+{
+	Component::Save(obj);
+
+	SerializableObject transitionsObj = obj.BuildSerializableObject("Transitions");
+	transitionHandler.Save(transitionsObj);
+	
+	obj.Addu32("placeholderLabelUUID", placeholderLabel ? placeholderLabel->GetUUID() : 0);
+	obj.Addu32("TextLabelUUID", textLabel ? textLabel->GetUUID() : 0);
+	obj.Addu32("SelectionImageUUID", selectionImage ? selectionImage->GetUUID() : 0);
+	obj.Addu32("CaretImageUUID", caretImage ? caretImage->GetUUID() : 0);
+
+	obj.AddString("TextContent", textContent);
+	obj.AddInt("CurrentCharCount", currentCharCount);
+	obj.AddFloat("CaretBlinkRate", caretBlinkRate);
+	obj.AddBool("HasFocus", hasFocus);
+	obj.AddBool("IsPassword", isPassword);
+
+	std::vector<int> objWidths;
+	objWidths.insert(objWidths.begin(), widths, widths + currentCharCount);
+	obj.AddVectorInt("Widths", objWidths);
+}
+
+void ComponentUiInputText::Load(const SerializableObject& obj)
+{
+	Component::Load(obj);
+
+	SerializableObject transitionsObj = obj.GetSerializableObject("Transitions");
+	transitionHandler.Load(transitionsObj);
+
+	std::string objTextContent = obj.GetString("TextContent");
+	memcpy_s(textContent, 256, objTextContent.c_str(), objTextContent.length());
+	textContent[objTextContent.length()] = '\0';
+
+	currentCharCount = obj.GetInt("CurrentCharCount");
+	caretBlinkRate = obj.GetFloat("CaretBlinkRate");
+	hasFocus = obj.GetBool("HasFocus");
+	isPassword = obj.GetBool("IsPassword");
+
+	std::vector<int> objWidths = obj.GetVectorInt("Widths");
+	for (uint i = 0; i < currentCharCount; ++i)
+	{
+		widths[i] = objWidths[i];
+	}
+}
+
+void ComponentUiInputText::LinkComponents(const SerializableObject& obj, const std::map<u32, Component*>& componentsCreated)
+{
+	SerializableObject transitionsObj = obj.GetSerializableObject("Transitions");
+	transitionHandler.LinkComponents(transitionsObj, componentsCreated);
+
+	u32 placeholderLabelUUID = obj.Getu32("placeholderLabelUUID");
+	if (placeholderLabelUUID != 0)
+	{
+		assert(componentsCreated.count(placeholderLabelUUID) == 1);
+		placeholderLabel = (ComponentUiLabel*)componentsCreated.at(placeholderLabelUUID);
+	}
+
+	u32 textLabelUUID = obj.Getu32("TextLabelUUID");
+	if (textLabelUUID != 0)
+	{
+		assert(componentsCreated.count(textLabelUUID) == 1);
+		textLabel = (ComponentUiLabel*)componentsCreated.at(textLabelUUID);
+		textLabel->SetLabelText(textContent);
+	}
+
+	u32 selectionImageUUID = obj.Getu32("SelectionImageUUID");
+	if (selectionImageUUID != 0)
+	{
+		assert(componentsCreated.count(selectionImageUUID) == 1);
+		selectionImage = (ComponentUiImage*)componentsCreated.at(selectionImageUUID);
+	}
+
+	u32 caretImageUUID = obj.Getu32("CaretImageUUID");
+	if (caretImageUUID != 0)
+	{
+		assert(componentsCreated.count(caretImageUUID) == 1);
+		caretImage = (ComponentUiImage*)componentsCreated.at(caretImageUUID);
+	}
+
+	selectionStart = selectionEnd = cursorPosition = currentCharCount;
 }
 
 void ComponentUiInputText::HandleCursorMotion()

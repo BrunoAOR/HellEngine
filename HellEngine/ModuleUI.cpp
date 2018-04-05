@@ -88,7 +88,6 @@ bool ModuleUI::Init()
 	componentButton->transitionHandler.SetTransitionImage(TransitionState::DEFAULT, "assets/images/lenna.png");
 	componentButton->transitionHandler.SetTransitionImage(TransitionState::HOVER, "assets/images/grass.png");
 	componentButton->transitionHandler.SetTransitionImage(TransitionState::PRESSED, "assets/images/ryu.jpg");
-	return true;
 
 	/* input text */
 	GameObject* inputText = NewUIElement(UIElementType::INPUT_TEXT);

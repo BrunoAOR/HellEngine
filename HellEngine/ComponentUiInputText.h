@@ -5,6 +5,7 @@
 #include "UITransitionsHandler.h"
 class ComponentUiImage;
 class ComponentUiLabel;
+class SerializableObject;
 
 class ComponentUiInputText : public ComponentUIElement
 {
@@ -28,6 +29,10 @@ public:
 	bool GetIsPassword();
 	void SetIsPassword(bool isPasswordValue);
 
+	virtual void Save(SerializableObject& obj) const override;
+	virtual void Load(const SerializableObject& obj) override;
+	virtual void LinkComponents(const SerializableObject& obj, const std::map<u32, Component*>& componentsCreated) override;
+
 public:
 	UITransitionsHandler transitionHandler;
 
@@ -44,7 +49,6 @@ private:
 private:
 	static const unsigned int maxChars = 256;
 
-	ComponentUiImage* backgroundImage;
 	ComponentUiLabel* placeholderLabel;
 	ComponentUiLabel* textLabel;
 	ComponentUiImage* selectionImage;
@@ -58,12 +62,10 @@ private:
 	
 	int widths[maxChars];
 	float caretBlinkRate = 1;
-	float caretElapsedTime;
+	float caretElapsedTime = 0;
 
 	bool hasFocus = false;
-	bool isPassword;
-
-	float selectionColor[4]{ 0.5f, 1.0f, 1.0f, 0.5f };
+	bool isPassword = false;
 };
 
 #endif // !__H_COMPONENT_UI_INPUT_TEXT__
