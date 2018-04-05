@@ -44,10 +44,14 @@ public:
 	float GetTimeScale() const;
 
 	/* Sets the timeScale value ensuring it is >= 0 */
-	void GetTimeScale(float newTimeScale);
+	void SetTimeScale(float newTimeScale);
+
+	/* Resets timer to zero */
+	void ResetReferenceTime();
 
 private:
 
+	Uint32 referenceTime = 0;
 	Uint32 time = 0;
 	Uint32 deltaTime = 0;
 	float timeScale = 1.0f;

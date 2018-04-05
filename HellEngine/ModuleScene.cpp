@@ -12,6 +12,7 @@
 #include "ModuleEditorCamera.h"
 #include "ModuleTrueFont.h"
 #include "ModuleScene.h"
+#include "ModuleTime.h"
 #include "ModuleWindow.h"
 #include "Serializer.h"
 #include "SerializableArray.h"
@@ -121,6 +122,91 @@ void ModuleScene::OnEditorInspector(float mainMenuBarHeight, bool * pOpen)
 	else
 	{
 		editorInfo.selectedGameObject->OnEditorInspector();
+	}
+
+	ImGui::End();
+}
+
+void ModuleScene::OnEditorPlayButtonWindow(float mainMenuBarHeight)
+{
+	static char* sceneTempFile = "assets/tempPlayModeScene.json";
+	static const float width = 250;
+	static const float height = 70;
+	static bool isPlaying = false;
+	static bool isPaused = false;
+	static bool playing1Frame = false;
+	static float originalTimeScale = 1.0f;
+	static float currentTimeScale = 1.0f;
+	static ImVec4 gray = ImVec4(0.75f, 0.75f, 0.75f, 1.0f);
+	static ImVec4 red = ImVec4(0.75f, 0.0f, 0.0f, 1.0f);
+
+	float windowWidth = (float)App->window->GetWidth();
+	ImGui::SetNextWindowPos(ImVec2((windowWidth - width) / 2, mainMenuBarHeight));
+	ImGui::SetNextWindowSize(ImVec2(width, height));
+
+	ImGui::Begin("Play Window", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
+
+	if (playing1Frame)
+	{
+		App->time->SetTimeScale(0);
+		playing1Frame = false;
+	}
+
+	if (!isPlaying)
+	{
+		ImGui::PushStyleColor(ImGuiCol_Button, gray);
+		if (ImGui::Button("Play"))
+		{
+			isPlaying = true;
+			/* Should Save Scene */
+			Save(sceneTempFile);
+			originalTimeScale = App->time->GetTimeScale();
+			App->time->ResetReferenceTime();
+		}
+		ImGui::PopStyleColor();
+
+	}
+	else
+	{
+		ImGui::PushStyleColor(ImGuiCol_Button, isPaused ? red : gray);
+		if (ImGui::Button("Pause"))
+		{
+			isPaused = !isPaused;
+			App->time->SetTimeScale(isPaused ? 0 : currentTimeScale);
+		}
+		ImGui::PopStyleColor();
+
+
+		ImGui::SameLine();
+		ImGui::PushStyleColor(ImGuiCol_Button, red);
+		if (ImGui::Button("Stop"))
+		{
+			isPlaying = false;
+			isPaused = false;
+			/* Should Load Scene */
+			App->time->SetTimeScale(originalTimeScale);
+			currentTimeScale = originalTimeScale;
+			Load(sceneTempFile);
+			DeleteFileByPath(sceneTempFile);
+		}
+		ImGui::PopStyleColor();
+
+		if (isPaused)
+		{
+			ImGui::SameLine();
+			if (ImGui::Button("1 Frame"))
+			{
+				playing1Frame = true;
+				App->time->SetTimeScale(currentTimeScale);
+			}
+		}
+	}
+
+
+	if (ImGui::SliderFloat("Time scale", &currentTimeScale, 0.0f, 3.0f, "%.1f"))
+	{
+		if (!isPaused)
+			App->time->SetTimeScale(currentTimeScale);
 	}
 
 	ImGui::End();
@@ -308,7 +394,7 @@ std::vector<GameObject*> ModuleScene::FindByName(const std::string& name, GameOb
     return ret;
 }
 
-void ModuleScene::Save()
+void ModuleScene::Save(const char* filePath)
 {
 	Serializer serializer;
 	SerializableObject sObject = serializer.GetEmptySerializableObject();
@@ -341,7 +427,7 @@ void ModuleScene::Save()
 
 	}
 
-	serializer.Save("assets/scenes/Scene.json");
+	serializer.Save(filePath);
 }
 
 void ModuleScene::Load(const char* jsonPath)

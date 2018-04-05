@@ -76,6 +76,11 @@ bool SaveTextFile(const std::string& path, const std::string& content)
 	return false;
 }
 
+bool DeleteFileByPath(const char* path)
+{
+	return remove(path) == 0;
+}
+
 bool IsEmptyString(const char* charString)
 {
 	return (charString != nullptr && charString[0] == '\0');
