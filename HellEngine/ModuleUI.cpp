@@ -74,7 +74,6 @@ bool ModuleUI::Init()
 	componentLabel->SetColor(1.0f, 0.5f, 0.5f, 1.0f);
 	componentLabel->SetFontName("temp");
 	componentLabel->SetAdaptSizeToText(true);
-	return true;
 
 	/* button */
 	GameObject* button = NewUIElement(UIElementType::BUTTON);
@@ -89,6 +88,7 @@ bool ModuleUI::Init()
 	componentButton->transitionHandler.SetTransitionImage(TransitionState::DEFAULT, "assets/images/lenna.png");
 	componentButton->transitionHandler.SetTransitionImage(TransitionState::HOVER, "assets/images/grass.png");
 	componentButton->transitionHandler.SetTransitionImage(TransitionState::PRESSED, "assets/images/ryu.jpg");
+	return true;
 
 	/* input text */
 	GameObject* inputText = NewUIElement(UIElementType::INPUT_TEXT);

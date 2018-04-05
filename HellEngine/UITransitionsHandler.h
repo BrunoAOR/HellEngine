@@ -1,8 +1,10 @@
 #ifndef __H_UI_TRANSITIONS_HANDLER
 #define __H_UI_TRANSITIONS_HANDLER
 
+#include <map>
 #include "Color.h"
 class ComponentUiImage;
+class SerializableObjet;
 
 struct TransitionStateInfo
 {
@@ -32,6 +34,10 @@ public:
 	bool SetTransitionImage(TransitionState transitionState, const char* path = nullptr);
 
 	void UpdateUiImage();
+
+	virtual void Save(SerializableObject& obj) const;
+	virtual void Load(const SerializableObject& obj);
+	virtual void LinkComponents(const SerializableObject& obj, const std::map<u32, Component*>& componentsCreated);
 
 public:
 	TransitionStateInfo stateInfos[4];

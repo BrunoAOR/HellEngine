@@ -78,14 +78,14 @@ bool ComponentUiImage::SetImagePath(const std::string& newImagePath)
 	return LoadImage();
 }
 
-void ComponentUiImage::Save(SerializableObject & obj) const
+void ComponentUiImage::Save(SerializableObject& obj) const
 {
 	Component::Save(obj);
 
 	obj.AddString("ImagePath", imagePath);
 }
 
-void ComponentUiImage::Load(const SerializableObject & obj)
+void ComponentUiImage::Load(const SerializableObject& obj)
 {
 	Component::Load(obj);
 

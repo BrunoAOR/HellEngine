@@ -5,6 +5,7 @@
 #include "ComponentType.h"
 #include "GameObject.h"
 #include "ModuleTextureManager.h"
+#include "SerializableObject.h"
 #include "globals.h"
 
 ComponentUiButton::ComponentUiButton(GameObject * owner) : ComponentUIElement(owner)
@@ -61,4 +62,26 @@ void ComponentUiButton::OnEditor()
 			break;
 		}
 	}
+}
+
+void ComponentUiButton::Save(SerializableObject& obj) const
+{
+	Component::Save(obj);
+	
+	SerializableObject transitionsObj = obj.BuildSerializableObject("Transitions");
+	transitionHandler.Save(transitionsObj);
+}
+
+void ComponentUiButton::Load(const SerializableObject& obj)
+{
+	Component::Load(obj);
+
+	SerializableObject transitionsObj = obj.GetSerializableObject("Transitions");
+	transitionHandler.Load(transitionsObj);
+}
+
+void ComponentUiButton::LinkComponents(const SerializableObject& obj, const std::map<u32, Component*>& componentsCreated)
+{
+	SerializableObject transitionsObj = obj.GetSerializableObject("Transitions");
+	transitionHandler.LinkComponents(transitionsObj, componentsCreated);
 }

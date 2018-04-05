@@ -1,6 +1,8 @@
 #include "Application.h"
 #include "ComponentUiImage.h"
 #include "ModuleTextureManager.h"
+#include "SerializableArray.h"
+#include "SerializableObject.h"
 #include "UITransitionsHandler.h"
 #include "globals.h"
 
@@ -137,5 +139,45 @@ void UITransitionsHandler::UpdateUiImage()
 		else if (currentTransitionType == TransitionType::SPRITE)
 			if (stateInfo.textureId != 0)
 				uiImage->SetImagePath(stateInfo.imagePath);
+	}
+}
+
+void UITransitionsHandler::Save(SerializableObject& obj) const
+{
+	obj.Addu32("TransitionImageUUID", uiImage ? uiImage->GetUUID() : 0);
+
+	SerializableArray stateInfosArray = obj.BuildSerializableArray("StateInfos");
+	for (uint i = 0; i < 4; ++i)
+	{
+		TransitionStateInfo info = stateInfos[i];
+		SerializableObject sObj = stateInfosArray.BuildSerializableObject();
+		sObj.AddColor("Color", Color(info.color[0], info.color[1], info.color[2], info.color[3]));
+		sObj.AddString("ImagePath", info.imagePath);
+	}
+}
+
+void UITransitionsHandler::Load(const SerializableObject& obj)
+{
+	SerializableArray stateInfosArray = obj.GetSerializableArray("StateInfos");
+	for (uint i = 0; i < 4; ++i)
+	{
+		TransitionStateInfo info = stateInfos[i];
+		SerializableObject sObj = stateInfosArray.GetSerializableObject(i);
+		Color objColor = sObj.GetColor("Color");
+		SetTransitionColor((TransitionState)i, objColor);
+				
+		std::string objImagePath = sObj.GetString("ImagePath");
+		SetTransitionImage((TransitionState)i, objImagePath.c_str());
+	}
+}
+
+void UITransitionsHandler::LinkComponents(const SerializableObject& obj, const std::map<u32, Component*>& componentsCreated)
+{
+	u32 uiImageUUID = obj.Getu32("TransitionImageUUID");
+	if (uiImageUUID != 0)
+	{
+		assert(componentsCreated.count(uiImageUUID) == 1);
+		ComponentUiImage* newUiImage = (ComponentUiImage*)componentsCreated.at(uiImageUUID);
+		SetTargetImage(newUiImage);
 	}
 }
