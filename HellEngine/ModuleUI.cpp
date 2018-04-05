@@ -75,6 +75,7 @@ GameObject* ModuleUI::NewUIElement(UIElementType uiType)
 		childGo->SetParent(go);
 		label = (ComponentUiLabel*)childGo->AddComponent(ComponentType::UI_LABEL);
 		label->SetLabelText("New Label");
+		label->SetFontName("Default");
 		break;
 	case UIElementType::IMG:
 		go->AddComponent(ComponentType::UI_IMAGE);
@@ -95,7 +96,7 @@ GameObject* ModuleUI::NewUIElement(UIElementType uiType)
 		label->SetLabelText("Enter text here...");
 		label->SetColor(0.9f, 0.9f, 0.9f, 1.0f);
 		label->SetAdaptSizeToText(true);
-		label->SetFontName("temp");
+		label->SetFontName("Default");
 		label->SetFontSize(28);
 		/* Child Text */
 		childGo = App->scene->CreateGameObject();
@@ -106,7 +107,7 @@ GameObject* ModuleUI::NewUIElement(UIElementType uiType)
 		inputText->SetTargetTextLabel(label);
 		label->SetAdaptSizeToText(true);
 		label->SetColor(0.0f, 0.0f, 0.0f, 1.0f);
-		label->SetFontName("temp");
+		label->SetFontName("Default");
 		label->SetFontSize(28);
 		/* Child Selection image */
 		childGo = App->scene->CreateGameObject();
@@ -126,7 +127,7 @@ GameObject* ModuleUI::NewUIElement(UIElementType uiType)
 	case UIElementType::LABEL:
 		label = (ComponentUiLabel*)go->AddComponent(ComponentType::UI_LABEL);
 		label->SetLabelText("New Label");
-		label->SetFontName("temp");
+		label->SetFontName("Default");
 		break;
 	}
 
