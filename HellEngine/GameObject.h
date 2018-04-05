@@ -1,6 +1,7 @@
 #ifndef __H_GAME_OBJECT__
 #define __H_GAME_OBJECT__
 
+#include <map>
 #include <vector>
 #include "MathGeoLib/src/Math/MathTypes.h"
 
@@ -39,7 +40,8 @@ public:
 	void SetActive(bool activeState);
 
 	void Save(SerializableObject& obj);
-	void Load(const SerializableObject& obj);
+	void Load(const SerializableObject& obj, std::map<u32, Component*>& componentsCreated);
+	void LinkComponents(const SerializableObject& obj, const std::map<u32, Component*>& componentsCreated);
 
 	u32 GetUUID() const;
 	u32 GetParentUUID() const;

@@ -615,7 +615,7 @@ void GameObject::Save(SerializableObject& obj)
 	}
 }
 
-void GameObject::Load(const SerializableObject& obj)
+void GameObject::Load(const SerializableObject& obj, std::map<u32, Component*>& componentsCreated)
 {
 	uuid = obj.Getu32("UUID");
 	name = obj.GetString("Name");
@@ -634,8 +634,22 @@ void GameObject::Load(const SerializableObject& obj)
 		
 		Component* component = AddComponent(cType);
 		component->Load(componentObject);
+		/* Component must be introduced to the map AFTER loading so that its UUID is changed to the saved value */
+		componentsCreated[component->GetUUID()] = component;
 	}
 
+}
+
+void GameObject::LinkComponents(const SerializableObject& obj, const std::map<u32, Component*>& componentsCreated)
+{
+	SerializableArray componentsArray = obj.GetSerializableArray("Components");
+	uint componentsCount = componentsArray.Size();
+
+	for (uint i = 0; i < componentsCount; ++i)
+	{
+		SerializableObject componentObject = componentsArray.GetSerializableObject(i);
+		components[i]->LinkComponents(componentObject, componentsCreated);
+	}
 }
 
 u32 GameObject::GetUUID() const

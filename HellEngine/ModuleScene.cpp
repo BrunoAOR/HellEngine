@@ -376,15 +376,21 @@ void ModuleScene::Load(const char* jsonPath)
 	SerializableArray gameObjectsArray = sObject.GetSerializableArray("GameObjects");
 	uint gameObjectsCount = gameObjectsArray.Size();
 
+	std::vector<GameObject*> gameObjectsCreated;
+	gameObjectsCreated.reserve(gameObjectsCount);
+	std::map<u32, Component*> componentsByUuid;
+	
 	/* Create GameObjects */
 	for (uint i = 0; i < gameObjectsCount; ++i)
 	{
 		SerializableObject goData = gameObjectsArray.GetSerializableObject(i);
 		GameObject* go = CreateGameObject();
+		gameObjectsCreated.push_back(go);
+
 		if (i == 0)
 			root = go;
 
-		go->Load(goData);
+		go->Load(goData, componentsByUuid);
 
 		std::vector<Component*> goMeshes = go->GetComponents(ComponentType::MESH);
 		meshesCreated.insert(meshesCreated.end(), goMeshes.begin(), goMeshes.end());
@@ -402,6 +408,13 @@ void ModuleScene::Load(const char* jsonPath)
 			assert(gameObjectsByUuid.count(parentUuid) > 0);
 			go->SetParent(gameObjectsByUuid[parentUuid]);
 		}
+	}
+
+	/* Link components */
+	for (uint i = 0; i < gameObjectsCount; ++i)
+	{
+		SerializableObject goData = gameObjectsArray.GetSerializableObject(i);
+		gameObjectsCreated[i]->LinkComponents(goData, componentsByUuid);
 	}
 
 	/* Optimize Meshes */
