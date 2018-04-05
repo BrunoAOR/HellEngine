@@ -10,6 +10,7 @@
 #include "ModuleDebugDraw.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleInput.h"
+#include "ModuleTrueFont.h"
 #include "ModuleUI.h"
 #include "ModuleScene.h"
 #include "ModuleShaderManager.h"
@@ -23,12 +24,10 @@ ModuleUI::ModuleUI()
 {
 }
 
-
 ModuleUI::~ModuleUI()
 {
 }
 
-#include "ModuleTrueFont.h"
 bool ModuleUI::Init()
 {
 	shaderProgram = App->shaderManager->GetShaderProgram("assets/shaders/uiShader.vert", "assets/shaders/uiShader.frag");
@@ -41,63 +40,7 @@ bool ModuleUI::Init()
 
 	GenerateSquareMeshInfo();
 
-	GameObject* canvas = App->scene->CreateGameObject();
-	canvas->name = "Canvas";
-	App->fonts->RegisterFont("temp", "assets/images/fonts/temp.ttf");
-
-	/* TESTING START */
-
-	/* image */
-	GameObject* image = App->scene->CreateGameObject();
-	image->name = "Image test";
-	image->SetParent(canvas);
-
-	ComponentTransform2D* imageTransform = (ComponentTransform2D*)image->AddComponent(ComponentType::TRANSFORM_2D);
-	imageTransform->SetLocalPos(500, 200);
-	imageTransform->SetSize(150, 150);
-
-	ComponentUiImage* componentImage = (ComponentUiImage*)image->AddComponent(ComponentType::UI_IMAGE);
-	componentImage->SetImagePath("assets/images/lenna.png");
-	
-	/* label */
-	GameObject* label = App->scene->CreateGameObject();
-	label->name = "Label test";
-	label->SetParent(canvas);
-
-	ComponentTransform2D* labelTransform = (ComponentTransform2D*)label->AddComponent(ComponentType::TRANSFORM_2D);
-	labelTransform->SetLocalPos(700, 200);
-	labelTransform->SetSize(150, 150);
-
-	ComponentUiLabel* componentLabel = (ComponentUiLabel*)label->AddComponent(ComponentType::UI_LABEL);
-	componentLabel->SetLabelText("Hello Lenna!");
-	componentLabel->SetFontSize(40);
-	componentLabel->SetColor(1.0f, 0.5f, 0.5f, 1.0f);
-	componentLabel->SetFontName("temp");
-	componentLabel->SetAdaptSizeToText(true);
-
-	/* button */
-	GameObject* button = NewUIElement(UIElementType::BUTTON);
-	button->name = "Button test";
-	button->SetParent(canvas);
-
-	ComponentTransform2D* buttonTransform = (ComponentTransform2D*)button->GetComponent(ComponentType::TRANSFORM_2D);
-	buttonTransform->SetLocalPos(500, 400);
-	buttonTransform->SetSize(150, 150);
-
-	ComponentUiButton* componentButton = (ComponentUiButton*)button->GetComponent(ComponentType::UI_BUTTON);
-	componentButton->transitionHandler.SetTransitionImage(TransitionState::DEFAULT, "assets/images/lenna.png");
-	componentButton->transitionHandler.SetTransitionImage(TransitionState::HOVER, "assets/images/grass.png");
-	componentButton->transitionHandler.SetTransitionImage(TransitionState::PRESSED, "assets/images/ryu.jpg");
-
-	/* input text */
-	GameObject* inputText = NewUIElement(UIElementType::INPUT_TEXT);
-	inputText->name = "Input Text test";
-	inputText->SetParent(canvas);
-
-	ComponentTransform2D* textTransform = (ComponentTransform2D*)inputText->GetComponent(ComponentType::TRANSFORM_2D);
-	textTransform->SetLocalPos(700, 400);
-		
-	/* TESTING END */
+	App->fonts->RegisterFont("Default", "assets/fonts/default.ttf");
 
 	return true;
 }
