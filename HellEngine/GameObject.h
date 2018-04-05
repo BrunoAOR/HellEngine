@@ -41,10 +41,11 @@ public:
 	void Save(SerializableObject& obj);
 	void Load(const SerializableObject& obj);
 
+	u32 GetUUID() const;
+	u32 GetParentUUID() const;
+
 public:
 
-	u32 uuid = 0;
-	u32 parentUuid = 0;
 	std::string name;
 
 private:
@@ -77,6 +78,9 @@ private:
 
 	static GameObject* hierarchyActiveGameObject;
 	bool componentPendingToRemove = false;
+	
+	u32 uuid = 0;
+	u32 parentUuid = 0;
 };
 
 #endif // !__H_GAME_OBJECT__

@@ -389,17 +389,18 @@ void ModuleScene::Load(const char* jsonPath)
 		std::vector<Component*> goMeshes = go->GetComponents(ComponentType::MESH);
 		meshesCreated.insert(meshesCreated.end(), goMeshes.begin(), goMeshes.end());
 
-		gameObjectsByUuid[go->uuid] = go;
+		gameObjectsByUuid[go->GetUUID()] = go;
+		u32 parentUuid = go->GetParentUUID();
 		/* Check done to leave root out */
-		if (go->parentUuid != 0)
+		if (parentUuid != 0)
 		{
 			/*
 			Since GameObjects are saved by layers within the root
 			(meaning that all GameObjects at a depth in the Hierarchy are saved before going to a child depth),
 			it is safe to assume that any parent will have already been loaded
 			*/
-			assert(gameObjectsByUuid.count(go->parentUuid) > 0);
-			go->SetParent(gameObjectsByUuid[go->parentUuid]);
+			assert(gameObjectsByUuid.count(parentUuid) > 0);
+			go->SetParent(gameObjectsByUuid[parentUuid]);
 		}
 	}
 

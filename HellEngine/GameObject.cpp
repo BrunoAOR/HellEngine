@@ -34,6 +34,7 @@ GameObject::GameObject(const char* name, GameObject* parentGameObject) : name(na
 	if (App->scene->root != nullptr)
 	{
 		parent = App->scene->root;
+		parentUuid = App->scene->root->uuid;
 		App->scene->root->children.push_back(this);
 
 		if (parentGameObject != nullptr && parentGameObject != App->scene->root)
@@ -385,6 +386,7 @@ bool GameObject::SetParent(GameObject* newParent)
 		/* Assign new parent */
 		parent = App->scene->root;
 		App->scene->root->children.push_back(this);
+		parentUuid = parent->uuid;
 		return true;
 	}
 
@@ -423,7 +425,8 @@ bool GameObject::SetParent(GameObject* newParent)
 
 		/* Assign new parent */
 		parent = newParent;
-		newParent->children.push_back(this);
+		parentUuid = parent->uuid;
+		parent->children.push_back(this);
 		return true;
 	}
 }
@@ -601,7 +604,7 @@ void GameObject::Save(SerializableObject& obj)
 {
 	obj.Addu32("UUID", uuid);
 	obj.AddString("Name", name);
-	obj.Addu32("ParentUUID", GetParent() ? GetParent()->uuid : this == App->scene->root ? 0 : App->scene->root->uuid);
+	obj.Addu32("ParentUUID", parentUuid);
 	obj.AddString("Name", name);
 	obj.AddBool("Active", isActive);
 	SerializableArray sArray = obj.BuildSerializableArray("Components");
@@ -633,6 +636,16 @@ void GameObject::Load(const SerializableObject& obj)
 		component->Load(componentObject);
 	}
 
+}
+
+u32 GameObject::GetUUID() const
+{
+	return uuid;
+}
+
+u32 GameObject::GetParentUUID() const
+{
+	return parentUuid;
 }
 
 bool GameObject::HasGameObjectInChildrenHierarchy(GameObject * testGameObject)
