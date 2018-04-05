@@ -1,12 +1,14 @@
 #ifndef __H_GAME_OBJECT__
 #define __H_GAME_OBJECT__
 
+#include <map>
 #include <vector>
 #include "MathGeoLib/src/Math/MathTypes.h"
 
 class Component;
-enum class ComponentType;
 class SerializableObject;
+enum class ComponentType;
+enum class UIElementType;
 
 class GameObject
 {
@@ -38,12 +40,14 @@ public:
 	void SetActive(bool activeState);
 
 	void Save(SerializableObject& obj);
-	void Load(const SerializableObject& obj);
+	void Load(const SerializableObject& obj, std::map<u32, Component*>& componentsCreated);
+	void LinkComponents(const SerializableObject& obj, const std::map<u32, Component*>& componentsCreated);
+
+	u32 GetUUID() const;
+	u32 GetParentUUID() const;
 
 public:
 
-	u32 uuid = 0;
-	u32 parentUuid = 0;
 	std::string name;
 
 private:
@@ -59,6 +63,7 @@ private:
 	GameObject* AddCameraChild();
 	GameObject* AddCubeChild();
 	GameObject* AddSphereChild();
+	GameObject* AddUiElement(UIElementType uiElementType);
 
 	bool OnEditorHierarchy();
 	void OnEditorHierarchyDragAndDrop();
@@ -75,6 +80,9 @@ private:
 
 	static GameObject* hierarchyActiveGameObject;
 	bool componentPendingToRemove = false;
+	
+	u32 uuid = 0;
+	u32 parentUuid = 0;
 };
 
 #endif // !__H_GAME_OBJECT__

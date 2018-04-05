@@ -22,6 +22,9 @@
     <Filter Include="ImGuizmo">
       <UniqueIdentifier>{5e52c346-c6f6-4462-9e71-e2628967add8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{467f1ae1-547e-4948-84e9-7af0f8304105}</UniqueIdentifier>
+    </Filter>
     <Filter Include="General\Serialization">
       <UniqueIdentifier>{f5980987-b87d-412c-b59d-db2eb89aa9a3}</UniqueIdentifier>
     </Filter>
@@ -369,6 +372,33 @@
     <ClInclude Include="ShaderProgram.h">
       <Filter>General</Filter>
     </ClInclude>
+    <ClInclude Include="ComponentTransform2D.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentUIElement.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentUiImage.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentUiLabel.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentUiButton.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleUI.h">
+      <Filter>Engine Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleTrueFont.h">
+      <Filter>Engine Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="UITransitionsHandler.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentUiInputText.h">
+      <Filter>UI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -601,6 +631,33 @@
     </ClCompile>
     <ClCompile Include="ShaderProgram.cpp">
       <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentTransform2D.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentUIElement.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentUiImage.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentUiLabel.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentUiButton.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleTrueFont.cpp">
+      <Filter>Engine Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleUI.cpp">
+      <Filter>Engine Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="UITransitionsHandler.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentUiInputText.cpp">
+      <Filter>UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

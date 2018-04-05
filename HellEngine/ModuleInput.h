@@ -33,15 +33,14 @@ public:
 	bool CleanUp();
 
 	/* Check key states (includes mouse and joy buttons) */
-	KeyState GetKey(int id) const
-	{
-		return keyboard[id];
-	}
+	KeyState GetKey(int id) const;
 
-	KeyState GetMouseButtonDown(int id) const
-	{
-		return mouseButtons[id - 1];
-	}
+	KeyState GetMouseButtonDown(int id) const;
+
+	const char* GetText() const;
+
+	std::string GetClipboardText() const;
+	bool SetClipboardText(const char* text) const;
 
 	/* Check for window events last frame */
 	bool GetWindowEvent(EventWindow code) const;
@@ -58,6 +57,8 @@ private:
 	iPoint mouseMotion;
 	iPoint mouse;
 	iPoint mouseWheel;
+
+	char text[32] = "";
 };
 
 #endif /* __MODULEINPUT_H__ */

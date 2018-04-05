@@ -81,7 +81,7 @@ bool DeleteFileByPath(const char* path)
 	return remove(path) == 0;
 }
 
-bool IsEmptyString(const char * charString)
+bool IsEmptyString(const char* charString)
 {
 	return (charString != nullptr && charString[0] == '\0');
 }

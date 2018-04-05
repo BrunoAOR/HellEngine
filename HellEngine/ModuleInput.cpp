@@ -36,6 +36,7 @@ bool ModuleInput::Init()
 		ret = false;
 	}
 
+	SDL_StartTextInput();
 	return ret;
 }
 
@@ -83,6 +84,7 @@ UpdateStatus ModuleInput::PreUpdate()
 			mouseButtons[i] = KeyState::KEY_IDLE;
 	}
 
+	memset(text, 0, 32);
 	while (SDL_PollEvent(&event) != 0)
 	{
 		ImGui_ImplSdlGL3_ProcessEvent(&event);
@@ -90,6 +92,11 @@ UpdateStatus ModuleInput::PreUpdate()
 		{
 		case SDL_QUIT:
 			windowEvents[(int)EventWindow::WE_QUIT] = true;
+			break;
+
+		case SDL_TEXTINPUT:
+			/* Add new text onto the end of our text */
+			strcat_s(text, event.text.text);
 			break;
 
 		case SDL_WINDOWEVENT:
@@ -210,7 +217,7 @@ UpdateStatus ModuleInput::PreUpdate()
 		}
 	}
 	
-	if (GetWindowEvent(EventWindow::WE_QUIT) == true || GetKey(SDL_SCANCODE_ESCAPE) == KeyState::KEY_DOWN)
+	if (GetWindowEvent(EventWindow::WE_QUIT) == true)
 		return UpdateStatus::UPDATE_STOP;
 
 	return UpdateStatus::UPDATE_CONTINUE;
@@ -220,8 +227,42 @@ UpdateStatus ModuleInput::PreUpdate()
 bool ModuleInput::CleanUp()
 {
 	LOGGER("Quitting SDL event subsystem");
+	SDL_StopTextInput();
 	SDL_QuitSubSystem(SDL_INIT_EVENTS);
 	return true;
+}
+
+KeyState ModuleInput::GetKey(int id) const
+{
+	return keyboard[id];
+}
+
+KeyState ModuleInput::GetMouseButtonDown(int id) const
+{
+	return mouseButtons[id - 1];
+}
+
+const char * ModuleInput::GetText() const
+{
+	return text;
+}
+
+std::string ModuleInput::GetClipboardText() const
+{
+	if (!SDL_HasClipboardText())
+		return std::string();
+
+
+	char* clipboardText = SDL_GetClipboardText();
+	std::string text(clipboardText);
+
+	SDL_free(clipboardText);
+	return text;
+}
+
+bool ModuleInput::SetClipboardText(const char* text) const
+{
+	return SDL_SetClipboardText(text) == 0;
 }
 
 bool ModuleInput::GetWindowEvent(EventWindow ev) const

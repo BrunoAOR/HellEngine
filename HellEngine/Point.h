@@ -65,6 +65,16 @@ public:
 	}
 
 	/* Utils */
+	const TYPE* ptr() const
+	{
+		return &x;
+	}
+
+	TYPE* ptr()
+	{
+		return &x;
+	}
+
 	bool IsZero() const
 	{
 		return (x == 0 && y == 0);

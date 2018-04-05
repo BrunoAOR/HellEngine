@@ -13,7 +13,13 @@
 #include "ComponentMesh.h"
 #include "ComponentParticleSystem.h"
 #include "ComponentTransform.h"
+#include "ComponentTransform2D.h"
 #include "ComponentType.h"
+#include "ComponentUiButton.h"
+#include "ComponentUiImage.h"
+#include "ComponentUiInputText.h"
+#include "ComponentUiLabel.h"
+#include "ModuleUI.h"
 #include "ModuleScene.h"
 #include "SerializableArray.h"
 #include "SerializableObject.h"
@@ -28,6 +34,7 @@ GameObject::GameObject(const char* name, GameObject* parentGameObject) : name(na
 	if (App->scene->root != nullptr)
 	{
 		parent = App->scene->root;
+		parentUuid = App->scene->root->uuid;
 		App->scene->root->children.push_back(this);
 
 		if (parentGameObject != nullptr && parentGameObject != App->scene->root)
@@ -103,13 +110,26 @@ void GameObject::OnEditorInspector()
 	name = nameBuf;
 	if (ImGui::BeginMenu("Add new Component"))
 	{
-		for (ComponentType componentType : COMPONENT_TYPES)
+		for (ComponentType componentType : COMPONENT_TYPES_3D)
 		{
 			if (ImGui::MenuItem(GetString(componentType), ""))
 			{
 				AddComponent(componentType);
 			}
 		}
+
+		if (ImGui::BeginMenu("UI"))
+		{
+			for (ComponentType componentType : COMPONENT_TYPES_2D)
+			{
+				if (ImGui::MenuItem(GetString(componentType), ""))
+				{
+					AddComponent(componentType);
+				}
+			}
+			ImGui::EndMenu();
+		}
+
 		ImGui::EndMenu();
 	}
 	for (Component* component : components)
@@ -186,7 +206,10 @@ bool GameObject::OnEditorHierarchy()
 		bool open = ImGui::TreeNodeEx(this, selectedFlag, name.c_str());
 		earlyReturn = OnEditorHierarchyRightClick();
 		if (earlyReturn)
+		{
+			if (open) ImGui::TreePop();
 			return true;
+		}
 
 		if (ImGui::IsItemClicked())
 			App->scene->editorInfo.selectedGameObject = this;
@@ -284,6 +307,17 @@ void GameObject::OnEditorHierarchyCreateMenu()
 		if (ImGui::Selectable("Create Sphere"))
 			AddSphereChild();
 
+		if (ImGui::BeginMenu("UI"))
+		{
+			for (UIElementType uiElementType : UI_ELEMENT_TYPES)
+			{
+				if (ImGui::Selectable(GetUITypeString(uiElementType)))
+					AddUiElement(uiElementType);
+
+			}
+			ImGui::EndMenu();
+		}
+
 		ImGui::EndMenu();
 	}
 }
@@ -333,10 +367,16 @@ bool GameObject::SetParent(GameObject* newParent)
 	/* Verify for nullptr. Parent to Scene's root if so */
 	if (newParent == nullptr)
 	{
-		/* Inform the transform (if it exists) */
+		/* Inform the transform or transform2D (if it exists) */
 		ComponentTransform* transform = (ComponentTransform*)GetComponent(ComponentType::TRANSFORM);
 		if (transform)
 			transform->RecalculateLocalMatrix(nullptr);
+		else
+		{
+			ComponentTransform2D* transform2D = (ComponentTransform2D*)GetComponent(ComponentType::TRANSFORM_2D);
+			if (transform2D)
+				transform2D->RecalculateLocalPos(nullptr);
+		}
 
 		/* Remove from current parent. */
 		parent->RemoveChild(this);
@@ -346,6 +386,7 @@ bool GameObject::SetParent(GameObject* newParent)
 		/* Assign new parent */
 		parent = App->scene->root;
 		App->scene->root->children.push_back(this);
+		parentUuid = parent->uuid;
 		return true;
 	}
 
@@ -357,7 +398,7 @@ bool GameObject::SetParent(GameObject* newParent)
 	}
 	else
 	{
-		/* Inform the transform (if it exists) about the newParent's transform (if it exists, else nullptr) */
+		/* Inform the transform or transform2D (if it exists) about the newParent's transform (if it exists, else nullptr) */
 		ComponentTransform* transform = (ComponentTransform*)GetComponent(ComponentType::TRANSFORM);
 
 		if (transform)
@@ -367,6 +408,15 @@ bool GameObject::SetParent(GameObject* newParent)
 			/* Note that parentTransform might be nullptr, but that is a case handled by the Transform::RecalculateLocalMatrix method */
 			transform->RecalculateLocalMatrix(parentTransform);
 		}
+		else
+		{
+			ComponentTransform2D* transform2D = (ComponentTransform2D*)GetComponent(ComponentType::TRANSFORM_2D);
+			if (transform2D)
+			{
+				ComponentTransform2D* parentTransform2D = (ComponentTransform2D*)newParent->GetComponent(ComponentType::TRANSFORM_2D);
+				transform2D->RecalculateLocalPos(parentTransform2D);
+			}
+		}
 
 		/* Remove from current parent. */
 		parent->RemoveChild(this);
@@ -375,7 +425,8 @@ bool GameObject::SetParent(GameObject* newParent)
 
 		/* Assign new parent */
 		parent = newParent;
-		newParent->children.push_back(this);
+		parentUuid = parent->uuid;
+		parent->children.push_back(this);
 		return true;
 	}
 }
@@ -454,6 +505,22 @@ Component* GameObject::AddComponent(ComponentType type)
 		break;
 	case ComponentType::TRANSFORM:
 		component = new ComponentTransform(this);
+		break;
+	case ComponentType::TRANSFORM_2D:
+		component = new ComponentTransform2D(this);
+		break;
+	case ComponentType::UI_BUTTON:
+		component = new ComponentUiButton(this);
+		break;
+	case ComponentType::UI_IMAGE:
+		component = new ComponentUiImage(this);
+		break;
+	case ComponentType::UI_INPUT_TEXT:
+		component = new ComponentUiInputText(this);
+		break;
+	case ComponentType::UI_LABEL:
+		component = new ComponentUiLabel(this);
+		break;
 	}
 
 	if (component != nullptr)
@@ -537,7 +604,7 @@ void GameObject::Save(SerializableObject& obj)
 {
 	obj.Addu32("UUID", uuid);
 	obj.AddString("Name", name);
-	obj.Addu32("ParentUUID", GetParent() ? GetParent()->uuid : this == App->scene->root ? 0 : App->scene->root->uuid);
+	obj.Addu32("ParentUUID", parentUuid);
 	obj.AddString("Name", name);
 	obj.AddBool("Active", isActive);
 	SerializableArray sArray = obj.BuildSerializableArray("Components");
@@ -548,7 +615,7 @@ void GameObject::Save(SerializableObject& obj)
 	}
 }
 
-void GameObject::Load(const SerializableObject& obj)
+void GameObject::Load(const SerializableObject& obj, std::map<u32, Component*>& componentsCreated)
 {
 	uuid = obj.Getu32("UUID");
 	name = obj.GetString("Name");
@@ -567,8 +634,32 @@ void GameObject::Load(const SerializableObject& obj)
 		
 		Component* component = AddComponent(cType);
 		component->Load(componentObject);
+		/* Component must be introduced to the map AFTER loading so that its UUID is changed to the saved value */
+		componentsCreated[component->GetUUID()] = component;
 	}
 
+}
+
+void GameObject::LinkComponents(const SerializableObject& obj, const std::map<u32, Component*>& componentsCreated)
+{
+	SerializableArray componentsArray = obj.GetSerializableArray("Components");
+	uint componentsCount = componentsArray.Size();
+
+	for (uint i = 0; i < componentsCount; ++i)
+	{
+		SerializableObject componentObject = componentsArray.GetSerializableObject(i);
+		components[i]->LinkComponents(componentObject, componentsCreated);
+	}
+}
+
+u32 GameObject::GetUUID() const
+{
+	return uuid;
+}
+
+u32 GameObject::GetParentUUID() const
+{
+	return parentUuid;
 }
 
 bool GameObject::HasGameObjectInChildrenHierarchy(GameObject * testGameObject)
@@ -652,6 +743,13 @@ GameObject* GameObject::AddSphereChild()
 	ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
 	mat->SetDefaultMaterialConfiguration();
 	mat->Apply();
+	return go;
+}
+
+GameObject* GameObject::AddUiElement(UIElementType uiElementType)
+{
+	GameObject* go = App->ui->NewUIElement(uiElementType);
+	go->SetParent(this);
 	return go;
 }
 

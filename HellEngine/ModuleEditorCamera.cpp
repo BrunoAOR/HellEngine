@@ -241,7 +241,7 @@ void ModuleEditorCamera::HandleCameraMousePicking()
 			lineSegmentFromMousePicking = GetRayFromMouse();
 			GameObject* collidedGO = CalculateRaycast(lineSegmentFromMousePicking);
 			App->scene->SetSelectedGameObject(collidedGO);
-			LOGGER("The mouse ray collided with GameObject: %s", collidedGO ? collidedGO->name.c_str() : "none");
+			/*LOGGER("The mouse ray collided with GameObject: %s", collidedGO ? collidedGO->name.c_str() : "none");*/
 		}
 	}
 }

@@ -31,7 +31,13 @@
     <ClInclude Include="ComponentParticleSystem.h" />
     <ClInclude Include="ComponentTransform.h" />
     <ClInclude Include="ComponentMaterial.h" />
+    <ClInclude Include="ComponentTransform2D.h" />
     <ClInclude Include="ComponentType.h" />
+    <ClInclude Include="ComponentUiButton.h" />
+    <ClInclude Include="ComponentUIElement.h" />
+    <ClInclude Include="ComponentUiImage.h" />
+    <ClInclude Include="ComponentUiInputText.h" />
+    <ClInclude Include="ComponentUiLabel.h" />
     <ClInclude Include="EventWindow.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="globals.h" />
@@ -116,6 +122,8 @@
     <ClInclude Include="ModuleShaderManager.h" />
     <ClInclude Include="ModuleTextureManager.h" />
     <ClInclude Include="ModuleTime.h" />
+    <ClInclude Include="ModuleTrueFont.h" />
+    <ClInclude Include="ModuleUI.h" />
     <ClInclude Include="ModuleWindow.h" />
     <ClInclude Include="openGL.h" />
     <ClInclude Include="physicsFunctions.h" />
@@ -131,6 +139,7 @@
     <ClInclude Include="SpaceQuadTree.h" />
     <ClInclude Include="TextureConfiguration.h" />
     <ClInclude Include="TextureInfo.h" />
+    <ClInclude Include="UITransitionsHandler.h" />
     <ClInclude Include="UpdateStatus.h" />
     <ClInclude Include="MeshInfo.h" />
   </ItemGroup>
@@ -145,7 +154,13 @@
     <ClCompile Include="ComponentParticleSystem.cpp" />
     <ClCompile Include="ComponentTransform.cpp" />
     <ClCompile Include="ComponentMaterial.cpp" />
+    <ClCompile Include="ComponentTransform2D.cpp" />
     <ClCompile Include="ComponentType.cpp" />
+    <ClCompile Include="ComponentUiButton.cpp" />
+    <ClCompile Include="ComponentUIElement.cpp" />
+    <ClCompile Include="ComponentUiImage.cpp" />
+    <ClCompile Include="ComponentUiInputText.cpp" />
+    <ClCompile Include="ComponentUiLabel.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="globals.cpp" />
     <ClCompile Include="ImGuizmo\ImGuizmo.cpp" />
@@ -201,6 +216,8 @@
     <ClCompile Include="ModuleShaderManager.cpp" />
     <ClCompile Include="ModuleTextureManager.cpp" />
     <ClCompile Include="ModuleTime.cpp" />
+    <ClCompile Include="ModuleTrueFont.cpp" />
+    <ClCompile Include="ModuleUI.cpp" />
     <ClCompile Include="ModuleWindow.cpp" />
     <ClCompile Include="physicsFunctions.cpp" />
     <ClCompile Include="SceneLoader.cpp" />
@@ -212,6 +229,7 @@
     <ClCompile Include="SpaceQuadNode.cpp" />
     <ClCompile Include="SpaceOctTree.cpp" />
     <ClCompile Include="SpaceQuadTree.cpp" />
+    <ClCompile Include="UITransitionsHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="MathGeoLib\src\Geometry\KDTree.inl" />
@@ -272,12 +290,11 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir)Assimp\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)SDL_ttf/include;$(ProjectDir)SDL/include;$(ProjectDir)Assimp/include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(ProjectDir)Assimp\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)SDL_ttf/include;$(ProjectDir)SDL/include;$(ProjectDir)Assimp/include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -289,6 +306,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <AdditionalDependencies>opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

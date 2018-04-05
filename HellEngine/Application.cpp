@@ -11,15 +11,19 @@
 #include "ModuleScene.h"
 #include "ModuleTime.h"
 #include "ModuleWindow.h"
+#include "ModuleTrueFont.h"
+#include "ModuleUI.h"
 #include "UpdateStatus.h"
 #include "ModuleTextureManager.h"
 #include "ModuleShaderManager.h"
+
 
 Application::Application()
 {
 	/* Order matters: they will init/start/pre/update/post in this order */
 	modules.push_back(textureManager = new ModuleTextureManager());
 	modules.push_back(shaderManager = new ModuleShaderManager());
+	modules.push_back(fonts = new ModuleTrueFont());
 	modules.push_back(input = new ModuleInput());
 	modules.push_back(time = new ModuleTime());
 	modules.push_back(window = new ModuleWindow());
@@ -27,9 +31,10 @@ Application::Application()
 	modules.push_back(renderer = new ModuleRender());
 	modules.push_back(scene = new ModuleScene());
 	modules.push_back(editorCamera = new ModuleEditorCamera());
-	modules.push_back(imgui = new ModuleImGui());
 	modules.push_back(audio = new ModuleAudio());
+	modules.push_back(ui = new ModuleUI());
 	modules.push_back(debugDraw = new ModuleDebugDraw());
+	modules.push_back(imgui = new ModuleImGui());
 }
 
 Application::~Application()

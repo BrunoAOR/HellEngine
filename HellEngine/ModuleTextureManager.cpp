@@ -18,9 +18,8 @@ ModuleTextureManager::~ModuleTextureManager()
 {
 	for (std::map<std::string, TextureData>::iterator it = textures.begin(); it != textures.end(); ++it)
 	{
-		LOGGER("There were %d %s textures to be released, they will be removed in ModuleTextureManager destructor", it->second.numRefs, it->first);
+		LOGGER("There were %d %s textures to be released, they will be removed in ModuleTextureManager destructor", it->second.numRefs, it->first.c_str());
 		glDeleteTextures(1, &it->second.index);
-		textures.erase(it);
 	}
 }
 
@@ -147,12 +146,16 @@ GLuint ModuleTextureManager::GetTexture(const std::string &texturePath)
 		}
 	}
 
-	TextureData temp;
-	temp.index = LoadImageWithDevIL(texturePath.c_str());
-	temp.numRefs = 1;
-	textures.insert(std::pair<std::string, TextureData>(texturePath, temp));
+	GLuint textureId = LoadImageWithDevIL(texturePath.c_str());
+	if (textureId != 0)
+	{
+		TextureData temp;
+		temp.index = textureId;
+		temp.numRefs = 1;
+		textures.insert(std::pair<std::string, TextureData>(texturePath, temp));
+	}
 
-	return temp.index;
+	return textureId;
 }
 
 void ModuleTextureManager::ReleaseTexture(const GLuint textureIndex)

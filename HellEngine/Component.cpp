@@ -39,6 +39,11 @@ void Component::SetActive(bool activeState)
 	isActive = activeState;
 }
 
+u32 Component::GetUUID() const
+{
+	return uuid;
+}
+
 void Component::Save(SerializableObject& obj) const
 {
 	obj.Addu32("UUID", uuid);
@@ -49,7 +54,13 @@ void Component::Save(SerializableObject& obj) const
 void Component::Load(const SerializableObject& obj)
 {
 	uuid = obj.Getu32("UUID");
+	/* type variable is not loaded because it was set in the specific Component's constructor */
 	isActive = obj.GetBool("Active");
+}
+
+void Component::LinkComponents(const SerializableObject & obj, const std::map<u32, Component*>& componentsCreated)
+{
+	/* Method left empty to allow inheriting classes to not declare it */
 }
 
 bool Component::OnEditorDeleteComponent()
