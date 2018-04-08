@@ -9,6 +9,7 @@
 #include "ModuleInput.h"
 #include "ModuleRender.h"
 #include "ModuleScene.h"
+#include "ModuleScripting.h"
 #include "ModuleTime.h"
 #include "ModuleWindow.h"
 #include "ModuleTrueFont.h"
@@ -30,6 +31,7 @@ Application::Application()
 	modules.push_back(animation = new ModuleAnimation());
 	modules.push_back(renderer = new ModuleRender());
 	modules.push_back(scene = new ModuleScene());
+	modules.push_back(scripting = new ModuleScripting());
 	modules.push_back(editorCamera = new ModuleEditorCamera());
 	modules.push_back(audio = new ModuleAudio());
 	modules.push_back(ui = new ModuleUI());

@@ -11,6 +11,7 @@ class ModuleImGui;
 class ModuleInput;
 class ModuleRender;
 class ModuleScene;
+class ModuleScripting;
 class ModuleTime;
 class ModuleWindow;
 class ModuleTextureManager;
@@ -38,6 +39,7 @@ public:
 	ModuleEditorCamera* editorCamera = nullptr;
 	ModuleRender* renderer = nullptr;
 	ModuleScene* scene = nullptr;
+	ModuleScripting* scripting = nullptr;
 	ModuleAnimation* animation = nullptr;
 	ModuleImGui* imgui = nullptr;
 	ModuleAudio* audio = nullptr;

@@ -29,6 +29,7 @@
     <ClInclude Include="ComponentGrass.h" />
     <ClInclude Include="ComponentMesh.h" />
     <ClInclude Include="ComponentParticleSystem.h" />
+    <ClInclude Include="ComponentScript.h" />
     <ClInclude Include="ComponentTransform.h" />
     <ClInclude Include="ComponentMaterial.h" />
     <ClInclude Include="ComponentTransform2D.h" />
@@ -41,7 +42,9 @@
     <ClInclude Include="EventWindow.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="globals.h" />
+    <ClInclude Include="HelloWorld.h" />
     <ClInclude Include="ImGuizmo\ImGuizmo.h" />
+    <ClInclude Include="Jump.h" />
     <ClInclude Include="KeyState.h" />
     <ClInclude Include="MainStates.h" />
     <ClInclude Include="MathGeoLib\src\Algorithm\GJK.h" />
@@ -119,6 +122,7 @@
     <ClInclude Include="ModuleInput.h" />
     <ClInclude Include="ModuleRender.h" />
     <ClInclude Include="ModuleScene.h" />
+    <ClInclude Include="ModuleScripting.h" />
     <ClInclude Include="ModuleShaderManager.h" />
     <ClInclude Include="ModuleTextureManager.h" />
     <ClInclude Include="ModuleTime.h" />
@@ -129,6 +133,7 @@
     <ClInclude Include="physicsFunctions.h" />
     <ClInclude Include="Point.h" />
     <ClInclude Include="SceneLoader.h" />
+    <ClInclude Include="ScriptType.h" />
     <ClInclude Include="SerializableArray.h" />
     <ClInclude Include="SerializableObject.h" />
     <ClInclude Include="Serializer.h" />
@@ -152,6 +157,7 @@
     <ClCompile Include="ComponentGrass.cpp" />
     <ClCompile Include="ComponentMesh.cpp" />
     <ClCompile Include="ComponentParticleSystem.cpp" />
+    <ClCompile Include="ComponentScript.cpp" />
     <ClCompile Include="ComponentTransform.cpp" />
     <ClCompile Include="ComponentMaterial.cpp" />
     <ClCompile Include="ComponentTransform2D.cpp" />
@@ -163,11 +169,13 @@
     <ClCompile Include="ComponentUiLabel.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="globals.cpp" />
+    <ClCompile Include="HelloWorld.cpp" />
     <ClCompile Include="ImGuizmo\ImGuizmo.cpp" />
     <ClCompile Include="ImGui\imgui.cpp" />
     <ClCompile Include="ImGui\imgui_demo.cpp" />
     <ClCompile Include="ImGui\imgui_draw.cpp" />
     <ClCompile Include="ImGui\imgui_impl_sdl_gl3.cpp" />
+    <ClCompile Include="Jump.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MathGeoLib\src\Algorithm\GJK.cpp" />
     <ClCompile Include="MathGeoLib\src\Algorithm\Random\LCG.cpp" />
@@ -213,6 +221,7 @@
     <ClCompile Include="ModuleInput.cpp" />
     <ClCompile Include="ModuleRender.cpp" />
     <ClCompile Include="ModuleScene.cpp" />
+    <ClCompile Include="ModuleScripting.cpp" />
     <ClCompile Include="ModuleShaderManager.cpp" />
     <ClCompile Include="ModuleTextureManager.cpp" />
     <ClCompile Include="ModuleTime.cpp" />
@@ -221,6 +230,7 @@
     <ClCompile Include="ModuleWindow.cpp" />
     <ClCompile Include="physicsFunctions.cpp" />
     <ClCompile Include="SceneLoader.cpp" />
+    <ClCompile Include="ScriptType.cpp" />
     <ClCompile Include="SerializableArray.cpp" />
     <ClCompile Include="SerializableObject.cpp" />
     <ClCompile Include="Serializer.cpp" />

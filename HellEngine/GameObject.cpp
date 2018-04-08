@@ -12,6 +12,7 @@
 #include "ComponentMaterial.h"
 #include "ComponentMesh.h"
 #include "ComponentParticleSystem.h"
+#include "ComponentScript.h"
 #include "ComponentTransform.h"
 #include "ComponentTransform2D.h"
 #include "ComponentType.h"
@@ -21,6 +22,7 @@
 #include "ComponentUiLabel.h"
 #include "ModuleUI.h"
 #include "ModuleScene.h"
+#include "ModuleScripting.h"
 #include "SerializableArray.h"
 #include "SerializableObject.h"
 #include "globals.h"
@@ -54,7 +56,13 @@ GameObject::~GameObject()
 
 	for (Component* component : components)
 	{
-		delete component;
+		if (component->GetType() == ComponentType::SCRIPT) {
+			ComponentScript* script = (ComponentScript*)component;
+			bool success = App->scripting->DestroyScript(script);
+			assert(success);
+		}
+		else
+			delete component;
 	}
 	components.clear();
 
@@ -112,9 +120,28 @@ void GameObject::OnEditorInspector()
 	{
 		for (ComponentType componentType : COMPONENT_TYPES_3D)
 		{
-			if (ImGui::MenuItem(GetString(componentType), ""))
+			if (componentType == ComponentType::SCRIPT)
 			{
-				AddComponent(componentType);
+				if (ImGui::BeginMenu("Script"))
+				{
+					for (ScriptType scriptType : SCRIPT_TYPES)
+					{
+						if (ImGui::MenuItem(GetScriptString(scriptType), ""))
+						{
+							ComponentScript* script = App->scripting->BuildComponentScript(this, scriptType);
+							assert(script);
+							components.push_back(script);
+						}
+					}
+					ImGui::EndMenu();
+				}
+			}
+			else
+			{
+				if (ImGui::MenuItem(GetString(componentType), ""))
+				{
+					AddComponent(componentType);
+				}
 			}
 		}
 
@@ -333,7 +360,7 @@ bool GameObject::OnEditorHierarchyLoadModelMenu()
 		ImGui::Separator();
 		if (ImGui::Selectable("Load"))
 			error = !App->scene->LoadModel(modelPath, this);
-		
+
 		if (error)
 			ImGui::Text("Could not load model from provided path!");
 
@@ -551,12 +578,22 @@ bool GameObject::RemoveComponent(Component* component)
 	{
 		if (component == (*it))
 		{
-			if ((*it)->GetType() == ComponentType::TRANSFORM)
+			if ((*it)->GetType() == ComponentType::SCRIPT)
 			{
-				RemoveDependingComponent();
+				ComponentScript* script = (ComponentScript*)*it;
+				bool success = App->scripting->DestroyScript(script);
+				assert(success);
+			}
+			else
+			{
+				if ((*it)->GetType() == ComponentType::TRANSFORM)
+				{
+					RemoveDependingComponent();
+				}
+
+				delete component;
 			}
 
-			delete component;
 			components.erase(it);
 			return true;
 		}
@@ -631,7 +668,7 @@ void GameObject::Load(const SerializableObject& obj, std::map<u32, Component*>& 
 		SerializableObject componentObject = componentsArray.GetSerializableObject(i);
 		std::string cTypeString = componentObject.GetString("Type");
 		ComponentType cType = GetComponentType(cTypeString.c_str());
-		
+
 		Component* component = AddComponent(cType);
 		component->Load(componentObject);
 		/* Component must be introduced to the map AFTER loading so that its UUID is changed to the saved value */

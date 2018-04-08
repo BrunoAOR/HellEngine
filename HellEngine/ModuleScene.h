@@ -54,7 +54,7 @@ public:
 
 public:
 
-	GameObject* root;
+	GameObject * root;
 	std::vector<MeshInfo*> meshes;
 
 	struct
@@ -72,7 +72,7 @@ private:
 
 private:
 
-	ComponentCamera* activeGameCamera = nullptr;
+	ComponentCamera * activeGameCamera = nullptr;
 	SpaceQuadTree quadTree;
 	SceneLoader sceneLoader;
 
