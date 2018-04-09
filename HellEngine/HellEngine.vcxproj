@@ -29,7 +29,6 @@
     <ClInclude Include="ComponentGrass.h" />
     <ClInclude Include="ComponentMesh.h" />
     <ClInclude Include="ComponentParticleSystem.h" />
-    <ClInclude Include="ComponentScript.h" />
     <ClInclude Include="ComponentTransform.h" />
     <ClInclude Include="ComponentMaterial.h" />
     <ClInclude Include="ComponentTransform2D.h" />
@@ -39,12 +38,11 @@
     <ClInclude Include="ComponentUiImage.h" />
     <ClInclude Include="ComponentUiInputText.h" />
     <ClInclude Include="ComponentUiLabel.h" />
+    <ClInclude Include="dllControl.h" />
     <ClInclude Include="EventWindow.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="globals.h" />
-    <ClInclude Include="HelloWorld.h" />
     <ClInclude Include="ImGuizmo\ImGuizmo.h" />
-    <ClInclude Include="Jump.h" />
     <ClInclude Include="KeyState.h" />
     <ClInclude Include="MainStates.h" />
     <ClInclude Include="MathGeoLib\src\Algorithm\GJK.h" />
@@ -122,7 +120,6 @@
     <ClInclude Include="ModuleInput.h" />
     <ClInclude Include="ModuleRender.h" />
     <ClInclude Include="ModuleScene.h" />
-    <ClInclude Include="ModuleScripting.h" />
     <ClInclude Include="ModuleShaderManager.h" />
     <ClInclude Include="ModuleTextureManager.h" />
     <ClInclude Include="ModuleTime.h" />
@@ -133,7 +130,6 @@
     <ClInclude Include="physicsFunctions.h" />
     <ClInclude Include="Point.h" />
     <ClInclude Include="SceneLoader.h" />
-    <ClInclude Include="ScriptType.h" />
     <ClInclude Include="SerializableArray.h" />
     <ClInclude Include="SerializableObject.h" />
     <ClInclude Include="Serializer.h" />
@@ -157,7 +153,6 @@
     <ClCompile Include="ComponentGrass.cpp" />
     <ClCompile Include="ComponentMesh.cpp" />
     <ClCompile Include="ComponentParticleSystem.cpp" />
-    <ClCompile Include="ComponentScript.cpp" />
     <ClCompile Include="ComponentTransform.cpp" />
     <ClCompile Include="ComponentMaterial.cpp" />
     <ClCompile Include="ComponentTransform2D.cpp" />
@@ -169,13 +164,11 @@
     <ClCompile Include="ComponentUiLabel.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="globals.cpp" />
-    <ClCompile Include="HelloWorld.cpp" />
     <ClCompile Include="ImGuizmo\ImGuizmo.cpp" />
     <ClCompile Include="ImGui\imgui.cpp" />
     <ClCompile Include="ImGui\imgui_demo.cpp" />
     <ClCompile Include="ImGui\imgui_draw.cpp" />
     <ClCompile Include="ImGui\imgui_impl_sdl_gl3.cpp" />
-    <ClCompile Include="Jump.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MathGeoLib\src\Algorithm\GJK.cpp" />
     <ClCompile Include="MathGeoLib\src\Algorithm\Random\LCG.cpp" />
@@ -221,7 +214,6 @@
     <ClCompile Include="ModuleInput.cpp" />
     <ClCompile Include="ModuleRender.cpp" />
     <ClCompile Include="ModuleScene.cpp" />
-    <ClCompile Include="ModuleScripting.cpp" />
     <ClCompile Include="ModuleShaderManager.cpp" />
     <ClCompile Include="ModuleTextureManager.cpp" />
     <ClCompile Include="ModuleTime.cpp" />
@@ -230,7 +222,6 @@
     <ClCompile Include="ModuleWindow.cpp" />
     <ClCompile Include="physicsFunctions.cpp" />
     <ClCompile Include="SceneLoader.cpp" />
-    <ClCompile Include="ScriptType.cpp" />
     <ClCompile Include="SerializableArray.cpp" />
     <ClCompile Include="SerializableObject.cpp" />
     <ClCompile Include="Serializer.cpp" />
@@ -249,6 +240,11 @@
     <None Include="MathGeoLib\src\Geometry\TriangleMesh_IntersectRay_SSE.inl" />
     <None Include="MathGeoLib\src\Math\float2.inl" />
     <None Include="MathGeoLib\src\Math\Matrix.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GameDLL\GameDLL.vcxproj">
+      <Project>{c6eb55d7-b0e5-4075-a6de-976c9b24e914}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -301,7 +297,7 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir)SDL_ttf/include;$(ProjectDir)SDL/include;$(ProjectDir)Assimp/include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)SDL_ttf/include;$(ProjectDir)SDL/include;$(ProjectDir)Assimp/include;$(SolutionDir)/GameDLL;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(ProjectDir)SDL_ttf/include;$(ProjectDir)SDL/include;$(ProjectDir)Assimp/include;$(IncludePath)</IncludePath>
@@ -312,6 +308,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -339,6 +336,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\marca\Documents\HellEngine\GameDLL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

@@ -1,7 +1,9 @@
 #ifndef __H_COMPONENT_TYPE__
 #define __H_COMPONENT_TYPE__
 
-enum class ComponentType
+#include "dllControl.h"
+
+enum class ENGINE_API ComponentType
 {
 	ANIMATION,
 	CAMERA,

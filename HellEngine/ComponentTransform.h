@@ -1,6 +1,8 @@
 #ifndef __H_COMPONENT_TRANSFORM__
 #define __H_COMPONENT_TRANSFORM__
 
+#include "dllControl.h"
+
 #include "MathGeoLib/src/Math/float3.h"
 #include "MathGeoLib/src/Math/float4x4.h"
 #include "MathGeoLib/src/Math/Quat.h"
@@ -8,7 +10,7 @@
 #include "Component.h"
 #include "ComponentMesh.h"
 
-class ComponentTransform : public Component
+class ENGINE_API ComponentTransform : public Component
 {
 public:
 

@@ -402,20 +402,8 @@
     <ClInclude Include="ComponentUiInputText.h">
       <Filter>UI</Filter>
     </ClInclude>
-    <ClInclude Include="ModuleScripting.h">
-      <Filter>Scripts</Filter>
-    </ClInclude>
-    <ClInclude Include="ComponentScript.h">
-      <Filter>Scripts</Filter>
-    </ClInclude>
-    <ClInclude Include="HelloWorld.h">
-      <Filter>Scripts</Filter>
-    </ClInclude>
-    <ClInclude Include="Jump.h">
-      <Filter>Scripts</Filter>
-    </ClInclude>
-    <ClInclude Include="ScriptType.h">
-      <Filter>Scripts</Filter>
+    <ClInclude Include="dllControl.h">
+      <Filter>General</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -676,21 +664,6 @@
     </ClCompile>
     <ClCompile Include="ComponentUiInputText.cpp">
       <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="ModuleScripting.cpp">
-      <Filter>Scripts</Filter>
-    </ClCompile>
-    <ClCompile Include="ComponentScript.cpp">
-      <Filter>Scripts</Filter>
-    </ClCompile>
-    <ClCompile Include="HelloWorld.cpp">
-      <Filter>Scripts</Filter>
-    </ClCompile>
-    <ClCompile Include="Jump.cpp">
-      <Filter>Scripts</Filter>
-    </ClCompile>
-    <ClCompile Include="ScriptType.cpp">
-      <Filter>Scripts</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

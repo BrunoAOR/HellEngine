@@ -1,6 +1,8 @@
 #ifndef __H_COMPONENT__
 #define __H_COMPONENT__
 
+#include "dllControl.h"
+
 #include <map>
 #include <string>
 #include "MathGeoLib/src/Math/MathTypes.h"
@@ -9,7 +11,7 @@ class GameObject;
 class SerializableObject;
 enum class ComponentType;
 
-class Component
+class ENGINE_API Component
 {
 public:
 

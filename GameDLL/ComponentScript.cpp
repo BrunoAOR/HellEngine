@@ -1,5 +1,4 @@
-#include "ImGui/imgui.h"
-#include "Application.h"
+#include "ImGui_GameDLL/imgui.h"
 #include "ComponentScript.h"
 #include "ComponentType.h"
 #include "ModuleScripting.h"
@@ -11,6 +10,10 @@ ComponentScript::ComponentScript(GameObject * owner) : Component(owner)
 }
 
 ComponentScript::~ComponentScript()
+{
+}
+
+void ComponentScript::UpdateScript()
 {
 }
 

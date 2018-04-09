@@ -1,6 +1,8 @@
 #ifndef __H_GLOBALS__
 #define __H_GLOBALS__
 
+#include "dllControl.h"
+
 #define LOGGER(format, ...) Logger(__FILE__, __LINE__, format, __VA_ARGS__);
 #define MAX( a, b ) ( ((a) > (b)) ? (a) : (b) )
 #define MIN( a, b ) ( ((a) < (b)) ? (a) : (b) )
@@ -54,7 +56,7 @@ typedef unsigned int uint;
 
 extern bool DEBUG_MODE;
 
-void Logger(const char file[], int line, const char* format, ...);
+ENGINE_API void Logger(const char file[], int line, const char* format, ...);
 bool SaveJson(const Json& json, const std::string& fileName);
 Json LoadJson(const char* path);
 bool LoadTextFile(const std::string& path, std::string& outputString);

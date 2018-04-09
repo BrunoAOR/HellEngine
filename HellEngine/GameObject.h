@@ -1,6 +1,8 @@
 #ifndef __H_GAME_OBJECT__
 #define __H_GAME_OBJECT__
 
+#include "dllControl.h"
+
 #include <map>
 #include <vector>
 #include "MathGeoLib/src/Math/MathTypes.h"
@@ -10,7 +12,7 @@ class SerializableObject;
 enum class ComponentType;
 enum class UIElementType;
 
-class GameObject
+class ENGINE_API GameObject
 {
 public:
 

@@ -1,11 +1,13 @@
 #ifndef __H_MODULE__
 #define __H_MODULE__
 
+#include "dllControl.h"
+
 #include "UpdateStatus.h"
 
 class Application;
 
-class Module
+class ENGINE_API Module
 {
 public:
 

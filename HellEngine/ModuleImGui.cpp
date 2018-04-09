@@ -16,6 +16,7 @@
 #include "ModuleScene.h"
 #include "ModuleTrueFont.h"
 #include "ModuleWindow.h"
+#include "dllMain.h"
 #include "globals.h"
 
 ImGuizmo::OPERATION ModuleImGui::mCurrentGizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
@@ -61,6 +62,8 @@ bool ModuleImGui::Init()
 	// Setup style
 	//ImGui::StyleColorsClassic();
 	ImGui::StyleColorsDark();
+
+	SetDLLImguiContext(ImGui::GetCurrentContext());
 
 	return true;
 }

@@ -1,11 +1,13 @@
 #ifndef __H_MODULE_SCRIPTING__
 #define __H_MODULE_SCRIPTING__
 
+#include "dllControl.h"
+
 #include <vector>
 #include "ComponentScript.h"
 #include "Module.h"
 
-class ModuleScripting :
+class GAMEDLL_API ModuleScripting :
 	public Module
 {
 public:

@@ -19,7 +19,7 @@ Jump::~Jump()
 
 void Jump::UpdateScript()
 {
-	ComponentTransform* transform = (ComponentTransform*) gameObject->GetComponent(ComponentType::TRANSFORM);
+	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
 	elapsedTime += App->time->DeltaTimeMS();
 	float jumpHeight = sin(elapsedTime / 1000.f) / 100;
 	float3 position = transform->GetPosition();

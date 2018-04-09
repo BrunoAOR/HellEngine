@@ -1,10 +1,12 @@
 #ifndef __H_COMPONENT_SCRIPT__
 #define __H_COMPONENT_SCRIPT__
 
+#include "dllControl.h"
+
 #include "Component.h"
 #include "ScriptType.h"
 
-class ComponentScript :
+class GAMEDLL_API ComponentScript :
 	public Component
 {
 public:

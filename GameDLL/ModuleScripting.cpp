@@ -1,3 +1,5 @@
+#pragma comment(lib, "../Debug/HellEngine.lib")
+
 #include <algorithm>
 #include <assert.h>
 #include "HelloWorld.h"
@@ -51,7 +53,7 @@ ComponentScript* ModuleScripting::BuildComponentScript(GameObject* owner, Script
 		assert(false);
 	}
 
-	if (script) 
+	if (script)
 		scripts.push_back(script);
 
 	return script;

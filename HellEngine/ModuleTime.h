@@ -1,10 +1,12 @@
 #ifndef __H_MODULE_TIME__
 #define __H_MODULE_TIME__
 
+#include "dllControl.h"
+
 #include "SDL/include/SDL_stdinc.h"
 #include "Module.h"
 
-class ModuleTime : public Module
+class ENGINE_API ModuleTime : public Module
 {
 public:
 

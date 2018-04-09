@@ -5,6 +5,8 @@
 #include "ImGuizmo/ImGuizmo.h"
 #include "Module.h"
 
+class ImGuiContext;
+
 class ModuleImGui :
 	public Module
 {
@@ -60,6 +62,7 @@ private:
 private:
 
 	std::string licenseString;
+	ImGuiContext* imguiContext = nullptr;
 
 };
 

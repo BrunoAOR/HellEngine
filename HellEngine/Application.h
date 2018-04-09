@@ -1,6 +1,8 @@
 #ifndef __H_APPLICATION__
 #define __H_APPLICATION__
 
+#include "dllControl.h"
+
 #include <list>
 class Module;
 class ModuleAnimation;
@@ -20,7 +22,7 @@ class ModuleTrueFont;
 class ModuleUI;
 enum class UpdateStatus;
 
-class Application
+class ENGINE_API Application
 {
 public:
 	Application();
@@ -51,6 +53,6 @@ private:
 	std::list<Module*> modules;
 };
 
-extern Application* App;
+extern ENGINE_API Application* App;
 
 #endif /* __H_APPLICATION__ */
