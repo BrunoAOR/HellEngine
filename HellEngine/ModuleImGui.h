@@ -5,7 +5,7 @@
 #include "ImGuizmo/ImGuizmo.h"
 #include "Module.h"
 
-class ImGuiContext;
+struct ImGuiContext;
 
 class ModuleImGui :
 	public Module

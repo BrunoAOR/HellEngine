@@ -1,3 +1,9 @@
+#ifdef _DEBUG
+	#pragma comment (lib, "../Debug/GameDLL.lib")
+#else
+	#pragma comment (lib, "../Release/GameDLL.lib")
+#endif // _DEBUG
+
 #pragma comment( lib, "Brofiler/libx86/ProfilerCore32.lib")
 #pragma comment( lib, "SDL/libx86/SDL2.lib" )
 #pragma comment( lib, "SDL/libx86/SDL2main.lib" )

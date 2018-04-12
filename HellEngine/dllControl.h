@@ -1,3 +1,5 @@
+#pragma warning( disable : 4251 )  
+
 #ifndef __H_DLL_CONTROL_
 #define __H_DLL_CONTROL__
 

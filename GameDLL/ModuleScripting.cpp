@@ -1,5 +1,3 @@
-#pragma comment(lib, "../Debug/HellEngine.lib")
-
 #include <algorithm>
 #include <assert.h>
 #include "HelloWorld.h"
