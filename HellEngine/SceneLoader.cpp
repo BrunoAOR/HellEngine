@@ -391,7 +391,7 @@ bool SceneLoader::Load(const char* modelPath, GameObject* parent, bool meshesOnl
 		moduleSceneMeshesOffset = 0;
 
 		currentComponentMeshes.clear();
-		
+
 		return true;
 	}
 	else
@@ -485,20 +485,30 @@ MeshInfo* SceneLoader::CreateMeshInfo(const aiMesh* assimpMesh)
 	assert(assimpMesh->HasPositions());
 
 	MeshInfo* meshInfo = new MeshInfo();
-	
-	GatherVerticesInfo(assimpMesh, meshInfo);
-	GatherBonesInfo(assimpMesh, meshInfo);
+
+	/* Create temporary data buffers */
+	const unsigned int vertexDataOffset = 8 * sizeof(float) + (assimpMesh->HasBones() ? 4 * sizeof(int) + 4 * sizeof(float) : 0);
+	char* allData = new char[assimpMesh->mNumVertices * vertexDataOffset];
+	const unsigned int indexesSize = assimpMesh->mNumFaces * 3;
+	int* indexes = new int[indexesSize];
+
+	meshInfo->vertexDataOffset = vertexDataOffset;
+
+	GatherVerticesInfo(assimpMesh, meshInfo, allData, vertexDataOffset, indexes);
+	GatherBonesInfo(assimpMesh, meshInfo, allData, vertexDataOffset);
+	SendDataToVRAM(meshInfo, allData, vertexDataOffset, assimpMesh->mNumVertices * vertexDataOffset, indexes);
+
+	/* Delete temporary data buffers */
+	delete allData;
+	allData = nullptr;
+	delete indexes;
+	indexes = nullptr;
 
 	return meshInfo;
 }
 
-void SceneLoader::GatherVerticesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo)
+void SceneLoader::GatherVerticesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo, char* allData, unsigned int vertexDataOffset, int* indexes)
 {
-	/* Create temporary data buffers */
-	const unsigned int allDataSize = assimpMesh->mNumVertices * 8;
-	float* allData = new float[allDataSize];
-	const unsigned int indexesSize = assimpMesh->mNumFaces * 3;
-	int* indexes = new int[indexesSize];
 
 	/* Fill in temporary data buffers */
 	/*
@@ -510,37 +520,39 @@ void SceneLoader::GatherVerticesInfo(const aiMesh* assimpMesh, MeshInfo* meshInf
 	bool hasNormals = assimpMesh->HasNormals();
 	bool hasUvCoords = assimpMesh->HasTextureCoords(0);
 
+	assert(sizeof(aiVector3D) == sizeof(float) * 3);
+
 	for (unsigned int vertexIdx = 0; vertexIdx < assimpMesh->mNumVertices; ++vertexIdx)
 	{
 		const aiVector3D& vertex = assimpMesh->mVertices[vertexIdx];
-		allData[vertexIdx * 8 + 0] = vertex.x;
-		allData[vertexIdx * 8 + 1] = vertex.y;
-		allData[vertexIdx * 8 + 2] = vertex.z;
+		(aiVector3D&)allData[vertexIdx * vertexDataOffset + 0 * sizeof(float)] = vertex;
+		//allData[vertexIdx * vertexDataOffset + 1 * sizeof(float)] = vertex.y;
+		//allData[vertexIdx * vertexDataOffset + 2 * sizeof(float)] = vertex.z;
 
 		if (hasNormals)
 		{
 			const aiVector3D& normal = assimpMesh->mNormals[vertexIdx];
-			allData[vertexIdx * 8 + 3] = normal.x;
-			allData[vertexIdx * 8 + 4] = normal.y;
-			allData[vertexIdx * 8 + 5] = normal.z;
+			(aiVector3D&)allData[vertexIdx * vertexDataOffset + 3 * sizeof(float)] = normal;
+		//	allData[vertexIdx * vertexDataOffset + 4 * sizeof(float)] = normal.y;
+			//allData[vertexIdx * vertexDataOffset + 5 * sizeof(float)] = normal.z;
 		}
 		else
 		{
-			allData[vertexIdx * 8 + 3] = 0;
-			allData[vertexIdx * 8 + 4] = 1;
-			allData[vertexIdx * 8 + 5] = 0;
+			(float&)allData[vertexIdx * vertexDataOffset + 3 * sizeof(float)] = 0.0f;
+			(float&)allData[vertexIdx * vertexDataOffset + 4 * sizeof(float)] = 1.0f;
+			(float&)allData[vertexIdx * vertexDataOffset + 5 * sizeof(float)] = 0.0f;
 		}
 
 		if (hasUvCoords)
 		{
 			const aiVector3D& uvCoord = assimpMesh->mTextureCoords[0][vertexIdx];
-			allData[vertexIdx * 8 + 6] = uvCoord.x;
-			allData[vertexIdx * 8 + 7] = uvCoord.y;
+			(float&)allData[vertexIdx * vertexDataOffset + 6 * sizeof(float)] = uvCoord.x;
+			(float&)allData[vertexIdx * vertexDataOffset + 7 * sizeof(float)] = uvCoord.y;
 		}
 		else
 		{
-			allData[vertexIdx * 8 + 6] = 0;
-			allData[vertexIdx * 8 + 7] = 0;
+			(float&)allData[vertexIdx * vertexDataOffset + 6 * sizeof(float)] = 0.0f;
+			(float&)allData[vertexIdx * vertexDataOffset + 7 * sizeof(float)] = 0.0f;
 		}
 
 		/* Store vertex in meshInfo (for raycasting calculations) */
@@ -564,50 +576,22 @@ void SceneLoader::GatherVerticesInfo(const aiMesh* assimpMesh, MeshInfo* meshInf
 			/* Push index to temporary data buffer */
 			indexes[faceIdx * face.mNumIndices + i] = index;
 		}
-
 	}
-
-	/* Transfer data from temporary buffers to VRAM */
-	glGenVertexArrays(1, &meshInfo->vao);
-	glGenBuffers(1, &meshInfo->vbo);
-	glGenBuffers(1, &meshInfo->ebo);
-
-	glBindVertexArray(meshInfo->vao);
-	glBindBuffer(GL_ARRAY_BUFFER, meshInfo->vbo);
-	
-	if (assimpMesh->HasBones())
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * allDataSize, allData, GL_DYNAMIC_DRAW);
-	else
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * allDataSize, allData, GL_STATIC_DRAW);
-
-	/* vertex */
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
-	/* normal */
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-	/* uvCoord */
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
-	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE); /* Can be unbound before unbinding the VAO, because the glVertexAttribPointer preserves the VBO to VAO conection */
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshInfo->ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indexesSize, indexes, GL_STATIC_DRAW);
-
-	glBindVertexArray(GL_NONE);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE); /* Must be unbound AFTER unbinding the VAO */
-
-	/* Delete temporary data buffers */
-	delete[] allData;
-	allData = nullptr;
-	delete[] indexes;
-	indexes = nullptr;
 }
 
-void SceneLoader::GatherBonesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo)
+void SceneLoader::GatherBonesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo, char* data, unsigned int vertexDataOffset)
 {
+	struct BoneSkinningData {
+		int boneIndices[4];
+		float boneWeights[4];
+		uint boneCount = 0;
+	};
+
+	std::map<unsigned int, BoneSkinningData> boneDataMap;
+
 	if (assimpMesh->HasBones())
 	{
+		assert(assimpMesh->mNumBones < MAX_BONES);
 		meshInfo->bones.reserve(assimpMesh->mNumBones);
 		for (uint i = 0; i < assimpMesh->mNumBones; ++i)
 		{
@@ -630,10 +614,16 @@ void SceneLoader::GatherBonesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo)
 				bone->weights[w].vertexIndex = assimpBone->mWeights[w].mVertexId;
 				bone->weights[w].weight = assimpBone->mWeights[w].mWeight;
 				boneWeightsGroup[bone->weights[w].weight].push_back(bone->weights[w].vertexIndex);
+				
+				BoneSkinningData bData = boneDataMap[bone->weights[w].vertexIndex];
+				assert(bData.boneCount < 4);
+				bData.boneIndices[bData.boneCount] = i;
+				bData.boneWeights[bData.boneCount] = bone->weights[w].weight;
+				++bData.boneCount;
 			}
 
 			aiMatrix4x4& abm = assimpBone->mOffsetMatrix;
-			
+
 			/* Save matrix transposed */
 			bone->inverseBindMatrix = float4x4(
 				abm.a1, abm.b1, abm.c1, abm.d1,
@@ -641,9 +631,9 @@ void SceneLoader::GatherBonesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo)
 				abm.a3, abm.b3, abm.c3, abm.d3,
 				abm.a4, abm.b4, abm.c4, abm.d4
 			);
-			
+
 			meshInfo->bones.push_back(bone);
-			
+
 			for (std::map<float, std::vector<uint>>::iterator it = boneWeightsGroup.begin(); it != boneWeightsGroup.end(); ++it)
 			{
 				VerticesGroup& verticesGroup = meshInfo->verticesGroups[it->second];
@@ -651,7 +641,65 @@ void SceneLoader::GatherBonesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo)
 				verticesGroup.weights.push_back(it->first);
 			}
 		}
+
+		for (unsigned int vertexIdx = 0; vertexIdx < assimpMesh->mNumVertices; ++vertexIdx)
+		{
+			const BoneSkinningData& bData = boneDataMap[vertexIdx];
+
+			(int&)data[vertexIdx * vertexDataOffset + 8 * sizeof(float) + 0 * sizeof(int)] = bData.boneIndices[0];
+			(int&)data[vertexIdx * vertexDataOffset + 8 * sizeof(float) + 1 * sizeof(int)] = bData.boneIndices[1];
+			(int&)data[vertexIdx * vertexDataOffset + 8 * sizeof(float) + 2 * sizeof(int)] = bData.boneIndices[2];
+			(int&)data[vertexIdx * vertexDataOffset + 8 * sizeof(float) + 3 * sizeof(int)] = bData.boneIndices[3];
+
+			(float&)data[vertexIdx * vertexDataOffset + 8 * sizeof(float) + 4 * sizeof(int) + 0 * sizeof(float)] = bData.boneWeights[0];
+			(float&)data[vertexIdx * vertexDataOffset + 8 * sizeof(float) + 4 * sizeof(int) + 1 * sizeof(float)] = bData.boneWeights[1];
+			(float&)data[vertexIdx * vertexDataOffset + 8 * sizeof(float) + 4 * sizeof(int) + 2 * sizeof(float)] = bData.boneWeights[2];
+			(float&)data[vertexIdx * vertexDataOffset + 8 * sizeof(float) + 4 * sizeof(int) + 3 * sizeof(float)] = bData.boneWeights[3];
+		}
 	}
+}
+
+void SceneLoader::SendDataToVRAM(MeshInfo* meshInfo, char * data, unsigned int vertexDataOffset, unsigned int dataSize, int * indexes)
+{
+	/* Transfer data from temporary buffers to VRAM */
+	glGenVertexArrays(1, &meshInfo->vao);
+	glGenBuffers(1, &meshInfo->vbo);
+	glGenBuffers(1, &meshInfo->ebo);
+
+	glBindVertexArray(meshInfo->vao);
+	glBindBuffer(GL_ARRAY_BUFFER, meshInfo->vbo);
+
+	/*
+	if (assimpMesh->HasBones())
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * allDataSize, allData, GL_DYNAMIC_DRAW);
+	else
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * allDataSize, allData, GL_STATIC_DRAW);
+	*/
+
+	glBufferData(GL_ARRAY_BUFFER, dataSize, data, GL_DYNAMIC_DRAW);
+
+	/* vertex */
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertexDataOffset, (GLvoid*)0);
+	/* normal */
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertexDataOffset, (GLvoid*)(3 * sizeof(GLfloat)));
+	/* uvCoord */
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, vertexDataOffset, (GLvoid*)(6 * sizeof(GLfloat)));
+	/* boneIndices */
+	glVertexAttribPointer(3, 4, GL_INT, GL_FALSE, vertexDataOffset, (GLvoid*)(8 * sizeof(GLfloat)));
+	/* boneWeights */
+	glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, vertexDataOffset, (GLvoid*)(8 * sizeof(GLfloat) + 4 * sizeof(GLint)));
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+	glEnableVertexAttribArray(3);
+	glEnableVertexAttribArray(4);
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE); /* Can be unbound before unbinding the VAO, because the glVertexAttribPointer preserves the VBO to VAO conection */
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshInfo->ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * meshInfo->indices.size(), indexes, GL_STATIC_DRAW);
+
+	glBindVertexArray(GL_NONE);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE); /* Must be unbound AFTER unbinding the VAO */
 }
 
 void SceneLoader::GetTextureFullPath(unsigned int materialIndex, char* fullPath)

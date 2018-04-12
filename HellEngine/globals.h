@@ -33,6 +33,7 @@
 #define FULLSCREEN false
 #define VSYNC true
 #define TITLE "Hell Engine"
+#define MAX_BONES 128
 
 #include <string>
 #include "Json/json.h"

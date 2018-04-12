@@ -25,8 +25,9 @@ private:
 	void StoreBoneToTransformLinks();
 
 	MeshInfo* CreateMeshInfo(const aiMesh* assimpMesh);
-	void GatherVerticesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo);
-	void GatherBonesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo);
+	void GatherVerticesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo, char* data, unsigned int vertexDataOffset, int* indexes);
+	void GatherBonesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo, char* data, unsigned int vertexDataOffset);
+	void SendDataToVRAM(MeshInfo* meshInfo, char* data, unsigned int vertexDataOffset, unsigned int dataSize, int* indexes);
 	void GetTextureFullPath(unsigned int materialIndex, char* outputFullPath);
 
 	

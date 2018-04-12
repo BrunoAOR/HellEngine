@@ -189,7 +189,7 @@ void ComponentMesh::StoreBoneToTransformLinks()
 	}
 }
 
-void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
+void ComponentMesh::ApplyVertexSkinning(const MeshInfo* meshInfo)
 {
 	BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning", Profiler::Color::Crimson);
 	/* Find the ComponentAnimation in the siblings to identify the Root Node of the animation */
@@ -216,14 +216,14 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 		uint verticesCount = meshInfo->vertices.size();
 
 		/* Reset all vertices in the VRAM to ZERO */
-		float* vramData = new float[verticesCount * 8];
+		char* vramData = new char[verticesCount * meshInfo->vertexDataOffset];
 		glBindVertexArray(meshInfo->vao);
 		glBindBuffer(GL_ARRAY_BUFFER, meshInfo->vbo);
-		glGetBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * verticesCount * 8, vramData);
+		glGetBufferSubData(GL_ARRAY_BUFFER, 0, verticesCount * meshInfo->vertexDataOffset, vramData);
 
 		for (uint v = 0; v < verticesCount; ++v)
 		{
-			memset(vramData + (v * 8), 0, sizeof(float) * 3);
+			memset(vramData + (v * meshInfo->vertexDataOffset), 0, sizeof(float) * 3);
 		}
 
 
@@ -254,9 +254,9 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 				for (uint vertexIndex : it->first)
 				{
 					const float3& originalVertex = meshInfo->vertices[vertexIndex];
-					vramData[vertexIndex * 8 + 0] += matrixSum.v[0][0] * originalVertex.x + matrixSum.v[1][0] * originalVertex.y + matrixSum.v[2][0] * originalVertex.z + matrixSum.v[3][0];
-					vramData[vertexIndex * 8 + 1] += matrixSum.v[0][1] * originalVertex.x + matrixSum.v[1][1] * originalVertex.y + matrixSum.v[2][1] * originalVertex.z + matrixSum.v[3][1];
-					vramData[vertexIndex * 8 + 2] += matrixSum.v[0][2] * originalVertex.x + matrixSum.v[1][2] * originalVertex.y + matrixSum.v[2][2] * originalVertex.z + matrixSum.v[3][2];
+					(float&)vramData[vertexIndex * meshInfo->vertexDataOffset + 0 * sizeof(float)] += matrixSum.v[0][0] * originalVertex.x + matrixSum.v[1][0] * originalVertex.y + matrixSum.v[2][0] * originalVertex.z + matrixSum.v[3][0];
+					(float&)vramData[vertexIndex * meshInfo->vertexDataOffset + 1 * sizeof(float)] += matrixSum.v[0][1] * originalVertex.x + matrixSum.v[1][1] * originalVertex.y + matrixSum.v[2][1] * originalVertex.z + matrixSum.v[3][1];
+					(float&)vramData[vertexIndex * meshInfo->vertexDataOffset + 2 * sizeof(float)] += matrixSum.v[0][2] * originalVertex.x + matrixSum.v[1][2] * originalVertex.y + matrixSum.v[2][2] * originalVertex.z + matrixSum.v[3][2];
 				}
 			}
 		}
@@ -280,15 +280,15 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo * meshInfo)
 					const float3& originalVertex = meshInfo->vertices[vertexIndex];
 
 					/* Apply effect */
-					vramData[vertexIndex * 8 + 0] += boneWeight.weight * (matrixProduct.v[0][0] * originalVertex.x + matrixProduct.v[1][0] * originalVertex.y + matrixProduct.v[2][0] * originalVertex.z + matrixProduct.v[3][0]);
-					vramData[vertexIndex * 8 + 1] += boneWeight.weight * (matrixProduct.v[0][1] * originalVertex.x + matrixProduct.v[1][1] * originalVertex.y + matrixProduct.v[2][1] * originalVertex.z + matrixProduct.v[3][1]);
-					vramData[vertexIndex * 8 + 2] += boneWeight.weight * (matrixProduct.v[0][2] * originalVertex.x + matrixProduct.v[1][2] * originalVertex.y + matrixProduct.v[2][2] * originalVertex.z + matrixProduct.v[3][2]);
+					(float&)vramData[vertexIndex * meshInfo->vertexDataOffset + 0 * sizeof(float)] += boneWeight.weight * (matrixProduct.v[0][0] * originalVertex.x + matrixProduct.v[1][0] * originalVertex.y + matrixProduct.v[2][0] * originalVertex.z + matrixProduct.v[3][0]);
+					(float&)vramData[vertexIndex * meshInfo->vertexDataOffset + 1 * sizeof(float)] += boneWeight.weight * (matrixProduct.v[0][1] * originalVertex.x + matrixProduct.v[1][1] * originalVertex.y + matrixProduct.v[2][1] * originalVertex.z + matrixProduct.v[3][1]);
+					(float&)vramData[vertexIndex * meshInfo->vertexDataOffset + 2 * sizeof(float)] += boneWeight.weight * (matrixProduct.v[0][2] * originalVertex.x + matrixProduct.v[1][2] * originalVertex.y + matrixProduct.v[2][2] * originalVertex.z + matrixProduct.v[3][2]);
 				}
 			}
 		}
 
 		/* Unmap buffer */
-		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * verticesCount * 8, vramData);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, verticesCount * meshInfo->vertexDataOffset, vramData);
 
 		delete vramData;
 		vramData = nullptr;
