@@ -63,7 +63,7 @@ public:
 private:
 
 	/* Draws a certain model using the Material's shader and texture, from a Vertex Array Oject WITH indexes */
-	bool DrawElements(const float* modelMatrix, const ModelInfo* modelInfo);
+	bool DrawElements(const ComponentTransform* transform, const ModelInfo* modelInfo);
 	void DrawMesh(const MeshInfo* meshInfo);
 
 	uint CreateCheckeredTexture();

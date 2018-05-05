@@ -95,15 +95,13 @@ void ComponentMaterial::Update()
 			}
 
 			if (insideFrustum) {
-				const float* modelMatrix = transform->GetModelMatrix();
-
 				BROFILER_CATEGORY("ComponentMaterial::GetVao", Profiler::Color::Gold);
 				const ModelInfo* modelInfo = mesh->GetActiveModelInfo();
 				BROFILER_CATEGORY("ComponentMaterial::ValidVao", Profiler::Color::Gold);
 				if (modelInfo && modelInfo->meshInfosIndexes.size() > 0)
 				{
 					BROFILER_CATEGORY("ComponentMaterial::DrawingCall", Profiler::Color::Gold);
-					DrawElements(modelMatrix, modelInfo);
+					DrawElements(transform, modelInfo);
 				}
 			}
 		}
@@ -410,10 +408,12 @@ void ComponentMaterial::OnEditorShaderOptions()
 	}
 }
 
-bool ComponentMaterial::DrawElements(const float* modelMatrix, const ModelInfo* modelInfo)
+bool ComponentMaterial::DrawElements(const ComponentTransform* transform, const ModelInfo* modelInfo)
 {
 	if (IsValid() && modelInfo != nullptr && modelInfo->meshInfosIndexes.size() > 0)
 	{
+		const float* modelMatrix = transform->GetModelMatrix();
+
 		shaderProgram->Activate();
 		shaderProgram->UpdateMatrixUniforms(modelMatrix, App->editorCamera->camera->GetViewMatrix(), App->editorCamera->camera->GetProjectionMatrix());
 		UpdatePublicUniforms();
