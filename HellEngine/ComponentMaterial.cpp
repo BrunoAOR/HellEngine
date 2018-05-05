@@ -95,15 +95,13 @@ void ComponentMaterial::Update()
 			}
 
 			if (insideFrustum) {
-				const float* modelMatrix = transform->GetModelMatrix();
-
 				BROFILER_CATEGORY("ComponentMaterial::GetVao", Profiler::Color::Gold);
 				const ModelInfo* modelInfo = mesh->GetActiveModelInfo();
 				BROFILER_CATEGORY("ComponentMaterial::ValidVao", Profiler::Color::Gold);
 				if (modelInfo && modelInfo->meshInfosIndexes.size() > 0)
 				{
 					BROFILER_CATEGORY("ComponentMaterial::DrawingCall", Profiler::Color::Gold);
-					DrawElements(modelMatrix, modelInfo);
+					DrawElements(transform, modelInfo);
 				}
 			}
 		}
@@ -192,8 +190,8 @@ bool ComponentMaterial::Apply()
 /* Applies the default material configuration */
 void ComponentMaterial::SetDefaultMaterialConfiguration()
 {
-	memcpy_s(vertexShaderPath, 256, "assets/shaders/defaultShader.vert", 256);
-	memcpy_s(fragmentShaderPath, 256, "assets/shaders/defaultShader.frag", 256);
+	memcpy_s(vertexShaderPath, 256, "assets/shaders/pixelLightingShader.vert", 256);
+	memcpy_s(fragmentShaderPath, 256, "assets/shaders/pixelLightingShader.frag", 256);
 	shaderDataPath[0] = '\0';
 	shaderData = "";
 	texturePath[0] = '\0';
@@ -410,12 +408,22 @@ void ComponentMaterial::OnEditorShaderOptions()
 	}
 }
 
-bool ComponentMaterial::DrawElements(const float* modelMatrix, const ModelInfo* modelInfo)
+bool ComponentMaterial::DrawElements(const ComponentTransform* transform, const ModelInfo* modelInfo)
 {
 	if (IsValid() && modelInfo != nullptr && modelInfo->meshInfosIndexes.size() > 0)
 	{
+		const float* modelMatrix = transform->GetModelMatrix();
+
 		shaderProgram->Activate();
 		shaderProgram->UpdateMatrixUniforms(modelMatrix, App->editorCamera->camera->GetViewMatrix(), App->editorCamera->camera->GetProjectionMatrix());
+		
+		float4x4 normalMatrix = float4x4::QuatToRotation(transform->GetRotationQuat()).Transposed();
+		const float* lightPos = nullptr;
+		if (ComponentCamera* camera = App->scene->GetActiveGameCamera())
+			lightPos = camera->GetPosition();
+		
+		shaderProgram->UpdateLightingUniforms(normalMatrix.ptr(), lightPos, App->editorCamera->camera->GetPosition());
+
 		UpdatePublicUniforms();
 
 		if (modelInfoVaoIndex >= 0 && modelInfoVaoIndex < (int)modelInfo->meshInfosIndexes.size())
