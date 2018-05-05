@@ -121,11 +121,7 @@ const ShaderProgram* ModuleShaderManager::GenerateNewShaderProgram(const char* v
 
 	/* Prepare ShaderProgram */
 
-	/* Find locations */
-	uint model = glGetUniformLocation(programId, "model_matrix");
-	uint view = glGetUniformLocation(programId, "view");
-	uint projection = glGetUniformLocation(programId, "projection");
-	ShaderProgram* shaderProgram = new ShaderProgram(programId, model, view, projection);
+	ShaderProgram* shaderProgram = new ShaderProgram(programId);
 
 	/* Save ShaderProgram for future reuse */
 	ShaderProgramData programData;

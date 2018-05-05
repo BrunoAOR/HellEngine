@@ -371,7 +371,7 @@ void SceneLoader::LoadSphereMesh(unsigned int rings, unsigned int sections)
 
 bool SceneLoader::Load(const char* modelPath, GameObject* parent, bool meshesOnly)
 {
-	assimpScene = aiImportFile(modelPath, aiProcess_Triangulate);
+	assimpScene = aiImportFile(modelPath, aiProcessPreset_TargetRealtime_MaxQuality);
 	if (parent == nullptr)
 		parent = App->scene->root;
 

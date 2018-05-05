@@ -208,7 +208,7 @@ bool GameObject::OnEditorHierarchy()
 		if (earlyReturn)
 		{
 			if (open) ImGui::TreePop();
-			return true;
+				return true;
 		}
 
 		if (ImGui::IsItemClicked())
