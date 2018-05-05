@@ -4,7 +4,7 @@
 class ShaderProgram
 {
 public:
-	ShaderProgram(unsigned int programId, unsigned int modelMatrixLocation, unsigned int viewMatrixLocation, unsigned int projectionMatrixLocation);
+	ShaderProgram(unsigned int programId);
 	~ShaderProgram();
 
 	ShaderProgram(const ShaderProgram& shaderProgram) = delete;
@@ -15,13 +15,20 @@ public:
 	unsigned int GetProgramId() const;
 	void Activate() const;
 	void Deactivate() const;
-	void UpdateMatrixUniforms(const float* model, const float* view, const float* projection) const;
+	void UpdateMatrixUniforms(const float* modelMatrix, const float* viewMatrix, const float* projectionMatrix) const;
+	void UpdateLightingUniforms(const float* normalMatrix, const float* lightPosition, const float* cameraPosition) const;
 
 private:
-	unsigned int programId;
-	unsigned int modelMatrixLocation;
-	unsigned int viewMatrixLocation;
-	unsigned int projectionMatrixLocation;
+	unsigned int programId = 0;
+
+	int modelMatrixLocation = -1;
+	int viewMatrixLocation = -1;
+	int projectionMatrixLocation = -1;
+
+	bool hasLightingUniforms = false;
+	int normalMatrixLocation = -1;
+	int lightPositionLocation = -1;
+	int cameraPositionLocation = -1;
 };
 
 #endif // !__H_SHADER_PROGRAM__
