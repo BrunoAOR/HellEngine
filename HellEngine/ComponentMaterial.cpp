@@ -190,8 +190,8 @@ bool ComponentMaterial::Apply()
 /* Applies the default material configuration */
 void ComponentMaterial::SetDefaultMaterialConfiguration()
 {
-	memcpy_s(vertexShaderPath, 256, "assets/shaders/defaultShader.vert", 256);
-	memcpy_s(fragmentShaderPath, 256, "assets/shaders/defaultShader.frag", 256);
+	memcpy_s(vertexShaderPath, 256, "assets/shaders/pixelLightingShader.vert", 256);
+	memcpy_s(fragmentShaderPath, 256, "assets/shaders/pixelLightingShader.frag", 256);
 	shaderDataPath[0] = '\0';
 	shaderData = "";
 	texturePath[0] = '\0';
@@ -416,6 +416,14 @@ bool ComponentMaterial::DrawElements(const ComponentTransform* transform, const 
 
 		shaderProgram->Activate();
 		shaderProgram->UpdateMatrixUniforms(modelMatrix, App->editorCamera->camera->GetViewMatrix(), App->editorCamera->camera->GetProjectionMatrix());
+		
+		float4x4 normalMatrix = float4x4::QuatToRotation(transform->GetRotationQuat()).Transposed();
+		const float* lightPos = nullptr;
+		if (ComponentCamera* camera = App->scene->GetActiveGameCamera())
+			lightPos = camera->GetPosition();
+		
+		shaderProgram->UpdateLightingUniforms(normalMatrix.ptr(), lightPos, App->editorCamera->camera->GetPosition());
+
 		UpdatePublicUniforms();
 
 		if (modelInfoVaoIndex >= 0 && modelInfoVaoIndex < (int)modelInfo->meshInfosIndexes.size())
