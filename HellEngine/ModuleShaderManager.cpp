@@ -83,6 +83,11 @@ void ModuleShaderManager::ReleaseShaderProgram(const ShaderProgram* shaderProgra
 	}
 }
 
+bool ModuleShaderManager::GetDefaultOptionState(ShaderOptions option)
+{
+	return (defaultShaderOptions & option) == option;
+}
+
 void ModuleShaderManager::OnEditorShaderOptionsWindow(float mainMenuBarHeight, bool* pOpen)
 {
 	static bool useVertexLighting = false;
@@ -116,9 +121,6 @@ void ModuleShaderManager::OnEditorShaderOptionsWindow(float mainMenuBarHeight, b
 
 	if (ImGui::Checkbox("GPU Skinning", &useGPUSkinning))
 		defaultShaderOptions ^= ShaderOptions::GPU_SKINNING;
-
-	if (ImGui::Checkbox("Blue Test", &useBlueTest))
-		defaultShaderOptions ^= ShaderOptions::BLUE_TEST;
 
 	ImGui::End();
 }
@@ -166,7 +168,7 @@ const ShaderProgram* ModuleShaderManager::GenerateNewShaderProgram(const char* v
 
 	/* Prepare ShaderProgram */
 
-	ShaderProgram* shaderProgram = new ShaderProgram(programId);
+	ShaderProgram* shaderProgram = new ShaderProgram(programId, options);
 
 	/* Save ShaderProgram for future reuse */
 	ShaderProgramData programData;
@@ -240,13 +242,11 @@ unsigned int ModuleShaderManager::LinkShaderProgram(unsigned int vertexShaderId,
 
 void ModuleShaderManager::AddShaderPrefix(std::string& sourceString, ShaderOptions options)
 {
-	if (options == ShaderOptions::NONE)
-		return;
+	if ((options & ShaderOptions::GPU_SKINNING) == ShaderOptions::GPU_SKINNING)
+		sourceString.insert(0, "#define GPU_SKINNING\n");
 
-	if ((options & ShaderOptions::BLUE_TEST) == ShaderOptions::BLUE_TEST)
-		sourceString.insert(0, "#define BLUE_TEST\n");
-
-	sourceString.insert(0, "#version 330 core\n");	
+	if (sourceString.compare(0, 8, "#version") != 0)
+		sourceString.insert(0, "#version 330 core\n");
 }
 
 std::string ModuleShaderManager::GetJointPath(const char* vertexShaderPath, const char* fragmentShaderPath, ShaderOptions options)

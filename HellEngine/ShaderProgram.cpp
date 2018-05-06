@@ -3,7 +3,7 @@
 #include "globals.h"
 #include "openGL.h"
 
-ShaderProgram::ShaderProgram(unsigned int programId) : programId(programId)
+ShaderProgram::ShaderProgram(unsigned int programId, ShaderOptions options) : programId(programId), shaderOptions(options)
 {
 	assert(programId);
 	modelMatrixLocation = glGetUniformLocation(programId, "model_matrix");
@@ -68,4 +68,9 @@ void ShaderProgram::UpdateBonesUniform(const float* bonesPalette) const
 	{
 		glUniformMatrix4fv(bonesPaletteLocation, MAX_BONES, GL_FALSE, bonesPalette);
 	}
+}
+
+ShaderOptions ShaderProgram::GetShaderOptions() const
+{
+	return shaderOptions;
 }

@@ -21,12 +21,18 @@ void main()
 {
 	ourUvCoord = uvCoord;
 
-	// DIFFUSE CALC
+	vec4 worldPosition4 = vec4(position, 1.0f);
+	vec4 worldNormal4 = vec4(normal, 0.0f);
+	
+	#ifdef GPU_SKINNING
 	mat4 skin_transform = bones_palette[bone_indices[0]]*bone_weights[0] + bones_palette[bone_indices[1]]*bone_weights[1] + bones_palette[bone_indices[2]]*bone_weights[2] + bones_palette[bone_indices[3]]*bone_weights[3];
+	worldPosition4 = skin_transform * worldPosition4;
+	worldNormal4 = skin_transform * worldNormal4;
+	#endif
+	
+	worldPosition4 = model_matrix * worldPosition4;
+	worldNormal = (normal_matrix * worldNormal4).xyz;
 
-	worldPosition = (model_matrix * skin_transform * vec4(position, 1.0f)).xyz;
-	worldNormal = (normal_matrix * skin_transform * vec4(normal, 0.0f)).xyz;
-
-	gl_Position = projection_matrix * view_matrix * vec4(worldPosition, 1.0f);
+	gl_Position = projection_matrix * view_matrix * worldPosition4;
 }
 

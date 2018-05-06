@@ -16,6 +16,7 @@ public:
 
 	const ShaderProgram* GetShaderProgram(const char* vertexShaderPath, const char* fragmentShaderPath, ShaderOptions options = ShaderOptions::NONE);
 	void ReleaseShaderProgram(const ShaderProgram* shaderProgram);
+	bool GetDefaultOptionState(ShaderOptions option);
 
 	/* Draws the Shader Options window */
 	void OnEditorShaderOptionsWindow(float mainMenuBarHeight, bool* pOpen);

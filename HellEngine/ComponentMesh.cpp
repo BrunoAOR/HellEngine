@@ -10,6 +10,7 @@
 #include "GameObject.h"
 #include "ModelInfo.h"
 #include "ModuleScene.h"
+#include "ModuleShaderManager.h"
 #include "MeshInfo.h"
 #include "SerializableObject.h"
 #include "globals.h"
@@ -48,13 +49,30 @@ void ComponentMesh::Update()
 	const ModelInfo* modelInfo = GetActiveModelInfo();
 	if (modelInfo)
 	{
+		bool useGPUSkinning = App->shaderManager->GetDefaultOptionState(ShaderOptions::GPU_SKINNING);
 		for (uint meshInfosIndex : modelInfo->meshInfosIndexes)
 		{
 			MeshInfo* meshInfo = App->scene->meshes[meshInfosIndex];
 			if (!meshInfo->bones.empty())
 			{
-				ApplyVertexSkinning(meshInfo);
+				if (useGPUSkinning && !wasUsingGPUSkinning)
+				{
+					ResetVerticesPositions(meshInfo);
+				}
+				else if (!useGPUSkinning && wasUsingGPUSkinning)
+				{
+					InitializeBonesPalettes();
+				}
+				ApplyVertexSkinning(meshInfo, useGPUSkinning);
 			}
+		}
+		if (useGPUSkinning && !wasUsingGPUSkinning)
+		{
+			wasUsingGPUSkinning = true;
+		}
+		else if (!useGPUSkinning && wasUsingGPUSkinning)
+		{
+			wasUsingGPUSkinning = false;
 		}
 	}
 }
@@ -196,7 +214,7 @@ const std::map<const MeshInfo*, float4x4[MAX_BONES]> ComponentMesh::GetBonesPall
 	return bonesPalettes;
 }
 
-void ComponentMesh::ApplyVertexSkinning(const MeshInfo* meshInfo)
+void ComponentMesh::ApplyVertexSkinning(const MeshInfo* meshInfo, bool useGPUSkinning)
 {
 	BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning", Profiler::Color::Crimson);
 	/* Find the ComponentAnimation in the siblings to identify the Root Node of the animation */
@@ -220,7 +238,6 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo* meshInfo)
 		float4x4 rootToWorldInverse = rootTransform->GetModelMatrix4x4().Inverted();
 		//float4x4 rootToWorldInverse = rootToWorld.Inverted().Transposed();
 		
-		bool useGPUSkinning = true;
 		if (useGPUSkinning)
 		{
 			uint bonesCount = meshInfo->bones.size();
@@ -315,6 +332,26 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo* meshInfo)
 			vramData = nullptr;
 		}
 	}
+}
+
+void ComponentMesh::ResetVerticesPositions(const MeshInfo* meshInfo)
+{
+	uint verticesCount = meshInfo->vertices.size();
+	char* vramData = new char[verticesCount * meshInfo->vertexDataOffset];
+	glBindVertexArray(meshInfo->vao);
+	glBindBuffer(GL_ARRAY_BUFFER, meshInfo->vbo);
+	glGetBufferSubData(GL_ARRAY_BUFFER, 0, verticesCount * meshInfo->vertexDataOffset, vramData);
+
+	for (uint v = 0; v < verticesCount; ++v)
+	{
+		(float3&)vramData[v * meshInfo->vertexDataOffset] = meshInfo->vertices[v];
+	}
+
+	/* Unmap buffer */
+	glBufferSubData(GL_ARRAY_BUFFER, 0, verticesCount * meshInfo->vertexDataOffset, vramData);
+
+	delete vramData;
+	vramData = nullptr;
 }
 
 void ComponentMesh::InitializeBonesPalettes()

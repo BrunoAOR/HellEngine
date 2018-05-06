@@ -33,7 +33,4 @@ void main()
 	vec4 baseColor = texture2D(ourTexture, ourUvCoord);
 	//baseColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	color = vec4(baseColor.rgb * diffuseIntensity + vec3(specularIntensity,specularIntensity,specularIntensity), baseColor.a);
-	#ifdef BLUE_TEST
-	color = vec4(0, 0, 1.0f, 1.0f);
-	#endif
 }

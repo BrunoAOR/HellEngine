@@ -1,10 +1,12 @@
 #ifndef __H_SHADER_PROGRAM__
 #define __H_SHADER_PROGRAM__
 
+enum class ShaderOptions : unsigned int;
+
 class ShaderProgram
 {
 public:
-	ShaderProgram(unsigned int programId);
+	ShaderProgram(unsigned int programId, ShaderOptions options);
 	~ShaderProgram();
 
 	ShaderProgram(const ShaderProgram& shaderProgram) = delete;
@@ -18,9 +20,11 @@ public:
 	void UpdateMatrixUniforms(const float* modelMatrix, const float* viewMatrix, const float* projectionMatrix) const;
 	void UpdateLightingUniforms(const float* normalMatrix, const float* lightPosition, const float* cameraPosition) const;
 	void UpdateBonesUniform(const float* bonesPalette) const;
+	ShaderOptions GetShaderOptions() const;
 
 private:
 	unsigned int programId = 0;
+	ShaderOptions shaderOptions;
 
 	int modelMatrixLocation = -1;
 	int viewMatrixLocation = -1;
