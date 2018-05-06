@@ -27,7 +27,7 @@ bool ModuleShaderManager::CleanUp()
 	return true;
 }
 
-const ShaderProgram* ModuleShaderManager::GetShaderProgram(const char* vertexShaderPath, const char* fragmentShaderPath)
+const ShaderProgram* ModuleShaderManager::GetShaderProgram(const char* vertexShaderPath, const char* fragmentShaderPath, ShaderOptions options)
 {
 	if (IsEmptyString(vertexShaderPath))
 	{
@@ -41,8 +41,7 @@ const ShaderProgram* ModuleShaderManager::GetShaderProgram(const char* vertexSha
 	}
 
 	/* The joint paths as used as key */
-	std::string jointPath(vertexShaderPath);
-	jointPath += fragmentShaderPath;
+	std::string jointPath = GetJointPath(vertexShaderPath, fragmentShaderPath, options);
 
 	for (std::map<std::string, ShaderProgramData>::iterator it = shaderProgramUsage.begin(); it != shaderProgramUsage.end(); ++it)
 	{
@@ -56,7 +55,7 @@ const ShaderProgram* ModuleShaderManager::GetShaderProgram(const char* vertexSha
 		}
 	}
 
-	return GenerateNewShaderProgram(vertexShaderPath, fragmentShaderPath);;
+	return GenerateNewShaderProgram(vertexShaderPath, fragmentShaderPath, options);
 }
 
 void ModuleShaderManager::ReleaseShaderProgram(const ShaderProgram* shaderProgram)
@@ -80,7 +79,7 @@ void ModuleShaderManager::ReleaseShaderProgram(const ShaderProgram* shaderProgra
 	}
 }
 
-const ShaderProgram* ModuleShaderManager::GenerateNewShaderProgram(const char* vertexShaderPath, const char* fragmentShaderPath)
+const ShaderProgram* ModuleShaderManager::GenerateNewShaderProgram(const char* vertexShaderPath, const char* fragmentShaderPath, ShaderOptions options)
 {
 	std::string sourceString;
 	
@@ -89,6 +88,7 @@ const ShaderProgram* ModuleShaderManager::GenerateNewShaderProgram(const char* v
 	{
 		LOGGER("ERROR: ModuleShaderManager - Could not load vertex shader file from path %s", vertexShaderPath);;
 	}
+	AddShaderPrefix(sourceString, options);
 	uint vertexShaderId = CompileShader(sourceString.c_str(), ShaderType::VERTEX);
 	if (vertexShaderId == 0)
 	{
@@ -100,6 +100,7 @@ const ShaderProgram* ModuleShaderManager::GenerateNewShaderProgram(const char* v
 	{
 		LOGGER("ERROR: ModuleShaderManager - Could not load fragment shader file from path %s", fragmentShaderPath);;
 	}
+	AddShaderPrefix(sourceString, options);
 	uint fragmentShaderId = CompileShader(sourceString.c_str(), ShaderType::FRAGMENT);
 	if (fragmentShaderId == 0)
 	{
@@ -129,8 +130,7 @@ const ShaderProgram* ModuleShaderManager::GenerateNewShaderProgram(const char* v
 	programData.numRefs = 1;
 
 	/* Use joint paths as key */
-	std::string jointPath(vertexShaderPath);
-	jointPath += fragmentShaderPath;
+	std::string jointPath = GetJointPath(vertexShaderPath, fragmentShaderPath, options);
 	shaderProgramUsage[jointPath] = programData;
 
 	return shaderProgram;
@@ -192,4 +192,23 @@ unsigned int ModuleShaderManager::LinkShaderProgram(unsigned int vertexShaderId,
 	}
 
 	return programId;
+}
+
+void ModuleShaderManager::AddShaderPrefix(std::string& sourceString, ShaderOptions options)
+{
+	if (options == ShaderOptions::NONE)
+		return;
+
+	if ((options & ShaderOptions::BLUE_TEST) == ShaderOptions::BLUE_TEST)
+		sourceString.insert(0, "#define BLUE_TEST\n");
+
+	sourceString.insert(0, "#version 330 core\n");	
+}
+
+std::string ModuleShaderManager::GetJointPath(const char* vertexShaderPath, const char* fragmentShaderPath, ShaderOptions options)
+{
+	std::string jointPath(vertexShaderPath);
+	jointPath += fragmentShaderPath;
+	jointPath += std::to_string(static_cast<unsigned int>(options));
+	return jointPath;
 }

@@ -41,6 +41,7 @@
     <ClInclude Include="EventWindow.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="globals.h" />
+    <ClInclude Include="ShaderOptions.h" />
     <ClInclude Include="ImGuizmo\ImGuizmo.h" />
     <ClInclude Include="KeyState.h" />
     <ClInclude Include="MainStates.h" />

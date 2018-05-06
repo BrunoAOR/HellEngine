@@ -178,7 +178,7 @@ bool ComponentMaterial::Apply()
 	releasing the program first would cause it to get destroyed and then rebuilt when requesting it anew.
 	*/
 	const ShaderProgram* oldShaderProgram = shaderProgram;
-	shaderProgram = App->shaderManager->GetShaderProgram(vertexShaderPath, fragmentShaderPath);
+	shaderProgram = App->shaderManager->GetShaderProgram(vertexShaderPath, fragmentShaderPath, ShaderOptions::BLUE_TEST | ShaderOptions::SKINNING);
 	App->shaderManager->ReleaseShaderProgram(oldShaderProgram);
 	oldShaderProgram = nullptr;
 
@@ -190,8 +190,8 @@ bool ComponentMaterial::Apply()
 /* Applies the default material configuration */
 void ComponentMaterial::SetDefaultMaterialConfiguration()
 {
-	memcpy_s(vertexShaderPath, 256, "assets/shaders/skinningShader.vert", 256);
-	memcpy_s(fragmentShaderPath, 256, "assets/shaders/skinningShader.frag", 256);
+	memcpy_s(vertexShaderPath, 256, "assets/shaders/uberShader.vert", 256);
+	memcpy_s(fragmentShaderPath, 256, "assets/shaders/uberShader.frag", 256);
 	shaderDataPath[0] = '\0';
 	shaderData = "";
 	texturePath[0] = '\0';

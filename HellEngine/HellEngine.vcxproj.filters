@@ -399,6 +399,9 @@
     <ClInclude Include="ComponentUiInputText.h">
       <Filter>UI</Filter>
     </ClInclude>
+    <ClInclude Include="ShaderOptions.h">
+      <Filter>General</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
