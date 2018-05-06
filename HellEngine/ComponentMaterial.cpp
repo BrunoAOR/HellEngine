@@ -417,7 +417,11 @@ bool ComponentMaterial::DrawElements(const ComponentTransform* transform, const 
 		shaderProgram->Activate();
 		shaderProgram->UpdateMatrixUniforms(modelMatrix, App->editorCamera->camera->GetViewMatrix(), App->editorCamera->camera->GetProjectionMatrix());
 		
-		float4x4 normalMatrix = float4x4::QuatToRotation(transform->GetRotationQuat()).Transposed();
+		float3 unused;
+		Quat rotQuat;
+		DecomposeMatrix(transform->GetModelMatrix4x4(), unused, rotQuat, unused);
+		float4x4 normalMatrix = float4x4::QuatToRotation(rotQuat).Transposed();
+
 		const float* lightPos = nullptr;
 		if (ComponentCamera* camera = App->scene->GetActiveGameCamera())
 			lightPos = camera->GetPosition();
