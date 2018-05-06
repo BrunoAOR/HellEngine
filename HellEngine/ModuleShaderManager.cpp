@@ -1,3 +1,4 @@
+#include "ImGui/imgui.h"
 #include "ModuleShaderManager.h"
 #include "ShaderProgram.h"
 #include "globals.h"
@@ -29,6 +30,9 @@ bool ModuleShaderManager::CleanUp()
 
 const ShaderProgram* ModuleShaderManager::GetShaderProgram(const char* vertexShaderPath, const char* fragmentShaderPath, ShaderOptions options)
 {
+	if (options == ShaderOptions::DEFAULT)
+		options = defaultShaderOptions;
+
 	if (IsEmptyString(vertexShaderPath))
 	{
 		LOGGER("ERROR: ModuleShaderManager - vertexShaderPath is empty");
@@ -77,6 +81,46 @@ void ModuleShaderManager::ReleaseShaderProgram(const ShaderProgram* shaderProgra
 			return;
 		}
 	}
+}
+
+void ModuleShaderManager::OnEditorShaderOptionsWindow(float mainMenuBarHeight, bool* pOpen)
+{
+	static bool useVertexLighting = false;
+	static bool usePixelLighting = false;
+	static bool useGPUSkinning = false;
+	static bool useBlueTest = false;
+
+	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
+	ImGui::SetNextWindowSize(ImVec2(450, 600));
+	ImGui::Begin("Shader options", pOpen, ImGuiWindowFlags_NoCollapse);
+
+	if (ImGui::Checkbox("Vertex Lighting", &useVertexLighting))
+	{
+		defaultShaderOptions ^= ShaderOptions::VERTEX_LIGHTING;
+		if (usePixelLighting && useVertexLighting)
+		{
+			usePixelLighting = false;
+			defaultShaderOptions &= ~(ShaderOptions::PIXEL_LIGHTING);
+		}
+	}
+
+	if (ImGui::Checkbox("Pixel Lighting", &usePixelLighting))
+	{
+		defaultShaderOptions ^= ShaderOptions::PIXEL_LIGHTING;
+		if (useVertexLighting && usePixelLighting)
+		{
+			useVertexLighting = false;
+			defaultShaderOptions &= ~(ShaderOptions::VERTEX_LIGHTING);
+		}
+	}
+
+	if (ImGui::Checkbox("GPU Skinning", &useGPUSkinning))
+		defaultShaderOptions ^= ShaderOptions::GPU_SKINNING;
+
+	if (ImGui::Checkbox("Blue Test", &useBlueTest))
+		defaultShaderOptions ^= ShaderOptions::BLUE_TEST;
+
+	ImGui::End();
 }
 
 const ShaderProgram* ModuleShaderManager::GenerateNewShaderProgram(const char* vertexShaderPath, const char* fragmentShaderPath, ShaderOptions options)

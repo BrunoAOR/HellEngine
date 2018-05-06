@@ -14,6 +14,7 @@
 #include "ModuleInput.h"
 #include "ModuleRender.h"
 #include "ModuleScene.h"
+#include "ModuleShaderManager.h"
 #include "ModuleTrueFont.h"
 #include "ModuleWindow.h"
 #include "globals.h"
@@ -84,6 +85,7 @@ UpdateStatus ModuleImGui::Update()
 	static bool showCameraWindow = false;
 	static bool showFontsWindow = false;
 	static bool showOpenGLWindow = false;
+	static bool showShaderOptionsWindow = false;
 	static bool showTextEditorWindow = false;
 	static bool showHierarchyWindow = true;
 	static bool showInspectorWindow = true;
@@ -139,6 +141,7 @@ UpdateStatus ModuleImGui::Update()
 			ImGui::MenuItem("Fonts", nullptr, &showFontsWindow);
 			ImGui::MenuItem("Camera", nullptr, &showCameraWindow);
 			ImGui::MenuItem("OpenGL", nullptr, &showOpenGLWindow);
+			ImGui::MenuItem("Shader Options", nullptr, &showShaderOptionsWindow);
 
 			ImGui::Separator();
 
@@ -204,6 +207,11 @@ UpdateStatus ModuleImGui::Update()
 	if (showOpenGLWindow)
 	{
 		ShowOpenGLWindow(mainMenuBarHeight, &showOpenGLWindow);
+	}
+
+	if (showShaderOptionsWindow)
+	{
+		App->shaderManager->OnEditorShaderOptionsWindow(mainMenuBarHeight, &showShaderOptionsWindow);
 	}
 
 	if (showTextEditorWindow)

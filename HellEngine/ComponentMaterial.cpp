@@ -178,7 +178,7 @@ bool ComponentMaterial::Apply()
 	releasing the program first would cause it to get destroyed and then rebuilt when requesting it anew.
 	*/
 	const ShaderProgram* oldShaderProgram = shaderProgram;
-	shaderProgram = App->shaderManager->GetShaderProgram(vertexShaderPath, fragmentShaderPath, ShaderOptions::BLUE_TEST | ShaderOptions::SKINNING);
+	shaderProgram = App->shaderManager->GetShaderProgram(vertexShaderPath, fragmentShaderPath, ShaderOptions::DEFAULT);
 	App->shaderManager->ReleaseShaderProgram(oldShaderProgram);
 	oldShaderProgram = nullptr;
 

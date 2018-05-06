@@ -4,11 +4,12 @@
 enum class ShaderOptions : unsigned int
 {
 	NONE = 0,
-	VERTEX_LIGHTING = 1 << 0,
-	PIXEL_LIGHTING = 1 << 1,
-	SKINNING = 1 << 2,
+	DEFAULT = 1 << 0,
+	VERTEX_LIGHTING = 1 << 1,
+	PIXEL_LIGHTING = 1 << 2,
+	GPU_SKINNING = 1 << 3,
 
-	BLUE_TEST = 1 << 3
+	BLUE_TEST = 1 << 4
 };
 
 inline constexpr ShaderOptions operator &(ShaderOptions shaderOption1, ShaderOptions shaderOption2)
