@@ -25,6 +25,7 @@ public:
 	bool SetActiveModelInfo(int index);
 	void SetCustomModel(const ModelInfo& modelInfo);
 	void StoreBoneToTransformLinks();
+	const std::map<const MeshInfo*, float4x4[MAX_BONES]> GetBonesPalletes() const;
 
 	virtual void OnEditor() override;
 
@@ -41,6 +42,7 @@ private:
 
 	void UpdateBoundingBox();
 	void ApplyVertexSkinning(const MeshInfo* meshInfo);
+	void InitializeBonesPalettes();
 
 private:
 
@@ -48,6 +50,7 @@ private:
 	static std::vector<ModelInfo> defaultModelInfos;
 	ModelInfo customModelInfo;
 	std::map<Bone*, ComponentTransform*> boneToTransformLinks;
+	std::map<const MeshInfo*, float4x4[MAX_BONES]> bonesPalettes;
 	
 	int activeModelInfo = -1;
 };

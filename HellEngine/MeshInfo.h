@@ -4,6 +4,7 @@
 #include "MathGeoLib/src/Math/float3.h"
 #include "MathGeoLib/src/Math/float4x4.h"
 #include "globals.h"
+
 class ComponentTransform;
 
 struct BoneWeight
@@ -41,6 +42,7 @@ struct MeshInfo
 	uint vbo = 0;
 	uint ebo = 0;
 	uint elementsCount = 0;
+	uint vertexDataOffset = 0;
 	std::vector<float3> vertices;
 	std::vector<uint> indices;
 	std::vector<Bone*> bones;

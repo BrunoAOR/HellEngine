@@ -143,7 +143,7 @@ void DecomposeMatrix(const float4x4& openGlStyleMatrix, float3& position, Quat& 
 	}
 }
 
-void DecomposeMatrixPosition(const float4x4 & openGlStyleMatrix, float3 & position)
+void DecomposeMatrixPosition(const float4x4& openGlStyleMatrix, float3& position)
 {
 	/* Transpose to get the matrix in a shape when the bottom line is 0 0 0 1 */
 	float4x4 nonOpenGlStyleMatrix(openGlStyleMatrix);

@@ -101,7 +101,7 @@ void ComponentMaterial::Update()
 				if (modelInfo && modelInfo->meshInfosIndexes.size() > 0)
 				{
 					BROFILER_CATEGORY("ComponentMaterial::DrawingCall", Profiler::Color::Gold);
-					DrawElements(transform, modelInfo);
+					DrawElements(transform, mesh);
 				}
 			}
 		}
@@ -117,7 +117,7 @@ bool ComponentMaterial::SetVertexShaderPath(const std::string& sourcePath)
 	}
 
 	memcpy_s(vertexShaderPath, 256, sourcePath.c_str(), sourcePath.length());
-	vertexShaderPath[sourcePath.length() + 1] = '\0';
+	vertexShaderPath[sourcePath.length()] = '\0';
 
 	return true;
 }
@@ -131,7 +131,7 @@ bool ComponentMaterial::SetFragmentShaderPath(const std::string& sourcePath)
 	}
 
 	memcpy_s(fragmentShaderPath, 256, sourcePath.c_str(), sourcePath.length());
-	fragmentShaderPath[sourcePath.length() + 1] = '\0';
+	fragmentShaderPath[sourcePath.length()] = '\0';
 
 	return true;
 }
@@ -190,8 +190,8 @@ bool ComponentMaterial::Apply()
 /* Applies the default material configuration */
 void ComponentMaterial::SetDefaultMaterialConfiguration()
 {
-	memcpy_s(vertexShaderPath, 256, "assets/shaders/pixelLightingShader.vert", 256);
-	memcpy_s(fragmentShaderPath, 256, "assets/shaders/pixelLightingShader.frag", 256);
+	memcpy_s(vertexShaderPath, 256, "assets/shaders/skinningShader.vert", 256);
+	memcpy_s(fragmentShaderPath, 256, "assets/shaders/skinningShader.frag", 256);
 	shaderDataPath[0] = '\0';
 	shaderData = "";
 	texturePath[0] = '\0';
@@ -408,8 +408,10 @@ void ComponentMaterial::OnEditorShaderOptions()
 	}
 }
 
-bool ComponentMaterial::DrawElements(const ComponentTransform* transform, const ModelInfo* modelInfo)
+bool ComponentMaterial::DrawElements(const ComponentTransform* transform, const ComponentMesh* mesh)
 {
+	const ModelInfo* modelInfo = mesh->GetActiveModelInfo();
+
 	if (IsValid() && modelInfo != nullptr && modelInfo->meshInfosIndexes.size() > 0)
 	{
 		const float* modelMatrix = transform->GetModelMatrix();
@@ -417,7 +419,11 @@ bool ComponentMaterial::DrawElements(const ComponentTransform* transform, const 
 		shaderProgram->Activate();
 		shaderProgram->UpdateMatrixUniforms(modelMatrix, App->editorCamera->camera->GetViewMatrix(), App->editorCamera->camera->GetProjectionMatrix());
 		
-		float4x4 normalMatrix = float4x4::QuatToRotation(transform->GetRotationQuat()).Transposed();
+		float3 unused;
+		Quat rotQuat;
+		DecomposeMatrix(transform->GetModelMatrix4x4(), unused, rotQuat, unused);
+		float4x4 normalMatrix = float4x4::QuatToRotation(rotQuat).Transposed();
+
 		const float* lightPos = nullptr;
 		if (ComponentCamera* camera = App->scene->GetActiveGameCamera())
 			lightPos = camera->GetPosition();
@@ -430,10 +436,14 @@ bool ComponentMaterial::DrawElements(const ComponentTransform* transform, const 
 		{
 			unsigned int meshInfoIndex = modelInfo->meshInfosIndexes.at(modelInfoVaoIndex);
 			const MeshInfo* meshInfo = App->scene->meshes.at(meshInfoIndex);
+			const std::map<const MeshInfo*, float4x4[MAX_BONES]> bonesPalettes = mesh->GetBonesPalletes();
+			const float4x4* bonesPalette = bonesPalettes.at(meshInfo);
+			shaderProgram->UpdateBonesUniform(bonesPalette[0].ptr());
 			DrawMesh(meshInfo);
 		}
 		else if (modelInfoVaoIndex == -1)
 		{
+			/* This case occurs when the Material doesn't correspond to a Mesh loaded from a model */
 			for (unsigned int meshInfoIndex : modelInfo->meshInfosIndexes)
 			{
 				const MeshInfo* meshInfo = App->scene->meshes.at(meshInfoIndex);
