@@ -1,5 +1,6 @@
 #include <assert.h>
 #include "ShaderProgram.h"
+#include "globals.h"
 #include "openGL.h"
 
 ShaderProgram::ShaderProgram(unsigned int programId) : programId(programId)
@@ -14,6 +15,9 @@ ShaderProgram::ShaderProgram(unsigned int programId) : programId(programId)
 	lightPositionLocation = glGetUniformLocation(programId, "light_position");
 	cameraPositionLocation = glGetUniformLocation(programId, "camera_position");
 	hasLightingUniforms = normalMatrixLocation != -1 && lightPositionLocation != -1 && cameraPositionLocation != -1;
+
+	bonesPaletteLocation = glGetUniformLocation(programId, "bones_palette");
+	hasBonesUniform = bonesPaletteLocation != -1;
 }
 
 ShaderProgram::~ShaderProgram()
@@ -55,5 +59,13 @@ void ShaderProgram::UpdateLightingUniforms(const float* normalMatrix, const floa
 			glUniform3fv(lightPositionLocation, 1, lightPosition);
 		if (cameraPosition)
 			glUniform3fv(cameraPositionLocation, 1, cameraPosition);
+	}
+}
+
+void ShaderProgram::UpdateBonesUniform(const float* bonesPalette) const
+{
+	if (hasBonesUniform)
+	{
+		glUniformMatrix4fv(bonesPaletteLocation, MAX_BONES, GL_FALSE, bonesPalette);
 	}
 }

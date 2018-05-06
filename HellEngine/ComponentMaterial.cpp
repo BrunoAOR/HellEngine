@@ -438,7 +438,7 @@ bool ComponentMaterial::DrawElements(const ComponentTransform* transform, const 
 			const MeshInfo* meshInfo = App->scene->meshes.at(meshInfoIndex);
 			const std::map<const MeshInfo*, float4x4[MAX_BONES]> bonesPalettes = mesh->GetBonesPalletes();
 			const float4x4* bonesPalette = bonesPalettes.at(meshInfo);
-			glUniformMatrix4fv(glGetUniformLocation(shaderProgram->GetProgramId(), "bones_palette"), MAX_BONES, GL_FALSE, bonesPalette[0].ptr());
+			shaderProgram->UpdateBonesUniform(bonesPalette[0].ptr());
 			DrawMesh(meshInfo);
 		}
 		else if (modelInfoVaoIndex == -1)
