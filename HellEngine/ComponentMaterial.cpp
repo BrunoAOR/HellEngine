@@ -101,7 +101,7 @@ void ComponentMaterial::Update()
 				if (modelInfo && modelInfo->meshInfosIndexes.size() > 0)
 				{
 					BROFILER_CATEGORY("ComponentMaterial::DrawingCall", Profiler::Color::Gold);
-					DrawElements(transform, modelInfo);
+					DrawElements(transform, mesh);
 				}
 			}
 		}
@@ -190,8 +190,8 @@ bool ComponentMaterial::Apply()
 /* Applies the default material configuration */
 void ComponentMaterial::SetDefaultMaterialConfiguration()
 {
-	memcpy_s(vertexShaderPath, 256, "assets/shaders/pixelLightingShader.vert", 256);
-	memcpy_s(fragmentShaderPath, 256, "assets/shaders/pixelLightingShader.frag", 256);
+	memcpy_s(vertexShaderPath, 256, "assets/shaders/skinningShader.vert", 256);
+	memcpy_s(fragmentShaderPath, 256, "assets/shaders/skinningShader.frag", 256);
 	shaderDataPath[0] = '\0';
 	shaderData = "";
 	texturePath[0] = '\0';
@@ -408,8 +408,10 @@ void ComponentMaterial::OnEditorShaderOptions()
 	}
 }
 
-bool ComponentMaterial::DrawElements(const ComponentTransform* transform, const ModelInfo* modelInfo)
+bool ComponentMaterial::DrawElements(const ComponentTransform* transform, const ComponentMesh* mesh)
 {
+	const ModelInfo* modelInfo = mesh->GetActiveModelInfo();
+
 	if (IsValid() && modelInfo != nullptr && modelInfo->meshInfosIndexes.size() > 0)
 	{
 		const float* modelMatrix = transform->GetModelMatrix();
@@ -434,13 +436,20 @@ bool ComponentMaterial::DrawElements(const ComponentTransform* transform, const 
 		{
 			unsigned int meshInfoIndex = modelInfo->meshInfosIndexes.at(modelInfoVaoIndex);
 			const MeshInfo* meshInfo = App->scene->meshes.at(meshInfoIndex);
+			const std::map<const MeshInfo*, float4x4[MAX_BONES]> bonesPalettes = mesh->GetBonesPalletes();
+			const float4x4* bonesPalette = bonesPalettes.at(meshInfo);
+			glUniformMatrix4fv(glGetUniformLocation(shaderProgram->GetProgramId(), "bones_palette"), MAX_BONES, GL_FALSE, bonesPalette[0].ptr());
 			DrawMesh(meshInfo);
 		}
 		else if (modelInfoVaoIndex == -1)
 		{
+			/* This case occurs when the Material doesn't correspond to a Mesh loaded from a model */
 			for (unsigned int meshInfoIndex : modelInfo->meshInfosIndexes)
 			{
 				const MeshInfo* meshInfo = App->scene->meshes.at(meshInfoIndex);
+				const std::map<const MeshInfo*, float4x4[MAX_BONES]> bonesPalettes = mesh->GetBonesPalletes();
+				const float4x4* bonesPalette = bonesPalettes.at(meshInfo);
+				glUniformMatrix4fv(glGetUniformLocation(shaderProgram->GetProgramId(), "bones_palette"), MAX_BONES, GL_FALSE, bonesPalette[0].ptr());
 				DrawMesh(meshInfo);
 			}
 		}

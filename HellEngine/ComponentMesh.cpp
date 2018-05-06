@@ -86,6 +86,7 @@ bool ComponentMesh::SetActiveModelInfo(int index)
 void ComponentMesh::SetCustomModel(const ModelInfo& modelInfo)
 {
 	customModelInfo = modelInfo;
+	InitializeBonesPalettes();
 	activeModelInfo = 2;
 	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
 	assert(transform);
@@ -142,6 +143,7 @@ void ComponentMesh::Load(const SerializableObject& obj)
 		customModelInfo.meshInfosIndexes.reserve(modelInfos.size());
 		customModelInfo.meshInfosIndexes.insert(customModelInfo.meshInfosIndexes.begin(), modelInfos.begin(), modelInfos.end());
 	}
+	InitializeBonesPalettes();
 	UpdateBoundingBox();
 }
 
@@ -189,6 +191,11 @@ void ComponentMesh::StoreBoneToTransformLinks()
 	}
 }
 
+const std::map<const MeshInfo*, float4x4[MAX_BONES]> ComponentMesh::GetBonesPalletes() const
+{
+	return bonesPalettes;
+}
+
 void ComponentMesh::ApplyVertexSkinning(const MeshInfo* meshInfo)
 {
 	BROFILER_CATEGORY("ComponentMesh::ApplyVertexSkinning", Profiler::Color::Crimson);
@@ -212,85 +219,113 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo* meshInfo)
 		assert(rootTransform);
 		float4x4 rootToWorldInverse = rootTransform->GetModelMatrix4x4().Inverted();
 		//float4x4 rootToWorldInverse = rootToWorld.Inverted().Transposed();
-
-		uint verticesCount = meshInfo->vertices.size();
-
-		/* Reset all vertices in the VRAM to ZERO */
-		char* vramData = new char[verticesCount * meshInfo->vertexDataOffset];
-		glBindVertexArray(meshInfo->vao);
-		glBindBuffer(GL_ARRAY_BUFFER, meshInfo->vbo);
-		glGetBufferSubData(GL_ARRAY_BUFFER, 0, verticesCount * meshInfo->vertexDataOffset, vramData);
-
-		for (uint v = 0; v < verticesCount; ++v)
+		
+		bool useGPUSkinning = true;
+		if (useGPUSkinning)
 		{
-			memset(vramData + (v * meshInfo->vertexDataOffset), 0, sizeof(float) * 3);
-		}
-
-
-		/* Iterate through bones and add their effect to the adecuate vertices */
-		bool useVerticesGroupOptimization = true;
-		if (useVerticesGroupOptimization)
-		{
-			for (std::map<std::vector<uint>, VerticesGroup>::const_iterator it = meshInfo->verticesGroups.begin(); it != meshInfo->verticesGroups.cend(); ++it)
+			uint bonesCount = meshInfo->bones.size();
+			for (unsigned int i = 0; i < bonesCount; ++i)
 			{
-				const VerticesGroup& verticesGroup = it->second;
-				uint vectorSize = verticesGroup.bones.size();
-				assert(vectorSize == verticesGroup.weights.size());
-
-				float4x4 matrixSum = float4x4::zero;
-
-				for (uint i = 0; i < vectorSize; ++i)
-				{
-					Bone* bone = verticesGroup.bones[i];
-
-					float4x4 matrixProduct = boneToTransformLinks[bone]->GetModelMatrix4x4();
-					matrixProduct.LeftMultiply(rootToWorldInverse);
-					matrixProduct.RightMultiply(bone->inverseBindMatrix);
-					matrixProduct *= verticesGroup.weights[i];
-
-					matrixSum += matrixProduct;
-				}
-
-				for (uint vertexIndex : it->first)
-				{
-					const float3& originalVertex = meshInfo->vertices[vertexIndex];
-					(float&)vramData[vertexIndex * meshInfo->vertexDataOffset + 0 * sizeof(float)] += matrixSum.v[0][0] * originalVertex.x + matrixSum.v[1][0] * originalVertex.y + matrixSum.v[2][0] * originalVertex.z + matrixSum.v[3][0];
-					(float&)vramData[vertexIndex * meshInfo->vertexDataOffset + 1 * sizeof(float)] += matrixSum.v[0][1] * originalVertex.x + matrixSum.v[1][1] * originalVertex.y + matrixSum.v[2][1] * originalVertex.z + matrixSum.v[3][1];
-					(float&)vramData[vertexIndex * meshInfo->vertexDataOffset + 2 * sizeof(float)] += matrixSum.v[0][2] * originalVertex.x + matrixSum.v[1][2] * originalVertex.y + matrixSum.v[2][2] * originalVertex.z + matrixSum.v[3][2];
-				}
+				Bone* bone = meshInfo->bones[i];
+				float4x4 matrixProduct = boneToTransformLinks[bone]->GetModelMatrix4x4();
+				matrixProduct.LeftMultiply(rootToWorldInverse);
+				matrixProduct.RightMultiply(bone->inverseBindMatrix);
+				bonesPalettes[meshInfo][i] = matrixProduct;
 			}
 		}
 		else
 		{
-			for (Bone* bone : meshInfo->bones)
+			uint verticesCount = meshInfo->vertices.size();
+
+			/* Reset all vertices in the VRAM to ZERO */
+			char* vramData = new char[verticesCount * meshInfo->vertexDataOffset];
+			glBindVertexArray(meshInfo->vao);
+			glBindBuffer(GL_ARRAY_BUFFER, meshInfo->vbo);
+			glGetBufferSubData(GL_ARRAY_BUFFER, 0, verticesCount * meshInfo->vertexDataOffset, vramData);
+
+			for (uint v = 0; v < verticesCount; ++v)
 			{
-				float4x4 matrixProduct = boneToTransformLinks[bone]->GetModelMatrix4x4();
-				matrixProduct.LeftMultiply(rootToWorldInverse);
-				matrixProduct.RightMultiply(bone->inverseBindMatrix);
+				memset(vramData + (v * meshInfo->vertexDataOffset), 0, sizeof(float) * 3);
+			}
 
-				/* Iterate through all Bone weights and apply their effects */
-				uint weightsCount = bone->numWeights;
-				uint vertexIndex = 0;
-
-				for (uint w = 0; w < weightsCount; ++w)
+			/* Iterate through bones and add their effect to the adecuate vertices */
+			bool useVerticesGroupOptimization = true;
+			if (useVerticesGroupOptimization)
+			{
+				for (std::map<std::vector<uint>, VerticesGroup>::const_iterator it = meshInfo->verticesGroups.begin(); it != meshInfo->verticesGroups.cend(); ++it)
 				{
-					/* Calculate effect */
-					const BoneWeight& boneWeight = bone->weights[w];
-					vertexIndex = boneWeight.vertexIndex;
-					const float3& originalVertex = meshInfo->vertices[vertexIndex];
+					const VerticesGroup& verticesGroup = it->second;
+					uint vectorSize = verticesGroup.bones.size();
+					assert(vectorSize == verticesGroup.weights.size());
 
-					/* Apply effect */
-					(float&)vramData[vertexIndex * meshInfo->vertexDataOffset + 0 * sizeof(float)] += boneWeight.weight * (matrixProduct.v[0][0] * originalVertex.x + matrixProduct.v[1][0] * originalVertex.y + matrixProduct.v[2][0] * originalVertex.z + matrixProduct.v[3][0]);
-					(float&)vramData[vertexIndex * meshInfo->vertexDataOffset + 1 * sizeof(float)] += boneWeight.weight * (matrixProduct.v[0][1] * originalVertex.x + matrixProduct.v[1][1] * originalVertex.y + matrixProduct.v[2][1] * originalVertex.z + matrixProduct.v[3][1]);
-					(float&)vramData[vertexIndex * meshInfo->vertexDataOffset + 2 * sizeof(float)] += boneWeight.weight * (matrixProduct.v[0][2] * originalVertex.x + matrixProduct.v[1][2] * originalVertex.y + matrixProduct.v[2][2] * originalVertex.z + matrixProduct.v[3][2]);
+					float4x4 matrixSum = float4x4::zero;
+
+					for (uint i = 0; i < vectorSize; ++i)
+					{
+						Bone* bone = verticesGroup.bones[i];
+
+						float4x4 matrixProduct = boneToTransformLinks[bone]->GetModelMatrix4x4();
+						matrixProduct.LeftMultiply(rootToWorldInverse);
+						matrixProduct.RightMultiply(bone->inverseBindMatrix);
+						matrixProduct *= verticesGroup.weights[i];
+
+						matrixSum += matrixProduct;
+					}
+
+					for (uint vertexIndex : it->first)
+					{
+						const float3& originalVertex = meshInfo->vertices[vertexIndex];
+						(float&)vramData[vertexIndex * meshInfo->vertexDataOffset + 0 * sizeof(float)] += matrixSum.v[0][0] * originalVertex.x + matrixSum.v[1][0] * originalVertex.y + matrixSum.v[2][0] * originalVertex.z + matrixSum.v[3][0];
+						(float&)vramData[vertexIndex * meshInfo->vertexDataOffset + 1 * sizeof(float)] += matrixSum.v[0][1] * originalVertex.x + matrixSum.v[1][1] * originalVertex.y + matrixSum.v[2][1] * originalVertex.z + matrixSum.v[3][1];
+						(float&)vramData[vertexIndex * meshInfo->vertexDataOffset + 2 * sizeof(float)] += matrixSum.v[0][2] * originalVertex.x + matrixSum.v[1][2] * originalVertex.y + matrixSum.v[2][2] * originalVertex.z + matrixSum.v[3][2];
+					}
 				}
 			}
+			else
+			{
+				for (Bone* bone : meshInfo->bones)
+				{
+					float4x4 matrixProduct = boneToTransformLinks[bone]->GetModelMatrix4x4();
+					matrixProduct.LeftMultiply(rootToWorldInverse);
+					matrixProduct.RightMultiply(bone->inverseBindMatrix);
+
+					/* Iterate through all Bone weights and apply their effects */
+					uint weightsCount = bone->numWeights;
+					uint vertexIndex = 0;
+
+					for (uint w = 0; w < weightsCount; ++w)
+					{
+						/* Calculate effect */
+						const BoneWeight& boneWeight = bone->weights[w];
+						vertexIndex = boneWeight.vertexIndex;
+						const float3& originalVertex = meshInfo->vertices[vertexIndex];
+
+						/* Apply effect */
+						(float&)vramData[vertexIndex * meshInfo->vertexDataOffset + 0 * sizeof(float)] += boneWeight.weight * (matrixProduct.v[0][0] * originalVertex.x + matrixProduct.v[1][0] * originalVertex.y + matrixProduct.v[2][0] * originalVertex.z + matrixProduct.v[3][0]);
+						(float&)vramData[vertexIndex * meshInfo->vertexDataOffset + 1 * sizeof(float)] += boneWeight.weight * (matrixProduct.v[0][1] * originalVertex.x + matrixProduct.v[1][1] * originalVertex.y + matrixProduct.v[2][1] * originalVertex.z + matrixProduct.v[3][1]);
+						(float&)vramData[vertexIndex * meshInfo->vertexDataOffset + 2 * sizeof(float)] += boneWeight.weight * (matrixProduct.v[0][2] * originalVertex.x + matrixProduct.v[1][2] * originalVertex.y + matrixProduct.v[2][2] * originalVertex.z + matrixProduct.v[3][2]);
+					}
+				}
+			}
+
+			/* Unmap buffer */
+			glBufferSubData(GL_ARRAY_BUFFER, 0, verticesCount * meshInfo->vertexDataOffset, vramData);
+
+			delete vramData;
+			vramData = nullptr;
 		}
+	}
+}
 
-		/* Unmap buffer */
-		glBufferSubData(GL_ARRAY_BUFFER, 0, verticesCount * meshInfo->vertexDataOffset, vramData);
-
-		delete vramData;
-		vramData = nullptr;
+void ComponentMesh::InitializeBonesPalettes()
+{
+	bonesPalettes.clear();
+	for (unsigned int i = 0; i < customModelInfo.meshInfosIndexes.size(); ++i)
+	{
+		const MeshInfo* meshInfo = App->scene->meshes.at(customModelInfo.meshInfosIndexes[i]);
+		for (unsigned int i = 0; i < MAX_BONES; ++i)
+		{
+			bonesPalettes[meshInfo][i] = float4x4::identity;
+		}
 	}
 }

@@ -63,7 +63,7 @@ public:
 private:
 
 	/* Draws a certain model using the Material's shader and texture, from a Vertex Array Oject WITH indexes */
-	bool DrawElements(const ComponentTransform* transform, const ModelInfo* modelInfo);
+	bool DrawElements(const ComponentTransform* transform, const ComponentMesh* mesh);
 	void DrawMesh(const MeshInfo* meshInfo);
 
 	uint CreateCheckeredTexture();
@@ -110,8 +110,6 @@ private:
 		float values[4];
 	};
 	std::vector<Uniform> publicUniforms;
-
-	const ModelInfo* modelInfo = nullptr;
 };
 
 #endif // !__H_COMPONENT_MATERIAL__
