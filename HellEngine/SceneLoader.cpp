@@ -487,6 +487,7 @@ MeshInfo* SceneLoader::CreateMeshInfo(const aiMesh* assimpMesh)
 	MeshInfo* meshInfo = new MeshInfo();
 
 	/* Create temporary data buffers */
+	/* Note: The current system limits the amount of bones that affect a single vertex to 4, hence 4 indices and 4 weights max */
 	const unsigned int vertexDataOffset = 8 * sizeof(float) + (assimpMesh->HasBones() ? 4 * sizeof(int) + 4 * sizeof(float) : 0);
 	char* allData = new char[assimpMesh->mNumVertices * vertexDataOffset];
 	const unsigned int indexesSize = assimpMesh->mNumFaces * 3;
@@ -582,8 +583,8 @@ void SceneLoader::GatherVerticesInfo(const aiMesh* assimpMesh, MeshInfo* meshInf
 void SceneLoader::GatherBonesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo, char* data, unsigned int vertexDataOffset)
 {
 	struct BoneSkinningData {
-		int boneIndices[4];
-		float boneWeights[4];
+		int boneIndices[4] = { 0, 0, 0, 0 };
+		float boneWeights[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 		uint boneCount = 0;
 	};
 
@@ -615,7 +616,7 @@ void SceneLoader::GatherBonesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo, 
 				bone->weights[w].weight = assimpBone->mWeights[w].mWeight;
 				boneWeightsGroup[bone->weights[w].weight].push_back(bone->weights[w].vertexIndex);
 				
-				BoneSkinningData bData = boneDataMap[bone->weights[w].vertexIndex];
+				BoneSkinningData& bData = boneDataMap[bone->weights[w].vertexIndex];
 				assert(bData.boneCount < 4);
 				bData.boneIndices[bData.boneCount] = i;
 				bData.boneWeights[bData.boneCount] = bone->weights[w].weight;
@@ -645,7 +646,7 @@ void SceneLoader::GatherBonesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo, 
 		for (unsigned int vertexIdx = 0; vertexIdx < assimpMesh->mNumVertices; ++vertexIdx)
 		{
 			const BoneSkinningData& bData = boneDataMap[vertexIdx];
-
+			assert(1.0f - (bData.boneWeights[0] + bData.boneWeights[1] + bData.boneWeights[2] + bData.boneWeights[3]) < 0.001f);
 			(int&)data[vertexIdx * vertexDataOffset + 8 * sizeof(float) + 0 * sizeof(int)] = bData.boneIndices[0];
 			(int&)data[vertexIdx * vertexDataOffset + 8 * sizeof(float) + 1 * sizeof(int)] = bData.boneIndices[1];
 			(int&)data[vertexIdx * vertexDataOffset + 8 * sizeof(float) + 2 * sizeof(int)] = bData.boneIndices[2];
@@ -659,7 +660,7 @@ void SceneLoader::GatherBonesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo, 
 	}
 }
 
-void SceneLoader::SendDataToVRAM(MeshInfo* meshInfo, char * data, unsigned int vertexDataOffset, unsigned int dataSize, int * indexes)
+void SceneLoader::SendDataToVRAM(MeshInfo* meshInfo, char* data, unsigned int vertexDataOffset, unsigned int dataSize, int* indexes)
 {
 	/* Transfer data from temporary buffers to VRAM */
 	glGenVertexArrays(1, &meshInfo->vao);
@@ -685,9 +686,9 @@ void SceneLoader::SendDataToVRAM(MeshInfo* meshInfo, char * data, unsigned int v
 	/* uvCoord */
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, vertexDataOffset, (GLvoid*)(6 * sizeof(GLfloat)));
 	/* boneIndices */
-	glVertexAttribPointer(3, 4, GL_INT, GL_FALSE, vertexDataOffset, (GLvoid*)(8 * sizeof(GLfloat)));
+	glVertexAttribIPointer(3, 4, GL_INT, vertexDataOffset, (GLvoid*)(8 * sizeof(GLfloat)));
 	/* boneWeights */
-	glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, vertexDataOffset, (GLvoid*)(8 * sizeof(GLfloat) + 4 * sizeof(GLint)));
+	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, vertexDataOffset, (GLvoid*)(8 * sizeof(GLfloat) + 4 * sizeof(GLint)));
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
