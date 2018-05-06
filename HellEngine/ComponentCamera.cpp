@@ -357,6 +357,9 @@ void ComponentCamera::Save(SerializableObject& obj) const
 {
 	Component::Save(obj);
 
+	obj.AddBool("IsActiveCamera", isActiveCamera);
+	obj.AddBool("FrustumCulling", frustumCulling);
+
 	obj.AddFloat3("Position", GetPosition3());
 	obj.AddFloat3("Front", GetFront3());
 	obj.AddFloat3("Up", GetUp3());
@@ -370,6 +373,12 @@ void ComponentCamera::Save(SerializableObject& obj) const
 void ComponentCamera::Load(const SerializableObject& obj)
 {
 	Component::Load(obj);
+
+	bool activeCamera = obj.GetBool("IsActiveCamera");
+	if (activeCamera)
+		SetAsActiveCamera();
+
+	frustumCulling = obj.GetBool("FrustumCulling");
 
 	float3 pos = obj.GetFloat3("Position");
 	float3 front = obj.GetFloat3("Front");
