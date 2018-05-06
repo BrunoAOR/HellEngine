@@ -117,7 +117,7 @@ bool ComponentMaterial::SetVertexShaderPath(const std::string& sourcePath)
 	}
 
 	memcpy_s(vertexShaderPath, 256, sourcePath.c_str(), sourcePath.length());
-	vertexShaderPath[sourcePath.length() + 1] = '\0';
+	vertexShaderPath[sourcePath.length()] = '\0';
 
 	return true;
 }
@@ -131,7 +131,7 @@ bool ComponentMaterial::SetFragmentShaderPath(const std::string& sourcePath)
 	}
 
 	memcpy_s(fragmentShaderPath, 256, sourcePath.c_str(), sourcePath.length());
-	fragmentShaderPath[sourcePath.length() + 1] = '\0';
+	fragmentShaderPath[sourcePath.length()] = '\0';
 
 	return true;
 }
@@ -447,9 +447,6 @@ bool ComponentMaterial::DrawElements(const ComponentTransform* transform, const 
 			for (unsigned int meshInfoIndex : modelInfo->meshInfosIndexes)
 			{
 				const MeshInfo* meshInfo = App->scene->meshes.at(meshInfoIndex);
-				const std::map<const MeshInfo*, float4x4[MAX_BONES]> bonesPalettes = mesh->GetBonesPalletes();
-				const float4x4* bonesPalette = bonesPalettes.at(meshInfo);
-				glUniformMatrix4fv(glGetUniformLocation(shaderProgram->GetProgramId(), "bones_palette"), MAX_BONES, GL_FALSE, bonesPalette[0].ptr());
 				DrawMesh(meshInfo);
 			}
 		}

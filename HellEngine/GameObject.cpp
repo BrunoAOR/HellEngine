@@ -730,6 +730,8 @@ GameObject* GameObject::AddCubeChild()
 	mesh->SetActiveModelInfo(0);
 	ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
 	mat->SetDefaultMaterialConfiguration();
+	mat->SetVertexShaderPath("assets/shaders/defaultShader.vert");
+	mat->SetFragmentShaderPath("assets/shaders/defaultShader.frag");
 	mat->Apply();
 	return go;
 }
@@ -742,6 +744,8 @@ GameObject* GameObject::AddSphereChild()
 	mesh->SetActiveModelInfo(1);
 	ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
 	mat->SetDefaultMaterialConfiguration();
+	mat->SetVertexShaderPath("assets/shaders/defaultShader.vert");
+	mat->SetFragmentShaderPath("assets/shaders/defaultShader.frag");
 	mat->Apply();
 	return go;
 }
