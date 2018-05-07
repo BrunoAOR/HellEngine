@@ -172,13 +172,18 @@ bool ComponentMaterial::IsValid()
 /* Attemps to apply all of the material setup */
 bool ComponentMaterial::Apply()
 {
+	return Apply(ShaderOptions::DEFAULT);
+}
+
+bool ComponentMaterial::Apply(ShaderOptions shaderOptions)
+{
 	/*
 	The new shaderProgramId is request before releasing the previous one in case we are requesting for the same program.
 	If this were the case, and this ComponentMaterial were the only user of the program,
 	releasing the program first would cause it to get destroyed and then rebuilt when requesting it anew.
 	*/
 	const ShaderProgram* oldShaderProgram = shaderProgram;
-	shaderProgram = App->shaderManager->GetShaderProgram(vertexShaderPath, fragmentShaderPath);
+	shaderProgram = App->shaderManager->GetShaderProgram(vertexShaderPath, fragmentShaderPath, shaderOptions);
 	App->shaderManager->ReleaseShaderProgram(oldShaderProgram);
 	oldShaderProgram = nullptr;
 
@@ -190,8 +195,8 @@ bool ComponentMaterial::Apply()
 /* Applies the default material configuration */
 void ComponentMaterial::SetDefaultMaterialConfiguration()
 {
-	memcpy_s(vertexShaderPath, 256, "assets/shaders/skinningShader.vert", 256);
-	memcpy_s(fragmentShaderPath, 256, "assets/shaders/skinningShader.frag", 256);
+	memcpy_s(vertexShaderPath, 256, "assets/shaders/uberShader.vert", 256);
+	memcpy_s(fragmentShaderPath, 256, "assets/shaders/uberShader.frag", 256);
 	shaderDataPath[0] = '\0';
 	shaderData = "";
 	texturePath[0] = '\0';
@@ -239,6 +244,7 @@ void ComponentMaterial::Save(SerializableObject& obj) const
 	obj.AddBool("MipMaps", textureConfiguration.mipMaps);
 	obj.AddInt("MinificationMode", textureConfiguration.minificationMode);
 	obj.AddInt("MagnificationMode", textureConfiguration.magnificationMode);
+	obj.AddInt("ShaderOptions", shaderProgram ? static_cast<int>(shaderProgram->GetShaderOptions()) : 0);
 }
 
 void ComponentMaterial::Load(const SerializableObject& obj)
@@ -267,7 +273,10 @@ void ComponentMaterial::Load(const SerializableObject& obj)
 	textureConfiguration.mipMaps = obj.GetBool("MipMaps");
 	textureConfiguration.minificationMode = obj.GetInt("MinificationMode");
 	textureConfiguration.magnificationMode = obj.GetInt("MagnificationMode");
-	Apply();
+	
+	int shaderOptionsCode = obj.GetInt("ShaderOptions");
+	
+	Apply(static_cast<ShaderOptions>(shaderOptionsCode));
 }
 
 void ComponentMaterial::OnEditorMaterialConfiguration()

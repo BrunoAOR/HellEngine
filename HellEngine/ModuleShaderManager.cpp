@@ -1,3 +1,4 @@
+#include "ImGui/imgui.h"
 #include "ModuleShaderManager.h"
 #include "ShaderProgram.h"
 #include "globals.h"
@@ -27,8 +28,11 @@ bool ModuleShaderManager::CleanUp()
 	return true;
 }
 
-const ShaderProgram* ModuleShaderManager::GetShaderProgram(const char* vertexShaderPath, const char* fragmentShaderPath)
+const ShaderProgram* ModuleShaderManager::GetShaderProgram(const char* vertexShaderPath, const char* fragmentShaderPath, ShaderOptions options)
 {
+	if (options == ShaderOptions::DEFAULT)
+		options = defaultShaderOptions;
+
 	if (IsEmptyString(vertexShaderPath))
 	{
 		LOGGER("ERROR: ModuleShaderManager - vertexShaderPath is empty");
@@ -41,8 +45,7 @@ const ShaderProgram* ModuleShaderManager::GetShaderProgram(const char* vertexSha
 	}
 
 	/* The joint paths as used as key */
-	std::string jointPath(vertexShaderPath);
-	jointPath += fragmentShaderPath;
+	std::string jointPath = GetJointPath(vertexShaderPath, fragmentShaderPath, options);
 
 	for (std::map<std::string, ShaderProgramData>::iterator it = shaderProgramUsage.begin(); it != shaderProgramUsage.end(); ++it)
 	{
@@ -56,7 +59,7 @@ const ShaderProgram* ModuleShaderManager::GetShaderProgram(const char* vertexSha
 		}
 	}
 
-	return GenerateNewShaderProgram(vertexShaderPath, fragmentShaderPath);;
+	return GenerateNewShaderProgram(vertexShaderPath, fragmentShaderPath, options);
 }
 
 void ModuleShaderManager::ReleaseShaderProgram(const ShaderProgram* shaderProgram)
@@ -80,7 +83,66 @@ void ModuleShaderManager::ReleaseShaderProgram(const ShaderProgram* shaderProgra
 	}
 }
 
-const ShaderProgram* ModuleShaderManager::GenerateNewShaderProgram(const char* vertexShaderPath, const char* fragmentShaderPath)
+bool ModuleShaderManager::GetDefaultOptionState(ShaderOptions option)
+{
+	return (defaultShaderOptions & option) == option;
+}
+
+void ModuleShaderManager::OnEditorShaderOptionsWindow(float mainMenuBarHeight, bool* pOpen)
+{
+	static bool useVertexLighting = false;
+	static bool usePixelLighting = false;
+	static bool useSpecularLighting = false;
+	static bool useGPUSkinning = false;
+
+	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
+	ImGui::SetNextWindowSize(ImVec2(450, 600));
+	ImGui::Begin("Shader options", pOpen, ImGuiWindowFlags_NoCollapse);
+
+	if (ImGui::Checkbox("Vertex Lighting", &useVertexLighting))
+	{
+		defaultShaderOptions ^= ShaderOptions::VERTEX_LIGHTING;
+		if (usePixelLighting && useVertexLighting)
+		{
+			usePixelLighting = false;
+			defaultShaderOptions &= ~(ShaderOptions::PIXEL_LIGHTING);
+		}
+		if (!usePixelLighting && !useVertexLighting)
+		{
+			useSpecularLighting = false;
+			defaultShaderOptions &= ~(ShaderOptions::SPECULAR);
+		}
+
+	}
+
+	if (ImGui::Checkbox("Pixel Lighting", &usePixelLighting))
+	{
+		defaultShaderOptions ^= ShaderOptions::PIXEL_LIGHTING;
+		if (useVertexLighting && usePixelLighting)
+		{
+			useVertexLighting = false;
+			defaultShaderOptions &= ~(ShaderOptions::VERTEX_LIGHTING);
+		}
+		if (!useVertexLighting && !usePixelLighting)
+		{
+			useSpecularLighting = false;
+			defaultShaderOptions &= ~(ShaderOptions::SPECULAR);
+		}
+	}
+
+	if (usePixelLighting || useVertexLighting)
+	{
+		if (ImGui::Checkbox("Specular", &useSpecularLighting))
+			defaultShaderOptions ^= ShaderOptions::SPECULAR;
+	}
+
+	if (ImGui::Checkbox("GPU Skinning", &useGPUSkinning))
+		defaultShaderOptions ^= ShaderOptions::GPU_SKINNING;
+
+	ImGui::End();
+}
+
+const ShaderProgram* ModuleShaderManager::GenerateNewShaderProgram(const char* vertexShaderPath, const char* fragmentShaderPath, ShaderOptions options)
 {
 	std::string sourceString;
 	
@@ -89,10 +151,11 @@ const ShaderProgram* ModuleShaderManager::GenerateNewShaderProgram(const char* v
 	{
 		LOGGER("ERROR: ModuleShaderManager - Could not load vertex shader file from path %s", vertexShaderPath);;
 	}
+	AddShaderPrefix(sourceString, options);
 	uint vertexShaderId = CompileShader(sourceString.c_str(), ShaderType::VERTEX);
 	if (vertexShaderId == 0)
 	{
-		return 0;
+		return nullptr;
 	}
 
 	/* Compile Fragment Shader */
@@ -100,11 +163,12 @@ const ShaderProgram* ModuleShaderManager::GenerateNewShaderProgram(const char* v
 	{
 		LOGGER("ERROR: ModuleShaderManager - Could not load fragment shader file from path %s", fragmentShaderPath);;
 	}
+	AddShaderPrefix(sourceString, options);
 	uint fragmentShaderId = CompileShader(sourceString.c_str(), ShaderType::FRAGMENT);
 	if (fragmentShaderId == 0)
 	{
 		glDeleteShader(vertexShaderId);
-		return 0;
+		return nullptr;
 	}
 
 	/* Link Shader Program */
@@ -116,12 +180,12 @@ const ShaderProgram* ModuleShaderManager::GenerateNewShaderProgram(const char* v
 
 	if (programId == 0)
 	{
-		return 0;
+		return nullptr;
 	}
 
 	/* Prepare ShaderProgram */
 
-	ShaderProgram* shaderProgram = new ShaderProgram(programId);
+	ShaderProgram* shaderProgram = new ShaderProgram(programId, options);
 
 	/* Save ShaderProgram for future reuse */
 	ShaderProgramData programData;
@@ -129,8 +193,7 @@ const ShaderProgram* ModuleShaderManager::GenerateNewShaderProgram(const char* v
 	programData.numRefs = 1;
 
 	/* Use joint paths as key */
-	std::string jointPath(vertexShaderPath);
-	jointPath += fragmentShaderPath;
+	std::string jointPath = GetJointPath(vertexShaderPath, fragmentShaderPath, options);
 	shaderProgramUsage[jointPath] = programData;
 
 	return shaderProgram;
@@ -192,4 +255,29 @@ unsigned int ModuleShaderManager::LinkShaderProgram(unsigned int vertexShaderId,
 	}
 
 	return programId;
+}
+
+void ModuleShaderManager::AddShaderPrefix(std::string& sourceString, ShaderOptions options)
+{
+	if ((options & ShaderOptions::GPU_SKINNING) == ShaderOptions::GPU_SKINNING)
+		sourceString.insert(0, "#define GPU_SKINNING\n");
+
+	if ((options & ShaderOptions::SPECULAR) == ShaderOptions::SPECULAR)
+		sourceString.insert(0, "#define SPECULAR\n");
+
+	if ((options & ShaderOptions::PIXEL_LIGHTING) == ShaderOptions::PIXEL_LIGHTING)
+		sourceString.insert(0, "#define PIXEL_LIGHTING\n");
+	else if ((options & ShaderOptions::VERTEX_LIGHTING) == ShaderOptions::VERTEX_LIGHTING)
+		sourceString.insert(0, "#define VERTEX_LIGHTING\n");
+
+	if (sourceString.compare(0, 8, "#version") != 0)
+		sourceString.insert(0, "#version 330 core\n");
+}
+
+std::string ModuleShaderManager::GetJointPath(const char* vertexShaderPath, const char* fragmentShaderPath, ShaderOptions options)
+{
+	std::string jointPath(vertexShaderPath);
+	jointPath += fragmentShaderPath;
+	jointPath += std::to_string(static_cast<unsigned int>(options));
+	return jointPath;
 }

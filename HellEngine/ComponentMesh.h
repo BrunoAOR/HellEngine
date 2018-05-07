@@ -41,7 +41,8 @@ private:
 	void PrepareSphereMeshInfo();
 
 	void UpdateBoundingBox();
-	void ApplyVertexSkinning(const MeshInfo* meshInfo);
+	void ApplyVertexSkinning(const MeshInfo* meshInfo, bool useGPUSkinning);
+	void ResetVerticesPositions(const MeshInfo* meshInfo);
 	void InitializeBonesPalettes();
 
 private:
@@ -52,6 +53,7 @@ private:
 	std::map<Bone*, ComponentTransform*> boneToTransformLinks;
 	std::map<const MeshInfo*, float4x4[MAX_BONES]> bonesPalettes;
 	
+	bool wasUsingGPUSkinning = true;
 	int activeModelInfo = -1;
 };
 

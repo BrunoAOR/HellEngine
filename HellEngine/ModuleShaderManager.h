@@ -2,6 +2,7 @@
 #define __H_MODULE_SHADER_MANAGER
 #include <map>
 #include "Module.h"
+#include "ShaderOptions.h"
 class ShaderProgram;
 
 class ModuleShaderManager :
@@ -13,8 +14,12 @@ public:
 
 	virtual bool CleanUp() override;
 
-	const ShaderProgram* GetShaderProgram(const char* vertexShaderPath, const char* fragmentShaderPath);
+	const ShaderProgram* GetShaderProgram(const char* vertexShaderPath, const char* fragmentShaderPath, ShaderOptions options = ShaderOptions::NONE);
 	void ReleaseShaderProgram(const ShaderProgram* shaderProgram);
+	bool GetDefaultOptionState(ShaderOptions option);
+
+	/* Draws the Shader Options window */
+	void OnEditorShaderOptionsWindow(float mainMenuBarHeight, bool* pOpen);
 
 private:
 	enum class ShaderType
@@ -30,12 +35,15 @@ private:
 	};
 
 private:
-	const ShaderProgram* GenerateNewShaderProgram(const char* vertexShaderPath, const char* fragmentShaderPath);
+	const ShaderProgram* GenerateNewShaderProgram(const char* vertexShaderPath, const char* fragmentShaderPath, ShaderOptions options);
 	unsigned int CompileShader(const char* sourceString, ShaderType shaderType);
 	unsigned int LinkShaderProgram(unsigned int vertexShaderId, unsigned int fragmentShaderId);
+	void ModuleShaderManager::AddShaderPrefix(std::string& sourceString, ShaderOptions options);
+	std::string GetJointPath(const char* vertexShaderPath, const char* fragmentShaderPath, ShaderOptions options);
 
 private:
 	std::map<std::string, ShaderProgramData> shaderProgramUsage;
+	ShaderOptions defaultShaderOptions = ShaderOptions::NONE;
 };
 
 #endif // !__H_MODULE_SHADER_MANAGER
