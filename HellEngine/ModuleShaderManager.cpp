@@ -245,6 +245,11 @@ void ModuleShaderManager::AddShaderPrefix(std::string& sourceString, ShaderOptio
 	if ((options & ShaderOptions::GPU_SKINNING) == ShaderOptions::GPU_SKINNING)
 		sourceString.insert(0, "#define GPU_SKINNING\n");
 
+	if ((options & ShaderOptions::PIXEL_LIGHTING) == ShaderOptions::PIXEL_LIGHTING)
+		sourceString.insert(0, "#define PIXEL_LIGHTING\n");
+	else if ((options & ShaderOptions::VERTEX_LIGHTING) == ShaderOptions::VERTEX_LIGHTING)
+		sourceString.insert(0, "#define VERTEX_LIGHTING\n");
+
 	if (sourceString.compare(0, 8, "#version") != 0)
 		sourceString.insert(0, "#version 330 core\n");
 }

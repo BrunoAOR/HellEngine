@@ -9,30 +9,83 @@ uniform mat4 model_matrix;
 uniform mat4 view_matrix;
 uniform mat4 projection_matrix;
 
-uniform mat4 normal_matrix;
+#if defined(PIXEL_LIGHTING) || defined(VERTEX_LIGHTING)
+	uniform mat4 normal_matrix;
+#endif
+#if defined(VERTEX_LIGHTING)
+	uniform vec3 light_position;
+	uniform vec3 camera_position;
+#endif
 
-uniform mat4 bones_palette[MAX_BONES];
+#if defined(GPU_SKINNING)
+	uniform mat4 bones_palette[MAX_BONES];
+#endif
 
 out vec2 ourUvCoord;
-out vec3 worldPosition;
-out vec3 worldNormal;
+
+#if defined(PIXEL_LIGHTING)
+	out vec3 worldPosition;
+	out vec3 worldNormal;
+#elif defined(VERTEX_LIGHTING)
+	out float diffuseIntensity;
+	out float specularIntensity;
+#endif
 
 void main()
 {
 	ourUvCoord = uvCoord;
-
 	vec4 worldPosition4 = vec4(position, 1.0f);
-	vec4 worldNormal4 = vec4(normal, 0.0f);
 	
-	#ifdef GPU_SKINNING
-	mat4 skin_transform = bones_palette[bone_indices[0]]*bone_weights[0] + bones_palette[bone_indices[1]]*bone_weights[1] + bones_palette[bone_indices[2]]*bone_weights[2] + bones_palette[bone_indices[3]]*bone_weights[3];
-	worldPosition4 = skin_transform * worldPosition4;
-	worldNormal4 = skin_transform * worldNormal4;
+	#if defined(PIXEL_LIGHTING) || defined(VERTEX_LIGHTING)
+		vec4 worldNormal4 = vec4(normal, 0.0f);
+	#endif
+	
+	#if defined(GPU_SKINNING)
+		mat4 skin_transform = bones_palette[bone_indices[0]]*bone_weights[0] + bones_palette[bone_indices[1]]*bone_weights[1] + bones_palette[bone_indices[2]]*bone_weights[2] + bones_palette[bone_indices[3]]*bone_weights[3];
+		worldPosition4 = skin_transform * worldPosition4;
+		
+		#if defined(PIXEL_LIGHTING) || defined(VERTEX_LIGHTING)
+			worldNormal4 = skin_transform * worldNormal4;
+		#endif
 	#endif
 	
 	worldPosition4 = model_matrix * worldPosition4;
-	worldNormal = (normal_matrix * worldNormal4).xyz;
+	
+	#if defined(PIXEL_LIGHTING) || defined(VERTEX_LIGHTING)
+		worldNormal4 = normal_matrix * worldNormal4;
+	#endif
+	
+	#if defined(VERTEX_LIGHTING)
+		// DIFFUSE CALC
+		vec3 worldPosition = worldPosition4.xyz;
+		vec3 VertexToLight = light_position - worldPosition;
+		VertexToLight = normalize(VertexToLight);
 
+		vec3 worldNormal = worldNormal4.xyz;
+
+		diffuseIntensity = dot(VertexToLight, worldNormal);
+		if (diffuseIntensity < 0)
+		{
+			diffuseIntensity = 0;
+		}
+
+		// SPECULAR CALC
+		vec3 cameraDir = camera_position - worldPosition;
+		vec3 halfVector = normalize(cameraDir + VertexToLight);
+		specularIntensity = dot(halfVector, worldNormal);
+		if (specularIntensity < 0)
+		{
+			specularIntensity = 0;
+		}
+
+		specularIntensity = pow(specularIntensity, 64.0f);
+	#endif
+	
+	#if defined(PIXEL_LIGHTING)
+		worldPosition = worldPosition4.xyz;
+		worldNormal = worldNormal4.xyz;
+	#endif
+	
 	gl_Position = projection_matrix * view_matrix * worldPosition4;
 }
 
