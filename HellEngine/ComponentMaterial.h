@@ -14,6 +14,7 @@ class ComponentTransform;
 class ShaderProgram;
 struct ModelInfo;
 struct MeshInfo;
+enum class ShaderOptions : unsigned int;
 
 class ComponentMaterial :
 	public Component
@@ -65,6 +66,9 @@ private:
 	/* Draws a certain model using the Material's shader and texture, from a Vertex Array Oject WITH indexes */
 	bool DrawElements(const ComponentTransform* transform, const ComponentMesh* mesh);
 	void DrawMesh(const MeshInfo* meshInfo);
+	
+	/* Attemps to apply all of the material setup */
+	bool Apply(ShaderOptions shaderOptions);
 
 	uint CreateCheckeredTexture();
 

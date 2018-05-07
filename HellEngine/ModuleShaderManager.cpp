@@ -138,7 +138,7 @@ const ShaderProgram* ModuleShaderManager::GenerateNewShaderProgram(const char* v
 	uint vertexShaderId = CompileShader(sourceString.c_str(), ShaderType::VERTEX);
 	if (vertexShaderId == 0)
 	{
-		return 0;
+		return nullptr;
 	}
 
 	/* Compile Fragment Shader */
@@ -151,7 +151,7 @@ const ShaderProgram* ModuleShaderManager::GenerateNewShaderProgram(const char* v
 	if (fragmentShaderId == 0)
 	{
 		glDeleteShader(vertexShaderId);
-		return 0;
+		return nullptr;
 	}
 
 	/* Link Shader Program */
@@ -163,7 +163,7 @@ const ShaderProgram* ModuleShaderManager::GenerateNewShaderProgram(const char* v
 
 	if (programId == 0)
 	{
-		return 0;
+		return nullptr;
 	}
 
 	/* Prepare ShaderProgram */
