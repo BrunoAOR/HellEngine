@@ -5,13 +5,17 @@ in vec2 ourUvCoord;
 	in vec3 worldNormal;
 #elif defined(VERTEX_LIGHTING)
 	in float diffuseIntensity;
-	in float specularIntensity;
+	#if defined(SPECULAR)
+		in float specularIntensity;
+	#endif
 #endif
 
 uniform sampler2D ourTexture;
 #if defined(PIXEL_LIGHTING)
 	uniform vec3 light_position;
-	uniform vec3 camera_position;
+	#if defined(SPECULAR)
+		uniform vec3 camera_position;
+	#endif
 #endif
 
 out vec4 color;
@@ -31,20 +35,26 @@ void main()
 			diffuseIntensity = 0;
 		}
 
-		// SPECULAR CALC
-		vec3 cameraDir = camera_position - worldPosition;
-		vec3 halfVector = normalize(cameraDir + VertexToLight);
-		float specularIntensity = dot(halfVector, worldNormal);
-		if (specularIntensity < 0)
-		{
-			specularIntensity = 0;
-		}
+		#if defined(SPECULAR)
+			// SPECULAR CALC
+			vec3 cameraDir = camera_position - worldPosition;
+			vec3 halfVector = normalize(cameraDir + VertexToLight);
+			float specularIntensity = dot(halfVector, worldNormal);
+			if (specularIntensity < 0)
+			{
+				specularIntensity = 0;
+			}
 
-		specularIntensity = pow(specularIntensity, 128.0f);
-		
-		color = vec4(baseColor.rgb * diffuseIntensity + vec3(specularIntensity,specularIntensity,specularIntensity), baseColor.a);
-	#elif defined(VERTEX_LIGHTING)
-		color = vec4(baseColor.rgb * diffuseIntensity + specularIntensity, baseColor.a);
+			specularIntensity = pow(specularIntensity, 128.0f);
+		#endif
+	#endif
+	
+	#if defined(PIXEL_LIGHTING) || defined(VERTEX_LIGHTING)
+		#if defined(SPECULAR)
+			color = vec4(baseColor.rgb * diffuseIntensity + specularIntensity, baseColor.a);
+		#else
+			color = vec4(baseColor.rgb * diffuseIntensity, baseColor.a);
+		#endif
 	#else
 		color = baseColor;
 	#endif

@@ -92,8 +92,8 @@ void ModuleShaderManager::OnEditorShaderOptionsWindow(float mainMenuBarHeight, b
 {
 	static bool useVertexLighting = false;
 	static bool usePixelLighting = false;
+	static bool useSpecularLighting = false;
 	static bool useGPUSkinning = false;
-	static bool useBlueTest = false;
 
 	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
 	ImGui::SetNextWindowSize(ImVec2(450, 600));
@@ -107,6 +107,12 @@ void ModuleShaderManager::OnEditorShaderOptionsWindow(float mainMenuBarHeight, b
 			usePixelLighting = false;
 			defaultShaderOptions &= ~(ShaderOptions::PIXEL_LIGHTING);
 		}
+		if (!usePixelLighting && !useVertexLighting)
+		{
+			useSpecularLighting = false;
+			defaultShaderOptions &= ~(ShaderOptions::SPECULAR);
+		}
+
 	}
 
 	if (ImGui::Checkbox("Pixel Lighting", &usePixelLighting))
@@ -117,6 +123,17 @@ void ModuleShaderManager::OnEditorShaderOptionsWindow(float mainMenuBarHeight, b
 			useVertexLighting = false;
 			defaultShaderOptions &= ~(ShaderOptions::VERTEX_LIGHTING);
 		}
+		if (!useVertexLighting && !usePixelLighting)
+		{
+			useSpecularLighting = false;
+			defaultShaderOptions &= ~(ShaderOptions::SPECULAR);
+		}
+	}
+
+	if (usePixelLighting || useVertexLighting)
+	{
+		if (ImGui::Checkbox("Specular", &useSpecularLighting))
+			defaultShaderOptions ^= ShaderOptions::SPECULAR;
 	}
 
 	if (ImGui::Checkbox("GPU Skinning", &useGPUSkinning))
@@ -244,6 +261,9 @@ void ModuleShaderManager::AddShaderPrefix(std::string& sourceString, ShaderOptio
 {
 	if ((options & ShaderOptions::GPU_SKINNING) == ShaderOptions::GPU_SKINNING)
 		sourceString.insert(0, "#define GPU_SKINNING\n");
+
+	if ((options & ShaderOptions::SPECULAR) == ShaderOptions::SPECULAR)
+		sourceString.insert(0, "#define SPECULAR\n");
 
 	if ((options & ShaderOptions::PIXEL_LIGHTING) == ShaderOptions::PIXEL_LIGHTING)
 		sourceString.insert(0, "#define PIXEL_LIGHTING\n");

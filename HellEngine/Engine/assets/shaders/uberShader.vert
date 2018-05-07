@@ -12,9 +12,12 @@ uniform mat4 projection_matrix;
 #if defined(PIXEL_LIGHTING) || defined(VERTEX_LIGHTING)
 	uniform mat4 normal_matrix;
 #endif
+
 #if defined(VERTEX_LIGHTING)
 	uniform vec3 light_position;
-	uniform vec3 camera_position;
+	#if defined(SPECULAR)
+		uniform vec3 camera_position;
+	#endif
 #endif
 
 #if defined(GPU_SKINNING)
@@ -28,7 +31,9 @@ out vec2 ourUvCoord;
 	out vec3 worldNormal;
 #elif defined(VERTEX_LIGHTING)
 	out float diffuseIntensity;
-	out float specularIntensity;
+	#if defined(SPECULAR)
+		out float specularIntensity;
+	#endif 
 #endif
 
 void main()
@@ -69,16 +74,18 @@ void main()
 			diffuseIntensity = 0;
 		}
 
-		// SPECULAR CALC
-		vec3 cameraDir = camera_position - worldPosition;
-		vec3 halfVector = normalize(cameraDir + VertexToLight);
-		specularIntensity = dot(halfVector, worldNormal);
-		if (specularIntensity < 0)
-		{
-			specularIntensity = 0;
-		}
+		#if defined(SPECULAR)
+			// SPECULAR CALC
+			vec3 cameraDir = camera_position - worldPosition;
+			vec3 halfVector = normalize(cameraDir + VertexToLight);
+			specularIntensity = dot(halfVector, worldNormal);
+			if (specularIntensity < 0)
+			{
+				specularIntensity = 0;
+			}
 
-		specularIntensity = pow(specularIntensity, 64.0f);
+			specularIntensity = pow(specularIntensity, 128.0f);
+		#endif
 	#endif
 	
 	#if defined(PIXEL_LIGHTING)
@@ -88,4 +95,3 @@ void main()
 	
 	gl_Position = projection_matrix * view_matrix * worldPosition4;
 }
-

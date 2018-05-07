@@ -14,10 +14,8 @@ ShaderProgram::ShaderProgram(unsigned int programId, ShaderOptions options) : pr
 	normalMatrixLocation = glGetUniformLocation(programId, "normal_matrix");
 	lightPositionLocation = glGetUniformLocation(programId, "light_position");
 	cameraPositionLocation = glGetUniformLocation(programId, "camera_position");
-	hasLightingUniforms = normalMatrixLocation != -1 && lightPositionLocation != -1 && cameraPositionLocation != -1;
 
 	bonesPaletteLocation = glGetUniformLocation(programId, "bones_palette");
-	hasBonesUniform = bonesPaletteLocation != -1;
 }
 
 ShaderProgram::~ShaderProgram()
@@ -51,23 +49,17 @@ void ShaderProgram::UpdateMatrixUniforms(const float* modelMatrix, const float* 
 
 void ShaderProgram::UpdateLightingUniforms(const float* normalMatrix, const float* lightPosition, const float* cameraPosition) const
 {
-	if (hasLightingUniforms)
-	{
-		if (normalMatrix)
-			glUniformMatrix4fv(normalMatrixLocation, 1, GL_FALSE, normalMatrix);
-		if (lightPosition)
-			glUniform3fv(lightPositionLocation, 1, lightPosition);
-		if (cameraPosition)
-			glUniform3fv(cameraPositionLocation, 1, cameraPosition);
-	}
+	if (normalMatrix)
+		glUniformMatrix4fv(normalMatrixLocation, 1, GL_FALSE, normalMatrix);
+	if (lightPosition)
+		glUniform3fv(lightPositionLocation, 1, lightPosition);
+	if (cameraPosition)
+		glUniform3fv(cameraPositionLocation, 1, cameraPosition);
 }
 
 void ShaderProgram::UpdateBonesUniform(const float* bonesPalette) const
 {
-	if (hasBonesUniform)
-	{
-		glUniformMatrix4fv(bonesPaletteLocation, MAX_BONES, GL_FALSE, bonesPalette);
-	}
+	glUniformMatrix4fv(bonesPaletteLocation, MAX_BONES, GL_FALSE, bonesPalette);
 }
 
 ShaderOptions ShaderProgram::GetShaderOptions() const

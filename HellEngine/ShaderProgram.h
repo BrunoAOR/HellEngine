@@ -30,12 +30,10 @@ private:
 	int viewMatrixLocation = -1;
 	int projectionMatrixLocation = -1;
 
-	bool hasLightingUniforms = false;
 	int normalMatrixLocation = -1;
 	int lightPositionLocation = -1;
 	int cameraPositionLocation = -1;
 
-	bool hasBonesUniform = false;
 	int bonesPaletteLocation = -1;
 };
 
