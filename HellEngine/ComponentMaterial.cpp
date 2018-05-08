@@ -45,6 +45,12 @@ ComponentMaterial::~ComponentMaterial()
 		App->textureManager->ReleaseTexture(diffuseBufferId);
 
 	diffuseBufferId = 0;
+
+	if (normalBufferId != checkeredPatternBufferId)
+		App->textureManager->ReleaseTexture(normalBufferId);
+
+	normalBufferId = 0;
+
 	materialsCount--;
 
 	if (materialsCount == 0) {
@@ -238,7 +244,8 @@ void ComponentMaterial::Save(SerializableObject& obj) const
 	obj.AddInt("ModelInfoVaoIndex", modelInfoVaoIndex);
 	obj.AddString("VertexShaderPath", vertexShaderPath);
 	obj.AddString("FragmentShaderPath", fragmentShaderPath);
-	obj.AddString("TexturePath", diffusePath);
+	obj.AddString("DiffuseTexturePath", diffusePath);
+	obj.AddString("NormalTexturePath", normalPath);
 	obj.AddString("ShaderDataPath", shaderDataPath);
 	obj.AddInt("WrapMode", textureConfiguration.wrapMode);
 	obj.AddBool("MipMaps", textureConfiguration.mipMaps);
@@ -261,9 +268,13 @@ void ComponentMaterial::Load(const SerializableObject& obj)
 	memcpy_s(fragmentShaderPath, 256, objFragmentShaderPath.c_str(), objFragmentShaderPath.length());
 	fragmentShaderPath[objFragmentShaderPath.length()] = '\0';
 
-	std::string objTexturePath = obj.GetString("TexturePath");
+	std::string objTexturePath = obj.GetString("DiffuseTexturePath");
 	memcpy_s(diffusePath, 256, objTexturePath.c_str(), objTexturePath.length());
 	diffusePath[objTexturePath.length()] = '\0';
+
+	objTexturePath = obj.GetString("NormalTexturePath");
+	memcpy_s(normalPath, 256, objTexturePath.c_str(), objTexturePath.length());
+	normalPath[objTexturePath.length()] = '\0';
 
 	std::string objShaderDataPath = obj.GetString("ShaderDataPath");
 	memcpy_s(shaderDataPath, 256, objShaderDataPath.c_str(), objShaderDataPath.length());
