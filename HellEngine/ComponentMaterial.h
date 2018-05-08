@@ -73,8 +73,8 @@ private:
 	uint CreateCheckeredTexture();
 
 	bool LoadShaderData();
-	bool LoadTexture();
-	void ConfigureTexture();
+	bool LoadTexture(uint& bufferId, const char* path);
+	void ConfigureTexture(uint bufferId);
 	bool GenerateUniforms();
 	void UpdatePublicUniforms();
 
@@ -96,10 +96,12 @@ private:
 	const ShaderProgram* shaderProgram;
 
 	bool isValid = false;
-	uint textureBufferId = 0;
+	uint diffuseBufferId = 0;
+	uint normalBufferId = 0;
 	char vertexShaderPath[256] = "";
 	char fragmentShaderPath[256] = "";
-	char texturePath[256] = "";
+	char diffusePath[256] = "";
+	char normalPath[256] = "";
 	char shaderDataPath[256] = "";
 	std::string shaderData;
 

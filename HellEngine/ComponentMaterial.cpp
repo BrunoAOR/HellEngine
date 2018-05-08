@@ -41,10 +41,10 @@ ComponentMaterial::~ComponentMaterial()
 		shaderProgram = nullptr;
 	}
 
-	if (textureBufferId != checkeredPatternBufferId)
-		App->textureManager->ReleaseTexture(textureBufferId);
+	if (diffuseBufferId != checkeredPatternBufferId)
+		App->textureManager->ReleaseTexture(diffuseBufferId);
 
-	textureBufferId = 0;
+	diffuseBufferId = 0;
 	materialsCount--;
 
 	if (materialsCount == 0) {
@@ -144,8 +144,8 @@ bool ComponentMaterial::SetTexturePath(const std::string& sourcePath)
 		return false;
 	}
 
-	memcpy_s(texturePath, 256, sourcePath.c_str(), sourcePath.length());
-	texturePath[sourcePath.length() + 1] = '\0';
+	memcpy_s(diffusePath, 256, sourcePath.c_str(), sourcePath.length());
+	diffusePath[sourcePath.length() + 1] = '\0';
 
 	return true;
 }
@@ -187,7 +187,7 @@ bool ComponentMaterial::Apply(ShaderOptions shaderOptions)
 	App->shaderManager->ReleaseShaderProgram(oldShaderProgram);
 	oldShaderProgram = nullptr;
 
-	isValid = shaderProgram && LoadTexture() && LoadShaderData() && GenerateUniforms();
+	isValid = shaderProgram && LoadTexture(diffuseBufferId, diffusePath) && LoadTexture(normalBufferId, normalPath) && LoadShaderData() && GenerateUniforms();
 
 	return isValid;
 }
@@ -199,7 +199,7 @@ void ComponentMaterial::SetDefaultMaterialConfiguration()
 	memcpy_s(fragmentShaderPath, 256, "assets/shaders/uberShader.frag", 256);
 	shaderDataPath[0] = '\0';
 	shaderData = "";
-	texturePath[0] = '\0';
+	diffusePath[0] = '\0';
 }
 
 void ComponentMaterial::OnEditor()
@@ -238,7 +238,7 @@ void ComponentMaterial::Save(SerializableObject& obj) const
 	obj.AddInt("ModelInfoVaoIndex", modelInfoVaoIndex);
 	obj.AddString("VertexShaderPath", vertexShaderPath);
 	obj.AddString("FragmentShaderPath", fragmentShaderPath);
-	obj.AddString("TexturePath", texturePath);
+	obj.AddString("TexturePath", diffusePath);
 	obj.AddString("ShaderDataPath", shaderDataPath);
 	obj.AddInt("WrapMode", textureConfiguration.wrapMode);
 	obj.AddBool("MipMaps", textureConfiguration.mipMaps);
@@ -262,8 +262,8 @@ void ComponentMaterial::Load(const SerializableObject& obj)
 	fragmentShaderPath[objFragmentShaderPath.length()] = '\0';
 
 	std::string objTexturePath = obj.GetString("TexturePath");
-	memcpy_s(texturePath, 256, objTexturePath.c_str(), objTexturePath.length());
-	texturePath[objTexturePath.length()] = '\0';
+	memcpy_s(diffusePath, 256, objTexturePath.c_str(), objTexturePath.length());
+	diffusePath[objTexturePath.length()] = '\0';
 
 	std::string objShaderDataPath = obj.GetString("ShaderDataPath");
 	memcpy_s(shaderDataPath, 256, objShaderDataPath.c_str(), objShaderDataPath.length());
@@ -290,7 +290,8 @@ void ComponentMaterial::OnEditorMaterialConfiguration()
 		ImGui::InputText("Vertex shader", vertexShaderPath, 256);
 		ImGui::InputText("Fragment shader", fragmentShaderPath, 256);
 		ImGui::InputText("Shader data", shaderDataPath, 256);
-		ImGui::InputText("Texture path", texturePath, 256);
+		ImGui::InputText("Texture path", diffusePath, 256);
+		ImGui::InputText("Normal Texture path", normalPath, 256);
 
 		if (ImGui::Button("Apply"))
 			Apply();
@@ -379,7 +380,7 @@ void ComponentMaterial::OnEditorTextureConfiguration()
 		if (changed)
 		{
 			changed = false;
-			ConfigureTexture();
+			ConfigureTexture(diffuseBufferId);
 		}
 
 		ImGui::NewLine();
@@ -469,11 +470,21 @@ bool ComponentMaterial::DrawElements(const ComponentTransform* transform, const 
 
 void ComponentMaterial::DrawMesh(const MeshInfo* meshInfo)
 {
-	glBindTexture(GL_TEXTURE_2D, textureBufferId);
+	glBindTexture(GL_TEXTURE_2D, diffuseBufferId);
+	if (normalBufferId != 0)
+	{
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, normalBufferId);
+	}
 	glBindVertexArray(meshInfo->vao);
 	glDrawElements(GL_TRIANGLES, meshInfo->elementsCount, GL_UNSIGNED_INT, nullptr);
 	glBindVertexArray(GL_NONE);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	if (normalBufferId != 0)
+	{
+		glBindTexture(GL_TEXTURE_2D, GL_NONE);
+		glActiveTexture(GL_TEXTURE0);
+	}
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
 }
 
 uint ComponentMaterial::CreateCheckeredTexture()
@@ -587,28 +598,28 @@ bool ComponentMaterial::LoadShaderData()
 	return true;
 }
 
-bool ComponentMaterial::LoadTexture()
+bool ComponentMaterial::LoadTexture(uint& bufferId, const char* path)
 {
-	if (textureBufferId != checkeredPatternBufferId)
-		App->textureManager->ReleaseTexture(textureBufferId);
+	if (bufferId != checkeredPatternBufferId)
+		App->textureManager->ReleaseTexture(bufferId);
 
-	if (IsEmptyString(texturePath))
+	if (IsEmptyString(path))
 	{
-		textureBufferId = checkeredPatternBufferId;
+		bufferId = checkeredPatternBufferId;
 		textureInfo.Zero();
 	}
 	else
-		textureBufferId = App->textureManager->GetTexture(texturePath);
+		bufferId = App->textureManager->GetTexture(path);
 
-	if (textureBufferId != 0)
-		ConfigureTexture();
+	if (bufferId != 0)
+		ConfigureTexture(bufferId);
 
-	return textureBufferId != 0;
+	return bufferId != 0;
 }
 
-void ComponentMaterial::ConfigureTexture()
+void ComponentMaterial::ConfigureTexture(uint bufferId)
 {
-	glBindTexture(GL_TEXTURE_2D, textureBufferId);
+	glBindTexture(GL_TEXTURE_2D, bufferId);
 
 	/* Set texture clamping method */
 	switch (textureConfiguration.wrapMode) {
@@ -633,7 +644,7 @@ void ComponentMaterial::ConfigureTexture()
 	/*Generate Mipmap from the current texture evaluated*/
 	if (textureConfiguration.mipMaps) {
 		glGenerateMipmap(GL_TEXTURE_2D);
-		//glGenerateTextureMipmap(textureBufferId);	
+		//glGenerateTextureMipmap(diffuseBufferId);	
 	}
 
 	/*Apply magnification filters if requested*/
