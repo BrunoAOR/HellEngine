@@ -402,6 +402,9 @@
     <ClInclude Include="ShaderOptions.h">
       <Filter>General</Filter>
     </ClInclude>
+    <ClInclude Include="ModulePhysics.h">
+      <Filter>Engine Modules</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -661,6 +664,9 @@
     </ClCompile>
     <ClCompile Include="ComponentUiInputText.cpp">
       <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="ModulePhysics.cpp">
+      <Filter>Engine Modules</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
