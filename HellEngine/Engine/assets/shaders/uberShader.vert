@@ -1,9 +1,10 @@
 #define MAX_BONES 128
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 normal;
-layout (location = 2) in vec2 uvCoord;
-layout (location = 3) in ivec4 bone_indices;
-layout (location = 4) in vec4 bone_weights;
+layout (location = 2) in vec3 tangent;
+layout (location = 3) in vec2 uvCoord;
+layout (location = 4) in ivec4 bone_indices;
+layout (location = 5) in vec4 bone_weights;
 
 uniform mat4 model_matrix;
 uniform mat4 view_matrix;
