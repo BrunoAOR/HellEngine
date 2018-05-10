@@ -27,6 +27,9 @@ uniform mat4 projection_matrix;
 
 out vec2 ourUvCoord;
 
+#if defined(PIXEL_LIGHTING) || defined(VERTEX_LIGHTING)
+	out mat3 tangentSpace;
+#endif
 #if defined(PIXEL_LIGHTING)
 	out vec3 worldPosition;
 	out vec3 worldNormal;
@@ -44,6 +47,7 @@ void main()
 	
 	#if defined(PIXEL_LIGHTING) || defined(VERTEX_LIGHTING)
 		vec4 worldNormal4 = vec4(normal, 0.0f);
+		vec4 worldTangent4 = vec4(tangent, 0.0f);
 	#endif
 	
 	#if defined(GPU_SKINNING)
@@ -52,13 +56,19 @@ void main()
 		
 		#if defined(PIXEL_LIGHTING) || defined(VERTEX_LIGHTING)
 			worldNormal4 = skin_transform * worldNormal4;
+			worldTangent4 = skin_transform * worldTangent4;
 		#endif
 	#endif
 	
 	worldPosition4 = model_matrix * worldPosition4;
 	
 	#if defined(PIXEL_LIGHTING) || defined(VERTEX_LIGHTING)
-		worldNormal4 = normal_matrix * worldNormal4;
+		worldTangent4 = normalize(worldTangent4 - worldNormal4 * dot(worldNormal4, worldTangent4));
+		worldNormal4 = model_matrix * worldNormal4;
+		worldTangent4 = model_matrix * worldTangent4;
+		vec3 bitangent = cross(worldNormal4.xyz, worldTangent4.xyz);
+		tangentSpace = mat3(worldTangent4.xyz, bitangent, worldNormal4.xyz);
+		tangentSpace = transpose(tangentSpace);
 	#endif
 	
 	#if defined(VERTEX_LIGHTING)

@@ -30,10 +30,10 @@ void SceneLoader::LoadPlaneMesh()
 	float3 tangent(1.0f, 0.0f, 0.0f);
 
 	float3 vertexArray[4] = {
-		float3(-s, -s, s),
-		float3(	s, -s, s),
-		float3(s, s, s),
-		float3(-s, s, s)
+		float3(-s, -s, 0.0f),
+		float3(	s, -s, 0.0f),
+		float3(s, s, 0.0f),
+		float3(-s, s, 0.0f)
 	};
 
 	float2 uvArray[4] = {
