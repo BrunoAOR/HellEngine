@@ -301,6 +301,9 @@ void GameObject::OnEditorHierarchyCreateMenu()
 
 		ImGui::Separator();
 
+		if (ImGui::Selectable("Create Plane"))
+			AddPlaneChild();
+
 		if (ImGui::Selectable("Create Cube"))
 			AddCubeChild();
 
@@ -713,7 +716,7 @@ GameObject* GameObject::AddEmptyChild()
 	return (new GameObject("Empty", this));
 }
 
-GameObject * GameObject::AddCameraChild()
+GameObject* GameObject::AddCameraChild()
 {
 	GameObject* go = new GameObject("Camera", this);
 	go->AddComponent(ComponentType::TRANSFORM);
@@ -722,12 +725,24 @@ GameObject * GameObject::AddCameraChild()
 	return go;
 }
 
+GameObject* GameObject::AddPlaneChild()
+{
+	GameObject* go = new GameObject("Plane", this);
+	go->AddComponent(ComponentType::TRANSFORM);
+	ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
+	mesh->SetActiveModelInfo(0);
+	ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
+	mat->SetDefaultMaterialConfiguration();
+	mat->Apply();
+	return go;
+}
+
 GameObject* GameObject::AddCubeChild()
 {
 	GameObject* go = new GameObject("Cube", this);
 	go->AddComponent(ComponentType::TRANSFORM);
 	ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
-	mesh->SetActiveModelInfo(0);
+	mesh->SetActiveModelInfo(1);
 	ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
 	mat->SetDefaultMaterialConfiguration();
 	mat->SetVertexShaderPath("assets/shaders/defaultShader.vert");
@@ -741,7 +756,7 @@ GameObject* GameObject::AddSphereChild()
 	GameObject* go = new GameObject("Sphere", this);
 	go->AddComponent(ComponentType::TRANSFORM);
 	ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
-	mesh->SetActiveModelInfo(1);
+	mesh->SetActiveModelInfo(2);
 	ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
 	mat->SetDefaultMaterialConfiguration();
 	mat->SetVertexShaderPath("assets/shaders/defaultShader.vert");

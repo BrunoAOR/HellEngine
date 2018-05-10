@@ -41,6 +41,7 @@ bool ModuleScene::Init()
 {
 	root = new GameObject("root", nullptr);
 	root->AddComponent(ComponentType::CAMERA);
+	sceneLoader.LoadPlaneMesh();
 	sceneLoader.LoadCubeMesh();
 	sceneLoader.LoadSphereMesh();
 	return true;
@@ -445,6 +446,7 @@ void ModuleScene::Load(const char* jsonPath)
 	App->fonts->Load(sObject);
 
 	/* Load Meshes */
+	sceneLoader.LoadPlaneMesh();
 	sceneLoader.LoadCubeMesh();
 	sceneLoader.LoadSphereMesh();
 	std::vector<std::string> allPaths = sObject.GetVectorString("ModelPaths");

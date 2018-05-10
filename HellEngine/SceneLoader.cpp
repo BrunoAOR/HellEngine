@@ -2,6 +2,7 @@
 #include <assimp/cimport.h>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+#include "MathGeoLib/src/Math/float2.h"
 #include "openGL.h"
 #include "Application.h"
 #include "ComponentTransform.h"
@@ -20,6 +21,76 @@
 SceneLoader::SceneLoader()
 {
 }
+
+void SceneLoader::LoadPlaneMesh()
+{
+	const float s = 0.5f;
+
+	float3 normal(0.0f, 0.0f, 1.0f);
+	float3 tangent(1.0f, 0.0f, 0.0f);
+
+	float3 vertexArray[4] = {
+		float3(-s, -s, s),
+		float3(	s, -s, s),
+		float3(s, s, s),
+		float3(-s, s, s)
+	};
+
+	float2 uvArray[4] = {
+		float2(0.0f, 0.0f),
+		float2(1.0f, 0.0f),
+		float2(1.0f, 1.0f),
+		float2(0.0f, 1.0f)
+	};
+
+	const uint indicesCount = 6;
+	const uint uniqueVertCount = 4;
+
+	GLfloat* uniqueQuadData = new GLfloat[uniqueVertCount * 11];
+	
+	for (uint i = 0; i < uniqueVertCount; ++i)
+	{
+		(float3&)uniqueQuadData[i * 11 + 0] = vertexArray[i];
+		(float3&)uniqueQuadData[i * 11 + 3] = normal;
+		(float3&)uniqueQuadData[i * 11 + 6] = tangent;
+		(float2&)uniqueQuadData[i * 11 + 9] = uvArray[i];
+	}	
+	
+	MeshInfo* quadMeshInfo = new MeshInfo();
+	quadMeshInfo->name = "Quad";
+	quadMeshInfo->elementsCount = indicesCount;
+	quadMeshInfo->vertices = { vertexArray[0], vertexArray[1], vertexArray[2], vertexArray[3] };
+	quadMeshInfo->indices = { 0, 1, 2, 0, 2, 3 };
+
+	glGenVertexArrays(1, &quadMeshInfo->vao);
+	glGenBuffers(1, &quadMeshInfo->vbo);
+	glGenBuffers(1, &quadMeshInfo->ebo);
+
+	glBindVertexArray(quadMeshInfo->vao);
+	glBindBuffer(GL_ARRAY_BUFFER, quadMeshInfo->vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uniqueVertCount * 11, uniqueQuadData, GL_DYNAMIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 11 * sizeof(GLfloat), (GLvoid*)(9 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+	glEnableVertexAttribArray(3);
+
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE); /* Can be unbound, since the vertex information is stored in the VAO throught the VertexAttribPointers */
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadMeshInfo->ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * quadMeshInfo->elementsCount, quadMeshInfo->indices.data(), GL_STATIC_DRAW);
+
+	glBindVertexArray(GL_NONE);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE); /* Can be unbound AFTER unbinding the VAO, since the VAO stores information about the bound EBO */
+
+	delete[] uniqueQuadData;
+
+	App->scene->meshes.push_back(quadMeshInfo);
+}
+
 
 void SceneLoader::LoadCubeMesh()
 {

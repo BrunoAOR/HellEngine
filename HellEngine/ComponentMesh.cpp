@@ -26,6 +26,7 @@ ComponentMesh::ComponentMesh(GameObject* owner) : Component(owner)
 	if (meshesCount == 0)
 	{
 		App->scene->meshes.reserve(App->scene->meshes.size() + 2);
+		PreparePlaneMeshInfo();
 		PrepareCubeMeshInfo();
 		PrepareSphereMeshInfo();
 	}
@@ -82,7 +83,7 @@ const ModelInfo* ComponentMesh::GetActiveModelInfo() const
 	if (activeModelInfo >= 0 && activeModelInfo < (int)defaultModelInfos.size())
 		return &defaultModelInfos[activeModelInfo];
 
-	if (activeModelInfo == 2 && customModelInfo.meshInfosIndexes.size() > 0)
+	if (activeModelInfo == 3 && customModelInfo.meshInfosIndexes.size() > 0)
 		return &customModelInfo;
 
 	return nullptr;
@@ -105,7 +106,7 @@ void ComponentMesh::SetCustomModel(const ModelInfo& modelInfo)
 {
 	customModelInfo = modelInfo;
 	InitializeBonesPalettes();
-	activeModelInfo = 2;
+	activeModelInfo = 3;
 	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
 	assert(transform);
 	UpdateBoundingBox();
@@ -114,7 +115,7 @@ void ComponentMesh::SetCustomModel(const ModelInfo& modelInfo)
 void ComponentMesh::OnEditor()
 {
 	static int selectedMeshOption = 0;
-	static const char* options = "None\0Cube\0Sphere\0Custom Model\0\0";
+	static const char* options = "None\0Plane\0Cube\0Sphere\0Custom Model\0\0";
 
 	if (ImGui::CollapsingHeader(editorInfo.idLabel.c_str()))
 	{
@@ -125,7 +126,7 @@ void ComponentMesh::OnEditor()
 		if (ImGui::Combo("Selected Mesh", &selectedMeshOption, options))
 			SetActiveModelInfo(selectedMeshOption - 1);
 
-		if (activeModelInfo == 2 && customModelInfo.meshInfosIndexes.size() == 0)
+		if (activeModelInfo == 3 && customModelInfo.meshInfosIndexes.size() == 0)
 		{
 			ImGui::Text("No custom model found in this mesh!");
 		}
@@ -165,17 +166,24 @@ void ComponentMesh::Load(const SerializableObject& obj)
 	UpdateBoundingBox();
 }
 
-void ComponentMesh::PrepareCubeMeshInfo()
+void ComponentMesh::PreparePlaneMeshInfo()
 {
 	ModelInfo modelInfo;
 	modelInfo.meshInfosIndexes.push_back(0);
 	defaultModelInfos.push_back(modelInfo);
 }
 
-void ComponentMesh::PrepareSphereMeshInfo()
+void ComponentMesh::PrepareCubeMeshInfo()
 {
 	ModelInfo modelInfo;
 	modelInfo.meshInfosIndexes.push_back(1);
+	defaultModelInfos.push_back(modelInfo);
+}
+
+void ComponentMesh::PrepareSphereMeshInfo()
+{
+	ModelInfo modelInfo;
+	modelInfo.meshInfosIndexes.push_back(2);
 	defaultModelInfos.push_back(modelInfo);
 }
 

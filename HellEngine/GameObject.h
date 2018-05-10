@@ -61,6 +61,7 @@ private:
 
 	GameObject* AddEmptyChild();
 	GameObject* AddCameraChild();
+	GameObject* AddPlaneChild();
 	GameObject* AddCubeChild();
 	GameObject* AddSphereChild();
 	GameObject* AddUiElement(UIElementType uiElementType);
