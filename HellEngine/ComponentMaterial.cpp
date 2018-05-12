@@ -21,6 +21,7 @@
 uint ComponentMaterial::materialsCount = 0;
 uint ComponentMaterial::checkeredPatternBufferId = 0;
 uint ComponentMaterial::defaultNormalMapBufferId = 0;
+uint ComponentMaterial::defaultSpecularMapBufferId = 0;
 
 ComponentMaterial::ComponentMaterial(GameObject* owner) : Component(owner)
 {
@@ -29,6 +30,7 @@ ComponentMaterial::ComponentMaterial(GameObject* owner) : Component(owner)
 	if (materialsCount == 0) {
 		checkeredPatternBufferId = CreateCheckeredTexture();
 		defaultNormalMapBufferId = CreateDefaultNormalMap();
+		defaultSpecularMapBufferId = CreateDefaultSpecularMap();
 	}
 	materialsCount++;
 
@@ -45,13 +47,15 @@ ComponentMaterial::~ComponentMaterial()
 
 	if (diffuseBufferId != checkeredPatternBufferId)
 		App->textureManager->ReleaseTexture(diffuseBufferId);
-
 	diffuseBufferId = 0;
 
 	if (normalBufferId != defaultNormalMapBufferId)
 		App->textureManager->ReleaseTexture(normalBufferId);
-
 	normalBufferId = 0;
+
+	if (specularBufferId != defaultSpecularMapBufferId)
+		App->textureManager->ReleaseTexture(specularBufferId);
+	specularBufferId = 0;
 
 	materialsCount--;
 
@@ -60,6 +64,8 @@ ComponentMaterial::~ComponentMaterial()
 		checkeredPatternBufferId = 0;
 		glDeleteTextures(1, &defaultNormalMapBufferId);
 		defaultNormalMapBufferId = 0;
+		glDeleteTextures(1, &defaultSpecularMapBufferId);
+		defaultSpecularMapBufferId = 0;
 	}
 
 	//LOGGER("Deleting Component of type '%s'", GetString(type));
@@ -155,7 +161,33 @@ bool ComponentMaterial::SetTexturePath(const std::string& sourcePath)
 	}
 
 	memcpy_s(diffusePath, 256, sourcePath.c_str(), sourcePath.length());
-	diffusePath[sourcePath.length() + 1] = '\0';
+	diffusePath[sourcePath.length()] = '\0';
+
+	return true;
+}
+
+bool ComponentMaterial::SetNormalPath(const std::string& sourcePath)
+{
+	if (sourcePath.length() > 255)
+	{
+		return false;
+	}
+
+	memcpy_s(normalPath, 256, sourcePath.c_str(), sourcePath.length());
+	normalPath[sourcePath.length()] = '\0';
+
+	return true;
+}
+
+bool ComponentMaterial::SetSpecularPath(const std::string& sourcePath)
+{
+	if (sourcePath.length() > 255)
+	{
+		return false;
+	}
+
+	memcpy_s(specularPath, 256, sourcePath.c_str(), sourcePath.length());
+	specularPath[sourcePath.length()] = '\0';
 
 	return true;
 }
@@ -168,7 +200,7 @@ bool ComponentMaterial::SetShaderDataPath(const std::string& sourcePath)
 	}
 
 	memcpy_s(shaderDataPath, 256, sourcePath.c_str(), sourcePath.length());
-	shaderDataPath[sourcePath.length() + 1] = '\0';
+	shaderDataPath[sourcePath.length()] = '\0';
 
 	return true;
 }
@@ -200,6 +232,7 @@ bool ComponentMaterial::Apply(ShaderOptions shaderOptions)
 	isValid = shaderProgram
 		&& LoadTexture(diffuseBufferId, diffusePath, checkeredPatternBufferId)
 		&& LoadTexture(normalBufferId, normalPath, defaultNormalMapBufferId)
+		&& LoadTexture(specularBufferId, specularPath, defaultSpecularMapBufferId)
 		&& LoadShaderData()
 		&& GenerateUniforms();
 
@@ -214,6 +247,8 @@ void ComponentMaterial::SetDefaultMaterialConfiguration()
 	shaderDataPath[0] = '\0';
 	shaderData = "";
 	diffusePath[0] = '\0';
+	normalPath[0] = '\0';
+	specularPath[0] = '\0';
 }
 
 void ComponentMaterial::OnEditor()
@@ -311,6 +346,7 @@ void ComponentMaterial::OnEditorMaterialConfiguration()
 		ImGui::InputText("Shader data", shaderDataPath, 256);
 		ImGui::InputText("Texture path", diffusePath, 256);
 		ImGui::InputText("Normal Texture path", normalPath, 256);
+		ImGui::InputText("Specular Texture path", specularPath, 256);
 
 		if (ImGui::Button("Apply"))
 			Apply();
@@ -495,21 +531,36 @@ void ComponentMaterial::DrawMesh(const MeshInfo* meshInfo)
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, normalBufferId);
 	}
+	if (specularBufferId != 0)
+	{
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, specularBufferId);
+	}
 	
 	GLint texLoc;
 	texLoc = glGetUniformLocation(shaderProgram->GetProgramId(), "ourTexture");
 	glUniform1i(texLoc, 0); 
 	texLoc = glGetUniformLocation(shaderProgram->GetProgramId(), "ourNormal");
 	glUniform1i(texLoc, 1);
+	texLoc = glGetUniformLocation(shaderProgram->GetProgramId(), "ourSpecular");
+	glUniform1i(texLoc, 2);
 
 	glBindVertexArray(meshInfo->vao);
 	glDrawElements(GL_TRIANGLES, meshInfo->elementsCount, GL_UNSIGNED_INT, nullptr);
 	glBindVertexArray(GL_NONE);
-	if (normalBufferId != 0)
+	
+	if (specularBufferId != 0)
 	{
 		glBindTexture(GL_TEXTURE_2D, GL_NONE);
 		glActiveTexture(GL_TEXTURE0);
 	}
+	if (normalBufferId != 0)
+	{
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, GL_NONE);
+		glActiveTexture(GL_TEXTURE0);
+	}
+	
 	glBindTexture(GL_TEXTURE_2D, GL_NONE);
 }
 
@@ -552,6 +603,34 @@ uint ComponentMaterial::CreateDefaultNormalMap()
 			normalMap[i][j][1] = (GLubyte)127;
 			normalMap[i][j][2] = (GLubyte)255;
 			normalMap[i][j][3] = (GLubyte)127;
+		}
+	}
+
+	GLuint textureId;
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glGenTextures(1, &textureId);
+	glBindTexture(GL_TEXTURE_2D, textureId);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, normalMapSize, normalMapSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, normalMap);
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
+
+	return textureId;
+}
+
+uint ComponentMaterial::CreateDefaultSpecularMap()
+{
+	static const int normalMapSize = 8;
+	GLubyte normalMap[normalMapSize][normalMapSize][4];
+	for (int i = 0; i < normalMapSize; i++) {
+		for (int j = 0; j < normalMapSize; j++) {
+			normalMap[i][j][0] = (GLubyte)255;
+			normalMap[i][j][1] = (GLubyte)255;
+			normalMap[i][j][2] = (GLubyte)255;
+			normalMap[i][j][3] = (GLubyte)255;
 		}
 	}
 

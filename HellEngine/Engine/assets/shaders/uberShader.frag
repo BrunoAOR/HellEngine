@@ -18,6 +18,7 @@ in vec2 ourUvCoord;
 
 uniform sampler2D ourTexture;
 uniform sampler2D ourNormal;
+uniform sampler2D ourSpecular;
 
 out vec4 color;
 
@@ -60,7 +61,8 @@ void main()
 	
 	#if defined(PIXEL_LIGHTING) || defined(VERTEX_LIGHTING)
 		#if defined(SPECULAR)
-			color = vec4(baseColor.rgb * diffuseIntensity + specularIntensity, baseColor.a);
+			vec3 specularColor = texture2D(ourSpecular, ourUvCoord).rgb;
+			color = vec4(baseColor.rgb * diffuseIntensity + specularColor * specularIntensity, baseColor.a);
 		#else
 			color = vec4(baseColor.rgb * diffuseIntensity, baseColor.a);
 		#endif
