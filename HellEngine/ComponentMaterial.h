@@ -71,9 +71,10 @@ private:
 	bool Apply(ShaderOptions shaderOptions);
 
 	uint CreateCheckeredTexture();
+	uint CreateDefaultNormalMap();
 
 	bool LoadShaderData();
-	bool LoadTexture(uint& bufferId, const char* path);
+	bool LoadTexture(uint& bufferId, const char* path, uint fallbackDefaultId);
 	void ConfigureTexture(uint bufferId);
 	bool GenerateUniforms();
 	void UpdatePublicUniforms();
@@ -88,6 +89,7 @@ private:
 	/* General */
 	static uint materialsCount;
 	static uint checkeredPatternBufferId;
+	static uint defaultNormalMapBufferId;
 
 	TextureConfiguration textureConfiguration;
 	TextureInfo textureInfo;

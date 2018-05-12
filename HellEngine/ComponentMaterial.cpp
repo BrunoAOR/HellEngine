@@ -20,6 +20,7 @@
 
 uint ComponentMaterial::materialsCount = 0;
 uint ComponentMaterial::checkeredPatternBufferId = 0;
+uint ComponentMaterial::defaultNormalMapBufferId = 0;
 
 ComponentMaterial::ComponentMaterial(GameObject* owner) : Component(owner)
 {
@@ -27,6 +28,7 @@ ComponentMaterial::ComponentMaterial(GameObject* owner) : Component(owner)
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
 	if (materialsCount == 0) {
 		checkeredPatternBufferId = CreateCheckeredTexture();
+		defaultNormalMapBufferId = CreateDefaultNormalMap();
 	}
 	materialsCount++;
 
@@ -46,7 +48,7 @@ ComponentMaterial::~ComponentMaterial()
 
 	diffuseBufferId = 0;
 
-	if (normalBufferId != checkeredPatternBufferId)
+	if (normalBufferId != defaultNormalMapBufferId)
 		App->textureManager->ReleaseTexture(normalBufferId);
 
 	normalBufferId = 0;
@@ -56,6 +58,8 @@ ComponentMaterial::~ComponentMaterial()
 	if (materialsCount == 0) {
 		glDeleteTextures(1, &checkeredPatternBufferId);
 		checkeredPatternBufferId = 0;
+		glDeleteTextures(1, &defaultNormalMapBufferId);
+		defaultNormalMapBufferId = 0;
 	}
 
 	//LOGGER("Deleting Component of type '%s'", GetString(type));
@@ -193,7 +197,11 @@ bool ComponentMaterial::Apply(ShaderOptions shaderOptions)
 	App->shaderManager->ReleaseShaderProgram(oldShaderProgram);
 	oldShaderProgram = nullptr;
 
-	isValid = shaderProgram && LoadTexture(diffuseBufferId, diffusePath) && LoadTexture(normalBufferId, normalPath) && LoadShaderData() && GenerateUniforms();
+	isValid = shaderProgram
+		&& LoadTexture(diffuseBufferId, diffusePath, checkeredPatternBufferId)
+		&& LoadTexture(normalBufferId, normalPath, defaultNormalMapBufferId)
+		&& LoadShaderData()
+		&& GenerateUniforms();
 
 	return isValid;
 }
@@ -534,6 +542,34 @@ uint ComponentMaterial::CreateCheckeredTexture()
 	return textureId;
 }
 
+uint ComponentMaterial::CreateDefaultNormalMap()
+{
+	static const int normalMapSize = 8;
+	GLubyte normalMap[normalMapSize][normalMapSize][4];
+	for (int i = 0; i < normalMapSize; i++) {
+		for (int j = 0; j < normalMapSize; j++) {
+			normalMap[i][j][0] = (GLubyte)127;
+			normalMap[i][j][1] = (GLubyte)127;
+			normalMap[i][j][2] = (GLubyte)255;
+			normalMap[i][j][3] = (GLubyte)127;
+		}
+	}
+
+	GLuint textureId;
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glGenTextures(1, &textureId);
+	glBindTexture(GL_TEXTURE_2D, textureId);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, normalMapSize, normalMapSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, normalMap);
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
+
+	return textureId;
+}
+
 bool ComponentMaterial::GenerateUniforms()
 {
 	/* Gets called AFTER successfully linking the shader program */
@@ -616,14 +652,14 @@ bool ComponentMaterial::LoadShaderData()
 	return true;
 }
 
-bool ComponentMaterial::LoadTexture(uint& bufferId, const char* path)
+bool ComponentMaterial::LoadTexture(uint& bufferId, const char* path, uint fallbackDefaultId)
 {
-	if (bufferId != checkeredPatternBufferId)
+	if (bufferId != fallbackDefaultId)
 		App->textureManager->ReleaseTexture(bufferId);
 
 	if (IsEmptyString(path))
 	{
-		bufferId = checkeredPatternBufferId;
+		bufferId = fallbackDefaultId;
 		textureInfo.Zero();
 	}
 	else
