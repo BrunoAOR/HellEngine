@@ -228,11 +228,19 @@ void ComponentMesh::ApplyVertexSkinning(const MeshInfo* meshInfo, bool useGPUSki
 	/* Find the ComponentAnimation in the siblings to identify the Root Node of the animation */
 	std::vector<GameObject*> siblings = gameObject->GetParent()->GetChildren();
 	ComponentAnimation* animationComponent = nullptr;
-	for (GameObject* sibling : siblings)
+	GameObject* parent = gameObject->GetParent();
+	if (parent)
 	{
-		animationComponent = (ComponentAnimation*)sibling->GetComponent(ComponentType::ANIMATION);
-		if (animationComponent)
-			break;
+		animationComponent = (ComponentAnimation*)parent->GetComponent(ComponentType::ANIMATION);
+	}
+	if (!animationComponent)
+	{
+		for (GameObject* sibling : siblings)
+		{
+			animationComponent = (ComponentAnimation*)sibling->GetComponent(ComponentType::ANIMATION);
+			if (animationComponent)
+				break;
+		}
 	}
 
 	if (animationComponent)
