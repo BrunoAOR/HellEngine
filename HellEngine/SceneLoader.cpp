@@ -807,7 +807,7 @@ void SceneLoader::SendDataToVRAM(MeshInfo* meshInfo, char* data, unsigned int ve
 	/* boneIndices */
 	glVertexAttribIPointer(4, 4, GL_INT, vertexDataOffset, (GLvoid*)(11 * sizeof(GLfloat)));
 	/* boneWeights */
-	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, vertexDataOffset, (GLvoid*)(15 * sizeof(GLfloat) + 4 * sizeof(GLint)));
+	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, vertexDataOffset, (GLvoid*)(11 * sizeof(GLfloat) + 4 * sizeof(GLint)));
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
