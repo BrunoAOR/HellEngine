@@ -617,6 +617,12 @@ void SceneLoader::GatherVerticesInfo(const aiMesh* assimpMesh, MeshInfo* meshInf
 			const aiVector3D& tangent = assimpMesh->mTangents[vertexIdx];
 			(aiVector3D&)allData[vertexIdx * vertexDataOffset + 6 * sizeof(float)] = tangent;
 		}
+		else if (!hasUvCoords)
+		{
+			(float&)allData[vertexIdx * vertexDataOffset + 6 * sizeof(float)] = 1.0f;
+			(float&)allData[vertexIdx * vertexDataOffset + 7 * sizeof(float)] = 0.0f;
+			(float&)allData[vertexIdx * vertexDataOffset + 8 * sizeof(float)] = 0.0f;
+		}
 
 		if (hasUvCoords)
 		{
@@ -638,9 +644,9 @@ void SceneLoader::GatherVerticesInfo(const aiMesh* assimpMesh, MeshInfo* meshInf
 	meshInfo->elementsCount = 0;
 
 	std::map<uint, aiVector3D> tangentMap;
-	if (!hasTangents)
+	if (!hasTangents && hasUvCoords)
 	{
-		for (unsigned int vertexIdx = 0; vertexIdx < assimpMesh->mNumVertices; ++vertexIdx)
+		for (uint vertexIdx = 0; vertexIdx < assimpMesh->mNumVertices; ++vertexIdx)
 			tangentMap[vertexIdx] = aiVector3D(0, 0, 0);
 	}
 
@@ -660,8 +666,9 @@ void SceneLoader::GatherVerticesInfo(const aiMesh* assimpMesh, MeshInfo* meshInf
 			indexes[faceIdx * face.mNumIndices + i] = index;
 		}
 
-		if (!hasTangents)
+		if (!hasTangents && hasUvCoords)
 		{
+			/* Prepare tangentsMap */
 			aiVector3D edgeAB = assimpMesh->mVertices[face.mIndices[1]] - assimpMesh->mVertices[face.mIndices[0]];
 			aiVector3D edgeBC = assimpMesh->mVertices[face.mIndices[2]] - assimpMesh->mVertices[face.mIndices[1]];
 			aiVector3D coordA = assimpMesh->mTextureCoords[0][face.mIndices[0]];
@@ -675,6 +682,17 @@ void SceneLoader::GatherVerticesInfo(const aiMesh* assimpMesh, MeshInfo* meshInf
 			{
 				tangentMap[face.mIndices[i]] += tangent;
 			}
+		}
+	}
+
+	if (!hasTangents && hasUvCoords)
+	{
+		/* Apply tangentsMap to allData */
+		for (std::map<uint, aiVector3D>::const_iterator it = tangentMap.begin(); it != tangentMap.end(); ++it)
+		{
+			uint vertexIdx = it->first;
+			const aiVector3D& tangent = it->second;
+			(aiVector3D&)allData[vertexIdx * vertexDataOffset + 6 * sizeof(float)] = tangent;
 		}
 	}
 }
@@ -782,17 +800,20 @@ void SceneLoader::SendDataToVRAM(MeshInfo* meshInfo, char* data, unsigned int ve
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertexDataOffset, (GLvoid*)0);
 	/* normal */
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertexDataOffset, (GLvoid*)(3 * sizeof(GLfloat)));
+	/* tangent */
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, vertexDataOffset, (GLvoid*)(6 * sizeof(GLfloat)));
 	/* uvCoord */
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, vertexDataOffset, (GLvoid*)(6 * sizeof(GLfloat)));
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, vertexDataOffset, (GLvoid*)(9 * sizeof(GLfloat)));
 	/* boneIndices */
-	glVertexAttribIPointer(3, 4, GL_INT, vertexDataOffset, (GLvoid*)(8 * sizeof(GLfloat)));
+	glVertexAttribIPointer(4, 4, GL_INT, vertexDataOffset, (GLvoid*)(11 * sizeof(GLfloat)));
 	/* boneWeights */
-	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, vertexDataOffset, (GLvoid*)(8 * sizeof(GLfloat) + 4 * sizeof(GLint)));
+	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, vertexDataOffset, (GLvoid*)(15 * sizeof(GLfloat) + 4 * sizeof(GLint)));
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 	glEnableVertexAttribArray(3);
 	glEnableVertexAttribArray(4);
+	glEnableVertexAttribArray(5);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE); /* Can be unbound before unbinding the VAO, because the glVertexAttribPointer preserves the VBO to VAO conection */
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshInfo->ebo);
