@@ -12,9 +12,6 @@ uniform mat4 projection_matrix;
 
 #if defined(PIXEL_LIGHTING) || defined(VERTEX_LIGHTING)
 	uniform mat4 normal_matrix;
-#endif
-
-#if defined(VERTEX_LIGHTING)
 	uniform vec3 light_position;
 	#if defined(SPECULAR)
 		uniform vec3 camera_position;
@@ -27,12 +24,15 @@ uniform mat4 projection_matrix;
 
 out vec2 ourUvCoord;
 
-#if defined(PIXEL_LIGHTING) || defined(VERTEX_LIGHTING)
-	out mat3 tangentSpace;
-#endif
 #if defined(PIXEL_LIGHTING)
 	out vec3 worldPosition;
-	out vec3 worldNormal;
+	#if !defined(NORMAL_MAPPING)
+		out vec3 worldNormal;
+	#endif
+	out vec3 lightPosition;
+	#if defined(SPECULAR)
+		out vec3 cameraPosition;
+	#endif
 #elif defined(VERTEX_LIGHTING)
 	out float diffuseIntensity;
 	#if defined(SPECULAR)
@@ -47,6 +47,9 @@ void main()
 	
 	#if defined(PIXEL_LIGHTING) || defined(VERTEX_LIGHTING)
 		vec4 worldNormal4 = vec4(normal, 0.0f);
+	#endif
+	
+	#if defined(NORMAL_MAPPING)
 		vec4 worldTangent4 = vec4(tangent, 0.0f);
 	#endif
 	
@@ -56,19 +59,26 @@ void main()
 		
 		#if defined(PIXEL_LIGHTING) || defined(VERTEX_LIGHTING)
 			worldNormal4 = skin_transform * worldNormal4;
+		#endif
+		
+		#if defined(NORMAL_MAPPING)
 			worldTangent4 = skin_transform * worldTangent4;
 		#endif
+		
 	#endif
 	
 	worldPosition4 = model_matrix * worldPosition4;
 	
 	#if defined(PIXEL_LIGHTING) || defined(VERTEX_LIGHTING)
-		worldTangent4 = normalize(worldTangent4 - worldNormal4 * dot(worldNormal4, worldTangent4));
-		worldNormal4 = model_matrix * worldNormal4;
-		worldTangent4 = model_matrix * worldTangent4;
-		vec3 bitangent = cross(worldNormal4.xyz, worldTangent4.xyz);
-		tangentSpace = mat3(worldTangent4.xyz, bitangent, worldNormal4.xyz);
-		tangentSpace = transpose(tangentSpace);
+		worldNormal4 = normal_matrix * worldNormal4;
+		
+		#if defined(NORMAL_MAPPING)
+			worldTangent4 = normal_matrix * worldTangent4;
+			worldTangent4 = normalize(worldTangent4 - worldNormal4 * dot(worldNormal4, worldTangent4));
+			vec3 bitangent = cross(worldNormal4.xyz, worldTangent4.xyz);
+			mat3 TBN = mat3(worldTangent4.xyz, bitangent, worldNormal4.xyz);
+			mat3 inverseTBN = transpose(TBN);
+		#endif
 	#endif
 	
 	#if defined(VERTEX_LIGHTING)
@@ -101,7 +111,19 @@ void main()
 	
 	#if defined(PIXEL_LIGHTING)
 		worldPosition = worldPosition4.xyz;
-		worldNormal = worldNormal4.xyz;
+		#if defined(NORMAL_MAPPING)
+			worldPosition = inverseTBN * worldPosition;
+			lightPosition = inverseTBN * light_position;
+			#if defined(SPECULAR)
+				cameraPosition = inverseTBN * camera_position;
+			#endif
+		#else
+			worldNormal = worldNormal4.xyz;
+			lightPosition = light_position;
+			#if defined(SPECULAR)
+				cameraPosition = camera_position;
+			#endif
+		#endif
 	#endif
 	
 	gl_Position = projection_matrix * view_matrix * worldPosition4;

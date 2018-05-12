@@ -1,11 +1,14 @@
 in vec2 ourUvCoord;
 
-#if defined(PIXEL_LIGHTING) || defined(VERTEX_LIGHTING)
-	in mat3 tangentSpace;
-#endif
 #if defined(PIXEL_LIGHTING)
 	in vec3 worldPosition;
-	in vec3 worldNormal;
+	#if !defined(NORMAL_MAPPING)
+		in vec3 worldNormal;
+	#endif
+	in vec3 lightPosition;
+	#if defined(SPECULAR)
+		in vec3 cameraPosition;
+	#endif
 #elif defined(VERTEX_LIGHTING)
 	in float diffuseIntensity;
 	#if defined(SPECULAR)
@@ -16,13 +19,6 @@ in vec2 ourUvCoord;
 uniform sampler2D ourTexture;
 uniform sampler2D ourNormal;
 
-#if defined(PIXEL_LIGHTING)
-	uniform vec3 light_position;
-	#if defined(SPECULAR)
-		uniform vec3 camera_position;
-	#endif
-#endif
-
 out vec4 color;
 
 void main()
@@ -30,13 +26,16 @@ void main()
 	vec4 baseColor = texture2D(ourTexture, ourUvCoord);
 	
 	#if defined(PIXEL_LIGHTING)
-		vec3 normal = texture2D(ourNormal, ourUvCoord).rgb;
-		normal = normalize(normal * 2.0 - 1.0);
-		vec3 light = tangentSpace * light_position;
-		vec3 position = tangentSpace * worldPosition;
-	
+		vec3 normal;
+		#if defined(NORMAL_MAPPING)
+			normal = texture2D(ourNormal, ourUvCoord).rgb;
+			normal = normalize(normal * 2.0 - 1.0);
+		#else
+			normal = worldNormal;
+		#endif
+		
 		// DIFFUSE CALC	
-		vec3 VertexToLight = light - position;
+		vec3 VertexToLight = lightPosition - worldPosition;
 		VertexToLight = normalize(VertexToLight);
 
 		float diffuseIntensity = dot(VertexToLight, normal);
@@ -47,8 +46,7 @@ void main()
 
 		#if defined(SPECULAR)
 			// SPECULAR CALC
-			vec3 camera = tangentSpace * camera_position;
-			vec3 cameraDir = camera - position;
+			vec3 cameraDir = cameraPosition - worldPosition;
 			vec3 halfVector = normalize(cameraDir + VertexToLight);
 			float specularIntensity = dot(halfVector, normal);
 			if (specularIntensity < 0)
