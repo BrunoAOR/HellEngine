@@ -93,6 +93,7 @@ void ModuleShaderManager::OnEditorShaderOptionsWindow(float mainMenuBarHeight, b
 	static bool useVertexLighting = false;
 	static bool usePixelLighting = false;
 	static bool useSpecularLighting = false;
+	static bool useNormalMapping = false;
 	static bool useGPUSkinning = false;
 
 	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
@@ -106,13 +107,14 @@ void ModuleShaderManager::OnEditorShaderOptionsWindow(float mainMenuBarHeight, b
 		{
 			usePixelLighting = false;
 			defaultShaderOptions &= ~(ShaderOptions::PIXEL_LIGHTING);
+			useNormalMapping = false;
+			defaultShaderOptions &= ~(ShaderOptions::NORMAL_MAPPING);
 		}
 		if (!usePixelLighting && !useVertexLighting)
 		{
 			useSpecularLighting = false;
 			defaultShaderOptions &= ~(ShaderOptions::SPECULAR);
 		}
-
 	}
 
 	if (ImGui::Checkbox("Pixel Lighting", &usePixelLighting))
@@ -128,12 +130,29 @@ void ModuleShaderManager::OnEditorShaderOptionsWindow(float mainMenuBarHeight, b
 			useSpecularLighting = false;
 			defaultShaderOptions &= ~(ShaderOptions::SPECULAR);
 		}
+		if (!usePixelLighting)
+		{
+			useNormalMapping = false;
+			defaultShaderOptions &= ~(ShaderOptions::NORMAL_MAPPING);
+		}
 	}
 
 	if (usePixelLighting || useVertexLighting)
 	{
+		ImGui::Text("Lighting options:");
+		ImGui::Indent();
+
 		if (ImGui::Checkbox("Specular", &useSpecularLighting))
 			defaultShaderOptions ^= ShaderOptions::SPECULAR;
+
+
+		if (usePixelLighting)
+		{
+			if (ImGui::Checkbox("Normal Mapping", &useNormalMapping))
+				defaultShaderOptions ^= ShaderOptions::NORMAL_MAPPING;
+		}
+
+		ImGui::Unindent();
 	}
 
 	if (ImGui::Checkbox("GPU Skinning", &useGPUSkinning))
@@ -261,6 +280,9 @@ void ModuleShaderManager::AddShaderPrefix(std::string& sourceString, ShaderOptio
 {
 	if ((options & ShaderOptions::GPU_SKINNING) == ShaderOptions::GPU_SKINNING)
 		sourceString.insert(0, "#define GPU_SKINNING\n");
+	
+	if ((options & ShaderOptions::NORMAL_MAPPING) == ShaderOptions::NORMAL_MAPPING)
+		sourceString.insert(0, "#define NORMAL_MAPPING\n");
 
 	if ((options & ShaderOptions::SPECULAR) == ShaderOptions::SPECULAR)
 		sourceString.insert(0, "#define SPECULAR\n");

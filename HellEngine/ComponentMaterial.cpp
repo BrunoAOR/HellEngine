@@ -487,11 +487,13 @@ void ComponentMaterial::DrawMesh(const MeshInfo* meshInfo)
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, normalBufferId);
 	}
+	
 	GLint texLoc;
 	texLoc = glGetUniformLocation(shaderProgram->GetProgramId(), "ourTexture");
 	glUniform1i(texLoc, 0); 
 	texLoc = glGetUniformLocation(shaderProgram->GetProgramId(), "ourNormal");
 	glUniform1i(texLoc, 1);
+
 	glBindVertexArray(meshInfo->vao);
 	glDrawElements(GL_TRIANGLES, meshInfo->elementsCount, GL_UNSIGNED_INT, nullptr);
 	glBindVertexArray(GL_NONE);

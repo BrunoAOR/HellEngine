@@ -8,7 +8,9 @@ enum class ShaderOptions : unsigned int
 	VERTEX_LIGHTING = 1 << 1,
 	PIXEL_LIGHTING = 1 << 2,
 	SPECULAR = 1 << 3,
-	GPU_SKINNING = 1 << 4
+	NORMAL_MAPPING = 1 << 4,
+	GPU_SKINNING = 1 << 5
+	
 };
 
 inline constexpr ShaderOptions operator &(ShaderOptions shaderOption1, ShaderOptions shaderOption2)
