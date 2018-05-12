@@ -402,6 +402,9 @@
     <ClInclude Include="ShaderOptions.h">
       <Filter>General</Filter>
     </ClInclude>
+    <ClInclude Include="ComponentMaterialsGroup.h">
+      <Filter>Scene Management</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -661,6 +664,9 @@
     </ClCompile>
     <ClCompile Include="ComponentUiInputText.cpp">
       <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentMaterialsGroup.cpp">
+      <Filter>Scene Management</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

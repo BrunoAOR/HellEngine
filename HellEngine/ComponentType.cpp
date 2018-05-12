@@ -2,9 +2,8 @@
 #include <string>
 #include "ComponentType.h"
 
-const ComponentType COMPONENT_TYPES_3D[] = { ComponentType::ANIMATION, ComponentType::CAMERA, ComponentType::GRASS, ComponentType::MATERIAL, ComponentType::MESH, ComponentType::PARTICLE_SYSTEM, ComponentType::TRANSFORM };
+const ComponentType COMPONENT_TYPES_3D[] = { ComponentType::ANIMATION, ComponentType::CAMERA, ComponentType::GRASS, ComponentType::MATERIAL, ComponentType::MATERIALS_GROUP, ComponentType::MESH, ComponentType::PARTICLE_SYSTEM, ComponentType::TRANSFORM };
 const ComponentType COMPONENT_TYPES_2D[] = { ComponentType::TRANSFORM_2D, ComponentType::UI_BUTTON, ComponentType::UI_IMAGE, ComponentType::UI_INPUT_TEXT, ComponentType::UI_LABEL };
-//const ComponentType COMPONENT_TYPES[] = { ComponentType::ANIMATION, ComponentType::CAMERA, ComponentType::GRASS, ComponentType::MATERIAL, ComponentType::MESH, ComponentType::PARTICLE_SYSTEM, ComponentType::TRANSFORM };
 
 const char* GetString(ComponentType componentType)
 {
@@ -19,6 +18,8 @@ const char* GetString(ComponentType componentType)
 		return "Grass";
 	case ComponentType::MATERIAL:
 		return "Material";
+	case ComponentType::MATERIALS_GROUP	:
+		return "Materials Group";
 	case ComponentType::MESH:
 		return "Mesh";
 	case ComponentType::PARTICLE_SYSTEM:
@@ -52,6 +53,8 @@ ComponentType GetComponentType(const char* componentTypeString)
 		return ComponentType::GRASS;
 	else if (strcmp(componentTypeString, "Material") == 0)
 		return ComponentType::MATERIAL;
+	else if (strcmp(componentTypeString, "Materials Group") == 0)
+		return ComponentType::MATERIALS_GROUP;
 	else if (strcmp(componentTypeString, "Mesh") == 0)
 		return ComponentType::MESH;
 	else if (strcmp(componentTypeString, "Particle System") == 0)
