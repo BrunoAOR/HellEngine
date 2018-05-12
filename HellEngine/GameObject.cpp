@@ -103,10 +103,10 @@ void GameObject::OnEditorInspector()
 {
 	ImGui::Checkbox("", &isActive);
 	ImGui::SameLine();
-	static char nameBuf[32] = "";
-	memcpy_s(nameBuf, 32, name.c_str(), name.length());
+	static char nameBuf[128] = "";
+	memcpy_s(nameBuf, 128, name.c_str(), name.length());
 	nameBuf[name.length()] = '\0';
-	ImGui::InputText(" ", nameBuf, 32);
+	ImGui::InputText(" ", nameBuf, 128);
 	name = nameBuf;
 	if (ImGui::BeginMenu("Add new Component"))
 	{
