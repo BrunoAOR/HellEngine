@@ -9,11 +9,7 @@
 #include "TextureInfo.h"
 #include "globals.h"
 
-class ComponentMesh;
-class ComponentTransform;
 class ShaderProgram;
-struct ModelInfo;
-struct MeshInfo;
 enum class ShaderOptions : unsigned int;
 
 class ComponentMaterial :
@@ -23,8 +19,6 @@ public:
 
 	ComponentMaterial(GameObject* owner);
 	virtual ~ComponentMaterial() override;
-
-	virtual void Update() override;
 	
 	/* Recieves the vertex shader file path and tries to compile it */
 	bool SetVertexShaderPath(const std::string& sourcePath);
@@ -45,7 +39,7 @@ public:
 	bool SetShaderDataPath(const std::string& sourcePath);
 
 	/* Returns whether the Material has a loaded texture and a linked shader with valid data */
-	bool IsValid();
+	bool IsValid() const;
 
 	/* Attemps to apply all of the material setup */
 	bool Apply();
@@ -62,17 +56,21 @@ public:
 	virtual void Save(SerializableObject& obj) const override;
 	virtual void Load(const SerializableObject& obj) override;
 
+	void UpdatePublicUniforms();
+
 public:
 	
 	/* Mesh related */
 	int modelInfoVaoIndex = -1;
 
+	/* Shader related */
+	const ShaderProgram* shaderProgram;
+	uint diffuseBufferId = 0;
+	uint normalBufferId = 0;
+	uint specularBufferId = 0;
+
 private:
 
-	/* Draws a certain model using the Material's shader and texture, from a Vertex Array Oject WITH indexes */
-	bool DrawElements(const ComponentTransform* transform, const ComponentMesh* mesh);
-	void DrawMesh(const MeshInfo* meshInfo);
-	
 	/* Attemps to apply all of the material setup */
 	bool Apply(ShaderOptions shaderOptions);
 
@@ -84,7 +82,6 @@ private:
 	bool LoadTexture(uint& bufferId, const char* path, uint fallbackDefaultId);
 	void ConfigureTexture(uint bufferId);
 	bool GenerateUniforms();
-	void UpdatePublicUniforms();
 
 	void OnEditorMaterialConfiguration();
 	void OnEditorTextureInformation();
@@ -103,12 +100,8 @@ private:
 	TextureInfo textureInfo;
 
 	/* Shader related */
-	const ShaderProgram* shaderProgram;
 
 	bool isValid = false;
-	uint diffuseBufferId = 0;
-	uint normalBufferId = 0;
-	uint specularBufferId = 0;
 	char vertexShaderPath[256] = "";
 	char fragmentShaderPath[256] = "";
 	char diffusePath[256] = "";

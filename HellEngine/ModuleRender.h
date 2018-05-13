@@ -7,8 +7,10 @@
 #include "globals.h"
 #include "Module.h"
 
+class ComponentMaterial;
 class Material;
 class Shader;
+struct MeshInfo;
 struct SDL_Rect;
 struct SDL_Renderer;
 struct SDL_Texture;
@@ -70,6 +72,12 @@ private:
 
 	/* Draw a grid on the ground */
 	void DrawGroundGrid(float xOffset = 0, float zOffet = 0, int halfSize = 20) const;
+
+	std::list<ComponentMaterial*> GatherMaterials();
+	bool PassesVailidityTest(const ComponentMaterial* material);
+	bool PassesFrustumCulling(const ComponentMaterial* material);
+	void DrawMaterial(ComponentMaterial* material);
+	void DrawMeshInfo(const ComponentMaterial* material, const MeshInfo* meshInfo);
 
 public:
 

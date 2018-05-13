@@ -2,17 +2,10 @@
 #include "ImGui/imgui.h"
 #include "Application.h"
 #include "ComponentMaterial.h"
-#include "ComponentMesh.h"
-#include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "GameObject.h"
-#include "ModuleEditorCamera.h"
-#include "ModuleRender.h"
-#include "ModuleScene.h"
 #include "ModuleShaderManager.h"
 #include "ModuleTextureManager.h"
-#include "MeshInfo.h"
-#include "ModelInfo.h"
 #include "SerializableObject.h"
 #include "ShaderProgram.h"
 #include "globals.h"
@@ -69,59 +62,6 @@ ComponentMaterial::~ComponentMaterial()
 	}
 
 	//LOGGER("Deleting Component of type '%s'", GetString(type));
-}
-
-void ComponentMaterial::Update()
-{
-	BROFILER_CATEGORY("ComponentMaterial::UpdateStart", Profiler::Color::Gold);
-	if (!GetActive())
-		return;
-
-	ComponentMesh* mesh = (ComponentMesh*)gameObject->GetComponent(ComponentType::MESH);
-	ComponentTransform* transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);;
-
-	if (isValid && mesh && transform)
-	{
-		bool insideFrustum = true;
-
-		ComponentCamera* editorCamera = App->editorCamera->camera;
-		if (editorCamera != nullptr)
-		{
-			if (App->scene->UsingQuadTree() && transform->GetIsStatic()) {
-				BROFILER_CATEGORY("Frustum culling using QuadTree", Profiler::Color::GreenYellow);
-				insideFrustum = editorCamera->IsInsideFrustum(gameObject);
-			}
-			else {
-				BROFILER_CATEGORY("Frustum culling without QuadTree", Profiler::Color::GreenYellow);
-				insideFrustum = transform->GetBoundingBox().Contains(editorCamera->GetFrustum());
-			}
-		}
-		if (insideFrustum) {
-
-			ComponentCamera* activeGameCamera = App->scene->GetActiveGameCamera();
-
-			if (activeGameCamera != nullptr && activeGameCamera->FrustumCulling())
-			{
-				if (App->scene->UsingQuadTree() && transform->GetIsStatic()) {
-					insideFrustum = activeGameCamera->IsInsideFrustum(gameObject);
-				}
-				else {
-					insideFrustum = transform->GetBoundingBox().Contains(activeGameCamera->GetFrustum());
-				}
-			}
-
-			if (insideFrustum) {
-				BROFILER_CATEGORY("ComponentMaterial::GetVao", Profiler::Color::Gold);
-				const ModelInfo* modelInfo = mesh->GetActiveModelInfo();
-				BROFILER_CATEGORY("ComponentMaterial::ValidVao", Profiler::Color::Gold);
-				if (modelInfo && modelInfo->meshInfosIndexes.size() > 0)
-				{
-					BROFILER_CATEGORY("ComponentMaterial::DrawingCall", Profiler::Color::Gold);
-					DrawElements(transform, mesh);
-				}
-			}
-		}
-	}
 }
 
 /* Recieves the vertex shader file path and tries to compile it */
@@ -206,7 +146,7 @@ bool ComponentMaterial::SetShaderDataPath(const std::string& sourcePath)
 }
 
 /* Returns whether the Material has a loaded texture and a linked shader with valid data */
-bool ComponentMaterial::IsValid()
+bool ComponentMaterial::IsValid() const
 {
 	return isValid;
 }
@@ -471,97 +411,6 @@ void ComponentMaterial::OnEditorShaderOptions()
 		ImGui::NewLine();
 		ImGui::TreePop();
 	}
-}
-
-bool ComponentMaterial::DrawElements(const ComponentTransform* transform, const ComponentMesh* mesh)
-{
-	const ModelInfo* modelInfo = mesh->GetActiveModelInfo();
-
-	if (IsValid() && modelInfo != nullptr && modelInfo->meshInfosIndexes.size() > 0)
-	{
-		const float* modelMatrix = transform->GetModelMatrix();
-
-		shaderProgram->Activate();
-		shaderProgram->UpdateMatrixUniforms(modelMatrix, App->editorCamera->camera->GetViewMatrix(), App->editorCamera->camera->GetProjectionMatrix());
-		
-		float3 unused;
-		Quat rotQuat;
-		DecomposeMatrix(transform->GetModelMatrix4x4(), unused, rotQuat, unused);
-		float4x4 normalMatrix = float4x4::QuatToRotation(rotQuat).Transposed();
-
-		const float* lightPos = nullptr;
-		if (ComponentCamera* camera = App->scene->GetActiveGameCamera())
-			lightPos = camera->GetPosition();
-		
-		shaderProgram->UpdateLightingUniforms(normalMatrix.ptr(), lightPos, App->editorCamera->camera->GetPosition());
-
-		UpdatePublicUniforms();
-
-		if (modelInfoVaoIndex >= 0 && modelInfoVaoIndex < (int)modelInfo->meshInfosIndexes.size())
-		{
-			unsigned int meshInfoIndex = modelInfo->meshInfosIndexes.at(modelInfoVaoIndex);
-			const MeshInfo* meshInfo = App->scene->meshes.at(meshInfoIndex);
-			const std::map<const MeshInfo*, float4x4[MAX_BONES]> bonesPalettes = mesh->GetBonesPalletes();
-			const float4x4* bonesPalette = bonesPalettes.at(meshInfo);
-			shaderProgram->UpdateBonesUniform(bonesPalette[0].ptr());
-			DrawMesh(meshInfo);
-		}
-		else if (modelInfoVaoIndex == -1)
-		{
-			/* This case occurs when the Material doesn't correspond to a Mesh loaded from a model */
-			for (unsigned int meshInfoIndex : modelInfo->meshInfosIndexes)
-			{
-				const MeshInfo* meshInfo = App->scene->meshes.at(meshInfoIndex);
-				DrawMesh(meshInfo);
-			}
-		}
-
-		shaderProgram->Deactivate();
-		return true;
-	}
-
-	return false;
-}
-
-void ComponentMaterial::DrawMesh(const MeshInfo* meshInfo)
-{
-	glBindTexture(GL_TEXTURE_2D, diffuseBufferId);
-	if (normalBufferId != 0)
-	{
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, normalBufferId);
-	}
-	if (specularBufferId != 0)
-	{
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, specularBufferId);
-	}
-	
-	GLint texLoc;
-	texLoc = glGetUniformLocation(shaderProgram->GetProgramId(), "ourTexture");
-	glUniform1i(texLoc, 0); 
-	texLoc = glGetUniformLocation(shaderProgram->GetProgramId(), "ourNormal");
-	glUniform1i(texLoc, 1);
-	texLoc = glGetUniformLocation(shaderProgram->GetProgramId(), "ourSpecular");
-	glUniform1i(texLoc, 2);
-
-	glBindVertexArray(meshInfo->vao);
-	glDrawElements(GL_TRIANGLES, meshInfo->elementsCount, GL_UNSIGNED_INT, nullptr);
-	glBindVertexArray(GL_NONE);
-	
-	if (specularBufferId != 0)
-	{
-		glBindTexture(GL_TEXTURE_2D, GL_NONE);
-		glActiveTexture(GL_TEXTURE0);
-	}
-	if (normalBufferId != 0)
-	{
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, GL_NONE);
-		glActiveTexture(GL_TEXTURE0);
-	}
-	
-	glBindTexture(GL_TEXTURE_2D, GL_NONE);
 }
 
 uint ComponentMaterial::CreateCheckeredTexture()
