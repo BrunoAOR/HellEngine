@@ -91,8 +91,8 @@ UpdateStatus ModuleRender::PostUpdate()
 	UpdateMatricesUBO();
 
 	std::list<ComponentMaterial*> materials = GatherMaterials();
-	for (ComponentMaterial* material : materials)
-		DrawMaterial(material);
+	SortMaterials(materials);
+	RenderQueue(materials);
 	
 	App->imgui->Render();
 
@@ -326,7 +326,34 @@ bool ModuleRender::PassesFrustumCulling(const ComponentMaterial* material)
 	return insideFrustum;
 }
 
-void ModuleRender::DrawMaterial(ComponentMaterial * material)
+void ModuleRender::SortMaterials(std::list<ComponentMaterial*>& materials)
+{
+	/* Sort by shaderProgram */
+	materials.sort([](ComponentMaterial* mat1, ComponentMaterial* mat2) {
+		return mat1->shaderProgram < mat2->shaderProgram;
+	});
+}
+
+void ModuleRender::RenderQueue(std::list<ComponentMaterial*>& materials)
+{
+	const ShaderProgram* shaderProgram = nullptr;
+	for (ComponentMaterial* material : materials)
+	{
+		if (!shaderProgram || shaderProgram != material->shaderProgram)
+		{
+			if (shaderProgram)
+				shaderProgram->Deactivate();
+			shaderProgram = material->shaderProgram;
+			shaderProgram->Activate();
+		}
+
+		DrawMaterial(material);
+	}
+	if (shaderProgram)
+		shaderProgram->Deactivate();
+}
+
+void ModuleRender::DrawMaterial(ComponentMaterial* material)
 {
 	ComponentMesh* mesh = (ComponentMesh*)material->gameObject->GetComponent(ComponentType::MESH);
 	ComponentTransform* transform = (ComponentTransform*)material->gameObject->GetComponent(ComponentType::TRANSFORM);
@@ -336,7 +363,6 @@ void ModuleRender::DrawMaterial(ComponentMaterial * material)
 	{
 		const float* modelMatrix = transform->GetModelMatrix();
 
-		material->shaderProgram->Activate();
 		material->shaderProgram->UpdateModelMatrixUniform(modelMatrix);
 
 		float3 unused;
@@ -370,8 +396,6 @@ void ModuleRender::DrawMaterial(ComponentMaterial * material)
 				DrawMeshInfo(material, meshInfo);
 			}
 		}
-
-		material->shaderProgram->Deactivate();
 	}
 }
 

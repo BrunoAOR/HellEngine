@@ -89,6 +89,8 @@ private:
 	std::list<ComponentMaterial*> GatherMaterials();
 	bool PassesVailidityTest(const ComponentMaterial* material);
 	bool PassesFrustumCulling(const ComponentMaterial* material);
+	void SortMaterials(std::list<ComponentMaterial*>& materials);
+	void RenderQueue(std::list<ComponentMaterial*>& materials);
 	void DrawMaterial(ComponentMaterial* material);
 	void DrawMeshInfo(const ComponentMaterial* material, const MeshInfo* meshInfo);
 
