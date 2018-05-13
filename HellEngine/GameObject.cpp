@@ -10,6 +10,7 @@
 #include "ComponentCamera.h"
 #include "ComponentGrass.h"
 #include "ComponentMaterial.h"
+#include "ComponentMaterialsGroup.h"
 #include "ComponentMesh.h"
 #include "ComponentParticleSystem.h"
 #include "ComponentTransform.h"
@@ -103,10 +104,10 @@ void GameObject::OnEditorInspector()
 {
 	ImGui::Checkbox("", &isActive);
 	ImGui::SameLine();
-	static char nameBuf[32] = "";
-	memcpy_s(nameBuf, 32, name.c_str(), name.length());
+	static char nameBuf[128] = "";
+	memcpy_s(nameBuf, 128, name.c_str(), name.length());
 	nameBuf[name.length()] = '\0';
-	ImGui::InputText(" ", nameBuf, 32);
+	ImGui::InputText(" ", nameBuf, 128);
 	name = nameBuf;
 	if (ImGui::BeginMenu("Add new Component"))
 	{
@@ -300,6 +301,9 @@ void GameObject::OnEditorHierarchyCreateMenu()
 			AddCameraChild();
 
 		ImGui::Separator();
+
+		if (ImGui::Selectable("Create Plane"))
+			AddPlaneChild();
 
 		if (ImGui::Selectable("Create Cube"))
 			AddCubeChild();
@@ -495,6 +499,9 @@ Component* GameObject::AddComponent(ComponentType type)
 		break;
 	case ComponentType::MATERIAL:
 		component = new ComponentMaterial(this);
+		break;
+	case ComponentType::MATERIALS_GROUP:
+		component = new ComponentMaterialsGroup(this);
 		break;
 	case ComponentType::MESH:
 		AddDependingComponent();
@@ -713,7 +720,7 @@ GameObject* GameObject::AddEmptyChild()
 	return (new GameObject("Empty", this));
 }
 
-GameObject * GameObject::AddCameraChild()
+GameObject* GameObject::AddCameraChild()
 {
 	GameObject* go = new GameObject("Camera", this);
 	go->AddComponent(ComponentType::TRANSFORM);
@@ -722,12 +729,24 @@ GameObject * GameObject::AddCameraChild()
 	return go;
 }
 
+GameObject* GameObject::AddPlaneChild()
+{
+	GameObject* go = new GameObject("Plane", this);
+	go->AddComponent(ComponentType::TRANSFORM);
+	ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
+	mesh->SetActiveModelInfo(0);
+	ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
+	mat->SetDefaultMaterialConfiguration();
+	mat->Apply();
+	return go;
+}
+
 GameObject* GameObject::AddCubeChild()
 {
 	GameObject* go = new GameObject("Cube", this);
 	go->AddComponent(ComponentType::TRANSFORM);
 	ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
-	mesh->SetActiveModelInfo(0);
+	mesh->SetActiveModelInfo(1);
 	ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
 	mat->SetDefaultMaterialConfiguration();
 	mat->SetVertexShaderPath("assets/shaders/defaultShader.vert");
@@ -741,7 +760,7 @@ GameObject* GameObject::AddSphereChild()
 	GameObject* go = new GameObject("Sphere", this);
 	go->AddComponent(ComponentType::TRANSFORM);
 	ComponentMesh* mesh = (ComponentMesh*)go->AddComponent(ComponentType::MESH);
-	mesh->SetActiveModelInfo(1);
+	mesh->SetActiveModelInfo(2);
 	ComponentMaterial* mat = (ComponentMaterial*)go->AddComponent(ComponentType::MATERIAL);
 	mat->SetDefaultMaterialConfiguration();
 	mat->SetVertexShaderPath("assets/shaders/defaultShader.vert");

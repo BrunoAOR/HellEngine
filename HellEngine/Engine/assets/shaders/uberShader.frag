@@ -1,8 +1,16 @@
+#version 330 core
+
 in vec2 ourUvCoord;
 
 #if defined(PIXEL_LIGHTING)
 	in vec3 worldPosition;
-	in vec3 worldNormal;
+	#if !defined(NORMAL_MAPPING)
+		in vec3 worldNormal;
+	#endif
+	in vec3 lightPosition;
+	#if defined(SPECULAR)
+		in vec3 cameraPosition;
+	#endif
 #elif defined(VERTEX_LIGHTING)
 	in float diffuseIntensity;
 	#if defined(SPECULAR)
@@ -11,12 +19,8 @@ in vec2 ourUvCoord;
 #endif
 
 uniform sampler2D ourTexture;
-#if defined(PIXEL_LIGHTING)
-	uniform vec3 light_position;
-	#if defined(SPECULAR)
-		uniform vec3 camera_position;
-	#endif
-#endif
+uniform sampler2D ourNormal;
+uniform sampler2D ourSpecular;
 
 out vec4 color;
 
@@ -25,11 +29,19 @@ void main()
 	vec4 baseColor = texture2D(ourTexture, ourUvCoord);
 	
 	#if defined(PIXEL_LIGHTING)
+		vec3 normal;
+		#if defined(NORMAL_MAPPING)
+			normal = texture2D(ourNormal, ourUvCoord).rgb;
+			normal = normalize(normal * 2.0 - 1.0);
+		#else
+			normal = worldNormal;
+		#endif
+		
 		// DIFFUSE CALC	
-		vec3 VertexToLight = light_position - worldPosition;
+		vec3 VertexToLight = lightPosition - worldPosition;
 		VertexToLight = normalize(VertexToLight);
 
-		float diffuseIntensity = dot(VertexToLight, worldNormal);
+		float diffuseIntensity = dot(VertexToLight, normal);
 		if (diffuseIntensity < 0)
 		{
 			diffuseIntensity = 0;
@@ -37,9 +49,9 @@ void main()
 
 		#if defined(SPECULAR)
 			// SPECULAR CALC
-			vec3 cameraDir = camera_position - worldPosition;
+			vec3 cameraDir = cameraPosition - worldPosition;
 			vec3 halfVector = normalize(cameraDir + VertexToLight);
-			float specularIntensity = dot(halfVector, worldNormal);
+			float specularIntensity = dot(halfVector, normal);
 			if (specularIntensity < 0)
 			{
 				specularIntensity = 0;
@@ -51,7 +63,8 @@ void main()
 	
 	#if defined(PIXEL_LIGHTING) || defined(VERTEX_LIGHTING)
 		#if defined(SPECULAR)
-			color = vec4(baseColor.rgb * diffuseIntensity + specularIntensity, baseColor.a);
+			vec3 specularColor = texture2D(ourSpecular, ourUvCoord).rgb;
+			color = vec4(baseColor.rgb * diffuseIntensity + specularColor * specularIntensity, baseColor.a);
 		#else
 			color = vec4(baseColor.rgb * diffuseIntensity, baseColor.a);
 		#endif

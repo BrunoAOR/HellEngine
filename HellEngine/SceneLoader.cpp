@@ -2,6 +2,7 @@
 #include <assimp/cimport.h>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+#include "MathGeoLib/src/Math/float2.h"
 #include "openGL.h"
 #include "Application.h"
 #include "ComponentTransform.h"
@@ -20,6 +21,76 @@
 SceneLoader::SceneLoader()
 {
 }
+
+void SceneLoader::LoadPlaneMesh()
+{
+	const float s = 0.5f;
+
+	float3 normal(0.0f, 0.0f, 1.0f);
+	float3 tangent(1.0f, 0.0f, 0.0f);
+
+	float3 vertexArray[4] = {
+		float3(-s, -s, 0.0f),
+		float3(	s, -s, 0.0f),
+		float3(s, s, 0.0f),
+		float3(-s, s, 0.0f)
+	};
+
+	float2 uvArray[4] = {
+		float2(0.0f, 0.0f),
+		float2(1.0f, 0.0f),
+		float2(1.0f, 1.0f),
+		float2(0.0f, 1.0f)
+	};
+
+	const uint indicesCount = 6;
+	const uint uniqueVertCount = 4;
+
+	GLfloat* uniqueQuadData = new GLfloat[uniqueVertCount * 11];
+	
+	for (uint i = 0; i < uniqueVertCount; ++i)
+	{
+		(float3&)uniqueQuadData[i * 11 + 0] = vertexArray[i];
+		(float3&)uniqueQuadData[i * 11 + 3] = normal;
+		(float3&)uniqueQuadData[i * 11 + 6] = tangent;
+		(float2&)uniqueQuadData[i * 11 + 9] = uvArray[i];
+	}	
+	
+	MeshInfo* quadMeshInfo = new MeshInfo();
+	quadMeshInfo->name = "Quad";
+	quadMeshInfo->elementsCount = indicesCount;
+	quadMeshInfo->vertices = { vertexArray[0], vertexArray[1], vertexArray[2], vertexArray[3] };
+	quadMeshInfo->indices = { 0, 1, 2, 0, 2, 3 };
+
+	glGenVertexArrays(1, &quadMeshInfo->vao);
+	glGenBuffers(1, &quadMeshInfo->vbo);
+	glGenBuffers(1, &quadMeshInfo->ebo);
+
+	glBindVertexArray(quadMeshInfo->vao);
+	glBindBuffer(GL_ARRAY_BUFFER, quadMeshInfo->vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uniqueVertCount * 11, uniqueQuadData, GL_DYNAMIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 11 * sizeof(GLfloat), (GLvoid*)(9 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+	glEnableVertexAttribArray(3);
+
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE); /* Can be unbound, since the vertex information is stored in the VAO throught the VertexAttribPointers */
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadMeshInfo->ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * quadMeshInfo->elementsCount, quadMeshInfo->indices.data(), GL_STATIC_DRAW);
+
+	glBindVertexArray(GL_NONE);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE); /* Can be unbound AFTER unbinding the VAO, since the VAO stores information about the bound EBO */
+
+	delete[] uniqueQuadData;
+
+	App->scene->meshes.push_back(quadMeshInfo);
+}
+
 
 void SceneLoader::LoadCubeMesh()
 {
@@ -128,12 +199,12 @@ void SceneLoader::LoadCubeMesh()
 		topRight[1] = 1.0f;
 	}
 
-	const uint allVertCount = 36;
+	const uint indicesCount = 36;
 	const uint uniqueVertCount = 8 + 4;
 	GLfloat uniqueVertices[uniqueVertCount * 3] = { SP_ARR_3(vA), SP_ARR_3(vB), SP_ARR_3(vC), SP_ARR_3(vD), SP_ARR_3(vE), SP_ARR_3(vF), SP_ARR_3(vG), SP_ARR_3(vH), SP_ARR_3(vE), SP_ARR_3(vF), SP_ARR_3(vG), SP_ARR_3(vH) };
 	GLfloat uniqueColors[uniqueVertCount * 3] = { SP_ARR_3(cRed), SP_ARR_3(cGreen), SP_ARR_3(cWhite), SP_ARR_3(cBlue), SP_ARR_3(cBlue), SP_ARR_3(cWhite), SP_ARR_3(cGreen), SP_ARR_3(cRed), SP_ARR_3(cBlue), SP_ARR_3(cWhite), SP_ARR_3(cGreen), SP_ARR_3(cRed) };
 	GLfloat uniqueUVCoords[uniqueVertCount * 2] = { SP_ARR_2(bottomLeft), SP_ARR_2(bottomRight), SP_ARR_2(topLeft), SP_ARR_2(topRight), SP_ARR_2(bottomRight), SP_ARR_2(bottomLeft), SP_ARR_2(topRight), SP_ARR_2(topLeft), SP_ARR_2(topLeft), SP_ARR_2(topRight), SP_ARR_2(bottomLeft), SP_ARR_2(bottomRight) };
-	GLuint verticesOrder[allVertCount] = { 0, 1, 2, 1, 3, 2,		/* Front face */
+	GLuint verticesOrder[indicesCount] = { 0, 1, 2, 1, 3, 2,		/* Front face */
 		1, 5, 3, 5, 7, 3,		/* Right face */
 		5, 4, 7, 4, 6, 7,		/* Back face */
 		4, 0, 6, 0, 2, 6,		/* Left face */
@@ -160,7 +231,7 @@ void SceneLoader::LoadCubeMesh()
 
 	MeshInfo* cubeMeshInfo = new MeshInfo();
 	cubeMeshInfo->name = "Cube";
-	cubeMeshInfo->elementsCount = allVertCount;
+	cubeMeshInfo->elementsCount = indicesCount;
 	cubeMeshInfo->vertices = std::vector<float3>{ float3(vA[0], vA[1], vA[2]), float3(vB[0], vB[1], vB[2]), float3(vC[0], vC[1], vC[2]), float3(vD[0], vD[1], vD[2]), float3(vE[0], vE[1], vE[2]), float3(vF[0], vF[1], vF[2]), float3(vG[0], vG[1], vG[2]), float3(vH[0], vH[1], vH[2]) };
 	cubeMeshInfo->indices = { 0, 1, 2, 1, 3, 2,		/* Front face */
 		1, 5, 3, 5, 7, 3,		/* Right face */
@@ -488,7 +559,7 @@ MeshInfo* SceneLoader::CreateMeshInfo(const aiMesh* assimpMesh)
 
 	/* Create temporary data buffers */
 	/* Note: The current system limits the amount of bones that affect a single vertex to 4, hence 4 indices and 4 weights max */
-	const unsigned int vertexDataOffset = 8 * sizeof(float) + (assimpMesh->HasBones() ? 4 * sizeof(int) + 4 * sizeof(float) : 0);
+	const unsigned int vertexDataOffset = 11 * sizeof(float) + (assimpMesh->HasBones() ? 4 * sizeof(int) + 4 * sizeof(float) : 0);
 	char* allData = new char[assimpMesh->mNumVertices * vertexDataOffset];
 	const unsigned int indexesSize = assimpMesh->mNumFaces * 3;
 	int* indexes = new int[indexesSize];
@@ -519,6 +590,7 @@ void SceneLoader::GatherVerticesInfo(const aiMesh* assimpMesh, MeshInfo* meshInf
 
 	/* Gather allData */
 	bool hasNormals = assimpMesh->HasNormals();
+	bool hasTangents = assimpMesh->HasTangentsAndBitangents();
 	bool hasUvCoords = assimpMesh->HasTextureCoords(0);
 
 	assert(sizeof(aiVector3D) == sizeof(float) * 3);
@@ -527,15 +599,11 @@ void SceneLoader::GatherVerticesInfo(const aiMesh* assimpMesh, MeshInfo* meshInf
 	{
 		const aiVector3D& vertex = assimpMesh->mVertices[vertexIdx];
 		(aiVector3D&)allData[vertexIdx * vertexDataOffset + 0 * sizeof(float)] = vertex;
-		//allData[vertexIdx * vertexDataOffset + 1 * sizeof(float)] = vertex.y;
-		//allData[vertexIdx * vertexDataOffset + 2 * sizeof(float)] = vertex.z;
 
 		if (hasNormals)
 		{
 			const aiVector3D& normal = assimpMesh->mNormals[vertexIdx];
 			(aiVector3D&)allData[vertexIdx * vertexDataOffset + 3 * sizeof(float)] = normal;
-		//	allData[vertexIdx * vertexDataOffset + 4 * sizeof(float)] = normal.y;
-			//allData[vertexIdx * vertexDataOffset + 5 * sizeof(float)] = normal.z;
 		}
 		else
 		{
@@ -544,16 +612,28 @@ void SceneLoader::GatherVerticesInfo(const aiMesh* assimpMesh, MeshInfo* meshInf
 			(float&)allData[vertexIdx * vertexDataOffset + 5 * sizeof(float)] = 0.0f;
 		}
 
+		if (hasTangents)
+		{
+			const aiVector3D& tangent = assimpMesh->mTangents[vertexIdx];
+			(aiVector3D&)allData[vertexIdx * vertexDataOffset + 6 * sizeof(float)] = tangent;
+		}
+		else if (!hasUvCoords)
+		{
+			(float&)allData[vertexIdx * vertexDataOffset + 6 * sizeof(float)] = 1.0f;
+			(float&)allData[vertexIdx * vertexDataOffset + 7 * sizeof(float)] = 0.0f;
+			(float&)allData[vertexIdx * vertexDataOffset + 8 * sizeof(float)] = 0.0f;
+		}
+
 		if (hasUvCoords)
 		{
 			const aiVector3D& uvCoord = assimpMesh->mTextureCoords[0][vertexIdx];
-			(float&)allData[vertexIdx * vertexDataOffset + 6 * sizeof(float)] = uvCoord.x;
-			(float&)allData[vertexIdx * vertexDataOffset + 7 * sizeof(float)] = uvCoord.y;
+			(float&)allData[vertexIdx * vertexDataOffset + 9 * sizeof(float)] = uvCoord.x;
+			(float&)allData[vertexIdx * vertexDataOffset + 10 * sizeof(float)] = uvCoord.y;
 		}
 		else
 		{
-			(float&)allData[vertexIdx * vertexDataOffset + 6 * sizeof(float)] = 0.0f;
-			(float&)allData[vertexIdx * vertexDataOffset + 7 * sizeof(float)] = 0.0f;
+			(float&)allData[vertexIdx * vertexDataOffset + 9 * sizeof(float)] = 0.0f;
+			(float&)allData[vertexIdx * vertexDataOffset + 10 * sizeof(float)] = 0.0f;
 		}
 
 		/* Store vertex in meshInfo (for raycasting calculations) */
@@ -562,6 +642,14 @@ void SceneLoader::GatherVerticesInfo(const aiMesh* assimpMesh, MeshInfo* meshInf
 
 	/* Gather indexes */
 	meshInfo->elementsCount = 0;
+
+	std::map<uint, aiVector3D> tangentMap;
+	if (!hasTangents && hasUvCoords)
+	{
+		for (uint vertexIdx = 0; vertexIdx < assimpMesh->mNumVertices; ++vertexIdx)
+			tangentMap[vertexIdx] = aiVector3D(0, 0, 0);
+	}
+
 	for (unsigned int faceIdx = 0; faceIdx < assimpMesh->mNumFaces; ++faceIdx)
 	{
 		const aiFace& face = assimpMesh->mFaces[faceIdx];
@@ -577,6 +665,35 @@ void SceneLoader::GatherVerticesInfo(const aiMesh* assimpMesh, MeshInfo* meshInf
 			/* Push index to temporary data buffer */
 			indexes[faceIdx * face.mNumIndices + i] = index;
 		}
+
+		if (!hasTangents && hasUvCoords)
+		{
+			/* Prepare tangentsMap */
+			aiVector3D edgeAB = assimpMesh->mVertices[face.mIndices[1]] - assimpMesh->mVertices[face.mIndices[0]];
+			aiVector3D edgeBC = assimpMesh->mVertices[face.mIndices[2]] - assimpMesh->mVertices[face.mIndices[1]];
+			aiVector3D coordA = assimpMesh->mTextureCoords[0][face.mIndices[0]];
+			aiVector3D coordB = assimpMesh->mTextureCoords[0][face.mIndices[1]];
+			aiVector3D coordC = assimpMesh->mTextureCoords[0][face.mIndices[2]];
+			/* Tangent formula */
+			aiVector3D tangent = ((coordC.y - coordB.y) * edgeAB) - ((coordB.y - coordA.y) * edgeBC);
+			tangent /= ((coordC.y - coordB.y) * (coordB.x - coordA.x)) - ((coordB.y - coordA.y) * (coordC.x - coordB.x));
+
+			for (unsigned int i = 0; i < 3; ++i)
+			{
+				tangentMap[face.mIndices[i]] += tangent;
+			}
+		}
+	}
+
+	if (!hasTangents && hasUvCoords)
+	{
+		/* Apply tangentsMap to allData */
+		for (std::map<uint, aiVector3D>::const_iterator it = tangentMap.begin(); it != tangentMap.end(); ++it)
+		{
+			uint vertexIdx = it->first;
+			const aiVector3D& tangent = it->second;
+			(aiVector3D&)allData[vertexIdx * vertexDataOffset + 6 * sizeof(float)] = tangent;
+		}
 	}
 }
 
@@ -584,7 +701,7 @@ void SceneLoader::GatherBonesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo, 
 {
 	struct BoneSkinningData {
 		int boneIndices[4] = { 0, 0, 0, 0 };
-		float boneWeights[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+		float boneWeights[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		uint boneCount = 0;
 	};
 
@@ -615,7 +732,7 @@ void SceneLoader::GatherBonesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo, 
 				bone->weights[w].vertexIndex = assimpBone->mWeights[w].mVertexId;
 				bone->weights[w].weight = assimpBone->mWeights[w].mWeight;
 				boneWeightsGroup[bone->weights[w].weight].push_back(bone->weights[w].vertexIndex);
-				
+
 				BoneSkinningData& bData = boneDataMap[bone->weights[w].vertexIndex];
 				assert(bData.boneCount < 4);
 				bData.boneIndices[bData.boneCount] = i;
@@ -647,15 +764,15 @@ void SceneLoader::GatherBonesInfo(const aiMesh* assimpMesh, MeshInfo* meshInfo, 
 		{
 			const BoneSkinningData& bData = boneDataMap[vertexIdx];
 			assert(1.0f - (bData.boneWeights[0] + bData.boneWeights[1] + bData.boneWeights[2] + bData.boneWeights[3]) < 0.001f);
-			(int&)data[vertexIdx * vertexDataOffset + 8 * sizeof(float) + 0 * sizeof(int)] = bData.boneIndices[0];
-			(int&)data[vertexIdx * vertexDataOffset + 8 * sizeof(float) + 1 * sizeof(int)] = bData.boneIndices[1];
-			(int&)data[vertexIdx * vertexDataOffset + 8 * sizeof(float) + 2 * sizeof(int)] = bData.boneIndices[2];
-			(int&)data[vertexIdx * vertexDataOffset + 8 * sizeof(float) + 3 * sizeof(int)] = bData.boneIndices[3];
+			(int&)data[vertexIdx * vertexDataOffset + 11 * sizeof(float) + 0 * sizeof(int)] = bData.boneIndices[0];
+			(int&)data[vertexIdx * vertexDataOffset + 11 * sizeof(float) + 1 * sizeof(int)] = bData.boneIndices[1];
+			(int&)data[vertexIdx * vertexDataOffset + 11 * sizeof(float) + 2 * sizeof(int)] = bData.boneIndices[2];
+			(int&)data[vertexIdx * vertexDataOffset + 11 * sizeof(float) + 3 * sizeof(int)] = bData.boneIndices[3];
 
-			(float&)data[vertexIdx * vertexDataOffset + 8 * sizeof(float) + 4 * sizeof(int) + 0 * sizeof(float)] = bData.boneWeights[0];
-			(float&)data[vertexIdx * vertexDataOffset + 8 * sizeof(float) + 4 * sizeof(int) + 1 * sizeof(float)] = bData.boneWeights[1];
-			(float&)data[vertexIdx * vertexDataOffset + 8 * sizeof(float) + 4 * sizeof(int) + 2 * sizeof(float)] = bData.boneWeights[2];
-			(float&)data[vertexIdx * vertexDataOffset + 8 * sizeof(float) + 4 * sizeof(int) + 3 * sizeof(float)] = bData.boneWeights[3];
+			(float&)data[vertexIdx * vertexDataOffset + 11 * sizeof(float) + 4 * sizeof(int) + 0 * sizeof(float)] = bData.boneWeights[0];
+			(float&)data[vertexIdx * vertexDataOffset + 11 * sizeof(float) + 4 * sizeof(int) + 1 * sizeof(float)] = bData.boneWeights[1];
+			(float&)data[vertexIdx * vertexDataOffset + 11 * sizeof(float) + 4 * sizeof(int) + 2 * sizeof(float)] = bData.boneWeights[2];
+			(float&)data[vertexIdx * vertexDataOffset + 11 * sizeof(float) + 4 * sizeof(int) + 3 * sizeof(float)] = bData.boneWeights[3];
 		}
 	}
 }
@@ -683,17 +800,20 @@ void SceneLoader::SendDataToVRAM(MeshInfo* meshInfo, char* data, unsigned int ve
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertexDataOffset, (GLvoid*)0);
 	/* normal */
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertexDataOffset, (GLvoid*)(3 * sizeof(GLfloat)));
+	/* tangent */
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, vertexDataOffset, (GLvoid*)(6 * sizeof(GLfloat)));
 	/* uvCoord */
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, vertexDataOffset, (GLvoid*)(6 * sizeof(GLfloat)));
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, vertexDataOffset, (GLvoid*)(9 * sizeof(GLfloat)));
 	/* boneIndices */
-	glVertexAttribIPointer(3, 4, GL_INT, vertexDataOffset, (GLvoid*)(8 * sizeof(GLfloat)));
+	glVertexAttribIPointer(4, 4, GL_INT, vertexDataOffset, (GLvoid*)(11 * sizeof(GLfloat)));
 	/* boneWeights */
-	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, vertexDataOffset, (GLvoid*)(8 * sizeof(GLfloat) + 4 * sizeof(GLint)));
+	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, vertexDataOffset, (GLvoid*)(11 * sizeof(GLfloat) + 4 * sizeof(GLint)));
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 	glEnableVertexAttribArray(3);
 	glEnableVertexAttribArray(4);
+	glEnableVertexAttribArray(5);
 	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE); /* Can be unbound before unbinding the VAO, because the glVertexAttribPointer preserves the VBO to VAO conection */
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshInfo->ebo);

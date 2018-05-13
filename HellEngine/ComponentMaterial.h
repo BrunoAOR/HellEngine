@@ -32,8 +32,14 @@ public:
 	/* Recieves the fragment shader file path and tries to compile it */
 	bool SetFragmentShaderPath(const std::string& sourcePath);
 
-	/* Recieves the texture file path and tries to load it using Devil */
+	/* Stores the diffuse texture file path */
 	bool SetTexturePath(const std::string& sourcePath);
+
+	/* Stores the normal texture file path */
+	bool SetNormalPath(const std::string& sourcePath);
+
+	/* Stores the specular texture file path */
+	bool SetSpecularPath(const std::string& sourcePath);
 
 	/* Recieves the shader data file path and checks its validity */
 	bool SetShaderDataPath(const std::string& sourcePath);
@@ -71,10 +77,12 @@ private:
 	bool Apply(ShaderOptions shaderOptions);
 
 	uint CreateCheckeredTexture();
+	uint CreateDefaultNormalMap();
+	uint CreateDefaultSpecularMap();
 
 	bool LoadShaderData();
-	bool LoadTexture();
-	void ConfigureTexture();
+	bool LoadTexture(uint& bufferId, const char* path, uint fallbackDefaultId);
+	void ConfigureTexture(uint bufferId);
 	bool GenerateUniforms();
 	void UpdatePublicUniforms();
 
@@ -88,6 +96,8 @@ private:
 	/* General */
 	static uint materialsCount;
 	static uint checkeredPatternBufferId;
+	static uint defaultNormalMapBufferId;
+	static uint defaultSpecularMapBufferId;
 
 	TextureConfiguration textureConfiguration;
 	TextureInfo textureInfo;
@@ -96,10 +106,14 @@ private:
 	const ShaderProgram* shaderProgram;
 
 	bool isValid = false;
-	uint textureBufferId = 0;
+	uint diffuseBufferId = 0;
+	uint normalBufferId = 0;
+	uint specularBufferId = 0;
 	char vertexShaderPath[256] = "";
 	char fragmentShaderPath[256] = "";
-	char texturePath[256] = "";
+	char diffusePath[256] = "";
+	char normalPath[256] = "";
+	char specularPath[256] = "";
 	char shaderDataPath[256] = "";
 	std::string shaderData;
 

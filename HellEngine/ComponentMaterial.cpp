@@ -20,6 +20,8 @@
 
 uint ComponentMaterial::materialsCount = 0;
 uint ComponentMaterial::checkeredPatternBufferId = 0;
+uint ComponentMaterial::defaultNormalMapBufferId = 0;
+uint ComponentMaterial::defaultSpecularMapBufferId = 0;
 
 ComponentMaterial::ComponentMaterial(GameObject* owner) : Component(owner)
 {
@@ -27,6 +29,8 @@ ComponentMaterial::ComponentMaterial(GameObject* owner) : Component(owner)
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
 	if (materialsCount == 0) {
 		checkeredPatternBufferId = CreateCheckeredTexture();
+		defaultNormalMapBufferId = CreateDefaultNormalMap();
+		defaultSpecularMapBufferId = CreateDefaultSpecularMap();
 	}
 	materialsCount++;
 
@@ -41,15 +45,27 @@ ComponentMaterial::~ComponentMaterial()
 		shaderProgram = nullptr;
 	}
 
-	if (textureBufferId != checkeredPatternBufferId)
-		App->textureManager->ReleaseTexture(textureBufferId);
+	if (diffuseBufferId != checkeredPatternBufferId)
+		App->textureManager->ReleaseTexture(diffuseBufferId);
+	diffuseBufferId = 0;
 
-	textureBufferId = 0;
+	if (normalBufferId != defaultNormalMapBufferId)
+		App->textureManager->ReleaseTexture(normalBufferId);
+	normalBufferId = 0;
+
+	if (specularBufferId != defaultSpecularMapBufferId)
+		App->textureManager->ReleaseTexture(specularBufferId);
+	specularBufferId = 0;
+
 	materialsCount--;
 
 	if (materialsCount == 0) {
 		glDeleteTextures(1, &checkeredPatternBufferId);
 		checkeredPatternBufferId = 0;
+		glDeleteTextures(1, &defaultNormalMapBufferId);
+		defaultNormalMapBufferId = 0;
+		glDeleteTextures(1, &defaultSpecularMapBufferId);
+		defaultSpecularMapBufferId = 0;
 	}
 
 	//LOGGER("Deleting Component of type '%s'", GetString(type));
@@ -144,8 +160,34 @@ bool ComponentMaterial::SetTexturePath(const std::string& sourcePath)
 		return false;
 	}
 
-	memcpy_s(texturePath, 256, sourcePath.c_str(), sourcePath.length());
-	texturePath[sourcePath.length() + 1] = '\0';
+	memcpy_s(diffusePath, 256, sourcePath.c_str(), sourcePath.length());
+	diffusePath[sourcePath.length()] = '\0';
+
+	return true;
+}
+
+bool ComponentMaterial::SetNormalPath(const std::string& sourcePath)
+{
+	if (sourcePath.length() > 255)
+	{
+		return false;
+	}
+
+	memcpy_s(normalPath, 256, sourcePath.c_str(), sourcePath.length());
+	normalPath[sourcePath.length()] = '\0';
+
+	return true;
+}
+
+bool ComponentMaterial::SetSpecularPath(const std::string& sourcePath)
+{
+	if (sourcePath.length() > 255)
+	{
+		return false;
+	}
+
+	memcpy_s(specularPath, 256, sourcePath.c_str(), sourcePath.length());
+	specularPath[sourcePath.length()] = '\0';
 
 	return true;
 }
@@ -158,7 +200,7 @@ bool ComponentMaterial::SetShaderDataPath(const std::string& sourcePath)
 	}
 
 	memcpy_s(shaderDataPath, 256, sourcePath.c_str(), sourcePath.length());
-	shaderDataPath[sourcePath.length() + 1] = '\0';
+	shaderDataPath[sourcePath.length()] = '\0';
 
 	return true;
 }
@@ -187,7 +229,12 @@ bool ComponentMaterial::Apply(ShaderOptions shaderOptions)
 	App->shaderManager->ReleaseShaderProgram(oldShaderProgram);
 	oldShaderProgram = nullptr;
 
-	isValid = shaderProgram && LoadTexture() && LoadShaderData() && GenerateUniforms();
+	isValid = shaderProgram
+		&& LoadTexture(diffuseBufferId, diffusePath, checkeredPatternBufferId)
+		&& LoadTexture(normalBufferId, normalPath, defaultNormalMapBufferId)
+		&& LoadTexture(specularBufferId, specularPath, defaultSpecularMapBufferId)
+		&& LoadShaderData()
+		&& GenerateUniforms();
 
 	return isValid;
 }
@@ -199,7 +246,9 @@ void ComponentMaterial::SetDefaultMaterialConfiguration()
 	memcpy_s(fragmentShaderPath, 256, "assets/shaders/uberShader.frag", 256);
 	shaderDataPath[0] = '\0';
 	shaderData = "";
-	texturePath[0] = '\0';
+	diffusePath[0] = '\0';
+	normalPath[0] = '\0';
+	specularPath[0] = '\0';
 }
 
 void ComponentMaterial::OnEditor()
@@ -238,7 +287,8 @@ void ComponentMaterial::Save(SerializableObject& obj) const
 	obj.AddInt("ModelInfoVaoIndex", modelInfoVaoIndex);
 	obj.AddString("VertexShaderPath", vertexShaderPath);
 	obj.AddString("FragmentShaderPath", fragmentShaderPath);
-	obj.AddString("TexturePath", texturePath);
+	obj.AddString("DiffuseTexturePath", diffusePath);
+	obj.AddString("NormalTexturePath", normalPath);
 	obj.AddString("ShaderDataPath", shaderDataPath);
 	obj.AddInt("WrapMode", textureConfiguration.wrapMode);
 	obj.AddBool("MipMaps", textureConfiguration.mipMaps);
@@ -261,9 +311,13 @@ void ComponentMaterial::Load(const SerializableObject& obj)
 	memcpy_s(fragmentShaderPath, 256, objFragmentShaderPath.c_str(), objFragmentShaderPath.length());
 	fragmentShaderPath[objFragmentShaderPath.length()] = '\0';
 
-	std::string objTexturePath = obj.GetString("TexturePath");
-	memcpy_s(texturePath, 256, objTexturePath.c_str(), objTexturePath.length());
-	texturePath[objTexturePath.length()] = '\0';
+	std::string objTexturePath = obj.GetString("DiffuseTexturePath");
+	memcpy_s(diffusePath, 256, objTexturePath.c_str(), objTexturePath.length());
+	diffusePath[objTexturePath.length()] = '\0';
+
+	objTexturePath = obj.GetString("NormalTexturePath");
+	memcpy_s(normalPath, 256, objTexturePath.c_str(), objTexturePath.length());
+	normalPath[objTexturePath.length()] = '\0';
 
 	std::string objShaderDataPath = obj.GetString("ShaderDataPath");
 	memcpy_s(shaderDataPath, 256, objShaderDataPath.c_str(), objShaderDataPath.length());
@@ -290,7 +344,9 @@ void ComponentMaterial::OnEditorMaterialConfiguration()
 		ImGui::InputText("Vertex shader", vertexShaderPath, 256);
 		ImGui::InputText("Fragment shader", fragmentShaderPath, 256);
 		ImGui::InputText("Shader data", shaderDataPath, 256);
-		ImGui::InputText("Texture path", texturePath, 256);
+		ImGui::InputText("Texture path", diffusePath, 256);
+		ImGui::InputText("Normal Texture path", normalPath, 256);
+		ImGui::InputText("Specular Texture path", specularPath, 256);
 
 		if (ImGui::Button("Apply"))
 			Apply();
@@ -379,7 +435,7 @@ void ComponentMaterial::OnEditorTextureConfiguration()
 		if (changed)
 		{
 			changed = false;
-			ConfigureTexture();
+			ConfigureTexture(diffuseBufferId);
 		}
 
 		ImGui::NewLine();
@@ -469,11 +525,43 @@ bool ComponentMaterial::DrawElements(const ComponentTransform* transform, const 
 
 void ComponentMaterial::DrawMesh(const MeshInfo* meshInfo)
 {
-	glBindTexture(GL_TEXTURE_2D, textureBufferId);
+	glBindTexture(GL_TEXTURE_2D, diffuseBufferId);
+	if (normalBufferId != 0)
+	{
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, normalBufferId);
+	}
+	if (specularBufferId != 0)
+	{
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, specularBufferId);
+	}
+	
+	GLint texLoc;
+	texLoc = glGetUniformLocation(shaderProgram->GetProgramId(), "ourTexture");
+	glUniform1i(texLoc, 0); 
+	texLoc = glGetUniformLocation(shaderProgram->GetProgramId(), "ourNormal");
+	glUniform1i(texLoc, 1);
+	texLoc = glGetUniformLocation(shaderProgram->GetProgramId(), "ourSpecular");
+	glUniform1i(texLoc, 2);
+
 	glBindVertexArray(meshInfo->vao);
 	glDrawElements(GL_TRIANGLES, meshInfo->elementsCount, GL_UNSIGNED_INT, nullptr);
 	glBindVertexArray(GL_NONE);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	
+	if (specularBufferId != 0)
+	{
+		glBindTexture(GL_TEXTURE_2D, GL_NONE);
+		glActiveTexture(GL_TEXTURE0);
+	}
+	if (normalBufferId != 0)
+	{
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, GL_NONE);
+		glActiveTexture(GL_TEXTURE0);
+	}
+	
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
 }
 
 uint ComponentMaterial::CreateCheckeredTexture()
@@ -500,6 +588,62 @@ uint ComponentMaterial::CreateCheckeredTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, checkeredTextureSize, checkeredTextureSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, checkImage);
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
+
+	return textureId;
+}
+
+uint ComponentMaterial::CreateDefaultNormalMap()
+{
+	static const int normalMapSize = 8;
+	GLubyte normalMap[normalMapSize][normalMapSize][4];
+	for (int i = 0; i < normalMapSize; i++) {
+		for (int j = 0; j < normalMapSize; j++) {
+			normalMap[i][j][0] = (GLubyte)127;
+			normalMap[i][j][1] = (GLubyte)127;
+			normalMap[i][j][2] = (GLubyte)255;
+			normalMap[i][j][3] = (GLubyte)127;
+		}
+	}
+
+	GLuint textureId;
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glGenTextures(1, &textureId);
+	glBindTexture(GL_TEXTURE_2D, textureId);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, normalMapSize, normalMapSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, normalMap);
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
+
+	return textureId;
+}
+
+uint ComponentMaterial::CreateDefaultSpecularMap()
+{
+	static const int normalMapSize = 8;
+	GLubyte normalMap[normalMapSize][normalMapSize][4];
+	for (int i = 0; i < normalMapSize; i++) {
+		for (int j = 0; j < normalMapSize; j++) {
+			normalMap[i][j][0] = (GLubyte)255;
+			normalMap[i][j][1] = (GLubyte)255;
+			normalMap[i][j][2] = (GLubyte)255;
+			normalMap[i][j][3] = (GLubyte)255;
+		}
+	}
+
+	GLuint textureId;
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glGenTextures(1, &textureId);
+	glBindTexture(GL_TEXTURE_2D, textureId);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, normalMapSize, normalMapSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, normalMap);
 	glBindTexture(GL_TEXTURE_2D, GL_NONE);
 
 	return textureId;
@@ -587,28 +731,28 @@ bool ComponentMaterial::LoadShaderData()
 	return true;
 }
 
-bool ComponentMaterial::LoadTexture()
+bool ComponentMaterial::LoadTexture(uint& bufferId, const char* path, uint fallbackDefaultId)
 {
-	if (textureBufferId != checkeredPatternBufferId)
-		App->textureManager->ReleaseTexture(textureBufferId);
+	if (bufferId != fallbackDefaultId)
+		App->textureManager->ReleaseTexture(bufferId);
 
-	if (IsEmptyString(texturePath))
+	if (IsEmptyString(path))
 	{
-		textureBufferId = checkeredPatternBufferId;
+		bufferId = fallbackDefaultId;
 		textureInfo.Zero();
 	}
 	else
-		textureBufferId = App->textureManager->GetTexture(texturePath);
+		bufferId = App->textureManager->GetTexture(path);
 
-	if (textureBufferId != 0)
-		ConfigureTexture();
+	if (bufferId != 0)
+		ConfigureTexture(bufferId);
 
-	return textureBufferId != 0;
+	return bufferId != 0;
 }
 
-void ComponentMaterial::ConfigureTexture()
+void ComponentMaterial::ConfigureTexture(uint bufferId)
 {
-	glBindTexture(GL_TEXTURE_2D, textureBufferId);
+	glBindTexture(GL_TEXTURE_2D, bufferId);
 
 	/* Set texture clamping method */
 	switch (textureConfiguration.wrapMode) {
@@ -633,7 +777,7 @@ void ComponentMaterial::ConfigureTexture()
 	/*Generate Mipmap from the current texture evaluated*/
 	if (textureConfiguration.mipMaps) {
 		glGenerateMipmap(GL_TEXTURE_2D);
-		//glGenerateTextureMipmap(textureBufferId);	
+		//glGenerateTextureMipmap(diffuseBufferId);	
 	}
 
 	/*Apply magnification filters if requested*/

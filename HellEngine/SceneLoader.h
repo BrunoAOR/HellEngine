@@ -12,6 +12,7 @@ class SceneLoader
 public:
 	SceneLoader();
 
+	void LoadPlaneMesh();
 	void LoadCubeMesh();
 	void LoadSphereMesh(unsigned int rings = 32u, unsigned int sections = 32u);
 	bool Load(const char* modelPath, GameObject* parent, bool meshesOnly = false);

@@ -93,6 +93,7 @@ void ModuleShaderManager::OnEditorShaderOptionsWindow(float mainMenuBarHeight, b
 	static bool useVertexLighting = false;
 	static bool usePixelLighting = false;
 	static bool useSpecularLighting = false;
+	static bool useNormalMapping = false;
 	static bool useGPUSkinning = false;
 
 	ImGui::SetNextWindowPos(ImVec2(0, mainMenuBarHeight));
@@ -106,13 +107,14 @@ void ModuleShaderManager::OnEditorShaderOptionsWindow(float mainMenuBarHeight, b
 		{
 			usePixelLighting = false;
 			defaultShaderOptions &= ~(ShaderOptions::PIXEL_LIGHTING);
+			useNormalMapping = false;
+			defaultShaderOptions &= ~(ShaderOptions::NORMAL_MAPPING);
 		}
 		if (!usePixelLighting && !useVertexLighting)
 		{
 			useSpecularLighting = false;
 			defaultShaderOptions &= ~(ShaderOptions::SPECULAR);
 		}
-
 	}
 
 	if (ImGui::Checkbox("Pixel Lighting", &usePixelLighting))
@@ -128,12 +130,29 @@ void ModuleShaderManager::OnEditorShaderOptionsWindow(float mainMenuBarHeight, b
 			useSpecularLighting = false;
 			defaultShaderOptions &= ~(ShaderOptions::SPECULAR);
 		}
+		if (!usePixelLighting)
+		{
+			useNormalMapping = false;
+			defaultShaderOptions &= ~(ShaderOptions::NORMAL_MAPPING);
+		}
 	}
 
 	if (usePixelLighting || useVertexLighting)
 	{
+		ImGui::Text("Lighting options:");
+		ImGui::Indent();
+
 		if (ImGui::Checkbox("Specular", &useSpecularLighting))
 			defaultShaderOptions ^= ShaderOptions::SPECULAR;
+
+
+		if (usePixelLighting)
+		{
+			if (ImGui::Checkbox("Normal Mapping", &useNormalMapping))
+				defaultShaderOptions ^= ShaderOptions::NORMAL_MAPPING;
+		}
+
+		ImGui::Unindent();
 	}
 
 	if (ImGui::Checkbox("GPU Skinning", &useGPUSkinning))
@@ -259,19 +278,26 @@ unsigned int ModuleShaderManager::LinkShaderProgram(unsigned int vertexShaderId,
 
 void ModuleShaderManager::AddShaderPrefix(std::string& sourceString, ShaderOptions options)
 {
+	uint insertionPoint = 0;
+	if (sourceString.compare(0, 8, "#version") == 0)
+	{
+		insertionPoint = sourceString.find('\n') + 1;
+	}
+	assert(insertionPoint > 0);
+
 	if ((options & ShaderOptions::GPU_SKINNING) == ShaderOptions::GPU_SKINNING)
-		sourceString.insert(0, "#define GPU_SKINNING\n");
+		sourceString.insert(insertionPoint, "#define GPU_SKINNING\n");
+	
+	if ((options & ShaderOptions::NORMAL_MAPPING) == ShaderOptions::NORMAL_MAPPING)
+		sourceString.insert(insertionPoint, "#define NORMAL_MAPPING\n");
 
 	if ((options & ShaderOptions::SPECULAR) == ShaderOptions::SPECULAR)
-		sourceString.insert(0, "#define SPECULAR\n");
+		sourceString.insert(insertionPoint, "#define SPECULAR\n");
 
 	if ((options & ShaderOptions::PIXEL_LIGHTING) == ShaderOptions::PIXEL_LIGHTING)
-		sourceString.insert(0, "#define PIXEL_LIGHTING\n");
+		sourceString.insert(insertionPoint, "#define PIXEL_LIGHTING\n");
 	else if ((options & ShaderOptions::VERTEX_LIGHTING) == ShaderOptions::VERTEX_LIGHTING)
-		sourceString.insert(0, "#define VERTEX_LIGHTING\n");
-
-	if (sourceString.compare(0, 8, "#version") != 0)
-		sourceString.insert(0, "#version 330 core\n");
+		sourceString.insert(insertionPoint, "#define VERTEX_LIGHTING\n");
 }
 
 std::string ModuleShaderManager::GetJointPath(const char* vertexShaderPath, const char* fragmentShaderPath, ShaderOptions options)
