@@ -1,4 +1,7 @@
+#version 330 core
+
 #define MAX_BONES 128
+
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 normal;
 layout (location = 2) in vec3 tangent;
@@ -6,9 +9,12 @@ layout (location = 3) in vec2 uvCoord;
 layout (location = 4) in ivec4 bone_indices;
 layout (location = 5) in vec4 bone_weights;
 
+layout (std140) uniform Matrices
+{
+	mat4 projection_matrix;
+	mat4 view_matrix;
+}
 uniform mat4 model_matrix;
-uniform mat4 view_matrix;
-uniform mat4 projection_matrix;
 
 #if defined(PIXEL_LIGHTING) || defined(VERTEX_LIGHTING)
 	uniform mat4 normal_matrix;

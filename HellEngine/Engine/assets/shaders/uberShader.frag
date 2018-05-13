@@ -1,3 +1,5 @@
+#version 330 core
+
 in vec2 ourUvCoord;
 
 #if defined(PIXEL_LIGHTING)
