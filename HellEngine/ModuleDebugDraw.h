@@ -3,6 +3,7 @@
 
 #include "Module.h"
 #include "globals.h"
+
 class ShaderProgram;
 
 class ModuleDebugDraw : public Module

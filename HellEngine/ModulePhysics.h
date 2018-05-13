@@ -18,6 +18,8 @@ class ComponentRigidBody;
 class btCollisionShape;
 class btRigidBody;
 
+class ShaderProgram;
+
 class ModulePhysics : public Module
 {
 public:
@@ -41,6 +43,7 @@ public:
 	void OnPlay();
 	void OnStop();
 
+	void AddVerticesAndColors(const btVector3& from, const btVector3& to, const btVector3& color);
 	void DrawDebug();
 
 private:
@@ -56,6 +59,18 @@ private:
 
 	std::list<btCollisionShape*> shapes;
 	std::list<ComponentRigidBody*> bodies;
+
+	uint vao = 0;
+	uint vbo = 0;
+
+	uint startingVBOsize = 100;
+
+	const ShaderProgram* shaderProgram = nullptr;
+	std::vector<float> verticesAndColors;
+
+private:
+	void CreateVao();
+	void DrawElements();
 };
 
 class DebugDrawer : public btIDebugDraw
