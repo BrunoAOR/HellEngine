@@ -9,6 +9,7 @@ class ModuleDebugDraw;
 class ModuleEditorCamera;
 class ModuleImGui;
 class ModuleInput;
+class ModulePhysics;
 class ModuleRender;
 class ModuleScene;
 class ModuleTime;
@@ -36,6 +37,7 @@ public:
 	ModuleTime* time = nullptr;
 	ModuleWindow* window = nullptr;
 	ModuleEditorCamera* editorCamera = nullptr;
+	ModulePhysics* physics3d = nullptr;
 	ModuleRender* renderer = nullptr;
 	ModuleScene* scene = nullptr;
 	ModuleAnimation* animation = nullptr;

@@ -29,6 +29,7 @@
     <ClInclude Include="ComponentGrass.h" />
     <ClInclude Include="ComponentMesh.h" />
     <ClInclude Include="ComponentParticleSystem.h" />
+    <ClInclude Include="ComponentRigidBody.h" />
     <ClInclude Include="ComponentTransform.h" />
     <ClInclude Include="ComponentMaterial.h" />
     <ClInclude Include="ComponentTransform2D.h" />
@@ -154,6 +155,7 @@
     <ClCompile Include="ComponentGrass.cpp" />
     <ClCompile Include="ComponentMesh.cpp" />
     <ClCompile Include="ComponentParticleSystem.cpp" />
+    <ClCompile Include="ComponentRigidBody.cpp" />
     <ClCompile Include="ComponentTransform.cpp" />
     <ClCompile Include="ComponentMaterial.cpp" />
     <ClCompile Include="ComponentTransform2D.cpp" />

@@ -10,9 +10,10 @@
 #include "GameObject.h"
 #include "ModuleAnimation.h"
 #include "ModuleEditorCamera.h"
-#include "ModuleTrueFont.h"
+#include "ModulePhysics.h"
 #include "ModuleScene.h"
 #include "ModuleTime.h"
+#include "ModuleTrueFont.h"
 #include "ModuleWindow.h"
 #include "Serializer.h"
 #include "SerializableArray.h"
@@ -162,6 +163,7 @@ void ModuleScene::OnEditorPlayButtonWindow(float mainMenuBarHeight)
 			Save(sceneTempFile);
 			originalTimeScale = App->time->GetTimeScale();
 			App->time->ResetReferenceTime();
+			App->physics3d->OnPlay();
 		}
 		ImGui::PopStyleColor();
 

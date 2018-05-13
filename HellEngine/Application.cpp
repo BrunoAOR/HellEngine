@@ -7,6 +7,7 @@
 #include "ModuleEditorCamera.h"
 #include "ModuleImGui.h"
 #include "ModuleInput.h"
+#include "ModulePhysics.h"
 #include "ModuleRender.h"
 #include "ModuleScene.h"
 #include "ModuleTime.h"
@@ -30,6 +31,7 @@ Application::Application()
 	modules.push_back(animation = new ModuleAnimation());
 	modules.push_back(renderer = new ModuleRender());
 	modules.push_back(scene = new ModuleScene());
+	modules.push_back(physics3d = new ModulePhysics());
 	modules.push_back(editorCamera = new ModuleEditorCamera());
 	modules.push_back(audio = new ModuleAudio());
 	modules.push_back(ui = new ModuleUI());

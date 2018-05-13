@@ -405,6 +405,9 @@
     <ClInclude Include="ModulePhysics.h">
       <Filter>Engine Modules</Filter>
     </ClInclude>
+    <ClInclude Include="ComponentRigidBody.h">
+      <Filter>Scene Management</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -667,6 +670,9 @@
     </ClCompile>
     <ClCompile Include="ModulePhysics.cpp">
       <Filter>Engine Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentRigidBody.cpp">
+      <Filter>Scene Management</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
