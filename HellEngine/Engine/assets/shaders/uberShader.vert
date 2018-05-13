@@ -9,8 +9,11 @@ layout (location = 3) in vec2 uvCoord;
 layout (location = 4) in ivec4 bone_indices;
 layout (location = 5) in vec4 bone_weights;
 
-uniform mat4 projection_matrix;
-uniform mat4 view_matrix;
+layout (std140) uniform Matrices
+{
+	uniform mat4 projection_matrix;
+	uniform mat4 view_matrix;
+};
 uniform mat4 model_matrix;
 
 #if defined(PIXEL_LIGHTING) || defined(VERTEX_LIGHTING)

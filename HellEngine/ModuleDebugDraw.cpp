@@ -30,7 +30,7 @@ bool ModuleDebugDraw::CleanUp()
 bool ModuleDebugDraw::DrawElements(const float* modelMatrix, uint vao, uint vertexCount)
 {
 	shaderProgram->Activate();
-	shaderProgram->UpdateMatrixUniforms(modelMatrix, App->editorCamera->camera->GetViewMatrix(), App->editorCamera->camera->GetProjectionMatrix());
+	shaderProgram->UpdateModelMatrixUniform(modelMatrix);
 
 	glBindVertexArray(vao);
 	glDrawElements(GL_LINES, vertexCount, GL_UNSIGNED_INT, nullptr);

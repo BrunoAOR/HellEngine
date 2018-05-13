@@ -62,6 +62,16 @@ public:
 	/* Sets the polygon draw mode (drawMode must be GL_FILL, GL_LINE or GL_POINT */
 	void SetPolygonDrawMode(GLenum drawMode);
 
+public:
+
+	struct {
+		bool active;
+		bool tracking;
+		bool continuousTracking;
+	} groundGridInfo;
+
+	int matricesUBOBindingPoint = 0;
+
 private:
 
 	/* Initializes the GLEW library */
@@ -73,24 +83,19 @@ private:
 	/* Draw a grid on the ground */
 	void DrawGroundGrid(float xOffset = 0, float zOffet = 0, int halfSize = 20) const;
 
+	uint CreateMatricesUBO();
+	void UpdateMatricesUBO();
+
 	std::list<ComponentMaterial*> GatherMaterials();
 	bool PassesVailidityTest(const ComponentMaterial* material);
 	bool PassesFrustumCulling(const ComponentMaterial* material);
 	void DrawMaterial(ComponentMaterial* material);
 	void DrawMeshInfo(const ComponentMaterial* material, const MeshInfo* meshInfo);
 
-public:
-
-	struct {
-		bool active;
-		bool tracking;
-		bool continuousTracking;
-	} groundGridInfo;
-
 private:
 	
 	SDL_GLContext glContext = nullptr;
-
+	uint matricesUBO = 0;
 };
 
 #endif /* __H_MODULERENDER__ */

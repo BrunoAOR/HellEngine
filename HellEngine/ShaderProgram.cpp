@@ -9,7 +9,7 @@ ShaderProgram::ShaderProgram(unsigned int programId, ShaderOptions options) : pr
 	modelMatrixLocation = glGetUniformLocation(programId, "model_matrix");
 	viewMatrixLocation = glGetUniformLocation(programId, "view_matrix");
 	projectionMatrixLocation = glGetUniformLocation(programId, "projection_matrix");
-	assert(modelMatrixLocation != -1 && viewMatrixLocation != -1 && projectionMatrixLocation != -1);
+	assert(modelMatrixLocation != -1);
 
 	normalMatrixLocation = glGetUniformLocation(programId, "normal_matrix");
 	lightPositionLocation = glGetUniformLocation(programId, "light_position");
@@ -37,13 +37,19 @@ void ShaderProgram::Deactivate() const
 	glUseProgram(GL_NONE);
 }
 
+void ShaderProgram::UpdateModelMatrixUniform(const float * modelMatrix) const
+{
+	if (modelMatrix)
+		glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, modelMatrix);
+}
+
 void ShaderProgram::UpdateMatrixUniforms(const float* modelMatrix, const float* viewMatrix, const float* projectionMatrix) const
 {
 	if (modelMatrix)
 		glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, modelMatrix);
-	if (viewMatrix)
+	if (viewMatrix && viewMatrixLocation != -1)
 		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, viewMatrix);
-	if (projectionMatrix)
+	if (projectionMatrix && projectionMatrixLocation != -1)
 		glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, projectionMatrix);
 }
 

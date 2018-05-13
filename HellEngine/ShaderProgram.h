@@ -17,6 +17,7 @@ public:
 	unsigned int GetProgramId() const;
 	void Activate() const;
 	void Deactivate() const;
+	void UpdateModelMatrixUniform(const float* modelMatrix) const;
 	void UpdateMatrixUniforms(const float* modelMatrix, const float* viewMatrix, const float* projectionMatrix) const;
 	void UpdateLightingUniforms(const float* normalMatrix, const float* lightPosition, const float* cameraPosition) const;
 	void UpdateBonesUniform(const float* bonesPalette) const;

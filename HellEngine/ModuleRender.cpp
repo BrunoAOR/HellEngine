@@ -52,6 +52,8 @@ bool ModuleRender::Init()
 
 	groundGridInfo.active = true;
 
+	matricesUBO = CreateMatricesUBO();
+
 	return ret;
 }
 
@@ -85,6 +87,8 @@ UpdateStatus ModuleRender::Update()
 UpdateStatus ModuleRender::PostUpdate()
 {
 	BROFILER_CATEGORY("ModuleRender - GL_SwapWindow", Profiler::Color::Aqua);
+
+	UpdateMatricesUBO();
 
 	std::list<ComponentMaterial*> materials = GatherMaterials();
 	for (ComponentMaterial* material : materials)
@@ -231,6 +235,26 @@ void ModuleRender::DrawGroundGrid(float xOffset, float zOffset, int halfSize) co
 	glEnd();
 }
 
+uint ModuleRender::CreateMatricesUBO()
+{
+	uint ubo = 0;
+	glGenBuffers(1, &ubo);
+	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+	int bufferSize = 2 * 16 * sizeof(float);
+	glBufferData(GL_UNIFORM_BUFFER, bufferSize, nullptr, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, GL_NONE);
+	glBindBufferRange(GL_UNIFORM_BUFFER, matricesUBOBindingPoint, ubo, 0, bufferSize);
+	return ubo;
+}
+
+void ModuleRender::UpdateMatricesUBO()
+{
+	glBindBuffer(GL_UNIFORM_BUFFER, matricesUBO);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, 16 * sizeof(float), App->editorCamera->camera->GetProjectionMatrix());
+	glBufferSubData(GL_UNIFORM_BUFFER, 16 * sizeof(float), 16 * sizeof(float), App->editorCamera->camera->GetViewMatrix());
+	glBindBuffer(GL_UNIFORM_BUFFER, GL_NONE);
+}
+
 std::list<ComponentMaterial*> ModuleRender::GatherMaterials()
 {
 	std::list<ComponentMaterial*> materials;
@@ -313,7 +337,7 @@ void ModuleRender::DrawMaterial(ComponentMaterial * material)
 		const float* modelMatrix = transform->GetModelMatrix();
 
 		material->shaderProgram->Activate();
-		material->shaderProgram->UpdateMatrixUniforms(modelMatrix, App->editorCamera->camera->GetViewMatrix(), App->editorCamera->camera->GetProjectionMatrix());
+		material->shaderProgram->UpdateModelMatrixUniform(modelMatrix);
 
 		float3 unused;
 		Quat rotQuat;
