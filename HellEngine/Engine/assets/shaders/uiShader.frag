@@ -2,6 +2,7 @@
 
 uniform sampler2D ourTexture;
 uniform vec4 tintColor;
+
 in vec2 ourTexCoord;
 
 out vec4 color;

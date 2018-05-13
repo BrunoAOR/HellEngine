@@ -7,8 +7,10 @@
 #include "globals.h"
 #include "Module.h"
 
+class ComponentMaterial;
 class Material;
 class Shader;
+struct MeshInfo;
 struct SDL_Rect;
 struct SDL_Renderer;
 struct SDL_Texture;
@@ -60,6 +62,16 @@ public:
 	/* Sets the polygon draw mode (drawMode must be GL_FILL, GL_LINE or GL_POINT */
 	void SetPolygonDrawMode(GLenum drawMode);
 
+public:
+
+	struct {
+		bool active;
+		bool tracking;
+		bool continuousTracking;
+	} groundGridInfo;
+
+	int matricesUBOBindingPoint = 0;
+
 private:
 
 	/* Initializes the GLEW library */
@@ -71,18 +83,21 @@ private:
 	/* Draw a grid on the ground */
 	void DrawGroundGrid(float xOffset = 0, float zOffet = 0, int halfSize = 20) const;
 
-public:
+	uint CreateMatricesUBO();
+	void UpdateMatricesUBO();
 
-	struct {
-		bool active;
-		bool tracking;
-		bool continuousTracking;
-	} groundGridInfo;
+	std::list<ComponentMaterial*> GatherMaterials();
+	bool PassesVailidityTest(const ComponentMaterial* material);
+	bool PassesFrustumCulling(const ComponentMaterial* material);
+	void SortMaterials(std::list<ComponentMaterial*>& materials);
+	void RenderQueue(std::list<ComponentMaterial*>& materials);
+	void DrawMaterial(ComponentMaterial* material);
+	void DrawMeshInfo(const ComponentMaterial* material, const MeshInfo* meshInfo);
 
 private:
 	
 	SDL_GLContext glContext = nullptr;
-
+	uint matricesUBO = 0;
 };
 
 #endif /* __H_MODULERENDER__ */

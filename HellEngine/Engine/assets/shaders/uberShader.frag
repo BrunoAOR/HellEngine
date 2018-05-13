@@ -1,5 +1,9 @@
 #version 330 core
 
+uniform sampler2D ourTexture;
+uniform sampler2D ourNormal;
+uniform sampler2D ourSpecular;
+
 in vec2 ourUvCoord;
 
 #if defined(PIXEL_LIGHTING)
@@ -17,10 +21,6 @@ in vec2 ourUvCoord;
 		in float specularIntensity;
 	#endif
 #endif
-
-uniform sampler2D ourTexture;
-uniform sampler2D ourNormal;
-uniform sampler2D ourSpecular;
 
 out vec4 color;
 

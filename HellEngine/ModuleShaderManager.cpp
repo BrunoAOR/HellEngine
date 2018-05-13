@@ -1,4 +1,6 @@
 #include "ImGui/imgui.h"
+#include "Application.h"
+#include "ModuleRender.h"
 #include "ModuleShaderManager.h"
 #include "ShaderProgram.h"
 #include "globals.h"
@@ -202,8 +204,12 @@ const ShaderProgram* ModuleShaderManager::GenerateNewShaderProgram(const char* v
 		return nullptr;
 	}
 
-	/* Prepare ShaderProgram */
+	/* Link Matrices UBO */
+	uint matricesUniformBlockIndex = glGetUniformBlockIndex(programId, "Matrices");
+	if (matricesUniformBlockIndex != GL_INVALID_INDEX)
+		glUniformBlockBinding(programId, matricesUniformBlockIndex, App->renderer->matricesUBOBindingPoint);
 
+	/* Prepare ShaderProgram */
 	ShaderProgram* shaderProgram = new ShaderProgram(programId, options);
 
 	/* Save ShaderProgram for future reuse */
