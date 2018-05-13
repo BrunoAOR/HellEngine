@@ -27,6 +27,8 @@ public:
 	/* Called before quitting */
 	bool CleanUp();
 
+	void Render() const;
+
 public:
 
 	static ImGuizmo::OPERATION mCurrentGizmoOperation;

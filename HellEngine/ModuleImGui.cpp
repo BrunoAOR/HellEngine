@@ -238,8 +238,6 @@ UpdateStatus ModuleImGui::Update()
 	{
 		ShowRaycastTestWindow(mainMenuBarHeight, &showRaycastTestWindow);
 	}
-
-	ImGui::Render();
 	
 	if (shouldQuit)
 	{
@@ -256,6 +254,11 @@ bool ModuleImGui::CleanUp()
 {
 	ImGui_ImplSdlGL3_Shutdown();
 	return true;
+}
+
+void ModuleImGui::Render() const
+{
+	ImGui::Render();
 }
 
 void ModuleImGui::LinkToWebPage(const char* text, const char* url)

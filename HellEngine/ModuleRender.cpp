@@ -8,6 +8,7 @@
 #include "ComponentCamera.h"
 #include "ComponentMaterial.h"
 #include "ModuleEditorCamera.h"
+#include "ModuleImGui.h"
 #include "ModuleInput.h"
 #include "ModuleRender.h"
 #include "ModuleScene.h"
@@ -89,6 +90,8 @@ UpdateStatus ModuleRender::PostUpdate()
 	for (ComponentMaterial* material : materials)
 		DrawMaterial(material);
 	
+	App->imgui->Render();
+
 	SDL_GL_SwapWindow(App->window->window);
 	return UpdateStatus::UPDATE_CONTINUE;
 }
