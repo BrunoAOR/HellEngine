@@ -86,6 +86,8 @@ private:
 	uint CreateMatricesUBO();
 	void UpdateMatricesUBO();
 
+	void SetUpShadowMapping();
+
 	std::list<ComponentMaterial*> GatherMaterials();
 	bool PassesVailidityTest(const ComponentMaterial* material);
 	bool PassesFrustumCulling(const ComponentMaterial* material);
@@ -98,6 +100,8 @@ private:
 	
 	SDL_GLContext glContext = nullptr;
 	uint matricesUBO = 0;
+	uint depthBufferId = 0;
+	uint shadowMapTextureId = 0;
 };
 
 #endif /* __H_MODULERENDER__ */

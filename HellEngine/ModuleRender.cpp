@@ -54,6 +54,8 @@ bool ModuleRender::Init()
 
 	matricesUBO = CreateMatricesUBO();
 
+	SetUpShadowMapping();
+
 	return ret;
 }
 
@@ -103,6 +105,14 @@ UpdateStatus ModuleRender::PostUpdate()
 /* Called before quitting */
 bool ModuleRender::CleanUp()
 {
+	LOGGER("Destroy shadow mapping buffers");
+
+	glDeleteTextures(1, &shadowMapTextureId);
+	shadowMapTextureId = 0;
+
+	glDeleteFramebuffers(1, &depthBufferId);
+	depthBufferId = 0;
+
 	LOGGER("Destroying OpenGL context");
 
 	/* Destroy window */
@@ -253,6 +263,29 @@ void ModuleRender::UpdateMatricesUBO()
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, 16 * sizeof(float), App->editorCamera->camera->GetProjectionMatrix());
 	glBufferSubData(GL_UNIFORM_BUFFER, 16 * sizeof(float), 16 * sizeof(float), App->editorCamera->camera->GetViewMatrix());
 	glBindBuffer(GL_UNIFORM_BUFFER, GL_NONE);
+}
+
+void ModuleRender::SetUpShadowMapping()
+{
+	glGenFramebuffers(1, &depthBufferId);
+	glBindFramebuffer(GL_FRAMEBUFFER, depthBufferId);
+	glGenTextures(1, &shadowMapTextureId);
+
+	glBindTexture(GL_TEXTURE_2D, shadowMapTextureId);
+
+	/* Add later a parameter to scale texture size */
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, App->window->GetWidth(), App->window->GetHeight(), 0,
+		GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowMapTextureId, 0);
+	glDrawBuffer(GL_NONE);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
 }
 
 std::list<ComponentMaterial*> ModuleRender::GatherMaterials()
