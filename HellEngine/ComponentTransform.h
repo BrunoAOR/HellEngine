@@ -19,13 +19,13 @@ public:
 
 	bool Equals(ComponentTransform* t);
 
-	float3 GetPosition() const;
-	float3 GetScale() const;
+	const float3& GetPosition() const;
+	const float3& GetScale() const;
 	float3 GetRotationRad() const;
 	float3 GetRotationDeg() const;
-	Quat GetRotationQuat() const;
+	const Quat& GetRotationQuat() const;
 
-	AABB GetBoundingBox() const;
+	const AABB& GetBoundingBox() const;
 
 	bool GetIsStatic() const;
 	void SetIsStatic(bool isStatic);
