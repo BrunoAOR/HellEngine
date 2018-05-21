@@ -2,6 +2,7 @@
 #include <assimp/cimport.h>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+#include <assimp/version.h>
 #include "MathGeoLib/src/Math/float2.h"
 #include "openGL.h"
 #include "Application.h"
@@ -15,11 +16,9 @@
 #include "SceneLoader.h"
 #include "MeshInfo.h"
 
-/* Temporary */
-#include "ComponentAnimation.h"
-
 SceneLoader::SceneLoader()
 {
+	LOGGER("Using Assimp v%d.%d.%d", aiGetVersionMajor(), aiGetVersionMinor(), aiGetVersionRevision());
 }
 
 void SceneLoader::LoadPlaneMesh()

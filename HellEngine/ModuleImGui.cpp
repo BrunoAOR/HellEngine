@@ -295,6 +295,9 @@ void ModuleImGui::ShowAboutWindow(float mainMenuBarHeight, bool* pOpen)
 	ImGui::Bullet(); LinkToWebPage("ImGui 1.53", "https://github.com/ocornut/imgui");
 	ImGui::Bullet(); LinkToWebPage("Glew 2.1.0", "http://glew.sourceforge.net");
 	ImGui::Bullet(); LinkToWebPage("OpenGL 3.1", "https://www.khronos.org/opengl/");
+	ImGui::Bullet(); LinkToWebPage("Devil 1.8.0", "http://openil.sourceforge.net");
+	ImGui::Bullet(); LinkToWebPage("ImGuizmo 1.04", "https://github.com/CedricGuillemet/ImGuizmo");
+	ImGui::Bullet(); LinkToWebPage("Assimp 4.1.0", "http://www.assimp.org/");
 	ImGui::Text("");
 
 	LinkToWebPage("License:", "https://github.com/BrunoAOR/HellEngine/blob/master/LICENSE");

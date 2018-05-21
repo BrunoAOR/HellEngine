@@ -22,6 +22,10 @@ Find the full project code at [https://github.com/BrunoAOR/HellEngine](https://g
 * [ImGui 1.53](https://github.com/ocornut/imgui)
 * [Glew 2.1.0](http://glew.sourceforge.net)
 * [OpenGL 3.1](https://www.khronos.org/opengl/)
+* [Devil 1.8.0](http://openil.sourceforge.net)
+* [ImGuizmo 1.04](https://github.com/CedricGuillemet/ImGuizmo)
+* [Assimp 4.1.0](http://www.assimp.org/)
+
 
 ### License
 The project is licensed under the MIT License.  
