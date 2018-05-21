@@ -1,11 +1,12 @@
 # HellEngine
-Information about __HellEngine__ will be added here in due time.
+HellEngine is a 3D Game Engine built as a group project within the context of a Master's degree in Game Desgin and Development. It was built with the intent of learning how to structure a project as big as a Game Engine and also learn the basics around graphics programming with OpenGL using the programmable pipeline.
+
 Find the full project code at [https://github.com/BrunoAOR/HellEngine](https://github.com/BrunoAOR/HellEngine).
 
 
 ## Further information
 
-### Authors
+### Authors (listed alphabetically)
 * Marc Campins ([McCampins](https://github.com/McCampins) at https://github.com/McCampins)
 * Bruno Ortiz ([BrunoAOR](https://github.com/BrunoAOR) at https://github.com/BrunoAOR)
 * Sergi Ramírez ([Orphen5](https://github.com/Orphen5) at https://github.com/Orphen5)
