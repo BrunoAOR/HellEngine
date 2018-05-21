@@ -5,6 +5,7 @@
 #include "ImGui/imgui.h"
 #include "Application.h"
 #include "ComponentCamera.h"
+#include "ComponentLight.h"
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "GameObject.h"
@@ -336,6 +337,19 @@ void ModuleScene::SetActiveGameCamera(ComponentCamera* camera)
 ComponentCamera * ModuleScene::GetActiveGameCamera() const
 {
 	return activeGameCamera;
+}
+
+void ModuleScene::SetActiveGameLight(ComponentLight* light)
+{
+	if (activeGameLight)
+		activeGameLight->isActiveLight = false;
+
+	activeGameLight = light;
+}
+
+ComponentLight * ModuleScene::GetActiveGameLight() const
+{
+	return activeGameLight;
 }
 
 void ModuleScene::SetSelectedGameObject(GameObject * go)

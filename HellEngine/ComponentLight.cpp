@@ -1,8 +1,10 @@
 #include "ImGui/imgui.h"
+#include "Application.h"
 #include "ComponentLight.h"
 #include "ComponentTransform.h"
 #include "ComponentType.h"
 #include "GameObject.h"
+#include "ModuleScene.h"
 #include "SerializableObject.h"
 #include "globals.h"
 
@@ -16,7 +18,7 @@ ComponentLight::ComponentLight(GameObject* owner) : Component(owner)
 ComponentLight::~ComponentLight()
 {
 	if (isActiveLight)
-		;//Inform scene about light's destruction
+		App->scene->SetActiveGameLight(nullptr);
 }
 
 const float3* ComponentLight::GetPosition()
@@ -29,7 +31,7 @@ const float3* ComponentLight::GetPosition()
 void ComponentLight::SetAsActiveLight()
 {
 	isActiveLight = true;
-	//Inform scene about light being the active Light
+	App->scene->SetActiveGameLight(this);
 }
 
 void ComponentLight::OnEditor()
@@ -40,9 +42,8 @@ void ComponentLight::OnEditor()
 			return;
 
 		if (ImGui::Checkbox("Active Light", &isActiveLight))
-		{
-			// Inform scene about light being active or inactive
-		}
+			App->scene->SetActiveGameLight(isActiveLight ? this : nullptr);
+
 	}
 }
 

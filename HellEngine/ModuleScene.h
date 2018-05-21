@@ -8,6 +8,7 @@
 #include "Module.h"
 #include "SpaceQuadTree.h"
 class ComponentCamera;
+class ComponentLight;
 class GameObject;
 
 #include "SceneLoader.h"
@@ -42,6 +43,9 @@ public:
 
 	void SetActiveGameCamera(ComponentCamera* camera);
 	ComponentCamera* GetActiveGameCamera() const;
+	void SetActiveGameLight(ComponentLight* light);
+	ComponentLight* GetActiveGameLight() const;
+
 	void SetSelectedGameObject(GameObject* go);
 
 	bool LoadModel(const char* modelPath, GameObject* parent, bool meshesOnly = false);
@@ -73,6 +77,7 @@ private:
 private:
 
 	ComponentCamera* activeGameCamera = nullptr;
+	ComponentLight* activeGameLight = nullptr;
 	SpaceQuadTree quadTree;
 	SceneLoader sceneLoader;
 
