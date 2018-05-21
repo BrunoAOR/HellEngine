@@ -61,6 +61,7 @@ private:
 
 	GameObject* AddEmptyChild();
 	GameObject* AddCameraChild();
+	GameObject* AddLightChild();
 	GameObject* AddPlaneChild();
 	GameObject* AddCubeChild();
 	GameObject* AddSphereChild();

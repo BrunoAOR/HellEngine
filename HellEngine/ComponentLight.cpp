@@ -23,6 +23,9 @@ ComponentLight::~ComponentLight()
 
 const float3* ComponentLight::GetPosition()
 {
+	if (!transform)
+		transform = (ComponentTransform*)gameObject->GetComponent(ComponentType::TRANSFORM);
+
 	if (transform)
 		return &(transform->GetPosition());
 	return nullptr;
