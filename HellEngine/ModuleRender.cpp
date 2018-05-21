@@ -6,6 +6,7 @@
 #include "Application.h"
 #include "Color.h"
 #include "ComponentCamera.h"
+#include "ComponentLight.h"
 #include "ComponentMaterial.h"
 #include "ModuleEditorCamera.h"
 #include "ModuleImGui.h"
@@ -371,8 +372,8 @@ void ModuleRender::DrawMaterial(ComponentMaterial* material)
 		float4x4 normalMatrix = float4x4::QuatToRotation(rotQuat).Transposed();
 
 		const float* lightPos = nullptr;
-		if (ComponentCamera* camera = App->scene->GetActiveGameCamera())
-			lightPos = camera->GetPosition();
+		if (ComponentLight* light = App->scene->GetActiveGameLight())
+			lightPos = light->GetPosition()->ptr();
 
 		material->shaderProgram->UpdateLightingUniforms(normalMatrix.ptr(), lightPos, App->editorCamera->camera->GetPosition());
 

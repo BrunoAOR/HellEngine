@@ -9,6 +9,7 @@
 #include "ComponentAnimation.h"
 #include "ComponentCamera.h"
 #include "ComponentGrass.h"
+#include "ComponentLight.h"
 #include "ComponentMaterial.h"
 #include "ComponentMaterialsGroup.h"
 #include "ComponentMesh.h"
@@ -300,6 +301,9 @@ void GameObject::OnEditorHierarchyCreateMenu()
 		if (ImGui::Selectable("Create Camera"))
 			AddCameraChild();
 
+		if (ImGui::Selectable("Create Light"))
+			AddLightChild();
+
 		ImGui::Separator();
 
 		if (ImGui::Selectable("Create Plane"))
@@ -496,6 +500,9 @@ Component* GameObject::AddComponent(ComponentType type)
 		break;
 	case ComponentType::GRASS:
 		component = new ComponentGrass(this);
+		break;
+	case ComponentType::LIGHT:
+		component = new ComponentLight(this);
 		break;
 	case ComponentType::MATERIAL:
 		component = new ComponentMaterial(this);
@@ -726,6 +733,15 @@ GameObject* GameObject::AddCameraChild()
 	go->AddComponent(ComponentType::TRANSFORM);
 	ComponentCamera* camera = (ComponentCamera*)go->AddComponent(ComponentType::CAMERA);
 	camera->SetAsActiveCamera();
+	return go;
+}
+
+GameObject* GameObject::AddLightChild()
+{
+	GameObject* go = new GameObject("Light", this);
+	go->AddComponent(ComponentType::TRANSFORM);
+	ComponentLight* light = (ComponentLight*)go->AddComponent(ComponentType::LIGHT);
+	light->SetAsActiveLight();
 	return go;
 }
 

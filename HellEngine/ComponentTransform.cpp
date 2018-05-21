@@ -171,12 +171,12 @@ void ComponentTransform::SetIsStatic(bool isStatic)
 	}
 }
 
-float3 ComponentTransform::GetPosition() const
+const float3& ComponentTransform::GetPosition() const
 {
 	return position;
 }
 
-float3 ComponentTransform::GetScale() const
+const float3& ComponentTransform::GetScale() const
 {
 	return scale;
 }
@@ -193,12 +193,12 @@ float3 ComponentTransform::GetRotationDeg() const
 	return float3(RadToDeg(rotationRad.x), RadToDeg(rotationRad.y), RadToDeg(rotationRad.z));
 }
 
-Quat ComponentTransform::GetRotationQuat() const
+const Quat& ComponentTransform::GetRotationQuat() const
 {
 	return rotation;
 }
 
-AABB ComponentTransform::GetBoundingBox() const
+const AABB& ComponentTransform::GetBoundingBox() const
 {
 	return boundingBox;
 }

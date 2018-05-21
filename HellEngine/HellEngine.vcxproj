@@ -27,6 +27,7 @@
     <ClInclude Include="ComponentAnimation.h" />
     <ClInclude Include="ComponentCamera.h" />
     <ClInclude Include="ComponentGrass.h" />
+    <ClInclude Include="ComponentLight.h" />
     <ClInclude Include="ComponentMaterialsGroup.h" />
     <ClInclude Include="ComponentMesh.h" />
     <ClInclude Include="ComponentParticleSystem.h" />
@@ -152,6 +153,7 @@
     <ClCompile Include="ComponentAnimation.cpp" />
     <ClCompile Include="ComponentCamera.cpp" />
     <ClCompile Include="ComponentGrass.cpp" />
+    <ClCompile Include="ComponentLight.cpp" />
     <ClCompile Include="ComponentMaterialsGroup.cpp" />
     <ClCompile Include="ComponentMesh.cpp" />
     <ClCompile Include="ComponentParticleSystem.cpp" />

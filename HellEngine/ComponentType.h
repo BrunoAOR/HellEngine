@@ -6,6 +6,7 @@ enum class ComponentType
 	ANIMATION,
 	CAMERA,
 	GRASS,
+	LIGHT,
 	MATERIAL,
 	MATERIALS_GROUP,
 	MESH,
@@ -18,7 +19,7 @@ enum class ComponentType
 	UI_BUTTON
 };
 
-extern const ComponentType COMPONENT_TYPES_3D[8];
+extern const ComponentType COMPONENT_TYPES_3D[9];
 extern const ComponentType COMPONENT_TYPES_2D[5];
 
 const char* GetString(ComponentType componentType);
