@@ -405,6 +405,9 @@
     <ClInclude Include="ComponentMaterialsGroup.h">
       <Filter>Scene Management</Filter>
     </ClInclude>
+    <ClInclude Include="ComponentLight.h">
+      <Filter>Scene Management</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -666,6 +669,9 @@
       <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="ComponentMaterialsGroup.cpp">
+      <Filter>Scene Management</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentLight.cpp">
       <Filter>Scene Management</Filter>
     </ClCompile>
   </ItemGroup>
