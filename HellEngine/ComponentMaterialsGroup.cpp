@@ -11,6 +11,7 @@ ComponentMaterialsGroup::ComponentMaterialsGroup(GameObject* owner) : Component(
 {
 	type = ComponentType::MATERIALS_GROUP;
 	editorInfo.idLabel = std::string(GetString(type)) + "##" + std::to_string(editorInfo.id);
+	SetDefaultMaterialConfiguration();
 }
 
 ComponentMaterialsGroup::~ComponentMaterialsGroup()
@@ -24,27 +25,20 @@ void ComponentMaterialsGroup::OnEditor()
 		if (OnEditorDeleteComponent())
 			return;
 
-		ImGui::Checkbox("Active", &isActive);
+		if (ImGui::Button("Use defaults"))
+			SetDefaultMaterialConfiguration();
 
-		static const std::string baseLabel = std::string("Material setup##MatSetup");
-		if (ImGui::TreeNode((baseLabel + std::to_string(editorInfo.id)).c_str()))
-		{
-			if (ImGui::Button("Use defaults"))
-				SetDefaultMaterialConfiguration();
+		ImGui::InputText("Vertex shader", vertexShaderPath, 256);
+		ImGui::InputText("Fragment shader", fragmentShaderPath, 256);
+		ImGui::InputText("Shader data", shaderDataPath, 256);
+		ImGui::InputText("Texture path", diffusePath, 256);
+		ImGui::InputText("Normal Texture path", normalPath, 256);
+		ImGui::InputText("Specular Texture path", specularPath, 256);
 
-			ImGui::InputText("Vertex shader", vertexShaderPath, 256);
-			ImGui::InputText("Fragment shader", fragmentShaderPath, 256);
-			ImGui::InputText("Shader data", shaderDataPath, 256);
-			ImGui::InputText("Texture path", diffusePath, 256);
-			ImGui::InputText("Normal Texture path", normalPath, 256);
-			ImGui::InputText("Specular Texture path", specularPath, 256);
+		if (ImGui::Button("Apply to children"))
+			Apply();
 
-			if (ImGui::Button("Apply to children"))
-				Apply();
-
-			ImGui::NewLine();
-			ImGui::TreePop();
-		}
+		ImGui::NewLine();
 
 		if (!isValid)
 		{
